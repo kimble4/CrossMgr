@@ -451,8 +451,10 @@ function sortTableId( iTable, iCol ) {
 					pointsForRank,
 					useMostEventsCompleted=model.useMostEventsCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
+
 				results = [rr for rr in results if toFloat(rr[4]) > 0.0]				
 				hideRaces = []
+        
 				headerNames = HeaderNames + ['{}'.format(r[3].raceName) for r in races]
 				
 				with tag(html, 'div', {'id':'catContent{}'.format(iTable)} ):

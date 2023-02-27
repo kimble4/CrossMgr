@@ -829,7 +829,7 @@ class TeamResults(wx.Panel):
 		results = filterResults( results, scoreByPoints, scoreByTime )
 		
 		headerNames = HeaderNames + ['{}\n{}'.format(r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
-		
+    
 		#Show all columns
 		for c in range(self.grid.GetNumberCols()):
 			self.grid.ShowCol(c)
@@ -962,7 +962,7 @@ class TeamResults(wx.Panel):
 			results = filterResults( results, scoreByPoints, scoreByTime )
 			
 			headerNames = HeaderNames + [r[3].raceName for r in races]
-			
+     
 			hideRaces = []
 			for iRace, r in enumerate(races):
 				if r[1] in hideCols:
