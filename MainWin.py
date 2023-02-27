@@ -120,6 +120,7 @@ import Flags
 import WebServer
 import ImageIO
 from ModuleUnpickler import ModuleUnpickler
+import GpxTimesImport
 
 now = datetime.datetime.now
 
@@ -621,6 +622,14 @@ class MainWin( wx.Frame ):
 		
 		self.dataMgmtMenu.AppendMenu( wx.ANY_ID, _('Export Course'), self.exportGpxMenu  )
 		'''
+		
+		#-----------------------------------------------------------------------
+		
+		self.dataMgmtMenu.AppendSeparator()
+		
+		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Import rider's times from GPX..."), _("Import Rider's Rimes from GPX"),
+			Utils.GetPngBitmap('gps-icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuImportRiderTimesGpx, item )
 		
 		#-----------------------------------------------------------------------
 		
@@ -2391,6 +2400,24 @@ class MainWin( wx.Frame ):
 		race.showOval = (race.geoTrack is None)
 		race.setChanged()
 			
+		self.refresh()
+		
+	@logCall
+	def menuImportRiderTimesGpx( self, event ):
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+		if not Model.race:
+			return
+		race = Model.race
+		rt = GpxTimesImport.GetRiderTimes( self, race )
+		try:
+			bib, lapTimes = rt.show()
+			for t in lapTimes:
+				race.importTime( bib, t )
+				race.setChanged()
+		except TypeError:
+			#wizard has been cancelled
+			pass
 		self.refresh()
 		
 	@logCall
