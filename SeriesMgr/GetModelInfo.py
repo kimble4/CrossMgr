@@ -499,7 +499,6 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 					v = riderResults[rider][i]
 					riderResults[rider][i] = tuple([upgradeFormat.format(v[0] if v[0] else '')] + list(v[1:]))
 	
-<<<<<<< HEAD
 	def TidyMachinesList (riderMachines):
 		# Format list of unique machines used by each rider in frequency order
 		for rider, machines in riderMachines.items():
@@ -516,10 +515,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 			#overwrite
 			riderMachines[rider] = machines
 	
-	riderResults = defaultdict( lambda : [(0,999999,0,0)] * len(races) )	# (points, rr.rank, primePoints, 0) for each result.  default rank 999999 for missing result.
-=======
 	riderResults = defaultdict( lambda : [(0,SeriesModel.rankDidNotParticipate,0,0)] * len(races) )	# (points, rr.rank, primePoints, 0) for each result.
->>>>>>> 3db22bd07cf085fdbb096acced6cfee6bc63c48b
 	riderFinishes = defaultdict( lambda : [None] * len(races) )
 	if scoreByTime:
 	
