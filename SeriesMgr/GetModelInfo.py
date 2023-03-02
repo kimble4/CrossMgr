@@ -160,7 +160,7 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 
 	getReferenceName = seriesModel.getReferenceName
 	getReferenceLicense = seriesModel.getReferenceLicense
-	getReferenceMachine = SeriesModel.getReferenceMachine
+	getReferenceMachine = seriesModel.getReferenceMachine
 	getReferenceTeam = seriesModel.getReferenceTeam
 		
 	excel = GetExcelReader( raceInSeries.getFileName() )
@@ -321,7 +321,7 @@ def ExtractRaceResultsCrossMgr( raceInSeries, seriesModel ):
 	
 	getReferenceName = seriesModel.getReferenceName
 	getReferenceLicense = seriesModel.getReferenceLicense
-	getReferenceMachine = SeriesModel.getReferenceMachine
+	getReferenceMachine = seriesModel.getReferenceMachine
 	getReferenceTeam = seriesModel.getReferenceTeam
 
 	Finisher = Model.Rider.Finisher
