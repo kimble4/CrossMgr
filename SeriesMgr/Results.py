@@ -531,7 +531,8 @@ function sortTableId( iTable, iCol ) {
 										else:
 											with tag(html, 'td', {'class':'leftBorder noprint' + (' hidden' if iRace in hideRaces else '')}):
 												pass
-										if rRank:
+
+										if rRank <= SeriesModel.rankDNF:
 											if rPrimePoints:
 												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;+{}'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;'), rPrimePoints) )
@@ -649,13 +650,13 @@ function sortTableId( iTable, iCol ) {
 						write( 'Tie Breaking Rules' )
 						
 					with tag(html, 'p'):
-						write( u"If two or more riders are tied on points, the following rules are applied in sequence until the tie is broken:" )
+						write( "If two or more riders are tied on points, the following rules are applied in sequence until the tie is broken:" )
 					isFirst = True
-					tieLink = u"if still a tie, use "
+					tieLink = "if still a tie, use "
 					with tag(html, 'ol'):
 						if model.useMostEventsCompleted:
 							with tag(html, 'li'):
-								write( u"{}number of events completed".format( tieLink if not isFirst else "" ) )
+								write( "{}number of events completed".format( tieLink if not isFirst else "" ) )
 								isFirst = False
 						if model.numPlacesTieBreaker != 0:
 							finishOrdinals = [Utils.ordinal(p+1) for p in range(model.numPlacesTieBreaker)]
@@ -664,12 +665,12 @@ function sortTableId( iTable, iCol ) {
 							else:
 								finishStr = ', '.join(finishOrdinals[:-1]) + ' then ' + finishOrdinals[-1]
 							with tag(html, 'li'):
-								write( u"{}number of {} place finishes".format( tieLink if not isFirst else "",
+								write( "{}number of {} place finishes".format( tieLink if not isFirst else "",
 									finishStr,
 								) )
 								isFirst = False
 						with tag(html, 'li'):
-							write( u"{}finish position in most recent event".format(tieLink if not isFirst else "") )
+							write( "{}finish position in most recent event".format(tieLink if not isFirst else "") )
 							isFirst = False
 					
 					if hasUpgrades:
@@ -678,11 +679,11 @@ function sortTableId( iTable, iCol ) {
 						with tag(html, 'hr'):
 							pass
 						with tag(html, 'h2'):
-							write( u"Upgrades Progression" )
+							write( "Upgrades Progression" )
 						with tag(html, 'ol'):
 							for i in range(len(model.upgradePaths)):
 								with tag(html, 'li'):
-									write( u"{}: {:.2f} points in pre-upgrade category carried forward".format(model.upgradePaths[i], model.upgradeFactors[i]) )
+									write( "{}: {:.2f} points in pre-upgrade category carried forward".format(model.upgradePaths[i], model.upgradeFactors[i]) )
 			#-----------------------------------------------------------------------------
 			with tag(html, 'p'):
 				with tag(html, 'a', dict(href='http://sites.google.com/site/crossmgrsoftware')):
@@ -840,7 +841,7 @@ class Results(wx.Panel):
 			# Close the clipboard
 			wx.TheClipboard.Close()
 		else:
-			wx.MessageBox(u"Unable to open the clipboard", u"Error")		
+			wx.MessageBox("Unable to open the clipboard", "Error")		
 	
 	def onCopyName( self, event ):
 		self.copyCellToClipboard( self.rowCur, 1 )
@@ -942,7 +943,7 @@ class Results(wx.Panel):
 					'{} ({}) +{}'.format(rPoints, Utils.ordinal(rRank), rPrimePoints) if rPoints and rPrimePoints
 					else '{} ({}) -{}'.format(rPoints, Utils.ordinal(rRank), Utils.formatTime(rTimeBonus, twoDigitMinutes=False)) if rPoints and rRank and rTimeBonus
 					else '{} ({})'.format(rPoints, Utils.ordinal(rRank)) if rPoints
-					else '({})'.format(Utils.ordinal(rRank)) if rRank
+					else '({})'.format(Utils.ordinal(rRank)) if rRank <= SeriesModel.rankDNF
 					else ''
 				)
 			for c in range( len(headerNames) ):
@@ -1137,11 +1138,11 @@ class Results(wx.Panel):
 					c += 1
 				for q, (rPoints, rRank, rPrimePoints, rTimeBonus) in enumerate(racePoints):
 					if q not in hideRaces:
-						wsFit.write( rowCur, c,
+						wsFit.write( rowCur, 6 + q,
 							'{} ({}) +{}'.format(rPoints, Utils.ordinal(rRank), rPrimePoints) if rPoints and rPrimePoints
 							else '{} ({}) -{}'.format(rPoints, Utils.ordinal(rRank), Utils.formatTime(rTimeBonus, twoDigitMinutes=False)) if rPoints and rRank and rTimeBonus
 							else '{} ({})'.format(rPoints, Utils.ordinal(rRank)) if rPoints
-							else '({})'.format(Utils.ordinal(rRank)) if rRank
+							else '({})'.format(Utils.ordinal(rRank)) if rRank <= SeriesModel.rankRNF
 							else '',
 							centerStyle
 						)

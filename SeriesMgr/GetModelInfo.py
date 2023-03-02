@@ -141,11 +141,11 @@ class RaceResult:
 	def __repr__( self ):
 		return ', '.join( '{}'.format(p) for p in [self.full_name, self.license, self.machine, self.categoryName, self.raceName, self.raceDate] if p )
 
-def ExtractRaceResults( r ):
+def ExtractRaceResults( r, seriesModel ):
 	if os.path.splitext(r.fileName)[1] == '.cmn':
-		return ExtractRaceResultsCrossMgr( r )
+		return ExtractRaceResultsCrossMgr( r, seriesModel )
 	else:
-		return ExtractRaceResultsExcel( r )
+		return ExtractRaceResultsExcel( r, seriesModel )
 
 def toInt( n ):
 	if n == 'DNF':
@@ -155,12 +155,14 @@ def toInt( n ):
 	except:
 		return n
 
-def ExtractRaceResultsExcel( raceInSeries ):
-	getReferenceName = SeriesModel.model.getReferenceName
-	getReferenceLicense = SeriesModel.model.getReferenceLicense
-	getReferenceMachine = SeriesModel.model.getReferenceMachine
-	getReferenceTeam = SeriesModel.model.getReferenceTeam
-	
+def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
+	ret = { 'success':True, 'explanation':'success', 'raceResults':[], 'licenseLinkTemplate':None }	
+
+	getReferenceName = seriesModel.getReferenceName
+	getReferenceLicense = seriesModel.getReferenceLicense
+	getReferenceMachine = SeriesModel.getReferenceMachine
+	getReferenceTeam = seriesModel.getReferenceTeam
+		
 	excel = GetExcelReader( raceInSeries.getFileName() )
 	raceName = os.path.splitext(os.path.basename(raceInSeries.getFileName()))[0]
 	raceResults = []
@@ -277,7 +279,8 @@ def ExtractRaceResultsExcel( raceInSeries ):
 				# Check if this is a team-only sheet.
 				raceInSeries.pureTeam = ('team' in fm and not any(n in fm for n in ('name', 'last_name', 'first_name', 'license')))
 				raceInSeries.resultsType = SeriesModel.Race.TeamResultsOnly if raceInSeries.pureTeam else SeriesModel.Race.IndividualAndTeamResults
-	return True, 'success', raceResults
+	ret['raceResults'] = raceResults
+	return ret
 
 def FixExcelSheetLocal( fileName, race ):
 	# Check if we have a missing spreadsheet, but can find one in the same folder as the race.
@@ -288,7 +291,9 @@ def FixExcelSheetLocal( fileName, race ):
 			if newFileName:
 				race.excelLink.fileName = newFileName
 
-def ExtractRaceResultsCrossMgr( raceInSeries ):
+def ExtractRaceResultsCrossMgr( raceInSeries, seriesModel ):
+	ret = { 'success':True, 'explanation':'success', 'raceResults':[], 'licenseLinkTemplate':None }
+	
 	fileName = raceInSeries.getFileName()
 	try:
 		with open(fileName, 'rb') as fp, Model.LockRace() as race:
@@ -303,20 +308,22 @@ def ExtractRaceResultsCrossMgr( raceInSeries ):
 		Model.resetCache()
 
 	except IOError as e:
-		return False, e, []
+		ret['success'] = False
+		ret['explanation'] = e
+		return ret
 	
 	race = Model.race
 	if not HasExcelLink(race):	# Force a refresh of the Excel link before reading the categories.
 		pass
 		
 	if race.licenseLinkTemplate:
-		SeriesModel.model.licenseLinkTemplate = race.licenseLinkTemplate
+		ret['licenseLinkTemplate'] = race.licenseLinkTemplate
 	
-	getReferenceName = SeriesModel.model.getReferenceName
-	getReferenceLicense = SeriesModel.model.getReferenceLicense
-	getReferenceMachine = SeriesModel.model.getReferenceMachine
-	getReferenceTeam = SeriesModel.model.getReferenceTeam
-	
+	getReferenceName = seriesModel.getReferenceName
+	getReferenceLicense = seriesModel.getReferenceLicense
+	getReferenceMachine = SeriesModel.getReferenceMachine
+	getReferenceTeam = seriesModel.getReferenceTeam
+
 	Finisher = Model.Rider.Finisher
 	DNF = Model.Rider.DNF
 	acceptedStatus = { Finisher, DNF }
@@ -399,7 +406,8 @@ def ExtractRaceResultsCrossMgr( raceInSeries ):
 			raceResults.append( RaceResult(**info) )
 		
 	Model.race = None
-	return True, 'success', raceResults
+	ret['raceResults'] = raceResults
+	return ret
 
 def AdjustForUpgrades( raceResults ):
 	upgradePaths = []
