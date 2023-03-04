@@ -36,7 +36,7 @@ def getExportGrid():
 		catDetailsMap = { cd['name']:cd for cd in catDetails }
 		
 		title = '\n'.join( [_('Categories'), race.title, race.scheduledStart + ' ' + _('Start on') + ' ' + Utils.formatDate(race.date)] )
-		colnames = [_('Start Time'), _('Category'), _('Gender'), _('Numbers'), _('Laps'), _('Distance'), _('Starters')]
+		colnames = [_('Start Time'), _('Category'), _('Gender'), _('Numbers'), _('Laps'), _('Best n'), _('Distance'), _('Starters')]
 		
 		raceStart = Utils.StrToSeconds( race.scheduledStart + ':00' )
 		catData = []
@@ -64,8 +64,21 @@ def getExportGrid():
 				catStart = Utils.SecondsToStr( raceStart )
 			else:
 				catStart = ''
-				
-			catData.append( [
+			
+			if race.isTimeTrial and race.isBestNLaps:
+				bestN = catInfo.get( 'bestLaps', '' ) or ''
+				catData.append( [
+					catStart,
+					' - ' + c.name if c.catType == c.CatComponent else c.name,
+					GetTranslation(catInfo.get('gender', 'Open')),
+					c.catStr,
+					'{}'.format(laps),
+					'{}'.format(bestN),
+					' '.join([raceDistance, raceDistanceUnit]) if raceDistance else '',
+					'{}'.format(starters)
+				])
+			else:
+				catData.append( [
 				catStart,
 				' - ' + c.name if c.catType == c.CatComponent else c.name,
 				GetTranslation(catInfo.get('gender', 'Open')),
@@ -77,6 +90,8 @@ def getExportGrid():
 	
 	if allZeroStarters:
 		colnames.remove( _('Starters') )
+	if not (race.isTimeTrial and race.isBestNLaps):
+		colnames.remove( _('Best n') )
 	data = [[None] * len(catData) for i in range(len(colnames))]
 	for row in range(len(catData)):
 		for col in range(len(colnames)):
@@ -320,6 +335,7 @@ class Categories( wx.Panel ):
 			(_('Numbers'),				'catStr'),
 			(_('Start\nOffset'),		'startOffset'),
 			(_('Race\nLaps'),			'numLaps'),
+			(_('Best\nLaps'),			'bestLaps'),
 			('',						'setLaps'),
 			(_('Race\nMinutes'),		'raceMinutes'),
 			(_('Lapped\nRiders\nContinue'),	'lappedRidersMustContinue'),
@@ -394,6 +410,11 @@ class Categories( wx.Panel ):
 				self.dependentCols.add( col )
 				
 			elif fieldName == 'numLaps':
+				attr.SetEditor( GridCellNumberEditor() )
+				attr.SetAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
+				self.dependentCols.add( col )
+				
+			elif fieldName == 'bestLaps':
 				attr.SetEditor( GridCellNumberEditor() )
 				attr.SetAlignment( wx.ALIGN_CENTRE, wx.ALIGN_CENTRE )
 				self.dependentCols.add( col )
@@ -652,7 +673,7 @@ and remove them from other categories.'''),
 		self.refresh()
 		
 	def _setRow( self, r, active, name, catStr, startOffset = '00:00:00',
-					numLaps = None, raceMinutes = None,
+					numLaps = None, bestLaps = None, raceMinutes = None,
 					lappedRidersMustContinue = False,
 					distance = None, distanceType = None,
 					firstLapDistance = None, gender = None,
@@ -672,6 +693,7 @@ and remove them from other categories.'''),
 		self.grid.SetCellValue( r, self.iCol['catStr'], catStr )
 		self.grid.SetCellValue( r, self.iCol['startOffset'], startOffset )
 		self.grid.SetCellValue( r, self.iCol['numLaps'], '{}'.format(numLaps) if numLaps else '' )
+		self.grid.SetCellValue( r, self.iCol['bestLaps'], '{}'.format(bestLaps) if bestLaps else '' )
 		self.grid.SetCellValue( r, self.iCol['setLaps'], '\u27F3' )
 		self.grid.SetCellValue( r, self.iCol['raceMinutes'], '{}'.format(raceMinutes) if raceMinutes else '' )
 		self.grid.SetCellValue( r, self.iCol['lappedRidersMustContinue'], '1' if lappedRidersMustContinue else '0' )
@@ -824,6 +846,7 @@ and remove them from other categories.'''),
 								catType				= cat.catType,
 								startOffset			= cat.startOffset,
 								numLaps				= cat._numLaps,
+								bestLaps			= cat._bestLaps,
 								raceMinutes			= cat.raceMinutes,
 								lappedRidersMustContinue = getattr(cat, 'lappedRidersMustContinue', False),
 								distance			= getattr(cat, 'distance', None),
@@ -836,7 +859,11 @@ and remove them from other categories.'''),
 				
 			self.doAutosize()
 			self.fixCells()
-			
+			if (race.isTimeTrial and race.isBestNLaps):
+				self.grid.ShowCol(8)
+			else:
+				self.grid.HideCol(8)
+
 			# Force the grid to the correct size.
 			self.grid.FitInside()
 			self.GetSizer().Layout()

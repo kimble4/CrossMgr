@@ -193,6 +193,8 @@ class RaceOptionsProperties( wx.Panel ):
 		self.timeTrial = wx.CheckBox( self, label=_('Time Trial') )
 		self.timeTrial.Bind(wx.EVT_CHECKBOX, self.onChangeTimeTrial )
 		
+		self.bestNLaps = wx.CheckBox( self, label=_('Best n laps') )
+		
 		self.allCategoriesFinishAfterFastestRidersLastLap = wx.CheckBox( self, label=_("All Categories Finish After Fastest Rider's Last Lap") )
 		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( True )
 		
@@ -251,6 +253,7 @@ class RaceOptionsProperties( wx.Panel ):
 		
 		labelFieldBatchPublish = [
 			(blank(),				0, labelAlign),		(self.timeTrial,				1, fieldAlign),
+			(blank(),				0, labelAlign),		(self.bestNLaps,				1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.allCategoriesFinishAfterFastestRidersLastLap,	1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.autocorrectLapsDefault,	1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.highPrecisionTimes,		1, fieldAlign),
@@ -270,7 +273,13 @@ class RaceOptionsProperties( wx.Panel ):
 		ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
 
 	def onChangeTimeTrial( self, event=None ):
-		self.timeTrial.SetBackgroundColour( wx.Colour(255, 204, 153) if self.timeTrial.GetValue() else wx.WHITE )
+		if self.timeTrial.GetValue():
+			self.timeTrial.SetBackgroundColour( wx.Colour(255, 204, 153) )
+			self.bestNLaps.Enable()
+		else:
+			self.timeTrial.SetBackgroundColour( wx.WHITE )
+			self.bestNLaps.SetValue(False)
+			self.bestNLaps.Disable()
 		if event:
 			event.Skip()
      
@@ -282,6 +291,7 @@ class RaceOptionsProperties( wx.Panel ):
 	def refresh( self ):
 		race = Model.race
 		self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
+		self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
 		self.winAndOut.SetValue( race.winAndOut )
 		self.minPossibleLapTime.SetSeconds( race.minPossibleLapTime )
 		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( getattr(race, 'allCategoriesFinishAfterFastestRidersLastLap', False) )
@@ -308,6 +318,7 @@ class RaceOptionsProperties( wx.Panel ):
 	def commit( self ):
 		race = Model.race
 		race.isTimeTrial = self.timeTrial.IsChecked()
+		race.isBestNLaps = self.bestNLaps.IsChecked()
 		race.allCategoriesFinishAfterFastestRidersLastLap = self.allCategoriesFinishAfterFastestRidersLastLap.IsChecked()
 		race.autocorrectLapsDefault = self.autocorrectLapsDefault.IsChecked()
 		race.highPrecisionTimes = self.highPrecisionTimes.IsChecked()
