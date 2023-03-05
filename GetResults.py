@@ -49,7 +49,7 @@ def toInt( n ):
 		return 99999
 	
 class RiderResult:
-	def __init__( self, num, status, lastTime, raceCat, lapTimes, raceTimes, interp ):
+	def __init__( self, num, status, lastTime, raceCat, lapTimes, raceTimes, interp, bests = None ):
 		self.num		= num
 		self.status		= status
 		self.gap		= ''
@@ -64,6 +64,7 @@ class RiderResult:
 		self.raceTimes	= raceTimes
 		self.interp		= interp
 		self.lastInterp = False
+		self.bests		= [True] * self.laps
 		
 	_reMissingName = re.compile( '^, |, $' )
 	def full_name( self ):
@@ -95,6 +96,18 @@ class RiderResult:
 			self.lastTime, getattr(self, 'startTime', 0.0) or 0.0,
 			self.num
 		)
+	
+	def _getBestLapsKey( self ):
+		laps = 0
+		cumulativeTime = 0
+		averageLapTime = 999999
+		for l, t in enumerate(self.lapTimes):
+			if self.bests[l]:
+				cumulativeTime += t
+				laps += 1
+		if laps > 0:
+			averageLapTime = cumulativeTime/laps
+		return (statusSortSeq[self.status], -laps, averageLapTime, getattr(self, 'startTime', 0.0) or 0.0, self.num)
 	
 	def _getWinAndOutKey( self ):
 		k = self._getKey()
@@ -236,6 +249,7 @@ def _GetResultsCore( category ):
 	
 	isRunning = race.isRunning()
 	isTimeTrial = race.isTimeTrial
+	isBestNLaps = race.isBestNLaps
 	
 	roadRaceFinishTimes = race.roadRaceFinishTimes
 	estimateLapsDownFinishTime = race.estimateLapsDownFinishTime
@@ -315,7 +329,7 @@ def _GetResultsCore( category ):
 	highPrecision = Model.highPrecisionTimes()
 	getCategory = race.getCategory
 	for rider in list(race.riders.values()):
-		riderCategory = getCategory( rider.num )
+		riderCategory = getCategory( rider.num )  #rider's start wave category
 		
 		if category and riderCategory != category:
 			continue
@@ -337,6 +351,7 @@ def _GetResultsCore( category ):
 			
 			times = times[:laps+1]
 			interp = interp[:laps+1]
+
 		else:
 			laps = 0
 			times = []
@@ -356,7 +371,7 @@ def _GetResultsCore( category ):
 							riderCategory.fullname,
 							[times[i] - times[i-1] for i in range(1, len(times))],
 							times,
-							interp )
+							interp)
 		
 		if isTimeTrial:
 			rr.startTime = rider.firstTime
@@ -398,6 +413,24 @@ def _GetResultsCore( category ):
 						speed = DefaultSpeed
 					rr.speed = '{:.2f} {}'.format(speed, ['km/h', 'mph'][race.distanceUnit] )
 					
+		#compute the best laps for the rider
+		if (category):  #fixme if category is none
+			needLaps = category.bestLaps
+			#print('Category needs best ' + str(needLaps) + ' laps')
+			times = list(enumerate(rr.lapTimes))
+			bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
+			bestLaps = []
+			for time in bestTimes:
+				bestLaps.append(time[0])
+			bests = []
+			for lap in range(rr.laps):
+				if lap in bestLaps:
+					bests.append(True)
+				else:
+					bests.append(False)
+			rr.bests = bests
+			#print (rr.bests)
+					
 		riderResults.append( rr )
 	
 	if not riderResults:
@@ -435,7 +468,10 @@ def _GetResultsCore( category ):
 					rr.lastTime = rr.raceTimes[iT]
 					rr.lastTimeOrig = rr.lastTime
 	
-	riderResults.sort( key=RiderResult._getRunningKey if isRunning else RiderResult._getKey )
+	if isTimeTrial and isBestNLaps:
+		riderResults.sort( key=RiderResult._getBestLapsKey )
+	else:
+		riderResults.sort( key=RiderResult._getRunningKey if isRunning else RiderResult._getKey )
 	
 	relegatedNums = { rr.num for rr in riderResults if race.riders[rr.num].isRelegated() }
 	if relegatedNums:

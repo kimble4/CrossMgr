@@ -89,6 +89,7 @@ class Results( wx.Panel ):
 		
 		self.rcInterp = set()
 		self.rcNumTime = set()
+		self.rcWorstLaps = set()
 		self.numSelect = None
 		self.isEmpty = True
 		self.reSplit = re.compile( '[\[\]\+= ]+' )	# separators for the fields.
@@ -160,6 +161,7 @@ class Results( wx.Panel ):
 		self.yellowColour = wx.Colour( 255, 255, 0 )
 		self.orangeColour = wx.Colour( 255, 165, 0 )
 		self.greyColour = wx.Colour( 150, 150, 150 )
+		self.lightGreyColour = wx.Colour ( 211, 211, 211 )
 		self.greenColour = wx.Colour( 127, 210, 0 )
 		self.lightBlueColour = wx.Colour( 153, 205, 255 )
 		
@@ -477,6 +479,7 @@ class Results( wx.Panel ):
 		
 		textColourLap = {}
 		backgroundColourLap = { rc:self.yellowColour for rc in self.rcInterp }
+		backgroundColourLap.update( { rc:self.lightGreyColour for rc in self.rcWorstLaps } )
 		backgroundColourLap.update( { rc:self.orangeColour for rc in self.rcNumTime } )
 		if self.fastestLapRC is not None:
 			backgroundColourLap[self.fastestLapRC] = self.greenColour
@@ -740,6 +743,14 @@ class Results( wx.Panel ):
 					if t < fastestLapTime:
 						fastestLapTime = t
 						self.fastestLapRC = (r, c)
+						
+		#Find the worst laps
+		self.rcWorstLaps = set()
+		if race.isTimeTrial and race.isBestNLaps:
+			for r, result in enumerate(results):
+				for c in range(result.laps):
+					if not result.bests[c]:
+						self.rcWorstLaps.add( (r, c) )
 		
 		highPrecision = Model.highPrecisionTimes()
 		try:
