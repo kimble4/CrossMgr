@@ -505,7 +505,7 @@ class Results( wx.Panel ):
 					backgroundColourLabel[ (r,c) ] = self.blackColour
 
 				for c in range(self.lapGrid.GetNumberCols()):
-					textColourLap[ (r,c) ] = self.whiteColour
+					textColourLap[ (r,c) ] = self.whiteColour if (r,c) not in self.rcWorstLaps else self.lightGreyColour
 					backgroundColourLap[ (r,c) ] = self.blackColour if (r,c) not in self.rcInterp and (r,c) not in self.rcNumTime else self.greyColour
 					
 			if cellNum in self.closeFinishBibs:
