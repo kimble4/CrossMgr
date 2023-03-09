@@ -356,6 +356,7 @@ def _GetResultsCore( category ):
 			laps = 0
 			times = []
 			interp = []
+			
 		
 		lastTime = rider.tStatus
 		if not lastTime:
@@ -363,6 +364,8 @@ def _GetResultsCore( category ):
 				lastTime = times[-1]
 			else:
 				lastTime = 0.0
+				
+				
 		
 		status = Finisher if rider.status in rankStatus else rider.status
 		if isTimeTrial and not lastTime and rider.status == Finisher:
@@ -387,6 +390,29 @@ def _GetResultsCore( category ):
 				rr.lastTime += getattr(rider, 'ttPenalty', 0.0)
 			except (TypeError, AttributeError):
 				pass
+			
+		#compute the best laps for the rider
+		if (category):  #fixme if category is none?
+			needLaps = category.bestLaps
+			times = list(enumerate(rr.lapTimes))
+			bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
+			bestLaps = []
+			lastTime = rider.firstTime if rider.firstTime is not None else 0
+			for time in bestTimes:
+				bestLaps.append(time[0])
+				try: # fudge the lastTime so only 'best' lap times are counted
+					lastTime += time[1]
+				except(TypeError, AttributeError):
+					pass
+			bests = []
+			for lap in range(rr.laps):
+				if lap in bestLaps:
+					bests.append(True)
+				else:
+					bests.append(False)
+			rr.lastTime = lastTime
+			rr.bests = bests
+		
 		
 		# Compute the speeds for the rider.
 		if riderCategory.distance:
@@ -398,9 +424,18 @@ def _GetResultsCore( category ):
 				raceSpeeds = []
 				if rr.lapSpeeds:
 					tCur = 0.0
+					dCur = 0.0
 					for i, t in enumerate(rr.lapTimes):
-						tCur += t
-						raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (riderCategory.getDistanceAtLap(i+1) / (tCur / (60.0*60.0))) )
+						if isTimeTrial and isBestNLaps:
+							if rr.bests[i]:
+								tCur += t
+								dCur += riderCategory.getDistanceAtLap(i+1) - riderCategory.getDistanceAtLap(i)
+								raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (dCur / (tCur / (60.0*60.0))) )  #fixme?
+							else:
+								raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (dCur / (tCur / (60.0*60.0))) ) 
+						else:
+							tCur += t
+							raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (riderCategory.getDistanceAtLap(i+1) / (tCur / (60.0*60.0))) )
 					rr.speed = '{:.2f} {}'.format(raceSpeeds[-1], ['km/h', 'mph'][race.distanceUnit] )
 				rr.raceSpeeds = raceSpeeds
 			else:	# Distance is by entire race.
@@ -412,23 +447,6 @@ def _GetResultsCore( category ):
 					except IndexError as e:
 						speed = DefaultSpeed
 					rr.speed = '{:.2f} {}'.format(speed, ['km/h', 'mph'][race.distanceUnit] )
-					
-		#compute the best laps for the rider
-		if (category):  #fixme if category is none?
-			needLaps = category.bestLaps
-			times = list(enumerate(rr.lapTimes))
-			bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
-			bestLaps = []
-			for time in bestTimes:
-				bestLaps.append(time[0])
-			bests = []
-			for lap in range(rr.laps):
-				if lap in bestLaps:
-					bests.append(True)
-				else:
-					bests.append(False)
-			rr.bests = bests
-					
 		riderResults.append( rr )
 	
 	if not riderResults:

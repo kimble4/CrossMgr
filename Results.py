@@ -907,10 +907,10 @@ class Results( wx.Panel ):
 			for r in range(self.lapGrid.GetNumberRows()):
 				try:
 					bib = int(self.labelGrid.GetCellValue(r, 1))
-					for result in results:
-						if result.num == bib:
-							for c in range(result.laps):
-								if not result.bests[c]:
+					for rr in results:
+						if rr.num == bib:
+							for c in range(rr.laps):
+								if not rr.bests[c]:
 									self.rcWorstLaps.add( (r, c) )
 				except Exception:
 					continue

@@ -1804,7 +1804,7 @@ class MainWin( wx.Frame ):
 								
 				sheetCur = wb.add_worksheet( ues.getSheetName(catName) )
 				export = ExportGrid()
-				export.setResultsOneList( category, showLapsFrequency = 1 )
+				export.setResultsOneList( category, showLapsFrequency = 1, onlyBestLaps = True )
 				export.toExcelSheetXLSX( formats, sheetCur )
 				
 			race = Model.race
