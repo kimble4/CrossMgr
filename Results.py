@@ -477,9 +477,9 @@ class Results( wx.Panel ):
 		except (TypeError, ValueError):
 			numSelectSearch = None
 		
-		textColourLap = {}
-		backgroundColourLap = { rc:self.yellowColour for rc in self.rcInterp }
-		backgroundColourLap.update( { rc:self.lightGreyColour for rc in self.rcWorstLaps } )
+		textColourLap = { rc:self.greyColour for rc in self.rcWorstLaps }
+		backgroundColourLap = {}
+		backgroundColourLap.update( { rc:self.yellowColour for rc in self.rcInterp } )
 		backgroundColourLap.update( { rc:self.orangeColour for rc in self.rcNumTime } )
 		if self.fastestLapRC is not None:
 			backgroundColourLap[self.fastestLapRC] = self.greenColour
@@ -519,7 +519,7 @@ class Results( wx.Panel ):
 		for c in range(self.lapGrid.GetNumberCols()):
 			if self.lapGrid.GetColLabelValue(c).startswith('<'):
 				for r in range(self.lapGrid.GetNumberRows()):
-					textColourLap[ (r,c) ] = self.whiteColour
+					textColourLap[ (r,c) ] = self.whiteColour if (r,c) not in self.rcWorstLaps else self.lightGreyColour 
 					backgroundColourLap[ (r,c) ] = self.blackColour \
 						if (r,c) not in self.rcInterp and (r,c) not in self.rcNumTime else self.greyColour
 				break
@@ -743,14 +743,6 @@ class Results( wx.Panel ):
 					if t < fastestLapTime:
 						fastestLapTime = t
 						self.fastestLapRC = (r, c)
-						
-		#Find the worst laps
-		self.rcWorstLaps = set()
-		if race.isTimeTrial and race.isBestNLaps:
-			for r, result in enumerate(results):
-				for c in range(result.laps):
-					if not result.bests[c]:
-						self.rcWorstLaps.add( (r, c) )
 		
 		highPrecision = Model.highPrecisionTimes()
 		try:
@@ -908,6 +900,20 @@ class Results( wx.Panel ):
 							self.iLastLap = c
 					except IndexError:
 						pass
+				
+		#find the worst laps
+		self.rcWorstLaps = set()
+		if race.isTimeTrial and race.isBestNLaps:
+			for r in range(self.lapGrid.GetNumberRows()):
+				try:
+					bib = int(self.labelGrid.GetCellValue(r, 1))
+					for result in results:
+						if result.num == bib:
+							for c in range(result.laps):
+								if not result.bests[c]:
+									self.rcWorstLaps.add( (r, c) )
+				except Exception:
+					continue
 		
 		self.labelGrid.Scroll( labelLastX, labelLastY )
 		self.lapGrid.Scroll( lapLastX, lapLastY )
@@ -920,6 +926,9 @@ class Results( wx.Panel ):
 		# Fix the grids' scrollbars.
 		self.labelGrid.FitInside()
 		self.lapGrid.FitInside()
+		self.labelGrid.ForceRefresh()
+		self.lapGrid.ForceRefresh()
+		
 
 	def commit( self ):
 		pass

@@ -414,9 +414,8 @@ def _GetResultsCore( category ):
 					rr.speed = '{:.2f} {}'.format(speed, ['km/h', 'mph'][race.distanceUnit] )
 					
 		#compute the best laps for the rider
-		if (category):  #fixme if category is none
+		if (category):  #fixme if category is none?
 			needLaps = category.bestLaps
-			#print('Category needs best ' + str(needLaps) + ' laps')
 			times = list(enumerate(rr.lapTimes))
 			bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
 			bestLaps = []
@@ -429,7 +428,6 @@ def _GetResultsCore( category ):
 				else:
 					bests.append(False)
 			rr.bests = bests
-			#print (rr.bests)
 					
 		riderResults.append( rr )
 	
