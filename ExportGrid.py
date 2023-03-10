@@ -898,7 +898,7 @@ class ExportGrid:
 			
 		if leader.lapTimes and showLapTimes:
 			self.colnames.extend( ['{} {}'.format(_('Lap'),lap) for lap in range(1, lapsMax+1) \
-					if lap % showLapsFrequency == 0 or lap == 1 or lap == lapsMax] )
+					if (isTimeTrial and isBestNLaps) or lap % showLapsFrequency == 0 or lap == 1 or lap == lapsMax] )
 		
 		self.setTimeCols()
 		
