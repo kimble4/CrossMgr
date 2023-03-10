@@ -430,9 +430,7 @@ def _GetResultsCore( category ):
 							if rr.bests[i]:
 								tCur += t
 								dCur += riderCategory.getDistanceAtLap(i+1) - riderCategory.getDistanceAtLap(i)
-								raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (dCur / (tCur / (60.0*60.0))) )  #fixme?
-							else:
-								raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (dCur / (tCur / (60.0*60.0))) ) 
+							raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (dCur / (tCur / (60.0*60.0))) ) 
 						else:
 							tCur += t
 							raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (riderCategory.getDistanceAtLap(i+1) / (tCur / (60.0*60.0))) )
