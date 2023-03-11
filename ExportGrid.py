@@ -450,7 +450,7 @@ class ExportGrid:
 				uciCodeCol = col
 			elif c == _('NatCode'):
 				natCodeCol = col
-			headers.append( c )
+			headers.append( c.replace(_('CustomCategory'),_('CC')) )
 
 		table = [headers]
 		
@@ -789,7 +789,7 @@ class ExportGrid:
 	
 	def setResultsOneList( self, category = None, getExternalData = True,
 							showLapsFrequency = None, showLapTimes = True,
-							showPrizes = False ):
+							showPrizes = False, onlyBestLaps = False ):
 		''' Format the results into columns. '''
 		self.data = []
 		self.colnames = []
@@ -803,6 +803,10 @@ class ExportGrid:
 		race = Model.race
 		prizes = category.prizes if category else []
 		showPrizes = showPrizes and bool(prizes)
+		
+		isTimeTrial = getattr( race, 'isTimeTrial', False )
+		isBestNLaps = getattr( race, 'isBestNLaps', False )
+		roadRaceFinishTimes = race.roadRaceFinishTimes
 		
 		catDetails = { cd['name']:cd for cd in GetCategoryDetails() }
 		try:
@@ -844,18 +848,22 @@ class ExportGrid:
 		
 		catStr = category.fullname if category else 'All'
 		catData = []
-		if cd and cd.get('raceDistance', None):
-			catData.append( '{:.2f} {}'.format(cd['raceDistance'], cd['distanceUnit']) )
-			if cd.get('lapDistance', None) and cd.get('laps', 0) > 1:
-				if cd.get('firstLapDistance', None) and cd['firstLapDistance'] != cd['lapDistance']:
-					catData.append(
-						'{} {:.2f} {}, {} {} {:.2f} {}'.format(
-								_('1st lap'), cd['firstLapDistance'], cd['distanceUnit'],
-								cd['laps'] - 1, _('more laps of'), cd['lapDistance'], cd['distanceUnit']
+		if cd:
+			if isTimeTrial and isBestNLaps:
+				if cd.get('lapDistance', None) and cd.get('laps', 0) > 1:
+					catData.append( '{} {} {} {} {} {:.2f} {}'.format(_('Best'), cd['bestLaps'], _('from'), cd['laps'], _(' laps of'), cd['lapDistance'], cd['distanceUnit'] ) )
+			elif cd.get('raceDistance', None):
+				catData.append( '{:.2f} {}'.format(cd['raceDistance'], cd['distanceUnit']) )
+				if cd.get('lapDistance', None) and cd.get('laps', 0) > 1:
+					if cd.get('firstLapDistance', None) and cd['firstLapDistance'] != cd['lapDistance']:
+						catData.append(
+							'{} {:.2f} {}, {} {} {:.2f} {}'.format(
+									_('1st lap'), cd['firstLapDistance'], cd['distanceUnit'],
+									cd['laps'] - 1, _('more laps of'), cd['lapDistance'], cd['distanceUnit']
+							)
 						)
-					)
-				else:
-					catData.append( '{} {} {:.2f} {}'.format(cd['laps'], _('laps of'), cd['lapDistance'], cd['distanceUnit']) )
+					else:
+						catData.append( '{} {} {:.2f} {}'.format(cd['laps'], _('laps of'), cd['lapDistance'], cd['distanceUnit']) )
 		if leader.status == Finisher:
 			if getattr(leader, 'speed', None):
 				catData.append( '{}: {} - {}'.format(_('winner'), leaderTime, leader.speed) )
@@ -863,9 +871,7 @@ class ExportGrid:
 				catData.append( '{}: {}'.format(_('winner'), leaderTime) )
 	
 		self.title = '\n'.join( [race.title, Utils.formatDate(race.date), catStr, ', '.join(catData)] )
-		isTimeTrial = getattr( race, 'isTimeTrial', False )
-		roadRaceFinishTimes = race.roadRaceFinishTimes
-
+		
 		infoFields = ReportFields if getExternalData else []
 		infoFieldsPresent = set( infoFields ) & set( dir(leader) )
 		infoFields = [f for f in infoFields if f in infoFieldsPresent]
@@ -891,7 +897,7 @@ class ExportGrid:
 			
 		if leader.lapTimes and showLapTimes:
 			self.colnames.extend( ['{} {}'.format(_('Lap'),lap) for lap in range(1, lapsMax+1) \
-					if lap % showLapsFrequency == 0 or lap == 1 or lap == lapsMax] )
+					if (isTimeTrial and isBestNLaps) or lap % showLapsFrequency == 0 or lap == 1 or lap == lapsMax] )
 		
 		self.setTimeCols()
 		
@@ -953,7 +959,10 @@ class ExportGrid:
 					lap = i + 1
 					if lap % showLapsFrequency == 0 or lap == 1 or lap == lapsMax:
 						try:
-							data[iCol].append( Utils.formatTimeCompressed(t, highPrecision) )
+							if not onlyBestLaps or rr.bests[i]:
+								data[iCol].append( Utils.formatTimeCompressed(t, highPrecision) )
+							else:
+								data[iCol].append( '' )
 							iCol += 1
 							if iCol >= colsMax:
 								break

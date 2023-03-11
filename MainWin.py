@@ -1813,7 +1813,7 @@ class MainWin( wx.Frame ):
 								
 				sheetCur = wb.add_worksheet( ues.getSheetName(catName) )
 				export = ExportGrid()
-				export.setResultsOneList( category, showLapsFrequency = 1 )
+				export.setResultsOneList( category, showLapsFrequency = 1, onlyBestLaps = True )
 				export.toExcelSheetXLSX( formats, sheetCur )
 				
 			race = Model.race
@@ -1878,6 +1878,7 @@ class MainWin( wx.Frame ):
 		payload['reverseDirection']	= getattr(race, 'reverseDirection', False)
 		payload['finishTop']		= getattr(race, 'finishTop', False)
 		payload['isTimeTrial']		= race.isTimeTrial
+		payload['isBestNLaps']		= race.isBestNLaps
 		payload['winAndOut']		= race.winAndOut
 		payload['rfid']				= race.enableJChipIntegration
 		payload['primes']			= getattr(race, 'primes', [])

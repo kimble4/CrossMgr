@@ -286,13 +286,14 @@ class CrossMgrPrintout( wx.Printout ):
 
 	def prepareGrid( self, page ):
 		showLapTimes = (not Model.race) or getattr( Model.race, 'includeLapTimesInPrintout', True )
+		onlyBestLaps = getattr( Model.race, 'isBestNLaps', False )
 		try:
 			with UnstartedRaceWrapper():
 				if self.pageInfo[page][0] == 'Primes':
 					exportGrid = ExportGrid( **Primes.GetGrid() )
 				else:
 					exportGrid = ExportGrid()
-					exportGrid.setResultsOneList( self.pageInfo[page][0], True, showLapTimes=showLapTimes )
+					exportGrid.setResultsOneList( self.pageInfo[page][0], True, showLapTimes=showLapTimes, onlyBestLaps=onlyBestLaps )
 		except KeyError:
 			return ExportGrid()
 		return exportGrid
