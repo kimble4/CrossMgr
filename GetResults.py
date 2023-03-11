@@ -391,27 +391,28 @@ def _GetResultsCore( category ):
 			except (TypeError, AttributeError):
 				pass
 			
-		#compute the best laps for the rider
-		if (category):  #fixme if category is none?
-			needLaps = category.bestLaps
-			times = list(enumerate(rr.lapTimes))
-			bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
-			bestLaps = []
-			lastTime = rider.firstTime if rider.firstTime is not None else 0
-			for time in bestTimes:
-				bestLaps.append(time[0])
-				try: # fudge the lastTime so only 'best' lap times are counted
-					lastTime += time[1]
-				except(TypeError, AttributeError):
-					pass
-			bests = []
-			for lap in range(rr.laps):
-				if lap in bestLaps:
-					bests.append(True)
-				else:
-					bests.append(False)
-			rr.lastTime = lastTime
-			rr.bests = bests
+			#compute the best laps for the rider
+			if category and isBestNLaps:
+				needLaps = category.bestLaps
+				times = list(enumerate(rr.lapTimes))
+				bestTimes = sorted(times, key=lambda tup: tup[1])[:needLaps]
+				bestLaps = []
+				lastTime = rider.firstTime if rider.firstTime is not None else 0
+				for time in bestTimes:
+					bestLaps.append(time[0])
+					try: # fudge the lastTime so only 'best' lap times are counted
+						lastTime += time[1]
+					except(TypeError, AttributeError):
+						pass
+				bests = []
+				for lap in range(rr.laps):
+					if lap in bestLaps:
+						bests.append(True)
+					else:
+						bests.append(False)
+				rr.lastTime = lastTime
+				rr.lastTimeOrig = lastTime
+				rr.bests = bests
 		
 		
 		# Compute the speeds for the rider.
@@ -958,6 +959,7 @@ def GetCategoryDetails( ignoreEmptyCategories=True, publishOnly=False ):
 	
 	# Add the remainder of the categories.
 	lastWaveLaps = 0
+	lastWaveBests = 0
 	lastWaveCat = None
 	lastWaveStartOffset = 0
 	for iSort, cat in enumerate(race.getCategories( startWaveOnly=False, publishOnly=publishOnly ), 1):
@@ -967,16 +969,17 @@ def GetCategoryDetails( ignoreEmptyCategories=True, publishOnly=False ):
 		
 		if cat.catType == cat.CatWave:
 			lastWaveLaps = race.getNumLapsFromCategory(cat)
+			lastWaveBests = cat.bestLaps
 			lastWaveCat = cat
 			lastWaveStartOffset = cat.getStartOffsetSecs()
-			
+		
 		info = {
 			'name'			: cat.fullname,
 			'startOffset'	: lastWaveStartOffset if cat.catType == cat.CatWave or cat.catType == cat.CatComponent else 0.0,
 			'gender'		: getattr( cat, 'gender', 'Open' ),
 			'catType'		: ['Start Wave', 'Component', 'Custom'][cat.catType],
 			'laps'			: lastWaveLaps if unstarted else 0,
-			'bestLaps'		: cat.bestLaps,
+			'bestLaps'		: lastWaveBests,
 			'pos'			: [rr.num for rr in results],
 			'starters'		: sum( 1 for rr in results if rr.status != DNS ),
 			'finishers'		: sum( 1 for rr in results if rr.status == Finisher ),
@@ -1013,9 +1016,12 @@ def GetAnimationData( category=None, getExternalData=False ):
 	ignoreFields = {'pos', 'num', 'gap', 'gapValue', 'laps', 'lapTimes', 'full_name', 'short_name'}
 	statusNames = Model.Rider.statusNames
 	
+	
 	with UnstartedRaceWrapper( getExternalData ):
 		with Model.LockRace() as race:
 			riders = race.riders
+			isTimeTrial = race.isTimeTrial
+			isBestNLaps = race.isBestNLaps
 			for cat in ([category] if category else race.getCategories()):
 				results = GetResults( cat )
 				
@@ -1035,10 +1041,13 @@ def GetAnimationData( category=None, getExternalData=False ):
 						elif a == 'status':
 							info['status'] = statusNames[getattr(rr, a)]
 						elif a == 'lastTime':
-							try:
-								info[a] = rr.raceTimes[-1]
-							except IndexError:
+							if isTimeTrial and isBestNLaps:
 								info[a] = rr.lastTime
+							else:	
+								try:
+									info[a] = rr.raceTimes[-1]
+								except IndexError:
+									info[a] = rr.lastTime
 						else:
 							info[a] = getattr( rr, a )
 					

@@ -450,7 +450,7 @@ class ExportGrid:
 				uciCodeCol = col
 			elif c == _('NatCode'):
 				natCodeCol = col
-			headers.append( c )
+			headers.append( c.replace(_('CustomCategory'),_('CC')) )
 
 		table = [headers]
 		
@@ -851,8 +851,7 @@ class ExportGrid:
 		if cd:
 			if isTimeTrial and isBestNLaps:
 				if cd.get('lapDistance', None) and cd.get('laps', 0) > 1:
-					nrBestLaps = race.getCategoryStartWave( category ).bestLaps
-					catData.append( '{} {} {} {} {} {:.2f} {}'.format(_('Best'), nrBestLaps, _('from'), cd['laps'], _(' laps of'), cd['lapDistance'], cd['distanceUnit'] ) )
+					catData.append( '{} {} {} {} {} {:.2f} {}'.format(_('Best'), cd['bestLaps'], _('from'), cd['laps'], _(' laps of'), cd['lapDistance'], cd['distanceUnit'] ) )
 			elif cd.get('raceDistance', None):
 				catData.append( '{:.2f} {}'.format(cd['raceDistance'], cd['distanceUnit']) )
 				if cd.get('lapDistance', None) and cd.get('laps', 0) > 1:

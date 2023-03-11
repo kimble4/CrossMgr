@@ -1869,6 +1869,7 @@ class MainWin( wx.Frame ):
 		payload['reverseDirection']	= getattr(race, 'reverseDirection', False)
 		payload['finishTop']		= getattr(race, 'finishTop', False)
 		payload['isTimeTrial']		= race.isTimeTrial
+		payload['isBestNLaps']		= race.isBestNLaps
 		payload['winAndOut']		= race.winAndOut
 		payload['rfid']				= race.enableJChipIntegration
 		payload['primes']			= getattr(race, 'primes', [])
