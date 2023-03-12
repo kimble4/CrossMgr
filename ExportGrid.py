@@ -918,9 +918,14 @@ class ExportGrid:
 			if f in ('lastTime', 'lastTimeOrig'):
 				for row, rr in enumerate(results):
 					if rr.status == Finisher:
-						v = getattr( rr, f, 0.0 )
-						ttt = (v - rr.raceTimes[0]) if v and rr.raceTimes else 0.0
-						data[col].append( Utils.formatTimeCompressed(ttt, highPrecision) if ttt > 0.0 else '' )
+						if f == 'lastTime' and isTimeTrial and isBestNLaps:
+							v = getattr( rr, f, 0.0 )
+							ttt = (v - rr.startTime) if v and rr.startTime else 0.0
+							data[col].append( Utils.formatTimeCompressed(ttt, highPrecision) if v > 0.0 else '' )
+						else:
+							v = getattr( rr, f, 0.0 )
+							ttt = (v - rr.raceTimes[0]) if v and rr.raceTimes else 0.0
+							data[col].append( Utils.formatTimeCompressed(ttt, highPrecision) if ttt > 0.0 else '' )
 					else:
 						data[col].append( '' )
 			elif f in ('clockStartTime', 'startTime', 'finishTime'):
