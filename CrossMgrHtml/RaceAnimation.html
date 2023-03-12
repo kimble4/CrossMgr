@@ -3178,13 +3178,20 @@ function RefreshResultsTable()
 			}
 			
 			if( isTimeTrial ) {
-				createTextChild( td = createTD(tr), d['clockStartTime'] ? FormatTime(d['clockStartTime']) : '' );
-				createTextChild( td = createTD(tr), d['startTime'] ? FormatTime(d['startTime']) : '' );
+				createTextChild( td = createTD(tr), d['clockStartTime'] ? FormatTime(d['clockStartTime']) : '' );  //clock start
+				createTextChild( td = createTD(tr), d['startTime'] ? FormatTime(d['startTime']) : '' );  //sw start
 				var ttPenalty = (d['ttPenalty'] ? d['ttPenalty'] : 0.0);
-				createTextChild( td = createTD(tr),
-					(isFinisher && d['startTime'] && d['lastTimeOrig'])
+				if( isBestNLaps ) {
+					createTextChild( td = createTD(tr),
+						(isFinisher && d['startTime'] && d['lastTimeOrig'])
+						? FormatTime(d['startTime']+raceTimes[raceTimes.length -1]-ttPenalty)  //sw stop
+						: '' );
+				} else {
+					createTextChild( td = createTD(tr),
+						(isFinisher && d['startTime'] && d['lastTimeOrig'])
 						? FormatTime(d['startTime']+d['lastTimeOrig']-ttPenalty)
 						: '' );
+				}
 			}
 			
 			if( hasFactor ) {
@@ -3202,6 +3209,8 @@ function RefreshResultsTable()
 				finishTime = FormatTime(d[lastTimeField] - getStartOffset(num) );
 				// console.log( [finishTime, FormatTime(d[lastTimeField]), FormatTime(getStartOffset(num))].join(', ') );
 				if( isTimeTrial ) {
+					if( isBestNLaps )
+						finishTime = FormatTime(d[lastTimeField] - d['startTime']);
 					if( d['ttPenalty'] )
 						finishTime += '*';
 				}
@@ -3214,7 +3223,7 @@ function RefreshResultsTable()
 					}
 				}
 			}
-			createTextChild( td = createTD(tr), finishTime );
+			createTextChild( td = createTD(tr), finishTime );  // time
 			if( finishTime == sameValue )
 				td.className = 'same-value';
 			
