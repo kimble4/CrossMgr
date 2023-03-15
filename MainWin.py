@@ -85,7 +85,7 @@ from BibEnter			import BibEnter
 from BackgroundJobMgr	import BackgroundJobMgr
 from Restart			import Restart
 from ReissueBibs	 	import ReissueBibsDialog
-from GiveDNF 			import GiveDNFDialog
+from GiveTimes 			import GiveTimesDialog
 from FinishLynx			import FinishLynxDialog
 import BatchPublishAttrs
 import Model
@@ -572,8 +572,8 @@ class MainWin( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.menuReissueBibs, item )
 		
 		self.editMenu.AppendSeparator()
-		item = self.editMenu.Append( wx.ID_ANY, _('&Give DNF riders a finish time...'), _('Give DNF riders a finish time...') )
-		self.Bind( wx.EVT_MENU, self.menuGiveDNF, item )
+		item = self.editMenu.Append( wx.ID_ANY, _('&Give unfinished riders a finish time...'), _('Give unfinished riders a finish time...') )
+		self.Bind( wx.EVT_MENU, self.menuGiveTimes, item )
 		
 		self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
 
@@ -1158,14 +1158,14 @@ class MainWin( wx.Frame ):
 			dlg.ShowModal()
 			
 	@logCall
-	def menuGiveDNF( self, event ):
+	def menuGiveTimes( self, event ):
 		with Model.LockRace() as race:
 			if not race:
 				return
 			categories = race.getCategoriesInUse()
 			if not categories:
 				return
-		with GiveDNFDialog(self) as dlg:
+		with GiveTimesDialog(self) as dlg:
 			dlg.ShowModal()
 	
 	def menuShowHighPrecisionTimes( self, event ):
