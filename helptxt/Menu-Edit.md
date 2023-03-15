@@ -101,3 +101,12 @@ __Reissue Bib Numbers__ to the rescue.  It takes a list of the Old and New bib n
 
 It is important for the Excel file not to be open in Excel (otherwise this will cause a file sharing error).
 
+## Give unfinshed riders a finish time...
+
+This feature allows you to allocate a 'virtual' finish time to DNF or DNS riders.  This gives them credit for the distance they were able to cover during the race.
+
+Times recorded after the rider's DNF time will be deleted, and a new final time of the specified value will be added.
+
+Use with caution: There is no undo.  It is recommended that you make a backup of the race file before using this.
+
+This may have unexpected effects if the new finish time is close to a previous lap time - you should inspect the rider's times after using this feature.
