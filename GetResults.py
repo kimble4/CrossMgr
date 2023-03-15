@@ -511,9 +511,10 @@ def _GetResultsCore( category ):
 		# if gapValue is negative, it is laps down.  Otherwise, it is seconds.
 		rr.gapValue = 0
 		if (isTimeTrial and isBestNLaps):
-			rr.gap = (
-				Utils.formatTimeGap( TimeDifference(rr.lastTime - rr.startTime, leader.lastTime - leader.startTime, highPrecision), highPrecision ) )
-			rr.gapValue = max(0.0, (rr.lastTime - rr.startTime) - (leader.lastTime - leader.startTime))
+			startTime = rr.startTime if rr.startTime else 0
+			leaderStartTime = leader.startTime if leader.startTime else 0
+			rr.gap = ( Utils.formatTimeGap( TimeDifference(rr.lastTime - startTime, leader.lastTime - leaderStartTime, highPrecision), highPrecision ) )
+			rr.gapValue = max(0.0, (rr.lastTime - startTime) - (leader.lastTime - leaderStartTime))
 		elif rr.laps < leader.laps:
 			rr._setLapsDown( leader.laps - rr.laps )
 		elif (winAndOut or rr != leader) and not (isTimeTrial and rr.lastTime == leader.lastTime):
@@ -655,9 +656,10 @@ def GetNonWaveCategoryResults( category ):
 			if rr.status == Finisher:
 				rr.pos = '{}'.format( pos + 1 ) if not getattr(rr, 'relegated', False) else '{} {}'.format(pos + 1, _('REL'))
 				if (isTimeTrial and isBestNLaps):
-					rr.gap = (
-						Utils.formatTimeGap( TimeDifference(rr.lastTime - rr.startTime, leader.lastTime - leader.startTime, highPrecision), highPrecision ) )
-					rr.gapValue = max(0.0, (rr.lastTime - rr.startTime) - (leader.lastTime - leader.startTime))
+					startTime = rr.startTime if rr.startTime else 0
+					leaderStartTime = leader.startTime if leader.startTime else 0
+					rr.gap = ( Utils.formatTimeGap( TimeDifference(rr.lastTime - startTime, leader.lastTime - leaderStartTime, highPrecision), highPrecision ) )
+					rr.gapValue = max(0.0, (rr.lastTime - startTime) - (leader.lastTime - leaderStartTime))
 				elif rr.laps != leader.laps:
 					lapsDown = leader.laps - rr.laps
 					rr.gap = '-{} {}'.format(lapsDown, _('laps') if lapsDown > 1 else _('lap'))
