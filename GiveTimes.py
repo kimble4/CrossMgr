@@ -30,14 +30,22 @@ def GiveTimes( status=None, time=None ):
 						race.setChanged()
 				rider.setStatus( Model.Rider.Finisher )
 				print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
-				race.numTimeInfo.add( bib, time, Model.NumTimeInfo.Edit )
-				race.addTime( bib, time )
-				race.setChanged()
+				if len(rider.times) > 0:
+					lastLapTime = rider.times[-1]
+					race.numTimeInfo.change( bib, lastLapTime, time )			# Change entry time (in rider time).
+					race.deleteTime( bib, lastLapTime )							# Delete time (in rider time).
+					race.addTime( bib, rider.riderTimeToRaceTime(time) )		# Add time (in race time).
+					race.setChanged()
+				else:
+					race.numTimeInfo.add( bib, time )
+					race.addTime( bib, time + ((rider.firstTime or 0.0) if race.isTimeTrial else 0.0) )
+					race.setChanged()
 				for l, t in enumerate(rider.times):
-					if t == time:
-						race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
-						race.setChanged()
-						break
+						if t == time:
+							print('Setting lap note')
+							race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
+							race.setChanged()
+							break
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 
@@ -58,7 +66,7 @@ class GiveTimesDialog( wx.Dialog ):
 		explain.append( wx.StaticText( self, label=_("Be careful!  There is no Undo.") ) )
 		explain.append( wx.StaticText( self, label=_("This deletes times after the status time of riders who did not finish the race,") ) )
 		explain.append( wx.StaticText( self, label=_("gives them a final lap time as specified below, and sets their status to 'Finisher'.") ) )
-		explain.append( wx.StaticText( self, label=_("Their average speed and ranked position will therefore reflect the number of laps that they were") ) )
+		explain.append( wx.StaticText( self, label=_("Their average speed and ranked position should therefore reflect the number of laps that they were") ) )
 		explain.append( wx.StaticText( self, label=_("able to complete successfully.") ) )
 		
 		fgs = wx.FlexGridSizer(vgap=4, hgap=4, rows=0, cols=2)
