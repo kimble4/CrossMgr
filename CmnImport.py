@@ -12,104 +12,83 @@ from ReadSignOnSheet import GetTagNums
 from Undo		import undo
 from HighPrecisionTimeEdit import HighPrecisionTimeEdit
 from ModuleUnpickler import ModuleUnpickler
+from GetResults import GetEntriesForNum
 
 
-def DoCmnImport(	fname, parseTagTime, startTime = None,
-					clearExistingData = True, StartWaveOffset = None ):
-	
+
+def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset = None ):
 	errors = []
 
 	race = Model.race
 	if race and race.isRunning():
-		Utils.MessageOK( Utils.getMainWin(), '\n\n'.join( [_('Cannot Import into a Running Race.'), _('Wait until you have a complete data set, then import the full data into a New race.')] ),
-						title = _('Cannot Import into Running Race'), iconMask = wx.ICON_ERROR )
+		Utils.MessageOK( Utils.getMainWin(), _('Cannot Import into a Running Race.'), title = _('Cannot Import into Running Race'), iconMask = wx.ICON_ERROR )
 		return
-
-	# If startTime is None, the first time will be taken as the start time.
-	# All first time's for each rider will then be ignored.
 	
-	if StartWaveOffset is None:
-		StartWaveOffset = datetime.timedelta(seconds=0.0)
+	if importRace is None:
+		errors.insert( 0, _('No race to import.  Import aborted.') )
+		return errors
+	
+	if startWaveOffset is None:
+		startWaveOffset = datetime.timedelta(seconds=0.0)
 	
 	raceStart = None
 	
-	#with open(fname) as f, Model.LockRace() as race:
-		#year, month, day = [int(n) for n in race.date.split('-')]
-		#raceDate = datetime.date( year=year, month=month, day=day )
-		#JChip.reset( raceDate )
-		#if startTime:
-			#raceStart = datetime.datetime.combine( raceDate, startTime )
-			#race.resetStartClockOnFirstTag = False
-		#else:
-			#race.resetStartClockOnFirstTag = True
+	with Model.LockRace() as race:
 		
-		#tagNums = GetTagNums( True )
-		#race.missingTags = set()
+		if clearExistingData:
+			race.clearAllRiderTimes()
 		
-		#tFirst, tLast = None, None
-		#lineNo = 0
-		#riderRaceTimes = {}
-		#for line in f:
-			#lineNo += 1
-			
-			#line = line.strip()
-			#if not line or line[0] in '#;':
-				#continue
-			
-			#tag, t = parseTagTime( line, lineNo, errors )
-			#if tag is None:
-				#continue
-			#if raceStart and t < raceStart:
-				#errors.append( '{} {}: {} ({})'.format(_('line'), lineNo, _('time is before race start'), t.strftime('%H:%M:%S.%f')) )
-				#continue
-			
-			#tag = tag.lstrip('0').upper()
-			#t += StartWaveOffset
-			
-			#if not tFirst:
-				#tFirst = t
-			#tLast = t
-			#try:
-				#num = tagNums[tag]
-				#riderRaceTimes.setdefault( num, [] ).append( t )
-			#except KeyError:
-				#if tag not in race.missingTags:
-					#errors.append( '{} {}: {}: {}'.format(_('line'), lineNo, _('tag missing from Excel sheet'), tag) )
-					#race.missingTags.add( tag )
-				#continue
-
-		#------------------------------------------------------------------------------
-		#Populate the race with the times.
-		#if not riderRaceTimes:
-			#errors.insert( 0, _('No matching tags found in Excel link.  Import aborted.') )
-			#return errors
+		#fixme need to do something with this
+		lapNotes = getattr(importRace, 'lapNote', {})
+		print(lapNotes)
 		
-		#Put all the rider times into the race.
-		#if clearExistingData:
-			#race.clearAllRiderTimes()
-			
-		#if not raceStart:
-			#raceStart = tFirst
-			
-		#race.startTime = raceStart
+		updateWaveCategories = []
 		
-		#for num, lapTimes in riderRaceTimes.items():
-			#for t in lapTimes:
-				#raceTime = (t - raceStart).total_seconds()
-				#if not race.hasTime(num, raceTime):
-					#race.addTime( num, raceTime )
+		for bib in importRace.riders:
+			rider = importRace.getRider( bib )
+			print(rider)
+			if rider.status == Model.Rider.Finisher:
+				waveCategory = race.getCategory( bib )
+				raceLaps = importRace.getCategory(bib).numLaps
+				bestLaps = importRace.getCategory(bib).bestLaps
+				raceMinutes = importRace.getCategory(bib).raceMinutes
+				if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
+					raceMinutes = importRace.minutes
+				if (waveCategory, raceLaps, bestLaps, raceMinutes) not in updateWaveCategories:
+					updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes) )
+			startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
+			unfilteredTimes = [t for t in rider.times if t > startOffset]
+			for time in unfilteredTimes:
+				if not race.hasTime(bib, time + startWaveOffset):
+					race.addTime( bib, time + startWaveOffset )
+			existingRaceRider = race.getRider(bib)
+			tStatus = rider.tStatus
+			if tStatus:
+				tStatus += startWaveOffset
+			existingRaceRider.setStatus( rider.status, tStatus )
+			existingRaceRider.relegatedPosition = rider.relegatedPosition
+			existingRaceRider.autocorrectLaps = rider.autocorrectLaps
+			existingRaceRider.alwaysFilterMinPossibleLapTime = rider.alwaysFilterMinPossibleLapTime
+			tFirst = rider.firstTime
+			if tFirst:
+				tFirst += startWaveOffset
+			existingRaceRider.firstTime = tFirst
 			
-		#if tLast:
-			#race.finishTime = tLast + datetime.timedelta( seconds = 0.0001 )
-			
-		#Figure out the race minutes from the recorded laps.
-		#if riderRaceTimes:
-			#lapNumMax = max( len(ts) for ts in riderRaceTimes.values() )
-			#if lapNumMax > 0:
-				#tElapsed = min( ts[-1] for ts in riderRaceTimes.values() if len(ts) == lapNumMax )
-				#raceMinutes = int((tElapsed - raceStart).total_seconds() / 60.0) + 1
-				#race.minutes = raceMinutes
+		if race.startTime is None:
+			race.startTime = importRace.startTime
+		if race.finishTime is None or importRace.finishTime > race.finishTime:
+			race.finishTime = importRace.finishTime
 		
+		for category, laps, best, raceMinutes in updateWaveCategories:
+			t = category.getStartOffsetSecs()
+			t += startWaveOffset
+			category.startOffset = Utils.SecondsToStr(t)
+			category.numLaps = laps
+			category._bestLaps = best
+			category.raceMinutes = raceMinutes
+		race.adjustAllCategoryWaveNumbers()
+		race.setChanged()
+		print ('Updated categories: ' + str(updateWaveCategories))
 	return errors
 
 #------------------------------------------------------------------------------------------------
@@ -126,9 +105,10 @@ class CmnImportDialog( wx.Dialog ):
 			'',
 			_('\'Adjust start waves\' will reflect their actual time,'),
 			_('otherwise imported waves will start simultaneously with existing waves.'),
+			_('(Beware of the Blinovitch Limitation Effect!)'),
 			'',
 			_('Warning: Importing from another race could replace all the data in this race.'),
-			_('Proceed with caution.'),
+			_('Make a backup and proceed with caution.'),
 		]
 		intro = '\n'.join(todoList)
 		
@@ -266,7 +246,7 @@ class CmnImportDialog( wx.Dialog ):
 					return
 				if importRace:
 					self.importRace = importRace
-					print('Successfully loaded race')
+					#print('Successfully loaded race')
 					seconds = importRace.startTime.hour * 3600 + importRace.startTime.minute * 60 + importRace.startTime.second + importRace.startTime.microsecond/1000000 
 					self.raceStartTime.SetSeconds(seconds)
 					if Model.race.startTime:
@@ -296,28 +276,25 @@ class CmnImportDialog( wx.Dialog ):
 			
 		clearExistingData = (self.importPolicy.GetSelection() == 1)
 		startWaveOffset = self.startWaveOffset.GetSeconds()
-		print(startWaveOffset)
 		
 		if startWaveOffset < 0:
 			Utils.MessageOK( self, 'Start wave offset is negative.  Perfrom merge from the earlier race!', title = _('Offset is negative'), iconMask = wx.ICON_ERROR)
 			return
 		
-		# Get the start time.
-		if not clearExistingData:
-			if not Model.race or not Model.race.startTime:
-				Utils.MessageOK( self,
-					'\n\n'.join( [_('Cannot Merge into Unstarted Race.'), _('Clear All Existing Data is allowed.')] ),
-					title = _('Import Merge Failed'), iconMask = wx.ICON_ERROR
-				)
-				return
-			startTime = Model.race.startTime.time()
-		else:
-			startTime = None
+		#Get the start time.
+		#if not clearExistingData:
+			#if not Model.race or not Model.race.startTime:
+				#Utils.MessageOK( self,
+					#'\n\n'.join( [_('Cannot Merge into Unstarted Race.'), _('Clear All Existing Data is allowed.')] ),
+					#title = _('Import Merge Failed'), iconMask = wx.ICON_ERROR
+				#)
+				#return
+			#startTime = Model.race.startTime.time()
+		#else:
+			#startTime = None
 			
 		undo.pushState()
-		#errors = DoChipImport(	fname, self.parseTagTime, startTime,
-								#clearExistingData,
-								#datetime.timedelta(seconds = StartWaveOffset) )
+		errors = DoCmnImport( self.importRace, clearExistingData, startWaveOffset )
 		
 		if errors:
 			# Copy the tags to the clipboard.
