@@ -29,6 +29,7 @@ def GiveTimes( status=None, time=None ):
 						race.deleteTime( bib, t )
 						race.setChanged()
 				rider.setStatus( Model.Rider.Finisher )
+				time += startOffset
 				print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
 				if len(rider.times) > 0:
 					lastLapTime = rider.times[-1]
@@ -137,8 +138,20 @@ class GiveTimesDialog( wx.Dialog ):
 		if not race:
 			return
 		self.race = race
-		self.lastFinisherTime = GetResults.GetLastFinisherTime()
-		self.leaderTime = GetResults.GetLeaderFinishTime()
+		#fixme need to subtract start time
+		results = GetResults.GetResultsWithData( None )
+		#self.lastFinisherTime = GetResults.GetLastFinisherTime()
+		lastTime = 0
+		for r in results:
+			if (r.status == Model.Rider.Finisher):
+				t = r.lastTime - r.raceTimes[0]
+				if t > lastTime:
+					lastTime = t
+		self.lastFinisherTime = lastTime
+		if results and results[0].status == Model.Rider.Finisher:
+			self.leaderTime = results[0].lastTime - results[0].raceTimes[0]
+		else:
+			self.leaderTime = 0
 		self.useLastFinisherTime.SetValue(True)
 		self.timeToUse.SetSeconds( self.lastFinisherTime )
 		self.statusOption.SetSelection( 1 if self.status == Model.Rider.DNS else 0 )
