@@ -38,11 +38,8 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 		if clearExistingData:
 			race.clearAllRiderTimes()
 		
-		#fixme need to do something with this
-		lapNotes = getattr(importRace, 'lapNote', {})
-		print(lapNotes)
-		
 		updateWaveCategories = []
+		numTimeInfo = importRace.numTimeInfo
 		
 		for bib in importRace.riders:
 			rider = importRace.getRider( bib )
@@ -73,6 +70,9 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			if tFirst:
 				tFirst += startWaveOffset
 			existingRaceRider.firstTime = tFirst
+			info = numTimeInfo.getNumInfo( bib )
+			for t in info:
+				race.numTimeInfo.addData( bib, t + startWaveOffset, info[t] )
 			
 		if race.startTime is None:
 			race.startTime = importRace.startTime
@@ -86,9 +86,20 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			category.numLaps = laps
 			category._bestLaps = best
 			category.raceMinutes = raceMinutes
+		print ('Updated categories: ' + str(updateWaveCategories))
+		
+		lapNotes = getattr(importRace, 'lapNote', {} )
+		race.lapNote = getattr( race, 'lapNote', {} )
+		for bib, lap in lapNotes:
+			print('Setting lapnote: ' + str(bib) + ', ' + str(lap) + ',  ' + lapNotes[(bib, lap)])
+			race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
+		
 		race.adjustAllCategoryWaveNumbers()
 		race.setChanged()
-		print ('Updated categories: ' + str(updateWaveCategories))
+		
+	Utils.refresh()
+	Utils.refreshForecastHistory()
+		
 	return errors
 
 #------------------------------------------------------------------------------------------------
