@@ -138,9 +138,7 @@ class GiveTimesDialog( wx.Dialog ):
 		if not race:
 			return
 		self.race = race
-		#fixme need to subtract start time
 		results = GetResults.GetResultsWithData( None )
-		#self.lastFinisherTime = GetResults.GetLastFinisherTime()
 		lastTime = 0
 		for r in results:
 			if (r.status == Model.Rider.Finisher):
