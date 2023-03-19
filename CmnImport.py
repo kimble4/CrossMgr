@@ -89,12 +89,10 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 		#print ('Updated categories: ' + str(updateWaveCategories))
 		
 		lapNotes = getattr(importRace, 'lapNote', {} )
-		print( lapNotes )
 		race.lapNote = getattr( race, 'lapNote', {} )
 		for bib, lap in lapNotes:
 			print('Setting lapnote: ' + str(bib) + ', ' + str(lap) + ',  ' + lapNotes[(bib, lap)])
 			race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
-		print (race.lapNote)
 		race.adjustAllCategoryWaveNumbers()
 		race.setChanged()
 		

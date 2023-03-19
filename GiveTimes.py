@@ -28,31 +28,29 @@ def GiveTimes( status=None, time=None ):
 						race.numTimeInfo.delete( bib, t )
 						race.deleteTime( bib, t )
 						race.setChanged()
+				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've deleted times
 				rider.setStatus( Model.Rider.Finisher )
-				time += startOffset
-				#print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
-				if len(rider.times) > 0:
-					lastLapTime = rider.times[-1]
-					race.numTimeInfo.change( bib, lastLapTime, time )			# Change entry time (in rider time).
+				#print('Adding finish time ' + Utils.formatTime(time + startOffset) + ' for rider ' + str(bib))
+				if len(unfilteredTimes) > 0:
+					lastLapTime = unfilteredTimes[-1]
+					race.numTimeInfo.change( bib, lastLapTime, time + startOffset)			# Change entry time (in rider time).
 					race.deleteTime( bib, lastLapTime )							# Delete time (in rider time).
-					race.addTime( bib, rider.riderTimeToRaceTime(time) )		# Add time (in race time).
+					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )		# Add time (in race time).
 					race.setChanged()
 				else:
-					#race.numTimeInfo.add( bib, startOffset )
-					race.numTimeInfo.add( bib, time )
-					#race.addTime( bib, startOffset )
-					race.addTime( bib, rider.riderTimeToRaceTime(time) )
+					race.numTimeInfo.add( bib, time + startOffset )
+					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )
 					race.setChanged()
+				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've added times
 				race.lapNote = getattr( race, 'lapNote', {} )
-				for l, t in enumerate(rider.times):
-					if t == time:
+				for l, t in enumerate(unfilteredTimes):
+					if t == time + startOffset:
 						if l == 0:
 							l += 1
-						print('Setting lap note')
+						#print('Setting lap note')
 						race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
 						race.setChanged()
 						break
-				print( race.lapNote )	
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 
