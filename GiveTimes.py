@@ -24,13 +24,13 @@ def GiveTimes( status=None, time=None ):
 				unfilteredTimes = [t for t in rider.times if t > startOffset]
 				for t in unfilteredTimes:
 					if rider.tStatus and t > rider.tStatus:
-						print('Deleting time ' + Utils.formatTime(t) + ' for rider ' + str(bib))
+						#print('Deleting time ' + Utils.formatTime(t) + ' for rider ' + str(bib))
 						race.numTimeInfo.delete( bib, t )
 						race.deleteTime( bib, t )
 						race.setChanged()
 				rider.setStatus( Model.Rider.Finisher )
 				time += startOffset
-				print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
+				#print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
 				if len(rider.times) > 0:
 					lastLapTime = rider.times[-1]
 					race.numTimeInfo.change( bib, lastLapTime, time )			# Change entry time (in rider time).
@@ -38,15 +38,21 @@ def GiveTimes( status=None, time=None ):
 					race.addTime( bib, rider.riderTimeToRaceTime(time) )		# Add time (in race time).
 					race.setChanged()
 				else:
+					#race.numTimeInfo.add( bib, startOffset )
 					race.numTimeInfo.add( bib, time )
-					race.addTime( bib, time + ((rider.firstTime or 0.0) if race.isTimeTrial else 0.0) )
+					#race.addTime( bib, startOffset )
+					race.addTime( bib, rider.riderTimeToRaceTime(time) )
 					race.setChanged()
+				race.lapNote = getattr( race, 'lapNote', {} )
 				for l, t in enumerate(rider.times):
-						if t == time:
-							print('Setting lap note')
-							race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
-							race.setChanged()
-							break
+					if t == time:
+						if l == 0:
+							l += 1
+						print('Setting lap note')
+						race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
+						race.setChanged()
+						break
+				print( race.lapNote )	
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 

@@ -43,7 +43,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 		
 		for bib in importRace.riders:
 			rider = importRace.getRider( bib )
-			print(rider)
+			#print(rider)
 			if rider.status == Model.Rider.Finisher:
 				waveCategory = race.getCategory( bib )
 				raceLaps = importRace.getCategory(bib).numLaps
@@ -86,14 +86,15 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			category.numLaps = laps
 			category._bestLaps = best
 			category.raceMinutes = raceMinutes
-		print ('Updated categories: ' + str(updateWaveCategories))
+		#print ('Updated categories: ' + str(updateWaveCategories))
 		
 		lapNotes = getattr(importRace, 'lapNote', {} )
+		print( lapNotes )
 		race.lapNote = getattr( race, 'lapNote', {} )
 		for bib, lap in lapNotes:
 			print('Setting lapnote: ' + str(bib) + ', ' + str(lap) + ',  ' + lapNotes[(bib, lap)])
 			race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
-		
+		print (race.lapNote)
 		race.adjustAllCategoryWaveNumbers()
 		race.setChanged()
 		
