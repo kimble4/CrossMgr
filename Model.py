@@ -1047,7 +1047,7 @@ class NumTimeInfo:
 		except KeyError:
 			pass
 		
-	def add( self, num, t, reason = None):
+	def add( self, num, t, reason = None ):
 		self._setData( num, t, reason if reason is not None else NumTimeInfo.Add )
 		
 	def change( self, num, tOld, tNew, reason = None ):

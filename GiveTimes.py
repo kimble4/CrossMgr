@@ -19,6 +19,7 @@ def GiveTimes( status=None, time=None ):
 		riders = race.getRiderNums()
 		for bib in riders:
 			rider = race.getRider(bib)
+			waveCategory = race.getCategory( bib )
 			if rider.status == status:
 				startOffset = race.getStartOffset( bib )				# 0.0 if isTimeTrial.
 				unfilteredTimes = [t for t in rider.times if t > startOffset]
@@ -27,7 +28,7 @@ def GiveTimes( status=None, time=None ):
 						#print('Deleting time ' + Utils.formatTime(t) + ' for rider ' + str(bib))
 						race.numTimeInfo.delete( bib, t )
 						race.deleteTime( bib, t )
-						race.setChanged()
+				race.setChanged()
 				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've deleted times
 				rider.setStatus( Model.Rider.Finisher )
 				#print('Adding finish time ' + Utils.formatTime(time + startOffset) + ' for rider ' + str(bib))
@@ -36,19 +37,25 @@ def GiveTimes( status=None, time=None ):
 					race.numTimeInfo.change( bib, lastLapTime, time + startOffset)			# Change entry time (in rider time).
 					race.deleteTime( bib, lastLapTime )							# Delete time (in rider time).
 					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )		# Add time (in race time).
-					race.setChanged()
 				else:
 					race.numTimeInfo.add( bib, time + startOffset )
 					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )
-					race.setChanged()
+					rider.autocorrectLaps = False  #we want one lap only
+				race.setChanged()
 				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've added times
+				entries = GetResults.GetEntriesForNum(waveCategory, bib) if rider.autocorrectLaps else rider.interpolate()
+				entries = [e for e in entries if e.t > startOffset]		# For time trials, e.t is relative to the the rider's firstTime.  Eg. e.t + rider.firstTime == raceTime.
+				allTimes = set( e.t for e in entries )
+				for t in unfilteredTimes:  
+					allTimes.add(t)  #union of filtered, real and interpolated lap times
 				race.lapNote = getattr( race, 'lapNote', {} )
-				for l, t in enumerate(unfilteredTimes):
+				for l, t in enumerate(sorted(allTimes)):
 					if t == time + startOffset:
 						if l == 0:
 							l += 1
-						#print('Setting lap note')
-						race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
+						note = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
+						#print('Setting note for lap ' + str(l) + ' time=' + Utils.formatTime(t) +', \"' + note + '\"')
+						race.lapNote[(bib, l)] = note
 						race.setChanged()
 						break
 	Utils.refresh()
