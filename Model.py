@@ -1035,6 +1035,9 @@ class NumTimeInfo:
 	def _setData( self, num, t, reason ):
 		self.info.setdefault(num,{})[t]  = (reason, CurrentUser, datetime.datetime.now())
 		
+	def addData( self, num, t, info ):
+		self.info.setdefault(num,{})[t]  = info
+		
 	def _delData( self, num, t ):
 		try:
 			j = self.info[num]

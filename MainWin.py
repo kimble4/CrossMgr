@@ -99,6 +99,7 @@ import ImpinjImport
 import IpicoImport
 import OutputStreamer
 import GpxImport
+import CmnImport
 from Undo import undo
 from Printing			import CrossMgrPrintout, CrossMgrPrintoutPNG, CrossMgrPrintoutPDF, CrossMgrPodiumPrintout, getRaceCategories
 from Printing			import ChoosePrintCategoriesDialog, ChoosePrintCategoriesPodiumDialog
@@ -635,6 +636,14 @@ class MainWin( wx.Frame ):
 		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Import rider's times from GPX..."), _("Import Rider's Rimes from GPX"),
 			Utils.GetPngBitmap('gps-icon.png') )
 		self.Bind(wx.EVT_MENU, self.menuImportRiderTimesGpx, item )
+		
+		#-----------------------------------------------------------------------
+		
+		self.dataMgmtMenu.AppendSeparator()
+		
+		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Import from another CrossMgr race..."), _("Import from another rossMgr race"),
+			Utils.GetPngBitmap('CrossMgr.png') )
+		self.Bind(wx.EVT_MENU, self.menuCmnImport, item )
 		
 		#-----------------------------------------------------------------------
 		
@@ -2437,6 +2446,21 @@ class MainWin( wx.Frame ):
 			#wizard has been cancelled
 			pass
 		self.refresh()
+		
+	def menuCmnImport( self, event ):
+		correct, reason = JChipSetup.CheckExcelLink()
+		explain = '{}\n\n{}'.format(
+			_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
+			_('See documentation for details.')
+		)
+		if not correct:
+			Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
+									title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
+			return
+			
+		with CmnImport.CmnImportDialog(self) as dlg:
+			dlg.ShowModal()
+		wx.CallAfter( self.refresh )
 		
 	@logCall
 	def menuExportGpx( self, event=None ):

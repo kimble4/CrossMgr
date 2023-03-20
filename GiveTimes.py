@@ -19,33 +19,45 @@ def GiveTimes( status=None, time=None ):
 		riders = race.getRiderNums()
 		for bib in riders:
 			rider = race.getRider(bib)
+			waveCategory = race.getCategory( bib )
 			if rider.status == status:
 				startOffset = race.getStartOffset( bib )				# 0.0 if isTimeTrial.
 				unfilteredTimes = [t for t in rider.times if t > startOffset]
 				for t in unfilteredTimes:
 					if rider.tStatus and t > rider.tStatus:
-						print('Deleting time ' + Utils.formatTime(t) + ' for rider ' + str(bib))
+						#print('Deleting time ' + Utils.formatTime(t) + ' for rider ' + str(bib))
 						race.numTimeInfo.delete( bib, t )
 						race.deleteTime( bib, t )
-						race.setChanged()
+				race.setChanged()
+				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've deleted times
 				rider.setStatus( Model.Rider.Finisher )
-				print('Adding finish time ' + Utils.formatTime(time) + ' for rider ' + str(bib))
-				if len(rider.times) > 0:
-					lastLapTime = rider.times[-1]
-					race.numTimeInfo.change( bib, lastLapTime, time )			# Change entry time (in rider time).
+				#print('Adding finish time ' + Utils.formatTime(time + startOffset) + ' for rider ' + str(bib))
+				if len(unfilteredTimes) > 0:
+					lastLapTime = unfilteredTimes[-1]
+					race.numTimeInfo.change( bib, lastLapTime, time + startOffset)			# Change entry time (in rider time).
 					race.deleteTime( bib, lastLapTime )							# Delete time (in rider time).
-					race.addTime( bib, rider.riderTimeToRaceTime(time) )		# Add time (in race time).
-					race.setChanged()
+					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )		# Add time (in race time).
 				else:
-					race.numTimeInfo.add( bib, time )
-					race.addTime( bib, time + ((rider.firstTime or 0.0) if race.isTimeTrial else 0.0) )
-					race.setChanged()
-				for l, t in enumerate(rider.times):
-						if t == time:
-							print('Setting lap note')
-							race.lapNote[(bib, l)] = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
-							race.setChanged()
-							break
+					race.numTimeInfo.add( bib, time + startOffset )
+					race.addTime( bib, rider.riderTimeToRaceTime(time + startOffset) )
+					rider.autocorrectLaps = False  #we want one lap only
+				race.setChanged()
+				unfilteredTimes = [t for t in rider.times if t > startOffset]  #refresh this as we've added times
+				entries = GetResults.GetEntriesForNum(waveCategory, bib) if rider.autocorrectLaps else rider.interpolate()
+				entries = [e for e in entries if e.t > startOffset]		# For time trials, e.t is relative to the the rider's firstTime.  Eg. e.t + rider.firstTime == raceTime.
+				allTimes = set( e.t for e in entries )
+				for t in unfilteredTimes:  
+					allTimes.add(t)  #union of filtered, real and interpolated lap times
+				race.lapNote = getattr( race, 'lapNote', {} )
+				for l, t in enumerate(sorted(allTimes)):
+					if t == time + startOffset:
+						if l == 0:
+							l += 1
+						note = 'Virtual finish for ' + _(Model.Rider.statusNames[status]) + ' rider'
+						#print('Setting note for lap ' + str(l) + ' time=' + Utils.formatTime(t) +', \"' + note + '\"')
+						race.lapNote[(bib, l)] = note
+						race.setChanged()
+						break
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 
@@ -137,8 +149,18 @@ class GiveTimesDialog( wx.Dialog ):
 		if not race:
 			return
 		self.race = race
-		self.lastFinisherTime = GetResults.GetLastFinisherTime()
-		self.leaderTime = GetResults.GetLeaderFinishTime()
+		results = GetResults.GetResultsWithData( None )
+		lastTime = 0
+		for r in results:
+			if (r.status == Model.Rider.Finisher):
+				t = r.lastTime - r.raceTimes[0]
+				if t > lastTime:
+					lastTime = t
+		self.lastFinisherTime = lastTime
+		if results and results[0].status == Model.Rider.Finisher:
+			self.leaderTime = results[0].lastTime - results[0].raceTimes[0]
+		else:
+			self.leaderTime = 0
 		self.useLastFinisherTime.SetValue(True)
 		self.timeToUse.SetSeconds( self.lastFinisherTime )
 		self.statusOption.SetSelection( 1 if self.status == Model.Rider.DNS else 0 )
