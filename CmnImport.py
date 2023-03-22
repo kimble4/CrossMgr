@@ -47,13 +47,15 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			#print(rider)
 			if rider.status == Model.Rider.Finisher:
 				waveCategory = race.getCategory( bib )
-				raceLaps = importRace.getCategory(bib).numLaps
-				bestLaps = importRace.getCategory(bib).bestLaps
-				raceMinutes = importRace.getCategory(bib).raceMinutes
-				if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
-					raceMinutes = importRace.minutes
-				if (waveCategory, raceLaps, bestLaps, raceMinutes) not in updateWaveCategories:
-					updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes) )
+				if waveCategory:
+					raceLaps = importRace.getCategory(bib).numLaps
+					bestLaps = importRace.getCategory(bib).bestLaps
+					raceMinutes = importRace.getCategory(bib).raceMinutes
+					if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
+						raceMinutes = importRace.minutes
+					lappedRidersMustContinue = importRace.getCategory(bib).lappedRidersMustContinue
+					if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) not in updateWaveCategories:
+						updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) )
 			startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
 			unfilteredTimes = [t for t in rider.times if t > startOffset]
 			for time in unfilteredTimes:
@@ -83,13 +85,14 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			race.minPossibleLapTime = importRace.minPossibleLapTime
 			minPossibleLapTimeChanged = True
 		
-		for category, laps, best, raceMinutes in updateWaveCategories:
+		for category, laps, best, raceMinutes, lappedRidersMustContinue in updateWaveCategories:
 			t = category.getStartOffsetSecs()
 			t += startWaveOffset
 			category.startOffset = Utils.SecondsToStr(t)
 			category.numLaps = laps
 			category._bestLaps = best
 			category.raceMinutes = raceMinutes
+			category.lappedRidersMustContinue = lappedRidersMustContinue
 		#print ('Updated categories: ' + str(updateWaveCategories))
 		
 		lapNotes = getattr(importRace, 'lapNote', {} )
@@ -116,6 +119,7 @@ class CmnImportDialog( wx.Dialog ):
 			'',
 			_('You must first "New" a race and fill in the details.'),
 			_('You must also prepare your Sign-On Excel Sheet and link the sheet to the race.'),
+			_('Riders\' start waves must be consistent between race.'),
 			'',
 			_('\'Adjust start waves\' will reflect their actual time,'),
 			_('otherwise imported waves will start simultaneously with existing waves.'),
