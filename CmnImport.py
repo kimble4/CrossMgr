@@ -32,6 +32,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 		startWaveOffset = datetime.timedelta(seconds=0.0)
 	
 	raceStart = None
+	minPossibleLapTimeChanged = False
 	
 	with Model.LockRace() as race:
 		
@@ -78,6 +79,9 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			race.startTime = importRace.startTime
 		if race.finishTime is None or importRace.finishTime > race.finishTime:
 			race.finishTime = importRace.finishTime
+		if importRace.minPossibleLapTime < race.minPossibleLapTime:
+			race.minPossibleLapTime = importRace.minPossibleLapTime
+			minPossibleLapTimeChanged = True
 		
 		for category, laps, best, raceMinutes in updateWaveCategories:
 			t = category.getStartOffsetSecs()
@@ -99,7 +103,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 		
-	return errors
+	return errors, minPossibleLapTimeChanged
 
 #------------------------------------------------------------------------------------------------
 class CmnImportDialog( wx.Dialog ):
@@ -304,7 +308,7 @@ class CmnImportDialog( wx.Dialog ):
 			#startTime = None
 			
 		undo.pushState()
-		errors = DoCmnImport( self.importRace, clearExistingData, startWaveOffset )
+		errors, minPossibleLapTimeChanged = DoCmnImport( self.importRace, clearExistingData, startWaveOffset )
 		
 		if errors:
 			# Copy the tags to the clipboard.
@@ -322,6 +326,8 @@ class CmnImportDialog( wx.Dialog ):
 							'{}:\n\n{}\n\n{}.'.format(_('Import File contains errors'), tagStr, _('All errors have been copied to the clipboard')),
 							_('Import Warning'),
 							iconMask = wx.ICON_WARNING )
+		elif minPossibleLapTimeChanged:
+			Utils.MessageOK( self, _('Caution: Minimum possible lap time has changed.'), _('Import Successful') )
 		else:
 			Utils.MessageOK( self, _('Import Successful'), _('Import Successful') )
 		wx.CallAfter( Utils.refresh )
