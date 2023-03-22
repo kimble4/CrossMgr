@@ -32,6 +32,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 		startWaveOffset = datetime.timedelta(seconds=0.0)
 	
 	raceStart = None
+	minPossibleLapTimeChanged = False
 	
 	with Model.LockRace() as race:
 		
@@ -46,13 +47,15 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			#print(rider)
 			if rider.status == Model.Rider.Finisher:
 				waveCategory = race.getCategory( bib )
-				raceLaps = importRace.getCategory(bib).numLaps
-				bestLaps = importRace.getCategory(bib).bestLaps
-				raceMinutes = importRace.getCategory(bib).raceMinutes
-				if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
-					raceMinutes = importRace.minutes
-				if (waveCategory, raceLaps, bestLaps, raceMinutes) not in updateWaveCategories:
-					updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes) )
+				if waveCategory:
+					raceLaps = importRace.getCategory(bib).numLaps
+					bestLaps = importRace.getCategory(bib).bestLaps
+					raceMinutes = importRace.getCategory(bib).raceMinutes
+					if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
+						raceMinutes = importRace.minutes
+					lappedRidersMustContinue = importRace.getCategory(bib).lappedRidersMustContinue
+					if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) not in updateWaveCategories:
+						updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) )
 			startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
 			unfilteredTimes = [t for t in rider.times if t > startOffset]
 			for time in unfilteredTimes:
@@ -78,14 +81,18 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			race.startTime = importRace.startTime
 		if race.finishTime is None or importRace.finishTime > race.finishTime:
 			race.finishTime = importRace.finishTime
+		if importRace.minPossibleLapTime < race.minPossibleLapTime:
+			race.minPossibleLapTime = importRace.minPossibleLapTime
+			minPossibleLapTimeChanged = True
 		
-		for category, laps, best, raceMinutes in updateWaveCategories:
+		for category, laps, best, raceMinutes, lappedRidersMustContinue in updateWaveCategories:
 			t = category.getStartOffsetSecs()
 			t += startWaveOffset
 			category.startOffset = Utils.SecondsToStr(t)
 			category.numLaps = laps
 			category._bestLaps = best
 			category.raceMinutes = raceMinutes
+			category.lappedRidersMustContinue = lappedRidersMustContinue
 		#print ('Updated categories: ' + str(updateWaveCategories))
 		
 		lapNotes = getattr(importRace, 'lapNote', {} )
@@ -99,7 +106,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 	Utils.refresh()
 	Utils.refreshForecastHistory()
 		
-	return errors
+	return errors, minPossibleLapTimeChanged
 
 #------------------------------------------------------------------------------------------------
 class CmnImportDialog( wx.Dialog ):
@@ -112,6 +119,7 @@ class CmnImportDialog( wx.Dialog ):
 			'',
 			_('You must first "New" a race and fill in the details.'),
 			_('You must also prepare your Sign-On Excel Sheet and link the sheet to the race.'),
+			_('Riders\' start waves must be consistent between race.'),
 			'',
 			_('\'Adjust start waves\' will reflect their actual time,'),
 			_('otherwise imported waves will start simultaneously with existing waves.'),
@@ -304,7 +312,7 @@ class CmnImportDialog( wx.Dialog ):
 			#startTime = None
 			
 		undo.pushState()
-		errors = DoCmnImport( self.importRace, clearExistingData, startWaveOffset )
+		errors, minPossibleLapTimeChanged = DoCmnImport( self.importRace, clearExistingData, startWaveOffset )
 		
 		if errors:
 			# Copy the tags to the clipboard.
@@ -322,6 +330,8 @@ class CmnImportDialog( wx.Dialog ):
 							'{}:\n\n{}\n\n{}.'.format(_('Import File contains errors'), tagStr, _('All errors have been copied to the clipboard')),
 							_('Import Warning'),
 							iconMask = wx.ICON_WARNING )
+		elif minPossibleLapTimeChanged:
+			Utils.MessageOK( self, _('Caution: Minimum possible lap time has changed.'), _('Import Successful') )
 		else:
 			Utils.MessageOK( self, _('Import Successful'), _('Import Successful') )
 		wx.CallAfter( Utils.refresh )
