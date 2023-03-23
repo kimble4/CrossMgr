@@ -105,6 +105,20 @@ Once lap times have been selected, they will be listed, along with a final count
 
 For best results it is recommended that GPS receivers be configured to record trackpoints as frequently as possible (one point per second is best for smaller tracks), and that a reasonable effort is made to ensure the CrossMgr computer's real-time clock is accurate before starting the race.
 
+## Import from another CrossMgr race...
+
+Attempts to merge the results of two CrossMgr races.  Lap times will be imported from the selected file and merged into the existing race.
+
+For this to work properly, the Excel sign-on sheet must contain details of the riders of both races.
+
+If the two races have different start waves, 'Adjust start waves' should be set, and an offset will be applied to imported times, so the imported times reflect those that were ridden in the real world.  This is the preferred approach, as RFID reads will be filtered correctly.  Alternatively, if 'Adjust start waves' is unset, riders' times will be imported raw, so they appear to have started along with those in the existing race.  This may appear simpler, but there is a danger of destroying the universe - or at least introducing spurious tag reads - due to riders effectively being in two places at the same time.
+
+If 'Clear All Existing Data Before Import' is set, you won't have to worry about any of this, as the existing times will be deleted.  This setting may prove useful to you some day, in a somewhat bizarre set of circumstances.
+
+Once times are imported, it will attempt to correct the category settings to reflect those of the imported race.  This is where things are likely to go wrong, so be sure to check they are correct after import.  Similarly, the two races may have different 'Minimum possible lap time' values.  This will be adjusted to the smaller value if necessary, but beware this may cause previously filtered lap times to be applied to existing riders.
+
+__Big Warning__:  This feature can corrupt your race data in all sorts of ways, so I recommend backing up your data files before attempting to use it.
+
 ## Import Categories from File...
 Read the categories from a previously exported Categories file.
 
