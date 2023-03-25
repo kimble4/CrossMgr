@@ -46,16 +46,22 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			rider = importRace.getRider( bib )
 			#print(rider)
 			if rider.status == Model.Rider.Finisher:
+				if race.getRider( bib ).status == Model.Rider.Finisher:
+					errors.append('Warning: #' + str(bib) + ' is a finisher in both races.')
 				waveCategory = race.getCategory( bib )
 				if waveCategory:
 					raceLaps = importRace.getCategory(bib).numLaps
 					bestLaps = importRace.getCategory(bib).bestLaps
 					raceMinutes = importRace.getCategory(bib).raceMinutes
-					if raceMinutes is None: #if no minutes set for start wave, use the overall race minutes
+					if raceMinutes is None and raceLaps is None: #if no minutes set for start wave, and we're not using laps, use the overall race minutes
 						raceMinutes = importRace.minutes
 					lappedRidersMustContinue = importRace.getCategory(bib).lappedRidersMustContinue
-					if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) not in updateWaveCategories:
-						updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue) )
+					distance = importRace.getCategory(bib).distance
+					firstLapDistance = importRace.getCategory(bib).firstLapDistance
+					if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) not in updateWaveCategories:
+						updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) )
+				else:
+					errors.append('#' + str(bib) + ' has no start wave!')
 			startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
 			unfilteredTimes = [t for t in rider.times if t > startOffset]
 			for time in unfilteredTimes:
@@ -81,19 +87,20 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			race.startTime = importRace.startTime
 		if race.finishTime is None or importRace.finishTime > race.finishTime:
 			race.finishTime = importRace.finishTime
-		if importRace.minPossibleLapTime < race.minPossibleLapTime:
+		if race.minPossibleLapTime is None or importRace.minPossibleLapTime < race.minPossibleLapTime:
 			race.minPossibleLapTime = importRace.minPossibleLapTime
 			minPossibleLapTimeChanged = True
 		
-		for category, laps, best, raceMinutes, lappedRidersMustContinue in updateWaveCategories:
-			t = category.getStartOffsetSecs()
-			t += startWaveOffset
+		for category, laps, best, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance in updateWaveCategories:
+			t = category.getStartOffsetSecs() + startWaveOffset
 			category.startOffset = Utils.SecondsToStr(t)
 			category.numLaps = laps
 			category._bestLaps = best
 			category.raceMinutes = raceMinutes
 			category.lappedRidersMustContinue = lappedRidersMustContinue
-		#print ('Updated categories: ' + str(updateWaveCategories))
+			category.distance = distance
+			category.firstLapDistance = firstLapDistance
+			#print ('Updated categories: ' + str(updateWaveCategories))
 		
 		lapNotes = getattr(importRace, 'lapNote', {} )
 		race.lapNote = getattr( race, 'lapNote', {} )
@@ -117,15 +124,14 @@ class CmnImportDialog( wx.Dialog ):
 		todoList = [
 			'{} {}'.format(_('CrossMgr'), _('Import Data File')),
 			'',
-			_('You must first "New" a race and fill in the details.'),
-			_('You must also prepare your Sign-On Excel Sheet and link the sheet to the race.'),
-			_('Riders\' start waves must be consistent between race.'),
+			_('You must first prepare a combined sign-on Excel sheet and link it to this race.'),
 			'',
-			_('\'Adjust start waves\' will reflect their actual time,'),
-			_('otherwise imported waves will start simultaneously with existing waves.'),
+			_('\'Adjust start waves\' will reflect the real time that laps were ridden'),
+			_('(preferred, requires different start waves for each race)'),
+			_('otherwise imported times will be fudged to coincide with the existing race.'),
 			_('(Beware of the Blinovitch Limitation Effect!)'),
 			'',
-			_('Warning: Importing from another race could replace all the data in this race.'),
+			_('Warning: Importing times from another race could corrupt the lap data in this race.'),
 			_('Make a backup and proceed with caution.'),
 		]
 		intro = '\n'.join(todoList)
