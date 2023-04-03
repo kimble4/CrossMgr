@@ -1243,8 +1243,6 @@ class MainWin( wx.Frame ):
 			tsLower = (self.tsMax or datetime(tNow.year, tNow.month, tNow.day)) + timedelta(seconds=0.00001)
 			tsUpper = tsLower + timedelta(days=1)
 			
-		print('tsLower: ' + str(tsLower) + ', tsUpper: ' + str(tsUpper))
-
 		# Read the triggers from the database before we repaint the screen to avoid flashing.
 		counts = GlobalDatabase().updateTriggerPhotoCountInterval( tsLower, tsUpper )
 		triggers = GlobalDatabase().getTriggers( tsLower, tsUpper, self.bibQuery )		
@@ -1261,9 +1259,7 @@ class MainWin( wx.Frame ):
 			self.triggerList.DeleteAllItems()
 
 		tsLower, tsUpper = datetime.max, datetime.min
-		print('Triggers:')
 		for i, trig in enumerate(triggers):
-			self.messageQ.put( ('Triggers', str(i) + ', ' + str(trig.ts) ) )
 			if not trig.closest_frames and trig.s_before == 0.0 and trig.s_after == 0.0:
 				trig = trig._replace( s_before=tdCaptureBeforeDefault.total_seconds(), s_after=tdCaptureAfterDefault.total_seconds() )
 			
@@ -1271,8 +1267,8 @@ class MainWin( wx.Frame ):
 			tsPrev = triggers[i-1].ts if i != 0 else (trig.ts - timedelta(days=1))
 			tsNext = triggers[i+1].ts if i < len(triggers)-1 else (trig.ts + timedelta(days=1))
 			deltaFinish = min( (trig.ts-tsPrev).total_seconds(), (tsNext-trig.ts).total_seconds() )
-			#row = self.triggerList.InsertItem( 999999, trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
-			row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
+			#row = self.triggerList.InsertItem( 999999, trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )  #this seems to cause incorrect item order under Windows - KW
+			row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )  #always appends to the bottom of the list
 			
 			self.updateTriggerRow( row, trig._asdict() )			
 			self.triggerList.SetItemData( row, trig.id )	# item data is the trigger id.
