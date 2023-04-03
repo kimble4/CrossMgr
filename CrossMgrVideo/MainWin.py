@@ -1242,6 +1242,8 @@ class MainWin( wx.Frame ):
 		else:
 			tsLower = (self.tsMax or datetime(tNow.year, tNow.month, tNow.day)) + timedelta(seconds=0.00001)
 			tsUpper = tsLower + timedelta(days=1)
+			
+		print('tsLower: ' + str(tsLower) + ', tsUpper: ' + str(tsUpper))
 
 		# Read the triggers from the database before we repaint the screen to avoid flashing.
 		counts = GlobalDatabase().updateTriggerPhotoCountInterval( tsLower, tsUpper )
@@ -1259,7 +1261,9 @@ class MainWin( wx.Frame ):
 			self.triggerList.DeleteAllItems()
 
 		tsLower, tsUpper = datetime.max, datetime.min
+		print('Triggers:')
 		for i, trig in enumerate(triggers):
+			print(str(i), str(trig.ts))
 			if not trig.closest_frames and trig.s_before == 0.0 and trig.s_after == 0.0:
 				trig = trig._replace( s_before=tdCaptureBeforeDefault.total_seconds(), s_after=tdCaptureAfterDefault.total_seconds() )
 			
