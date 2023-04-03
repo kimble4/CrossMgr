@@ -1263,7 +1263,7 @@ class MainWin( wx.Frame ):
 		tsLower, tsUpper = datetime.max, datetime.min
 		print('Triggers:')
 		for i, trig in enumerate(triggers):
-			print(str(i), str(trig.ts))
+			self.messageQ.put( ('Triggers', str(i) + ', ' + str(trig.ts) ) )
 			if not trig.closest_frames and trig.s_before == 0.0 and trig.s_after == 0.0:
 				trig = trig._replace( s_before=tdCaptureBeforeDefault.total_seconds(), s_after=tdCaptureAfterDefault.total_seconds() )
 			
