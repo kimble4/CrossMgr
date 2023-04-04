@@ -121,6 +121,14 @@ def getCameraResolutionChoice( resolution ):
 
 FOURCC_DEFAULT = 'MJPG'
 
+def TriggerListSortFunction( item1, item2 ):
+		if item1 < item2:
+			return(-1)
+		elif item1 > item2:
+			return(1)
+		else:
+			return(0)
+
 class ConfigDialog( wx.Dialog ):
 	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, id=wx.ID_ANY ):
 		super().__init__( parent, id, title=_('CrossMgr Video Configuration') )
@@ -1275,6 +1283,7 @@ class MainWin( wx.Frame ):
 			tsPrev = trig.ts
 		
 		self.updateTriggerColumnWidths()
+		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data, which is the trigger id
 		
 		# Unconditionally refresh the photos if the triggerList is empty.
 		if self.triggerList.GetItemCount() == 0:
