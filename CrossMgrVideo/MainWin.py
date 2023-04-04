@@ -122,12 +122,12 @@ def getCameraResolutionChoice( resolution ):
 FOURCC_DEFAULT = 'MJPG'
 
 def TriggerListSortFunction( item1, item2 ):
-		if item1 < item2:
-			return(-1)
-		elif item1 > item2:
-			return(1)
-		else:
-			return(0)
+	if item1 < item2:
+		return(-1)
+	elif item1 > item2:
+		return(1)
+	else:
+		return(0)
 
 class ConfigDialog( wx.Dialog ):
 	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, id=wx.ID_ANY ):
@@ -1283,7 +1283,7 @@ class MainWin( wx.Frame ):
 			tsPrev = trig.ts
 		
 		self.updateTriggerColumnWidths()
-		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data, which is the trigger id
+		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data
 		
 		# Unconditionally refresh the photos if the triggerList is empty.
 		if self.triggerList.GetItemCount() == 0:
