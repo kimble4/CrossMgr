@@ -120,6 +120,14 @@ def getCameraResolutionChoice( resolution ):
 
 FOURCC_DEFAULT = 'MJPG'
 
+def TriggerListSortFunction( item1, item2 ):
+	if item1 < item2:
+		return(-1)
+	elif item1 > item2:
+		return(1)
+	else:
+		return(0)
+
 class ConfigDialog( wx.Dialog ):
 	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, id=wx.ID_ANY ):
 		super().__init__( parent, id, title=_('CrossMgr Video Configuration') )
@@ -1260,13 +1268,14 @@ class MainWin( wx.Frame ):
 			tsPrev = triggers[i-1].ts if i != 0 else (trig.ts - timedelta(days=1))
 			tsNext = triggers[i+1].ts if i < len(triggers)-1 else (trig.ts + timedelta(days=1))
 			deltaFinish = min( (trig.ts-tsPrev).total_seconds(), (tsNext-trig.ts).total_seconds() )
-￼			row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
+￼				row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
 			
 			self.updateTriggerRow( row, trig._asdict() )			
 			self.triggerList.SetItemData( row, trig.id )	# item data is the trigger id.
 			tsPrev = trig.ts
 		
 		self.updateTriggerColumnWidths()
+		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data, which is the trigger id
 		
 		# Unconditionally refresh the photos if the triggerList is empty.
 		if self.triggerList.GetItemCount() == 0:
