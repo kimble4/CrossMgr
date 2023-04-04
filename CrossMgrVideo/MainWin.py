@@ -1254,7 +1254,7 @@ class MainWin( wx.Frame ):
 		self.finishStrip.Set( None )
 		
 		if replace:
-			self.tsMax = None
+			#self.tsMax = None  #this causes duplicate entries when not replacing
 			self.iTriggerSelect = None
 			self.triggerInfo = {}
 			self.triggerList.DeleteAllItems()
