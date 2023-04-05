@@ -1275,14 +1275,15 @@ class MainWin( wx.Frame ):
 			tsPrev = triggers[i-1].ts if i != 0 else (trig.ts - timedelta(days=1))
 			tsNext = triggers[i+1].ts if i < len(triggers)-1 else (trig.ts + timedelta(days=1))
 			deltaFinish = min( (trig.ts-tsPrev).total_seconds(), (tsNext-trig.ts).total_seconds() )
-			row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
-			
+			#row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
+			row = self.triggerList.Append(trig.ts.strftime('%H:%M:%S.%f')[:-3])
+			self.triggerList.SetItemImage(row, getCloseFinishIndex(deltaFinish))
 			self.updateTriggerRow( row, trig._asdict() )			
 			self.triggerList.SetItemData( row, trig.id )	# item data is the trigger id.
 			tsPrev = trig.ts
 		
 		self.updateTriggerColumnWidths()
-		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data
+		#self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data
 		
 		# Unconditionally refresh the photos if the triggerList is empty.
 		if self.triggerList.GetItemCount() == 0:
