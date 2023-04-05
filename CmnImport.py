@@ -114,8 +114,8 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 				race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
 			race.adjustAllCategoryWaveNumbers()
 			race.setChanged()
-	except:
-		errors.append(_('An unexpected error occurred.  Import aborted.') )
+	except Exception as e:
+		errors.append(_('An unexpected error occurred: ' + str(e) +'\nImport aborted.') )
 		
 	Utils.refresh()
 	Utils.refreshForecastHistory()
