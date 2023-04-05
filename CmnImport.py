@@ -34,81 +34,88 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 	raceStart = None
 	minPossibleLapTimeChanged = False
 	
-	with Model.LockRace() as race:
-		
-		if clearExistingData:
-			race.clearAllRiderTimes()
-		
-		updateWaveCategories = []
-		numTimeInfo = importRace.numTimeInfo
-		
-		for bib in importRace.riders:
-			rider = importRace.getRider( bib )
-			#print(rider)
-			if rider.status == Model.Rider.Finisher:
-				if race.getRider( bib ).status == Model.Rider.Finisher:
-					errors.append('Warning: #' + str(bib) + ' is a finisher in both races.')
-				waveCategory = race.getCategory( bib )
-				if waveCategory:
-					raceLaps = importRace.getCategory(bib).numLaps
-					bestLaps = importRace.getCategory(bib).bestLaps
-					raceMinutes = importRace.getCategory(bib).raceMinutes
-					if raceMinutes is None and raceLaps is None: #if no minutes set for start wave, and we're not using laps, use the overall race minutes
-						raceMinutes = importRace.minutes
-					lappedRidersMustContinue = importRace.getCategory(bib).lappedRidersMustContinue
-					distance = importRace.getCategory(bib).distance
-					firstLapDistance = importRace.getCategory(bib).firstLapDistance
-					if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) not in updateWaveCategories:
-						updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) )
-				else:
-					errors.append('#' + str(bib) + ' has no start wave!')
-			startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
-			unfilteredTimes = [t for t in rider.times if t > startOffset]
-			for time in unfilteredTimes:
-				if not race.hasTime(bib, time + startWaveOffset):
-					race.addTime( bib, time + startWaveOffset )
-			existingRaceRider = race.getRider(bib)
-			tStatus = rider.tStatus
-			if tStatus:
-				tStatus += startWaveOffset
-			existingRaceRider.setStatus( rider.status, tStatus )
-			existingRaceRider.relegatedPosition = rider.relegatedPosition
-			existingRaceRider.autocorrectLaps = rider.autocorrectLaps
-			existingRaceRider.alwaysFilterMinPossibleLapTime = rider.alwaysFilterMinPossibleLapTime
-			tFirst = rider.firstTime
-			if tFirst:
-				tFirst += startWaveOffset
-			existingRaceRider.firstTime = tFirst
-			info = numTimeInfo.getNumInfo( bib )
-			for t in info:
-				race.numTimeInfo.addData( bib, t + startWaveOffset, info[t] )
+	try:
+		with Model.LockRace() as race:
 			
-		if race.startTime is None:
-			race.startTime = importRace.startTime
-		if race.finishTime is None or importRace.finishTime > race.finishTime:
-			race.finishTime = importRace.finishTime
-		if race.minPossibleLapTime is None or importRace.minPossibleLapTime < race.minPossibleLapTime:
-			race.minPossibleLapTime = importRace.minPossibleLapTime
-			minPossibleLapTimeChanged = True
-		
-		for category, laps, best, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance in updateWaveCategories:
-			t = category.getStartOffsetSecs() + startWaveOffset
-			category.startOffset = Utils.SecondsToStr(t)
-			category.numLaps = laps
-			category._bestLaps = best
-			category.raceMinutes = raceMinutes
-			category.lappedRidersMustContinue = lappedRidersMustContinue
-			category.distance = distance
-			category.firstLapDistance = firstLapDistance
-			#print ('Updated categories: ' + str(updateWaveCategories))
-		
-		lapNotes = getattr(importRace, 'lapNote', {} )
-		race.lapNote = getattr( race, 'lapNote', {} )
-		for bib, lap in lapNotes:
-			print('Setting lapnote: ' + str(bib) + ', ' + str(lap) + ',  ' + lapNotes[(bib, lap)])
-			race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
-		race.adjustAllCategoryWaveNumbers()
-		race.setChanged()
+			if clearExistingData:
+				race.clearAllRiderTimes()
+			
+			updateWaveCategories = []
+			numTimeInfo = importRace.numTimeInfo
+			
+			for bib in importRace.riders:
+				rider = importRace.getRider( bib )
+				#print(rider)
+				if rider.status == Model.Rider.Finisher:
+					if race.getRider( bib ).status == Model.Rider.Finisher:
+						errors.append('Warning: #' + str(bib) + ' is a finisher in both races.')
+					waveCategory = race.getCategory( bib )
+					importCategory = importRace.getCategory( bib )
+					if waveCategory:
+						if importCategory:
+							raceLaps = importCategory.numLaps if importCategory.numLaps else None
+							bestLaps = importCategory.bestLaps if importCategory.bestLaps else None
+							raceMinutes = importCategory.raceMinutes if importCategory.raceMinutes else None
+							if raceMinutes is None and raceLaps is None: #if no minutes set for start wave, and we're not using laps, use the overall race minutes
+								raceMinutes = importRace.minutes
+							lappedRidersMustContinue = importCategory.lappedRidersMustContinue if importCategory.lappedRidersMustContinue else False
+							distance = importCategory.distance if importCategory.distance else None
+							firstLapDistance = importCategory.firstLapDistance if importCategory.firstLapDistance else None
+							if (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) not in updateWaveCategories:
+								updateWaveCategories.append( (waveCategory, raceLaps, bestLaps, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance) )
+						else:
+							errors.append('#' + str(bib) + ' has no start wave in imported race!')
+					else:
+						errors.append('#' + str(bib) + ' has no start wave in this race!')
+				startOffset = importRace.getStartOffset( bib )				# 0.0 if isTimeTrial			
+				unfilteredTimes = [t for t in rider.times if t > startOffset]
+				for time in unfilteredTimes:
+					if not race.hasTime(bib, time + startWaveOffset):
+						race.addTime( bib, time + startWaveOffset )
+				existingRaceRider = race.getRider(bib)
+				tStatus = rider.tStatus
+				if tStatus:
+					tStatus += startWaveOffset
+				existingRaceRider.setStatus( rider.status, tStatus )
+				existingRaceRider.relegatedPosition = rider.relegatedPosition
+				existingRaceRider.autocorrectLaps = rider.autocorrectLaps
+				existingRaceRider.alwaysFilterMinPossibleLapTime = rider.alwaysFilterMinPossibleLapTime
+				tFirst = rider.firstTime
+				if tFirst:
+					tFirst += startWaveOffset
+				existingRaceRider.firstTime = tFirst
+				info = numTimeInfo.getNumInfo( bib )
+				for t in info:
+					race.numTimeInfo.addData( bib, t + startWaveOffset, info[t] )
+				
+			if race.startTime is None:
+				race.startTime = importRace.startTime
+			if race.finishTime is None or importRace.finishTime > race.finishTime:
+				race.finishTime = importRace.finishTime
+			if race.minPossibleLapTime is None or importRace.minPossibleLapTime < race.minPossibleLapTime:
+				race.minPossibleLapTime = importRace.minPossibleLapTime
+				minPossibleLapTimeChanged = True
+			
+			for category, laps, best, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance in updateWaveCategories:
+				t = category.getStartOffsetSecs() + startWaveOffset
+				category.startOffset = Utils.SecondsToStr(t)
+				category.numLaps = laps
+				category._bestLaps = best
+				category.raceMinutes = raceMinutes
+				category.lappedRidersMustContinue = lappedRidersMustContinue
+				category.distance = distance
+				category.firstLapDistance = firstLapDistance
+				#print ('Updated categories: ' + str(updateWaveCategories))
+			
+			lapNotes = getattr(importRace, 'lapNote', {} )
+			race.lapNote = getattr( race, 'lapNote', {} )
+			for bib, lap in lapNotes:
+				print('Setting lapnote: ' + str(bib) + ', ' + str(lap) + ',  ' + lapNotes[(bib, lap)])
+				race.lapNote[(bib, lap)] = lapNotes[(bib, lap)]
+			race.adjustAllCategoryWaveNumbers()
+			race.setChanged()
+	except:
+		errors.append(_('An unexpected error occurred.  Import aborted.') )
 		
 	Utils.refresh()
 	Utils.refreshForecastHistory()
