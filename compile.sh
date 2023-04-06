@@ -355,8 +355,8 @@ updateversion() {
 			GIT_TAG=$(echo $GITHUB_REF | awk -F '/' '{print $3'})
 			SHORTSHA=$(echo $GITHUB_SHA | cut -c 1-7)
 			VERSION=$(echo $VERSION | awk -F - '{print $1}')
-			if [ "$GIT_TYPE" == "heads" -a "$GIT_TAG" == "master" ]; then
-                echo "Refusing to build an untagged master build. Release builds on a tag only!"
+			if [ "$GIT_TYPE" == "heads" -a "$GIT_TAG" == "main" ]; then
+                echo "Refusing to build an untagged main build. Release builds on a tag only!"
                 exit 1
             fi
 			if [ "$GIT_TYPE" == "heads" -a "$GIT_TAG" == "dev" ]; then
@@ -435,8 +435,8 @@ fixDependencies() {
 
 tagrepo() {
 	CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD -- | head -1)
-	if [ "$CURRENT_BRANCH" != "master" ]; then
-		echo "Unable to tag $CURRENT_BRANCH branch for release. Releases are from master only!"
+	if [ "$CURRENT_BRANCH" != "main" ]; then
+		echo "Unable to tag $CURRENT_BRANCH branch for release. Releases are from main only!"
         exit 1
 	fi
     echo "Crossmgr version will be updated by the auto-build system to match the tag"
@@ -470,10 +470,10 @@ dorelease() {
 	DATETIME=$(date +%Y%m%d%H%M%S)
 	TAGNAME="v$VERSIONNO-$DATETIME"
 	echo "Releasing with $TAGNAME"
-    git checkout master
+    git checkout main
     git merge dev -m "Release $TAGNAME"
     git push
-    echo "Code merged into master..."
+    echo "Code merged into main..."
 	git tag $TAGNAME
 	git push origin $TAGNAME
     echo "Code tagged with $TAGNAME for release"
