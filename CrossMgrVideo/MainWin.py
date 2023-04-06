@@ -630,7 +630,8 @@ class MainWin( wx.Frame ):
 		self.tsQueryUpper = self.tsQueryLower + timedelta(days=1)
 		self.bibQuery = None
 		
-		self.triggerList = AutoWidthListCtrl( self, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_SORT_ASCENDING|wx.LC_HRULES|wx.LC_SINGLE_SEL )
+		#self.triggerList = AutoWidthListCtrl( self, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_SORT_ASCENDING|wx.LC_HRULES|wx.LC_SINGLE_SEL )
+		self.triggerList = AutoWidthListCtrl( self, style=wx.LC_REPORT|wx.BORDER_SUNKEN|wx.LC_HRULES|wx.LC_SINGLE_SEL )
 		
 		self.sm_close = getCloseFinishBitmaps()
 		images = self.sm_close.copy()
@@ -1281,7 +1282,7 @@ class MainWin( wx.Frame ):
 			tsPrev = trig.ts
 		
 		self.updateTriggerColumnWidths()
-		self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data
+		#self.triggerList.SortItems(TriggerListSortFunction)  #sorts by the item data
 		
 		# Unconditionally refresh the photos if the triggerList is empty.
 		if self.triggerList.GetItemCount() == 0:
