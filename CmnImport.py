@@ -98,7 +98,7 @@ def DoCmnImport( importRace = None,	clearExistingData = False, startWaveOffset =
 			
 			for category, laps, best, raceMinutes, lappedRidersMustContinue, distance, firstLapDistance in updateWaveCategories:
 				t = category.getStartOffsetSecs() + startWaveOffset
-				category.startOffset = Utils.SecondsToStr(t)
+				category.startOffset = Utils.SecondsToStrMs(t)  #need millisecond precision here, changes in Categories.py accordingly
 				category.numLaps = laps
 				category._bestLaps = best
 				category.raceMinutes = raceMinutes
