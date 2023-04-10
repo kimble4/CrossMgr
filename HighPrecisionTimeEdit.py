@@ -138,7 +138,6 @@ else:
 			keycode = event.GetKeyCode()
 			obj = event.GetEventObject()
 			val = obj.GetValue()
-			print(val)
 			
 			# filter unicode characters
 			if keycode == wx.WXK_NONE:
