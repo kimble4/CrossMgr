@@ -59,9 +59,9 @@ def getExportGrid():
 				raceDistance = '{:.2n}'.format(raceDistance)
 				
 			if c.catType == c.CatWave:
-				catStart = Utils.SecondsToStr( raceStart + c.getStartOffsetSecs() )
+				catStart = Utils.SecondsToStrMs( raceStart + c.getStartOffsetSecs() )
 			elif c.catType == c.CatCustom:
-				catStart = Utils.SecondsToStr( raceStart )
+				catStart = Utils.SecondsToStrMs( raceStart )
 			else:
 				catStart = ''
 			
@@ -157,7 +157,7 @@ def PrintCategories():
 
 #--------------------------------------------------------------------------------
 class TimeEditor(gridlib.GridCellEditor):
-	defaultValue = '00:00:00'
+	defaultValue = '00:00:00.000'
 
 	def __init__(self):
 		self._tc = None
@@ -165,7 +165,7 @@ class TimeEditor(gridlib.GridCellEditor):
 		gridlib.GridCellEditor.__init__(self)
 		
 	def Create( self, parent, id = wx.ID_ANY, evtHandler = None ):
-		self._tc = HighPrecisionTimeEdit( parent, id, style=wx.TE_CENTRE, value=self.defaultValue, display_milliseconds=False )
+		self._tc = HighPrecisionTimeEdit( parent, id, style=wx.TE_CENTRE, value=self.defaultValue, display_milliseconds=True )
 		self.SetControl( self._tc )
 		if evtHandler:
 			self._tc.PushEventHandler( evtHandler )
@@ -672,7 +672,7 @@ and remove them from other categories.'''),
 		self.state.reset()
 		self.refresh()
 		
-	def _setRow( self, r, active, name, catStr, startOffset = '00:00:00',
+	def _setRow( self, r, active, name, catStr, startOffset = '00:00:00.000',
 					numLaps = None, bestLaps = None, raceMinutes = None,
 					lappedRidersMustContinue = False,
 					distance = None, distanceType = None,

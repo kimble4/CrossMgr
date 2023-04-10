@@ -138,6 +138,7 @@ else:
 			keycode = event.GetKeyCode()
 			obj = event.GetEventObject()
 			val = obj.GetValue()
+			print(val)
 			
 			# filter unicode characters
 			if keycode == wx.WXK_NONE:
@@ -149,7 +150,8 @@ else:
 			elif chr(keycode) not in string.printable:
 				event.Skip() # allow all other special keycode
 			# allow one '.'
-			elif chr(keycode) == '.' and '.' not in val:
+			#elif chr(keycode) == '.' and '.' not in val:   #this doesn't seem to work as intended, val always seems to fit the format HH:MM:SS:mmm ?
+			elif chr(keycode) == '.':
 				event.Skip()
 			return
 		
@@ -178,7 +180,7 @@ else:
 			if not time and self.allow_none:
 				return True
 			
-			for format in ('%H:%M', '%H:%M:%S', '%H:%M:%S.%f'):
+			for format in ('%H:%M', '%H:%M:%S', '%H:%M:%S.%f', '%M:%S.%f'):
 				try:
 					datetime.datetime.strptime(time, format)
 					return True
