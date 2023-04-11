@@ -252,7 +252,7 @@ class Category:
 					mask = cp.ljust(len(mask), '.')
 		return mask
 
-	def __init__( self, active = True, name = 'Category 100-199', catStr = '100-199', startOffset = '00:00:00',
+	def __init__( self, active = True, name = 'Category 100-199', catStr = '100-199', startOffset = '00:00:00.000',
 						numLaps = None, bestLaps = None, sequence = 0,
 						raceLaps = None, raceMinutes = None,
 						distance = None, distanceType = None, firstLapDistance = None,
@@ -261,7 +261,7 @@ class Category:
 		
 		self.name = '{}'.format(name).strip()
 		self.catStr = '{}'.format(catStr).strip()
-		self.startOffset = startOffset if startOffset else '00:00:00'
+		self.startOffset = startOffset if startOffset else '00:00:00.000'
 		
 		self.catType = self.CatWave
 		catType = '{}'.format(catType).strip().lower()

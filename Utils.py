@@ -487,6 +487,11 @@ def SecondsToStr( secs = 0 ):
 	secs = int(secs)
 	return '{:02d}:{:02d}:{:02d}'.format(secs // (60*60), (secs // 60)%60, secs % 60)
 
+def SecondsToStrMs( seconds = 0 ):
+	secs = int(seconds)
+	millis = int((seconds - secs) * 1000)
+	return '{:02d}:{:02d}:{:02d}.{:03d}'.format(secs // (60*60), (secs // 60)%60, secs % 60, millis)
+
 def SecondsToMMSS( secs = 0 ):
 	secs = int(secs)
 	return '{:02d}:{:02d}'.format((secs // 60)%60, secs % 60)
