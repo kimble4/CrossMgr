@@ -457,9 +457,21 @@ class Categories( wx.Panel ):
 		vs.Add( hs, 0, flag=wx.EXPAND|wx.ALL, border = 4 )
 		vs.Add( self.grid, 1, flag=wx.GROW|wx.ALL|wx.EXPAND )
 		
+		self.commitButton = wx.Button(self, label=_('Commit'))
+		self.commitButton.Bind( wx.EVT_BUTTON, self.commitButtonCallback )
+	
+		vs.AddSpacer( 12 )
+		vs.Add( self.commitButton )
+			
 		self.rowCur = 0
 		self.colCur = 0
 		self.SetSizer(vs)
+
+	def commitButtonCallback( self, event ):
+		if Model.race:
+			wx.CallAfter( self.commit )
+		else:
+			Utils.MessageOK(self, _("You must have a valid race.  Open or New a race first."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
 
 	def onPrint( self, event ):
 		self.commit()
