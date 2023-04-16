@@ -3964,22 +3964,16 @@ class MainWin( wx.Frame ):
 		info.Description = wordwrap(
 _("""Score Cycling races quickly and easily with little preparation.
 
-A brief list of features:
-   * Input riders on the first lap
-   * Predicts riders for all other laps based on lap times
-   * Indicates race leader by category and tracks missing riders
-   * Interpolates missing numbers.  Ignores duplicate rider entries.
-   * Shows results instantly by category during and after race
-   * Shows rider history
-   * Allows rider lap adjustments
-   * UCI 80% Rule Countdown
+Modified for use by the British Human Power Club.
+
 """),
 			500, wx.ClientDC(self))
-		info.WebSite = ("http://sites.google.com/site/crossmgrsoftware/", "CrossMgr Home Page")
+		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
 		info.Developers = [
 					"Edward Sitarski (edward.sitarski@gmail.com)",
-					"Mark Buckaway (mark@buckaway.ca),"
+					"Mark Buckaway (mark@buckaway.ca)",
 					"Andrew Paradowski (andrew.paradowski@gmail.com)",
+					"Kim Wall (technical@bhpc.org.uk)"
 					]
 
 		licenseText = \

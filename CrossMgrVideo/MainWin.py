@@ -735,7 +735,7 @@ class MainWin( wx.Frame ):
 	'''
 	
 	def OnAboutBox(self, e):
-		description = "CrossMgrVideo - USB Camera support"
+		description = "CrossMgrVideo - USB Camera support\nModified for use by the BHPC"
 
 		licence = """CrossMgrVideo is free software; you can redistribute 
 	it and/or modify it under the terms of the GNU General Public License as 
@@ -758,7 +758,7 @@ class MainWin( wx.Frame ):
 		info.SetVersion(AppVerName.split(' ')[1])
 		info.SetDescription(description)
 		info.SetCopyright('(C) 2019-{} Edward Sitarski'.format(datetime.today().strftime('%Y')))
-		info.SetWebSite('http://www.sites.google.com/site/crossmgrsoftware/')
+		info.SetWebSite('https://github.com/kimble4/CrossMgr')
 		info.SetLicence(licence)
 
 		wx.adv.AboutBox(info, self)

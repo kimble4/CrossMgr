@@ -836,11 +836,11 @@ table.results tr td.fastest{
 		info.Copyright = "(C) 2013-{}".format(datetime.datetime.now().year)
 		info.Description = wordwrap(
 			"Combine CrossMgr results into a Series.\n\n"
-			"",
+			"Modified for use by the BHPC",
 			500, wx.ClientDC(self))
-		info.WebSite = ("http://sites.google.com/site/crossmgrsoftware/", "CrossMgr Home Page")
+		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
 		info.Developers = [
-					"Edward Sitarski (edward.sitarski@gmail.com)"
+					"Edward Sitarski (edward.sitarski@gmail.com)", "Kim Wall (technical@bhpc.org.uk)"
 					]
 
 		licenseText = "User Beware!\n\n" \
