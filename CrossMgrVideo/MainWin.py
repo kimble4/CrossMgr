@@ -342,6 +342,10 @@ class AutoCaptureDialog( wx.Dialog ):
 			self.editFields.append( wx.TextCtrl(self, size=(60,-1) ) )
 			gs.Add( self.editFields[-1] )
 			
+		gs.Add( wx.StaticText(self, label="Seqential bib for captures"), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		self.sequentialBibs = wx.CheckBox( self )
+		gs.Add( self.sequentialBibs )
+			
 		sizer.Add( gs, flag=wx.ALL, border=4 )
 		
 		btnSizer = self.CreateButtonSizer( wx.OK|wx.CANCEL )		
@@ -355,10 +359,11 @@ class AutoCaptureDialog( wx.Dialog ):
 		for w in (self.labelFields + self.editFields):
 			w.Enable( enable )
 	
-	def set( self, s_before, s_after, autoCaptureClosestFrames=0 ):
+	def set( self, s_before, s_after, autoCaptureClosestFrames=0, sequentialBibs=True ):
 		for w, v in zip( self.editFields, (s_before, s_after) ):
 			w.SetValue( '{:.3f}'.format(v) )
 		self.autoCaptureClosestFrames.SetSelection( autoCaptureClosestFrames )
+		self.sequentialBibs.SetValue( sequentialBibs )
 		self.onChoice()
 	
 	def get( self ):
@@ -367,7 +372,7 @@ class AutoCaptureDialog( wx.Dialog ):
 				return abs(float(v))
 			except Exception:
 				return None
-		return [fixValue(e.GetValue()) for e in self.editFields] + [self.autoCaptureClosestFrames.GetSelection()]
+		return [fixValue(e.GetValue()) for e in self.editFields] + [self.autoCaptureClosestFrames.GetSelection()] + [self.sequentialBibs.GetValue()]
 		
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 	def __init__(self, parent, ID = wx.ID_ANY, pos=wx.DefaultPosition,
@@ -401,6 +406,7 @@ class MainWin( wx.Frame ):
 		self.tdCaptureBefore = tdCaptureBeforeDefault
 		self.tdCaptureAfter = tdCaptureAfterDefault
 		self.autoCaptureClosestFrames = 0
+		self.autoCaptureSequentialBibs = True
 		self.lastCapturePreview = datetime.min
 		
 		self.isShutdown = False
@@ -1348,7 +1354,10 @@ class MainWin( wx.Frame ):
 			self.captureProgressQ.put( { 'cmd':'idle', 'ts':now() } )
 			wx.CallAfter( self.refreshCaptureProgress )
 			self.refreshTriggers()
-
+		else:
+			self.captureProgressQ.put( { 'cmd':'busy', 'ts':now() } )
+			wx.CallAfter( self.refreshCaptureProgress )
+			
 	def Start( self ):
 		self.messageQ.put( ('', '************************************************') )
 		self.messageQ.put( ('started', now().strftime('%Y/%m/%d %H:%M:%S')) )
@@ -1365,7 +1374,7 @@ class MainWin( wx.Frame ):
 				's_after':			0.0,
 				'closest_frames':	1,
 				'ts_start':			t,
-				'bib':				self.snapshotCount,
+				'bib':				self.snapshotCount if self.autoCaptureSequentialBibs else '',
 				'first_name':		'',
 				'last_name':		'Snapshot',
 				'machine':			'',
@@ -1403,6 +1412,8 @@ class MainWin( wx.Frame ):
 		if self.inCapture > 0:
 			self.inCapture -= 1
 		if self.inCapture == 0:
+			self.captureProgressQ.put( { 'cmd':'idle', 'ts':now() } )
+			wx.CallAfter( self.refreshCaptureProgress )
 			self.refreshTriggers()
 
 	def onStartAutoCapture( self, event, isSnapshot=False, joystick=False ):
@@ -1443,7 +1454,7 @@ class MainWin( wx.Frame ):
 				's_after':			s_after,
 				'closest_frames':	closest_frames,
 				'ts_start':			tNow,
-				'bib':				count,
+				'bib':				count if self.autoCaptureSequentialBibs else '',
 				'last_name':		last_name,
 				'first_name':		first_name,
 			}
@@ -1505,7 +1516,7 @@ class MainWin( wx.Frame ):
 				's_before':			0.0,			# seconds before 0.0
 				's_after':			60.0*10.0,		# seconds after a default end time.
 				'closest_frames':	0,
-				'bib':				self.captureCount,
+				'bib':				self.captureCount if self.autoCaptureSequentialBibs else '',
 				'last_name':		'Capture',
 				'first_name':		first_name,
 			}
@@ -1542,6 +1553,8 @@ class MainWin( wx.Frame ):
 		if self.inCapture > 0:
 			self.inCapture -= 1
 		if self.inCapture == 0:
+			self.captureProgressQ.put( { 'cmd':'idle', 'ts':now() } )
+			wx.CallAfter( self.refreshCaptureProgress )
 			self.refreshTriggers()
 
 	def showLastTrigger( self ):
@@ -1555,12 +1568,13 @@ class MainWin( wx.Frame ):
 		self.triggerList.Select( iTriggerRow )		
 	
 	def autoCaptureConfig( self, event ):
-		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames )
+		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames, self.autoCaptureSequentialBibs )
 		if self.autoCaptureDialog.ShowModal() == wx.ID_OK:
-			s_before, s_after, autoCaptureClosestFrames = self.autoCaptureDialog.get()
+			s_before, s_after, autoCaptureClosestFrames, autoCaptureSequentialBibs = self.autoCaptureDialog.get()
 			self.tdCaptureBefore = timedelta(seconds=s_before) if s_before is not None else tdCaptureBeforeDefault
 			self.tdCaptureAfter  = timedelta(seconds=s_after)  if s_after  is not None else tdCaptureAfterDefault
 			self.autoCaptureClosestFrames = autoCaptureClosestFrames
+			self.autoCaptureSequentialBibs = autoCaptureSequentialBibs
 			self.writeOptions()
 			self.updateAutoCaptureLabel()
  		
@@ -1727,10 +1741,19 @@ class MainWin( wx.Frame ):
 			#wx.CallAfter( self.messageManager.write, '{}:  {}'.format(cmd, info) if cmd else info )
 			
 	def refreshCaptureProgress( self ):
-		# Append a sentinel object to the end of the queue so the iter knows when to stop
-		sentinel = object()
-		self.captureProgressQ.put( sentinel )
-		for message in iter( self.captureProgressQ.get_nowait, sentinel ):
+		# Get the latest (by timestamp, then order) message from the queue, discarding the rest
+		message = None
+		ts = datetime.min
+		try:
+			for m in iter( self.captureProgressQ.get_nowait, None ):
+				if m.get('ts', datetime.min) >= ts:
+					message = m
+					ts = m.get('ts')
+		except Empty:
+			pass
+		
+		# Update the progress text
+		if message:
 			cmd = message.get('cmd')
 			if cmd == 'capture':
 				ts = message.get('ts', now())
@@ -1741,15 +1764,19 @@ class MainWin( wx.Frame ):
 				else:
 					self.capturingText.SetLabel( 'Capturing:' )
 				self.capturingTime.SetLabel( ts.strftime('%H:%M:%S.%f')[:-3] )
-				# Do preview of capture in progress only if the trigger is within capturePreviewThreshold of realtime, otherwise there'll be nothing to see
+				# Do preview of capture in progress only if the trigger timestamp is within capturePreviewThreshold of realtime, otherwise there'll be nothing to see
 				if self.autoSelect.GetSelection() <= 1 and abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
-					if ts - self.lastCapturePreview >= timedelta(seconds=capturePreviewThreshold):  # Rate limit to capturePreviewThreshold
+					if now() - self.lastCapturePreview >= timedelta(seconds=capturePreviewThreshold):  # Rate limit to capturePreviewThreshold
 						# Switch to Images tab
 						if self.notebook.GetSelection() != 0:
 							self.notebook.ChangeSelection(0)  # This does not generate a page change event
 						# Copy the current primaryBitmap directly into the photoPanel - avoids database access and decoding jpegs
 						self.photoPanel.setPreview( self.primaryBitmap.GetBitmap(), ts )
-						self.lastCapturePreview = ts
+						self.lastCapturePreview = now()
+			elif cmd == 'busy':
+				ts = message.get('ts', now())
+				self.capturingText.SetLabel( 'Busy...' )
+				self.capturingTime.SetLabel( ts.strftime('%H:%M:%S.%f')[:-3] )
 			elif cmd == 'idle':
 				self.capturingText.SetLabel( 'Waiting for trigger...' )
 				self.capturingTime.SetLabel( '' )
@@ -2031,6 +2058,7 @@ class MainWin( wx.Frame ):
 		self.config.WriteFloat( 'ZoomMagnification', self.finishStrip.GetZoomMagnification() )
 		self.config.Write( 'HiddenTriggerCols', repr(self.hiddenTriggerCols) )
 		self.config.WriteInt( 'ClosestFrames', self.autoCaptureClosestFrames )
+		self.config.WriteBool( 'SequentialBibs', self.autoCaptureSequentialBibs )
 		self.config.WriteInt ('AutoSelect', self.autoSelect.GetSelection() )
 		self.config.Flush()
 	
@@ -2053,6 +2081,7 @@ class MainWin( wx.Frame ):
 		self.finishStrip.SetZoomMagnification( self.config.ReadFloat('ZoomMagnification', 0.5) )
 		self.hiddenTriggerCols = ast.literal_eval( self.config.Read( 'HiddenTriggerCols', '[]' ) )
 		self.autoCaptureClosestFrames = self.config.ReadInt( 'ClosestFrames', 0 )
+		self.autoCaptureSequentialBibs = self.config.ReadBool( 'SequentialBibs', True )
 		self.autoSelect.SetSelection( self.config.ReadInt( 'AutoSelect', 0 ) )
 		
 	def getCameraInfo( self ):
