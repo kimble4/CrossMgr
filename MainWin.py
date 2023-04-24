@@ -85,6 +85,7 @@ from BibEnter			import BibEnter
 from BackgroundJobMgr	import BackgroundJobMgr
 from Restart			import Restart
 from ReissueBibs	 	import ReissueBibsDialog
+from GiveTimes 			import GiveTimesDialog
 from FinishLynx			import FinishLynxDialog
 import BatchPublishAttrs
 import Model
@@ -98,6 +99,7 @@ import ImpinjImport
 import IpicoImport
 import OutputStreamer
 import GpxImport
+import CmnImport
 from Undo import undo
 from Printing			import CrossMgrPrintout, CrossMgrPrintoutPNG, CrossMgrPrintoutPDF, CrossMgrPodiumPrintout, getRaceCategories
 from Printing			import ChoosePrintCategoriesDialog, ChoosePrintCategoriesPodiumDialog
@@ -120,6 +122,7 @@ import Flags
 import WebServer
 import ImageIO
 from ModuleUnpickler import ModuleUnpickler
+import GpxTimesImport
 
 now = datetime.datetime.now
 
@@ -569,6 +572,10 @@ class MainWin( wx.Frame ):
 		item = self.editMenu.Append( wx.ID_ANY, _('&Reissue Bibs...'), _('Reissue Bibs...') )
 		self.Bind( wx.EVT_MENU, self.menuReissueBibs, item )
 		
+		self.editMenu.AppendSeparator()
+		item = self.editMenu.Append( wx.ID_ANY, _('&Give unfinished riders a finish time...'), _('Give unfinished riders a finish time...') )
+		self.Bind( wx.EVT_MENU, self.menuGiveTimes, item )
+		
 		self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
 
 		#-----------------------------------------------------------------------
@@ -621,6 +628,22 @@ class MainWin( wx.Frame ):
 		
 		self.dataMgmtMenu.AppendMenu( wx.ANY_ID, _('Export Course'), self.exportGpxMenu  )
 		'''
+		
+		#-----------------------------------------------------------------------
+		
+		self.dataMgmtMenu.AppendSeparator()
+		
+		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Import rider's times from GPX..."), _("Import Rider's Rimes from GPX"),
+			Utils.GetPngBitmap('gps-icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuImportRiderTimesGpx, item )
+		
+		#-----------------------------------------------------------------------
+		
+		self.dataMgmtMenu.AppendSeparator()
+		
+		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Import from another CrossMgr race..."), _("Import from another rossMgr race"),
+			Utils.GetPngBitmap('CrossMgr.png') )
+		self.Bind(wx.EVT_MENU, self.menuCmnImport, item )
 		
 		#-----------------------------------------------------------------------
 		
@@ -1141,6 +1164,17 @@ class MainWin( wx.Frame ):
 			if not categories:
 				return
 		with ReissueBibsDialog(self) as dlg:
+			dlg.ShowModal()
+			
+	@logCall
+	def menuGiveTimes( self, event ):
+		with Model.LockRace() as race:
+			if not race:
+				return
+			categories = race.getCategoriesInUse()
+			if not categories:
+				return
+		with GiveTimesDialog(self) as dlg:
 			dlg.ShowModal()
 	
 	def menuShowHighPrecisionTimes( self, event ):
@@ -1804,7 +1838,7 @@ class MainWin( wx.Frame ):
 								
 				sheetCur = wb.add_worksheet( ues.getSheetName(catName) )
 				export = ExportGrid()
-				export.setResultsOneList( category, showLapsFrequency = 1 )
+				export.setResultsOneList( category, showLapsFrequency = 1, onlyBestLaps = True )
 				export.toExcelSheetXLSX( formats, sheetCur )
 				
 			race = Model.race
@@ -1862,13 +1896,14 @@ class MainWin( wx.Frame ):
 		
 		payload = {}
 		payload['raceName'] = os.path.basename(self.fileName or '')[:-4]
-		iTeam = ReportFields.index('Team')
-		payload['infoFields'] = ReportFields[:iTeam] + ['Name'] + ReportFields[iTeam:]
+		iMachine = ReportFields.index('Machine')
+		payload['infoFields'] = ReportFields[:iMachine] + ['Name'] + ReportFields[iMachine:]
 		
 		payload['organizer']		= getattr(race, 'organizer', '')
 		payload['reverseDirection']	= getattr(race, 'reverseDirection', False)
 		payload['finishTop']		= getattr(race, 'finishTop', False)
 		payload['isTimeTrial']		= race.isTimeTrial
+		payload['isBestNLaps']		= race.isBestNLaps
 		payload['winAndOut']		= race.winAndOut
 		payload['rfid']				= race.enableJChipIntegration
 		payload['primes']			= getattr(race, 'primes', [])
@@ -2392,6 +2427,40 @@ class MainWin( wx.Frame ):
 		race.setChanged()
 			
 		self.refresh()
+		
+	@logCall
+	def menuImportRiderTimesGpx( self, event ):
+		if not Model.race:
+			Utils.MessageOK(self, _("You must have a valid race."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
+			return
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+		race = Model.race
+		rt = GpxTimesImport.GetRiderTimes( self, race )
+		try:
+			bib, lapTimes = rt.show()
+			for t in lapTimes:
+				race.importTime( bib, t )
+				race.setChanged()
+		except TypeError:
+			#wizard has been cancelled
+			pass
+		self.refresh()
+		
+	def menuCmnImport( self, event ):
+		correct, reason = JChipSetup.CheckExcelLink()
+		explain = '{}\n\n{}'.format(
+			_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
+			_('See documentation for details.')
+		)
+		if not correct:
+			Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
+									title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
+			return
+			
+		with CmnImport.CmnImportDialog(self) as dlg:
+			dlg.ShowModal()
+		wx.CallAfter( self.refresh )
 		
 	@logCall
 	def menuExportGpx( self, event=None ):
@@ -3895,22 +3964,16 @@ class MainWin( wx.Frame ):
 		info.Description = wordwrap(
 _("""Score Cycling races quickly and easily with little preparation.
 
-A brief list of features:
-   * Input riders on the first lap
-   * Predicts riders for all other laps based on lap times
-   * Indicates race leader by category and tracks missing riders
-   * Interpolates missing numbers.  Ignores duplicate rider entries.
-   * Shows results instantly by category during and after race
-   * Shows rider history
-   * Allows rider lap adjustments
-   * UCI 80% Rule Countdown
+Modified for use by the British Human Power Club.
+
 """),
 			500, wx.ClientDC(self))
-		info.WebSite = ("http://sites.google.com/site/crossmgrsoftware/", "CrossMgr Home Page")
+		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
 		info.Developers = [
 					"Edward Sitarski (edward.sitarski@gmail.com)",
-					"Mark Buckaway (mark@buckaway.ca),"
+					"Mark Buckaway (mark@buckaway.ca)",
 					"Andrew Paradowski (andrew.paradowski@gmail.com)",
+					"Kim Wall (technical@bhpc.org.uk)"
 					]
 
 		licenseText = \

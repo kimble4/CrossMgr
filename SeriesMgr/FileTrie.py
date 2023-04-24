@@ -42,7 +42,7 @@ class FileTrie:
 			if c not in node:
 				node[c] = {}
 			node = node[c]
-				
+		
 	def best_match( self, p ):
 		path = []
 		node = self.node
@@ -63,20 +63,19 @@ class FileTrie:
 			node = v
 		
 		path.reverse()
-		
 		if path:
 			if re.match( '^[a-zA-Z]:$', path[0] ):	# Add absolution path to drive.
 				path[0] += '\\'
 			elif not path[0]:						# Ensure absolution paths are created correctly on linux in python 3.
 				path[0] = os.sep
-
 		return os.path.join( *path )
 
 if __name__ == '__main__':
 	ft = FileTrie()
 	for i in range(5):
 		ft.add( r'c:\Projects\CrossMgr\SeriesMgr\test{}'.format(i) ) 
-	ft.add( r'c:\Projects\CrossMgr\CrossMgrImpinj\test{}'.format(0) ) 
+	ft.add( r'c:\Projects\CrossMgr\CrossMgrImpinj\test{}'.format(0) )
+	ft.add( r'/home/Projects/CrossMgr/CrossMgrImpinj/test{}'.format(0) )
 	print( ft.best_match( '/home/Projects/CrossMgr/SeriesMgr/test2' ) )
 	print( ft.best_match( '/home/Projects/CrossMgr/CrossMgrImpinj/test0' ) )
 	print( ft.best_match( 'test4' ) )

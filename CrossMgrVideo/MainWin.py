@@ -30,6 +30,7 @@ import sqlite3
 from time import sleep
 import numpy as np
 from queue import Queue, Empty
+import ast
 
 from datetime import datetime, date, timedelta, time
 
@@ -649,11 +650,12 @@ class MainWin( wx.Frame ):
 		images.extend( [self.sm_up, self.sm_dn] )
 		self.triggerList.SetSmallImages( images )
 		
-		self.fieldCol = {f:c for c, f in enumerate('ts bib name team wave race_name frames view kmh mph note'.split())}
-		headers = ['Time', 'Bib', 'Name', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Note']
+		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph note'.split())}
+		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Note']
 		formatRightHeaders = {'Bib','Frames','km/h','mph'}
 		formatMiddleHeaders = {'View',}
-		for i, h in enumerate(headers):
+		self.hiddenTriggerCols = []
+		for i, h in enumerate(self.fieldHeaders):
 			if h in formatRightHeaders:
 				align = wx.LIST_FORMAT_RIGHT
 			elif h in formatMiddleHeaders:
@@ -668,6 +670,7 @@ class MainWin( wx.Frame ):
 		self.triggerList.Bind( wx.EVT_LIST_ITEM_RIGHT_CLICK, self.onTriggerRightClick )
 		self.triggerList.Bind( wx.EVT_LIST_KEY_DOWN, self.onTriggerKey )
 		#self.triggerList.Bind( wx.EVT_LIST_DELETE_ITEM, self.onTriggerDelete )
+		self.triggerList.Bind( wx.EVT_LIST_COL_RIGHT_CLICK, self.onTriggerColumnRightClick )
 		
 		vsTriggers = wx.BoxSizer( wx.VERTICAL )
 		vsTriggers.Add( hsDate )
@@ -759,7 +762,7 @@ class MainWin( wx.Frame ):
 	'''
 	
 	def OnAboutBox(self, e):
-		description = "CrossMgrVideo - USB Camera support"
+		description = "CrossMgrVideo - USB Camera support\nModified for use by the BHPC"
 
 		licence = """CrossMgrVideo is free software; you can redistribute 
 	it and/or modify it under the terms of the GNU General Public License as 
@@ -782,7 +785,7 @@ class MainWin( wx.Frame ):
 		info.SetVersion(AppVerName.split(' ')[1])
 		info.SetDescription(description)
 		info.SetCopyright('(C) 2019-{} Edward Sitarski'.format(datetime.today().strftime('%Y')))
-		info.SetWebSite('http://www.sites.google.com/site/crossmgrsoftware/')
+		info.SetWebSite('https://github.com/kimble4/CrossMgr')
 		info.SetLicence(licence)
 
 		wx.adv.AboutBox(info, self)
@@ -1086,7 +1089,7 @@ class MainWin( wx.Frame ):
 				tsBest, jpgBest = GlobalDatabase().getBestTriggerPhoto( info['id'] )
 				if jpgBest is None:
 					continue
-				args = {k:info[k] for k in ('ts', 'bib', 'first_name', 'last_name', 'team', 'race_name', 'kmh')}
+				args = {k:info[k] for k in ('ts', 'bib', 'first_name', 'last_name', 'machine', 'team', 'race_name', 'kmh')}
 				try:
 					args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
 				except Exception:
@@ -1102,7 +1105,7 @@ class MainWin( wx.Frame ):
 						info['first_name'],
 					)
 				)
-				comment = json.dumps( {k:info[k] for k in ('bib', 'first_name', 'last_name', 'team', 'race_name')} )
+				comment = json.dumps( {k:info[k] for k in ('bib', 'first_name', 'last_name', 'machine', 'team', 'race_name')} )
 				try:
 					with open(os.path.join(dirname, fname), 'wb') as f:
 						f.write( AddExifToJpeg(jpg, info['ts'], comment) )
@@ -1175,7 +1178,7 @@ class MainWin( wx.Frame ):
 
 						if jpgBest is None:
 							continue
-						args = {k:info[k] for k in ('ts', 'bib', 'first_name', 'last_name', 'team', 'race_name', 'kmh')}
+						args = {k:info[k] for k in ('ts', 'bib', 'first_name', 'last_name', 'machine', 'team', 'race_name', 'kmh')}
 						try:
 							args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
 						except Exception:
@@ -1183,7 +1186,7 @@ class MainWin( wx.Frame ):
 						if isinstance(args['kmh'], str):
 							args['kmh'] = float( '0' + re.sub( '[^0-9.]', '', args['kmh'] ) )
 
-						comment = json.dumps( {k:info[k] for k in ('bib', 'first_name', 'last_name', 'team', 'race_name')} )
+						comment = json.dumps( {k:info[k] for k in ('bib', 'first_name', 'last_name', 'machine', 'team', 'race_name')} )
 						jpg = CVUtil.bitmapToJPeg( AddPhotoHeader(CVUtil.jpegToBitmap(jpgBest), **args) )
 						jpg = AddExifToJpeg( jpg, info['ts'], comment )
 
@@ -1237,7 +1240,11 @@ class MainWin( wx.Frame ):
 
 	def updateTriggerColumnWidths( self ):
 		for c in range(self.triggerList.GetColumnCount()):
-			self.triggerList.SetColumnWidth(c, wx.LIST_AUTOSIZE_USEHEADER if c != self.iNoteCol else 100 )
+			if not c in self.hiddenTriggerCols:
+				self.triggerList.SetColumnWidth(c, wx.LIST_AUTOSIZE_USEHEADER if c != self.iNoteCol else 100 )
+			else:
+				#if column is hidden, just set the width to zero
+				self.triggerList.SetColumnWidth( c, 0 )
 				
 	def updateTriggerRow( self, row, fields ):
 		''' Update the row in the UI only. '''
@@ -1320,7 +1327,7 @@ class MainWin( wx.Frame ):
 		self.finishStrip.Set( None )
 		
 		if replace:
-			self.tsMax = None
+			#self.tsMax = None  #this causes duplicate entries when not replacing
 			self.iTriggerSelect = None
 			self.triggerInfo = {}
 			self.triggerList.DeleteAllItems()
@@ -1335,7 +1342,6 @@ class MainWin( wx.Frame ):
 			tsNext = triggers[i+1].ts if i < len(triggers)-1 else (trig.ts + timedelta(days=1))
 			deltaFinish = min( (trig.ts-tsPrev).total_seconds(), (tsNext-trig.ts).total_seconds() )
 			row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trig.ts.strftime('%H:%M:%S.%f')[:-3], getCloseFinishIndex(deltaFinish) )
-			
 			self.updateTriggerRow( row, trig._asdict() )			
 			self.triggerList.SetItemData( row, trig.id )	# item data is the trigger id.
 			tsPrev = trig.ts
@@ -1390,6 +1396,7 @@ class MainWin( wx.Frame ):
 				'bib':				self.snapshotCount if self.autoCaptureSequentialBibs else '',
 				'first_name':		'',
 				'last_name':		'Snapshot',
+				'machine':			'',
 				'team':				'',
 				'wave':				'',
 				'race_name':		'',
@@ -1721,6 +1728,29 @@ class MainWin( wx.Frame ):
 		self.iTriggerSelect = event.Index
 		self.doTriggerEdit()
 		
+	def onTriggerColumnRightClick( self, event ):
+		# Create and display a popup menu of columns on right-click event
+		menu = wx.Menu()
+		menu.SetTitle( 'Show/Hide columns' )
+		for c in range(self.triggerList.GetColumnCount()):
+			menuItem = menu.AppendCheckItem( wx.ID_ANY, self.fieldHeaders[c] )
+			self.Bind(wx.EVT_MENU, self.onToggleTriggerColumn)
+			if not c in self.hiddenTriggerCols:
+				menu.Check( menuItem.GetId(), True )
+		self.PopupMenu(menu)
+		menu.Destroy()
+		
+	def onToggleTriggerColumn( self, event ):
+		#find the column number
+		label = event.GetEventObject().FindItemById(event.GetId()).GetItemLabel()
+		c = self.fieldHeaders.index(label)
+		#add or remove from hidden columns and update width
+		if c in self.hiddenTriggerCols:
+			self.hiddenTriggerCols.remove( c )
+		else:
+			self.hiddenTriggerCols.append( c )
+		self.updateTriggerColumnWidths()
+		
 	def showMessages( self ):
 		while True:
 			message = self.messageQ.get()
@@ -1916,6 +1946,7 @@ class MainWin( wx.Frame ):
 						'bib':				msg.get('bib', 99999),
 						'first_name':		msg.get('first_name','') or msg.get('firstName',''),
 						'last_name':		msg.get('last_name','') or msg.get('lastName',''),
+						'machine':			msg.get('machine',''),
 						'team':				msg.get('team',''),
 						'wave':				msg.get('wave',''),
 						'race_name':		msg.get('race_name','') or msg.get('raceName',''),
@@ -2050,6 +2081,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'SecondsBefore', '{:.3f}'.format(self.tdCaptureBefore.total_seconds()) )
 		self.config.Write( 'SecondsAfter', '{:.3f}'.format(self.tdCaptureAfter.total_seconds()) )
 		self.config.WriteFloat( 'ZoomMagnification', self.finishStrip.GetZoomMagnification() )
+		self.config.Write( 'HiddenTriggerCols', repr(self.hiddenTriggerCols) )
 		self.config.WriteInt( 'ClosestFrames', self.autoCaptureClosestFrames )
 		self.config.WriteBool( 'SequentialBibs', self.autoCaptureSequentialBibs )
 		self.config.WriteInt ('AutoSelect', self.autoSelect.GetSelection() )
@@ -2072,6 +2104,7 @@ class MainWin( wx.Frame ):
 		except Exception:
 			pass
 		self.finishStrip.SetZoomMagnification( self.config.ReadFloat('ZoomMagnification', 0.5) )
+		self.hiddenTriggerCols = ast.literal_eval( self.config.Read( 'HiddenTriggerCols', '[]' ) )
 		self.autoCaptureClosestFrames = self.config.ReadInt( 'ClosestFrames', 0 )
 		self.autoCaptureSequentialBibs = self.config.ReadBool( 'SequentialBibs', True )
 		self.autoSelect.SetSelection( self.config.ReadInt( 'AutoSelect', 0 ) )

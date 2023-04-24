@@ -89,6 +89,7 @@ class Results( wx.Panel ):
 		
 		self.rcInterp = set()
 		self.rcNumTime = set()
+		self.rcWorstLaps = set()
 		self.numSelect = None
 		self.isEmpty = True
 		self.reSplit = re.compile( '[\[\]\+= ]+' )	# separators for the fields.
@@ -160,6 +161,7 @@ class Results( wx.Panel ):
 		self.yellowColour = wx.Colour( 255, 255, 0 )
 		self.orangeColour = wx.Colour( 255, 165, 0 )
 		self.greyColour = wx.Colour( 150, 150, 150 )
+		self.lightGreyColour = wx.Colour ( 211, 211, 211 )
 		self.greenColour = wx.Colour( 127, 210, 0 )
 		self.lightBlueColour = wx.Colour( 153, 205, 255 )
 		
@@ -174,6 +176,7 @@ class Results( wx.Panel ):
 		self.labelGrid.DisableDragRowSize()
 		# put a tooltip on the cells in a column
 		self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
+		#
 		
 		self.lapGrid = ColGrid.ColGrid( self.splitter, style=wx.BORDER_SUNKEN )
 		self.lapGrid.SetRowLabelSize( 0 )
@@ -195,6 +198,7 @@ class Results( wx.Panel ):
 		self.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doRightClick )
 		self.lapGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
 		self.labelGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
+		self.labelGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onLabelColumnRightClick )
 		
 		bs = wx.BoxSizer(wx.VERTICAL)
 		#bs.Add(self.hbs)
@@ -386,6 +390,31 @@ class Results( wx.Panel ):
 			self.PopupMenu( menu )
 		except Exception as e:
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			
+	def onLabelColumnRightClick( self, event ):
+		# Create and display a popup menu of columns on right-click event
+		menu = wx.Menu()
+		menu.SetTitle( 'Show/Hide columns' )
+		for c in range( self.labelGrid.GetNumberCols() ):
+			menuItem = menu.AppendCheckItem( wx.ID_ANY, self.labelGrid.GetColLabelValue( c ) )
+			self.Bind( wx.EVT_MENU, self.onToggleLabelColumn )
+			if self.labelGrid.IsColShown( c ):
+				menu.Check( menuItem.GetId(), True )
+		self.PopupMenu(menu)
+		menu.Destroy()
+		
+	def onToggleLabelColumn( self, event ):
+		#find the column number
+		colLabels = []
+		for c in range( self.labelGrid.GetNumberCols() ):
+			colLabels.append( self.labelGrid.GetColLabelValue( c ) )
+		label = event.GetEventObject().FindItemById( event.GetId() ).GetItemLabel()
+		c = colLabels.index( label )
+		with Model.LockRace() as race:
+			if self.labelGrid.IsColShown( c ):
+				self.labelGrid.HideCol( c )
+			else:
+				self.labelGrid.ShowCol( c )
 		
 	def OnPopupCorrect( self, event ):
 		CorrectNumber( self, self.entry )
@@ -475,8 +504,9 @@ class Results( wx.Panel ):
 		except (TypeError, ValueError):
 			numSelectSearch = None
 		
-		textColourLap = {}
-		backgroundColourLap = { rc:self.yellowColour for rc in self.rcInterp }
+		textColourLap = { rc:self.greyColour for rc in self.rcWorstLaps }
+		backgroundColourLap = {}
+		backgroundColourLap.update( { rc:self.yellowColour for rc in self.rcInterp } )
 		backgroundColourLap.update( { rc:self.orangeColour for rc in self.rcNumTime } )
 		if self.fastestLapRC is not None:
 			backgroundColourLap[self.fastestLapRC] = self.greenColour
@@ -502,7 +532,7 @@ class Results( wx.Panel ):
 					backgroundColourLabel[ (r,c) ] = self.blackColour
 
 				for c in range(self.lapGrid.GetNumberCols()):
-					textColourLap[ (r,c) ] = self.whiteColour
+					textColourLap[ (r,c) ] = self.whiteColour if (r,c) not in self.rcWorstLaps else self.lightGreyColour
 					backgroundColourLap[ (r,c) ] = self.blackColour if (r,c) not in self.rcInterp and (r,c) not in self.rcNumTime else self.greyColour
 					
 			if cellNum in self.closeFinishBibs:
@@ -516,7 +546,7 @@ class Results( wx.Panel ):
 		for c in range(self.lapGrid.GetNumberCols()):
 			if self.lapGrid.GetColLabelValue(c).startswith('<'):
 				for r in range(self.lapGrid.GetNumberRows()):
-					textColourLap[ (r,c) ] = self.whiteColour
+					textColourLap[ (r,c) ] = self.whiteColour if (r,c) not in self.rcWorstLaps else self.lightGreyColour 
 					backgroundColourLap[ (r,c) ] = self.blackColour \
 						if (r,c) not in self.rcInterp and (r,c) not in self.rcNumTime else self.greyColour
 				break
@@ -897,6 +927,20 @@ class Results( wx.Panel ):
 							self.iLastLap = c
 					except IndexError:
 						pass
+				
+		#find the worst laps
+		self.rcWorstLaps = set()
+		if race.isTimeTrial and race.isBestNLaps:
+			for r in range(self.lapGrid.GetNumberRows()):
+				try:
+					bib = int(self.labelGrid.GetCellValue(r, 1))
+					for rr in results:
+						if rr.num == bib:
+							for c in range(rr.laps):
+								if not rr.bests[c]:
+									self.rcWorstLaps.add( (r, c) )
+				except Exception:
+					continue
 		
 		self.labelGrid.Scroll( labelLastX, labelLastY )
 		self.lapGrid.Scroll( lapLastX, lapLastY )
@@ -909,6 +953,9 @@ class Results( wx.Panel ):
 		# Fix the grids' scrollbars.
 		self.labelGrid.FitInside()
 		self.lapGrid.FitInside()
+		self.labelGrid.ForceRefresh()
+		self.lapGrid.ForceRefresh()
+		
 
 	def commit( self ):
 		pass

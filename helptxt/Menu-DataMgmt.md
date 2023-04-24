@@ -93,6 +93,32 @@ The race must be in TimeTrial mode (see [Properties][], [TimeTrial][]) for start
 
 For more information about time trial mode, see [TimeTrial][].
 
+## Import Rider's Times from GPX...
+
+Wizard for extrapolating a rider's lap times from a GPX Track recorded by the rider during the race.  Useful if lap times are missed, but the rider has a GPS recording.  Concievably this could be used to time small races, if the finish order was recorded somehow.
+
+This requires a GPX course to be set in [Properties][] in order to determine the coordinates of the finish line.  Note that the imported track must contain timestamps; beware of downloading tracks from Strava or similar route-sharing websites which strip this data.  If the GPX filename contains the string "bib" or "rider" followed by a number, this will be used to populate the bib number field.
+
+Trackpoints will be filtered by proximity to the finish line and listed.  Times where the rider passes close to the finish line - or where the compass bearing from the finish line to the rider changes suddenly - will be highlighted in blue, as will lap distances within the proximity value of the GPX course distance.  Times can be manually selected or de-selected for import.  The offset between the GPS receiver's recorded time (normally UTC) and CrossMgr's recorded time will be set automatically according to the local time zone, but this can be tweaked if there is a discrepency.  Trackpoints can be interpolated to increase the resolution of tracklogs with infrequent recording - these lines will be highlighted in yellow.
+
+Once lap times have been selected, they will be listed, along with a final count and the rider's name.  Any lap times that are shorter than the minimum possible lap time (see [Properties][]) will be highlighted (these can still be imported, and will be subject to the usual filtering).
+
+For best results it is recommended that GPS receivers be configured to record trackpoints as frequently as possible (one point per second is best for smaller tracks), and that a reasonable effort is made to ensure the CrossMgr computer's real-time clock is accurate before starting the race.
+
+## Import from another CrossMgr race...
+
+Attempts to merge the results of two CrossMgr races.  Lap times will be imported from the selected file and merged into the existing race.
+
+For this to work properly, the Excel sign-on sheet must contain details of the riders of both races.
+
+If the two races have different start waves, 'Adjust start waves' should be set, and an offset will be applied to imported times, so the imported times reflect those that were ridden in the real world.  This is the preferred approach, as RFID reads will be filtered correctly.  Alternatively, if 'Adjust start waves' is unset, riders' times will be imported raw, so they appear to have started along with those in the existing race.  This may appear simpler, but there is a danger of destroying the universe - or at least introducing spurious tag reads - due to riders effectively being in two places at the same time.
+
+If 'Clear All Existing Data Before Import' is set, you won't have to worry about any of this, as the existing times will be deleted.  This setting may prove useful to you some day, in a somewhat bizarre set of circumstances.
+
+Once times are imported, it will attempt to correct the category settings to reflect those of the imported race.  This is where things are likely to go wrong, so be sure to check they are correct after import.  Similarly, the two races may have different 'Minimum possible lap time' values.  This will be adjusted to the smaller value if necessary, but beware this may cause previously filtered lap times to be applied to existing riders.
+
+__Big Warning__:  This feature can corrupt your race data in all sorts of ways, so I recommend backing up your data files before attempting to use it.
+
 ## Import Categories from File...
 Read the categories from a previously exported Categories file.
 

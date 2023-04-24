@@ -39,8 +39,6 @@ from Results			import Results
 from TeamResults		import TeamResults
 from CategorySequence	import CategorySequence
 from Aliases			import Aliases
-from AliasesLicense		import AliasesLicense
-from AliasesTeam		import AliasesTeam
 from Options			import Options
 from Errors				import Errors
 from Printing			import SeriesMgrPrintout
@@ -263,9 +261,7 @@ class MainWin( wx.Frame ):
 			[ 'points',			Points,				'Scoring Criteria' ],
 			[ 'categorySequence',CategorySequence,	'Category Options' ],
 			[ 'upgrades',		Upgrades,			'Upgrades' ],
-			[ 'aliases',		Aliases,			'Name Aliases' ],
-			[ 'licenseAliases',	AliasesLicense,		'License Aliases' ],
-			[ 'teamAliases',	AliasesTeam,		'Team Aliases' ],
+			[ 'aliases',		Aliases,			'Aliases' ],
 			[ 'options',		Options,			'Options' ],
 			[ 'errors',			Errors,				'Errors' ],
 		]
@@ -840,11 +836,11 @@ table.results tr td.fastest{
 		info.Copyright = "(C) 2013-{}".format(datetime.datetime.now().year)
 		info.Description = wordwrap(
 			"Combine CrossMgr results into a Series.\n\n"
-			"",
+			"Modified for use by the BHPC",
 			500, wx.ClientDC(self))
-		info.WebSite = ("http://sites.google.com/site/crossmgrsoftware/", "CrossMgr Home Page")
+		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
 		info.Developers = [
-					"Edward Sitarski (edward.sitarski@gmail.com)"
+					"Edward Sitarski (edward.sitarski@gmail.com)", "Kim Wall (technical@bhpc.org.uk)"
 					]
 
 		licenseText = "User Beware!\n\n" \

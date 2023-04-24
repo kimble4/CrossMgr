@@ -1,3 +1,12 @@
+# This is a fork of CrossMgr intended for use by the [British Human Power Club](http://www.bhpc.org.uk/).
+
+It contains modifications and additional features (mostly pertaining to HPV-racing, or the specifics of the BHPC's workflow).
+
+This version is a work-in-progress and *unsupported*.  I strongly recommend you use the official version at https://github.com/esitarski/CrossMgr/
+
+
+# Original README:
+
 ![](https://github.com/esitarski/CrossMgr/workflows/DevelopmentBuild/badge.svg)
 ![](https://github.com/esitarski/CrossMgr/workflows/ReleaseBuild/badge.svg)
 

@@ -170,6 +170,7 @@ class Category:
 	MergeAttributes = (
 		'active',
 		'numLaps',
+		'bestLaps',
 		'raceMinutes',
 		'startOffset',
 		'distance',
@@ -251,8 +252,8 @@ class Category:
 					mask = cp.ljust(len(mask), '.')
 		return mask
 
-	def __init__( self, active = True, name = 'Category 100-199', catStr = '100-199', startOffset = '00:00:00',
-						numLaps = None, sequence = 0,
+	def __init__( self, active = True, name = 'Category 100-199', catStr = '100-199', startOffset = '00:00:00.000',
+						numLaps = None, bestLaps = None, sequence = 0,
 						raceLaps = None, raceMinutes = None,
 						distance = None, distanceType = None, firstLapDistance = None,
 						gender = 'Open', lappedRidersMustContinue = False,
@@ -260,7 +261,7 @@ class Category:
 		
 		self.name = '{}'.format(name).strip()
 		self.catStr = '{}'.format(catStr).strip()
-		self.startOffset = startOffset if startOffset else '00:00:00'
+		self.startOffset = startOffset if startOffset else '00:00:00.000'
 		
 		self.catType = self.CatWave
 		catType = '{}'.format(catType).strip().lower()
@@ -289,6 +290,13 @@ class Category:
 				self._numLaps = None
 		except (ValueError, TypeError):
 			self._numLaps = None
+			
+		try:
+			self._bestLaps = int(bestLaps)
+			if self._bestLaps < 1:
+				self._numlaps = None
+		except (ValueError, TypeError):
+			self._bestLaps = None
 		
 		try:
 			self.raceMinutes = int( raceMinutes )
@@ -384,6 +392,11 @@ class Category:
 	def distanceIsByRace( self ):
 		return self.distanceType == Category.DistanceByRace
 
+	@property
+	def bestLaps( self ):
+		laps = getattr( self, '_bestLaps', None )
+		return laps
+
 	def getNumLaps( self ):
 		laps = getattr( self, '_numLaps', None )
 		if (race and race.isTimeTrial) and ((laps or 0) < 1 and not self.raceMinutes):
@@ -436,7 +449,7 @@ class Category:
 		matchSet.difference_update( self.exclude )
 		return matchSet
 
-	key_attr = ['sequence', 'name', 'active', 'startOffset', '_numLaps', 'raceMinutes', 'catStr',
+	key_attr = ['sequence', 'name', 'active', 'startOffset', '_numLaps', '_bestLaps', 'raceMinutes', 'catStr',
 				'distance', 'distanceType', 'firstLapDistance',
 				'gender', 'lappedRidersMustContinue', 'catType', 'publishFlag', 'uploadFlag', 'seriesFlag']
 	
@@ -487,12 +500,13 @@ class Category:
 		self.intervals = SetToIntervals( all_nums )
 	
 	def __repr__( self ):
-		return 'Category(active={}, name="{}", catStr="{}", startOffset="{}", numLaps={}, raceMinutes={}, sequence={}, distance={}, distanceType={}, gender="{}", lappedRidersMustContinue="{}", catType="{}")'.format(
+		return 'Category(active={}, name="{}", catStr="{}", startOffset="{}", numLaps={}, bestLaps={}, raceMinutes={}, sequence={}, distance={}, distanceType={}, gender="{}", lappedRidersMustContinue="{}", catType="{}")'.format(
 				self.active,
 				self.name,
 				self.catStr,
 				self.startOffset,
 				self._numLaps,
+				self._bestLaps,
 				self.raceMinutes,
 				self.sequence,
 				getattr(self,'distance',None),
@@ -1021,6 +1035,9 @@ class NumTimeInfo:
 	def _setData( self, num, t, reason ):
 		self.info.setdefault(num,{})[t]  = (reason, CurrentUser, datetime.datetime.now())
 		
+	def addData( self, num, t, info ):
+		self.info.setdefault(num,{})[t]  = info
+		
 	def _delData( self, num, t ):
 		try:
 			j = self.info[num]
@@ -1147,6 +1164,7 @@ class Race:
 	groupByStartWave = True
 	winAndOut = False
 	isTimeTrial = False
+	isBestNLaps = False
 	minPossibleLapTime = 2.0	# Default to 2 seconds to avoid bounce read lap blowup in timed races.
 	
 	showFullNamesInChart = False
