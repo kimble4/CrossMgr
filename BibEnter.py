@@ -59,6 +59,13 @@ class BibEnter( wx.Dialog ):
 		self.Fit()
 		self.mainSizer.Hide(self.quickButtonsSizer)
 		
+		accTable = [(wx.ACCEL_NORMAL, wx.WXK_F1 + i, self.quickButtons[i].GetId()) for i in range(min(11,len(self.quickButtons)))]
+		print(accTable)
+		aTable = wx.AcceleratorTable( accTable )
+		self.SetAcceleratorTable(aTable)
+		for index, btn in enumerate(self.quickButtons):
+			self.Bind(wx.EVT_MENU, lambda event, i=index: self.doQuickBib(i), id=btn.GetId())
+		
 	def handleNumKeypress(self, event):
 		keycode = event.GetKeyCode()
 		if keycode in enterCodes:
@@ -102,7 +109,7 @@ class BibEnter( wx.Dialog ):
 			mainWin = Utils.getMainWin()
 			if mainWin is not None:
 				mainWin.forecastHistory.logNum( bib )
-	
+		
 	def onRightClick(self, i ):
 		bib = self.numEdit.GetValue()
 		if bib:
