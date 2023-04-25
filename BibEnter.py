@@ -28,36 +28,32 @@ class BibEnter( wx.Dialog ):
 		nes.Add( self.numEditLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		nes.Add( self.numEdit, 1, flag=wx.LEFT|wx.EXPAND, border=4 )
 		
-		hbs = wx.GridSizer( 5, 2, 2 )
+		self.hbs = wx.GridBagSizer( 2, 2 )
 		for i, (label, actionFn) in enumerate( ((_('DN&F'),DoDNF), (_('DN&S'),DoDNS), (_('&Pull'),DoPull), (_('D&Q'),DoDQ)) ):
 			btn = wx.Button( self, label=label, style=wx.BU_EXACTFIT )
 			btn.SetFont( font )
 			btn.Bind( wx.EVT_BUTTON, lambda event, fn = actionFn: self.doAction(fn) )
-			hbs.Add( btn, flag=wx.EXPAND )
-		self.bibs = wx.Button( self, label='#', style=wx.BU_EXACTFIT )
+			self.hbs.Add( btn, (0, i), flag=wx.EXPAND )
+		self.bibs = wx.Button( self, label='...', style=wx.BU_EXACTFIT )
 		self.bibs.SetFont( font )
 		self.bibs.SetToolTip('Show/hide quick bib entry')
 		self.bibs.Bind( wx.EVT_BUTTON, self.onBibsButton )
-		hbs.Add( self.bibs, flag=wx.EXPAND)
+		self.hbs.Add( self.bibs, (0, 4), flag=wx.EXPAND)
 		
-		self.quickButtonsSizer = wx.GridSizer( len(self.quickBibs), 2, 2 )
 		for index, bib in enumerate( self.quickBibs ):
 			btn = wx.Button( self, label=str(bib), style=wx.BU_EXACTFIT )
 			btn.SetFont( font )
-			btn.SetToolTip('Right-click to change number')
+			btn.SetToolTip('Right-click to set bib')
 			btn.Bind( wx.EVT_BUTTON, lambda event, i=index: self.doQuickBib(i) )
 			btn.Bind( wx.EVT_RIGHT_DOWN,lambda event, i=index: self.onRightClick(i), btn)
 			self.quickButtons.append(btn)
-			self.quickButtonsSizer.Add( btn, flag=wx.EXPAND )
-		
+			self.hbs.Add( btn, (1, index), flag=wx.EXPAND )
+			self.hbs.Hide(btn)
 
 		self.mainSizer = wx.BoxSizer( wx.VERTICAL )
 		self.mainSizer.Add( nes, flag=wx.ALL|wx.EXPAND, border=2 )
-		self.mainSizer.Add( hbs, flag=wx.ALL, border=2 )
-		self.mainSizer.Add( self.quickButtonsSizer, flag=wx.EXPAND )
-		self.SetSizer( self.mainSizer )
-		self.Fit()
-		self.mainSizer.Hide(self.quickButtonsSizer)
+		self.mainSizer.Add( self.hbs, flag=wx.ALL, border=2 )
+		self.SetSizerAndFit( self.mainSizer )
 		
 		accTable = [(wx.ACCEL_NORMAL, wx.WXK_F1 + i, self.quickButtons[i].GetId()) for i in range(min(11,len(self.quickButtons)))]
 		print(accTable)
@@ -98,9 +94,11 @@ class BibEnter( wx.Dialog ):
 	def onBibsButton( self, event=None ):
 		self.showQuickButtons = not self.showQuickButtons
 		if self.showQuickButtons:
-			self.mainSizer.Show(self.quickButtonsSizer)
+			for btn in self.quickButtons:
+				self.hbs.Show(btn)
 		else:
-			self.mainSizer.Hide(self.quickButtonsSizer)
+			for btn in self.quickButtons:
+				self.hbs.Hide(btn)
 		self.Fit()
 		
 	def doQuickBib( self,  i ):
@@ -114,9 +112,8 @@ class BibEnter( wx.Dialog ):
 		bib = self.numEdit.GetValue()
 		if bib:
 			self.quickBibs[i] = int(bib)
-			self.quickButtons[i].SetLabel( str(self.quickBibs[i]) )
-			self.mainSizer.Show(self.quickButtonsSizer)
-			self.showQuickButtons = True
+			self.quickButtons[i].SetLabel( str(self.quickBibs[i]).center(3, ' ') )
+			self.hbs.Layout()
 			self.Fit()
 			wx.CallAfter( self.numEdit.SetValue, '' )
 		
@@ -132,7 +129,7 @@ class BibEnter( wx.Dialog ):
 							i += 1
 						if i < len(self.quickBibs):
 							self.quickBibs[i] = bib
-							self.quickButtons[i].SetLabel( str(self.quickBibs[i]) )
+							self.quickButtons[i].SetLabel( str(self.quickBibs[i]).center(3, ' ') )
 							i += 1
 						else:
 							break
