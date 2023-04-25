@@ -1396,7 +1396,7 @@ class MainWin( wx.Frame ):
 		self.showPage( self.idPage[event.GetId()] )
 		
 	def menuShowBibEnter( self, event ):
-		self.bibEnter.populateBibs()
+		#self.bibEnter.populateBibs()
 		self.bibEnter.Show()
 		
 	def getDirName( self ):

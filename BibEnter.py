@@ -55,12 +55,26 @@ class BibEnter( wx.Dialog ):
 		self.mainSizer.Add( self.hbs, flag=wx.ALL, border=2 )
 		self.SetSizerAndFit( self.mainSizer )
 		
+		# Function key accelerators for buttons
 		accTable = [(wx.ACCEL_NORMAL, wx.WXK_F1 + i, self.quickButtons[i].GetId()) for i in range(min(11,len(self.quickButtons)))]
-		print(accTable)
+		for i, btn in enumerate(self.quickButtons):
+			self.Bind(wx.EVT_MENU, lambda event, i=i: self.doQuickBib(i), id=btn.GetId())
+		# Ctrl+Fn to set bib
+		for i in range (min(11,len(self.quickButtons))):
+			id = wx.NewIdRef().GetId()
+			accTable.append((wx.ACCEL_CTRL, wx.WXK_F1 + i, id))
+			self.Bind(wx.EVT_MENU, lambda event, i=i: self.onRightClick(i), id=id)
+		# F6 to show/hide quick buttons
+		id = wx.NewIdRef().GetId()
+		accTable.append((wx.ACCEL_NORMAL, wx.WXK_F6, id))
+		self.Bind(wx.EVT_MENU, self.onBibsButton, id=id)
+		# Ctrl-P to populate quick buttons
+		id = wx.NewIdRef().GetId()
+		accTable.append((wx.ACCEL_CTRL, ord('p'), id))
+		self.Bind(wx.EVT_MENU, self.populateBibs, id=id)
 		aTable = wx.AcceleratorTable( accTable )
 		self.SetAcceleratorTable(aTable)
-		for index, btn in enumerate(self.quickButtons):
-			self.Bind(wx.EVT_MENU, lambda event, i=index: self.doQuickBib(i), id=btn.GetId())
+		
 		
 	def handleNumKeypress(self, event):
 		keycode = event.GetKeyCode()
@@ -113,11 +127,16 @@ class BibEnter( wx.Dialog ):
 		if bib:
 			self.quickBibs[i] = int(bib)
 			self.quickButtons[i].SetLabel( str(self.quickBibs[i]).center(3, ' ') )
-			self.hbs.Layout()
-			self.Fit()
-			wx.CallAfter( self.numEdit.SetValue, '' )
+			self.setNameToolTip(bib, self.quickButtons[i])
+		else:
+			self.quickBibs[i] = ''
+			self.quickButtons[i].SetLabel( '' )
+			self.quickButtons[i].SetToolTip('Right-click to set bib')
+		self.hbs.Layout()
+		self.Fit()
+		wx.CallAfter( self.numEdit.SetValue, '' )
 		
-	def populateBibs( self ):
+	def populateBibs( self, event=None ):
 		race = Model.race
 		if race:
 			riders = Model.race.riders
@@ -130,9 +149,30 @@ class BibEnter( wx.Dialog ):
 						if i < len(self.quickBibs):
 							self.quickBibs[i] = bib
 							self.quickButtons[i].SetLabel( str(self.quickBibs[i]).center(3, ' ') )
+							self.setNameToolTip(bib, self.quickButtons[i])
 							i += 1
 						else:
 							break
+						
+	def setNameToolTip( self, bib=None, btn=None ):
+		if not btn:
+			return
+		if bib:
+			# Try to get the rider's name for tooltip
+			race = Model.race
+			if race:
+				try:
+					externalInfo = race.excelLink.read()
+					info = externalInfo.get(int(bib), {})
+					riderName = ', '.join( n for n in [info.get('LastName', ''), info.get('FirstName', '')] if n )
+				except AttributeError:
+					pass
+			if riderName:
+				btn.SetToolTip( riderName )
+			else:
+				btn.SetToolTip( '#' + str(bib) )
+		else:
+			btn.SetToolTip( 'Right-click to set bib' )
 				
 		
 if __name__ == '__main__':

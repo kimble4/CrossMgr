@@ -10,6 +10,11 @@ Use the __Bib Enter__ dialog when you wish to keep up another screen while doing
 
 You can move the __Bib Enter__ dialog to the most convenient part of the screen.
 
+Clicking the __'...'__ buton (or pressing F6) reveals 5 'speed dial' bib entry buttons, for when you only need to manually enter a small number of bibs over and over (eg. due to a rider with a bad RFID tag).
+Clicking the button will enter the respective bib immediately.  Alternatively, you can use the function keys F1-F5.
+To set the bib for a button, enter the number, then right-click on the button, or press its respective function key while holding Ctrl.
+Ctrl-P will populate the buttons with the bibs of the first 5 finishers in the current race.
+
 ## Windows
 Opens/Closes screens in a separate window.  This is especially useful if you are using multiple screens and wish to show additional CrossMgr information while entering data in the main screen, or you wish to display the [LapCounter][] on another screen to show the riders.
 
@@ -29,7 +34,7 @@ If the Excel sheet is updated later so that the missing tags are included, the _
 Take a close look at the laps in the __Unmatched RFID Tags__ screen.
 If the times appear to be in regular laps for a rider, this is an indication that:
 
-1. The rider is genuinely in the race, but has the wrong tag or a missing tag in the Excel sheet.  Fix your spreadsheet.  Then get CrossMgr to refresh, say, buy switching screens.  It will then automatically pull the unmatched RFID tags data into the race.
+1. The rider is genuinely in the race, but has the wrong tag or a missing tag in the Excel sheet.  Fix your spreadsheet.  Then get CrossMgr to refresh, say, by switching screens.  It will then automatically pull the unmatched RFID tags data into the race.
 1. The rider thinks he/she is in this race, but is actually in another race that starts at a different time.  You need to tell the rider to compete in the right event.
 1. The rider is knowingly riding in the wrong race (and was stupid enough not to remove his/her tag!).  This is serious.
 
