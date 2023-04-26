@@ -12,6 +12,7 @@ from ExportGrid import ExportGrid
 from RiderDetail import ShowRiderDetailDialog
 from EditEntry import CorrectNumber, ShiftNumber, InsertNumber, DeleteEntry, SwapEntry
 from Undo import undo
+from MissingRiders import MissingRiders
 import Flags
 
 bitmapCache = {}
@@ -131,6 +132,9 @@ class Results( wx.Panel ):
 		f = self.showLapTimesRadio.GetFont()
 		self.boldFont = wx.Font( f.GetPointSize()+2, f.GetFamily(), f.GetStyle(), wx.FONTWEIGHT_BOLD, f.GetUnderlined() )
 		
+		self.missingRidersButton = wx.Button( self, label='&Missing...' )
+		self.Bind( wx.EVT_BUTTON, self.onMissingRidersButton )
+		
 		self.search = wx.SearchCtrl(self, size=(80,-1), style=wx.TE_PROCESS_ENTER )
 		# self.search.ShowCancelButton( True )
 		self.Bind(wx.EVT_SEARCHCTRL_SEARCH_BTN, self.OnSearch, self.search)
@@ -152,6 +156,7 @@ class Results( wx.Panel ):
 		self.hbs.Add( self.showLapSpeedsRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.showRaceSpeedsRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.AddStretchSpacer()
+		self.hbs.Add( self.missingRidersButton, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.search, flag=wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.zoomInButton, flag=wx.TOP | wx.BOTTOM | wx.LEFT | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.zoomOutButton, flag=wx.TOP | wx.BOTTOM | wx.RIGHT | wx.ALIGN_CENTRE_VERTICAL, border=4 )
@@ -250,6 +255,10 @@ class Results( wx.Panel ):
 
 	def alignLapToLabelScroll(self): 
 		Utils.AlignVerticalScroll( self.lapGrid, self.labelGrid )
+		
+	def onMissingRidersButton( self, event ):
+		missingRiders = MissingRiders( self )
+		missingRiders.Show()
 	
 	def OnSearch( self, event ):
 		self.OnDoSearch()
@@ -677,6 +686,7 @@ class Results( wx.Panel ):
 				if rr.status==Model.Rider.Finisher and rr.lapTimes and getSortTime(rr) > 0),
 			key = getSortTime
 		)
+		
 		for i in range(1, len(results)):
 			if results[i]._lastTimeOrig - results[i-1]._lastTimeOrig <= CloseFinishTime:
 				self.closeFinishBibs[results[i-1].num].append( results[i].num )
