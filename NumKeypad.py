@@ -213,6 +213,7 @@ class NumKeypad( wx.Panel ):
 		
 		self.bell = None
 		self.lapReminder = {}
+		self.leaderNums = set()
 		
 		self.SetBackgroundColour( wx.WHITE )
 		
@@ -446,6 +447,7 @@ class NumKeypad( wx.Panel ):
 		Finisher = Model.Rider.Finisher
 		raceTimes = []
 		leader = []
+		leaderNums = set()
 		categoryRaceTimes = {}
 		categories_seen = set()
 		getCategory = race.getCategory
@@ -486,6 +488,7 @@ class NumKeypad( wx.Panel ):
 			if not leaderCategory:
 				leaderCategory = category
 			categories_seen.add( category )
+			leaderNums.add( rr.num )
 			leader.append( '{} {}'.format(category.fullname if category else '<{}>'.format(_('Missing')), rr.num) )
 			
 			# Add a copy of the race times.  Append the leader's last time as the current red lantern.
@@ -532,7 +535,13 @@ class NumKeypad( wx.Panel ):
 						self.lapReminder[category] = Utils.PlaySound( 'reminder.wav' )
 				elif category in self.lapReminder:
 					del self.lapReminder[category]
-		
+					
+		# Play sound if a leader changes.
+		if leaderNums != self.leaderNums:
+			#print( 'We have a new leader! ' + str(leaderNums) )
+			Utils.PlaySound( 'newleader.wav' )
+			self.leaderNums = leaderNums
+			
 		self.raceHUD.SetData( raceTimes, leader, tCur if race.isRunning() else None )
 		if Utils.mainWin:
 			Utils.mainWin.updateLapCounter( lapCounter )
