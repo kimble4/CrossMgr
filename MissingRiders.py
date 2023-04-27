@@ -10,8 +10,10 @@ import wx.grid as gridlib
 
 class MissingRiders( wx.Dialog ):
 	def __init__( self, parent, id = wx.ID_ANY):
-		super().__init__( parent, id, _("Missing Riders"),
-						style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER )
+		displaySize = list( wx.GetDisplaySize() )
+		size = (min(displaySize[0], 640), displaySize[1]/2)
+		super().__init__( parent, id, _("Missing Riders"), size=size, pos=wx.DefaultPosition, 
+			style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX )
 		
 		self.SetLayoutAdaptationMode(wx.DIALOG_ADAPTATION_MODE_ENABLED)
 		
@@ -44,9 +46,10 @@ class MissingRiders( wx.Dialog ):
 		hbs.Add( self.refreshButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		self.mainSizer.Add( hbs, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
-		self.SetSizerAndFit( self.mainSizer )
+		self.SetSizer( self.mainSizer )
 		
 		self.refresh()
+		#self.Fit()
 		
 	def doCellDoubleClick( self, event ):
 		ShowRiderDetailDialog( self, self.bibs[event.GetRow()] )
