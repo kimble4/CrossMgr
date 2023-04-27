@@ -260,16 +260,24 @@ class RiderDetail( wx.Panel ):
 		
 		row += 1
 		
+		self.machineName = wx.StaticText( self, label = '{} '.format(_('Machine')) )
+		gbs.Add( self.machineName, pos=(row,0), span=(1,1), flag=labelAlign )
+		self.riderMachine = wx.StaticText( self )
+		gbs.Add( self.riderMachine, pos=(row,1), span=(1,4), flag=wx.EXPAND )
+		
+		self.finishTimeName = wx.StaticText( self, label = '{} '.format(_('Finish')) )
+		gbs.Add( self.finishTimeName, pos=(row,5), span=(1,1), flag=labelAlign )
+		self.finishTime = wx.StaticText( self, label = '00:00:00' )
+		gbs.Add( self.finishTime, pos=(row,6), span=(1,1), flag=wx.EXPAND )
+		
+		row += 1
+		
 		self.teamName = wx.StaticText( self, label = '{} '.format(_('Team')) )
 		gbs.Add( self.teamName, pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderTeam = wx.StaticText( self )
 		gbs.Add( self.riderTeam, pos=(row,1), span=(1,4), flag=wx.EXPAND )
 		
-		self.finishTimeName = wx.StaticText( self, label = '{} '.format(_('Finish')) )
-		gbs.Add( self.finishTimeName, pos=(row,5), span=(1,1), flag=labelAlign )
 		
-		self.finishTime = wx.StaticText( self, label = '00:00:00' )
-		gbs.Add( self.finishTime, pos=(row,6), span=(1,1), flag=wx.EXPAND )
 		
 		row += 1
 		
@@ -1172,6 +1180,7 @@ class RiderDetail( wx.Panel ):
 		self.lineGraph.SetData( None )
 		self.ganttChart.SetData( [] )
 		self.riderName.SetLabel( '' )
+		self.riderMachine.SetLabel( '' )
 		self.riderTeam.SetLabel( '' )
 		self.tags.SetLabel( '' )
 		
@@ -1206,6 +1215,7 @@ class RiderDetail( wx.Panel ):
 				
 			self.riderName.SetLabel( riderName )
 			self.riderTeam.SetLabel( '{}'.format(info.get('Team', '')) )
+			self.riderMachine.SetLabel( '{}'.format(info.get('Machine', '')) )
 
 			tags = []
 			for tagName in TagFields:
