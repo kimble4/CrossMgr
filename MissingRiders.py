@@ -1,20 +1,24 @@
 import wx
 import Utils
 import Model
-from EditEntry import DoDNF, DoDNS, DoPull, DoDQ
+from EditEntry import DoDNS, DoDQ
 from NumKeypad import getRiderNumsFromText, enterCodes, validKeyCodes
 from ReorderableGrid import ReorderableGrid
+from RiderDetail import ShowRiderDetailDialog
+from Undo import undo
 import wx.grid as gridlib
 
 class MissingRiders( wx.Dialog ):
-	def __init__( self, parent, id = wx.ID_ANY ):
+	def __init__( self, parent, id = wx.ID_ANY):
 		super().__init__( parent, id, _("Missing Riders"),
-						style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL|wx.STAY_ON_TOP )
+						style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER )
 		
-		self.headerNames = ['Bib', 'Name', 'Status']
+		self.SetLayoutAdaptationMode(wx.DIALOG_ADAPTATION_MODE_ENABLED)
 		
-		self.showStrayRiders = wx.CheckBox( self, label='&Show stray riders' )
-		self.showStrayRiders.SetToolTip('Include riders we have times for who are not in the sign-on spreadsheet')
+		self.headerNames = ['Bib', 'Name', 'Machine', 'Team', 'Status']
+		
+		self.showStrayRiders = wx.CheckBox( self, label='&Show unmatched riders' )
+		self.showStrayRiders.SetToolTip('Include riders we have times for who are not in the sign-on spreadsheet.  RFID tags which do not have a rider associated with them can be seen in the \'Unmatched RFID Tags\' window.')
 		self.showStrayRiders.SetValue( True )
 		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
@@ -29,8 +33,8 @@ class MissingRiders( wx.Dialog ):
 		self.grid.SetColLabelSize( 64 )
 		self.grid.SetRowLabelSize( 0 )
 		self.grid.EnableReorderRows( False )
-		#self.grid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doCellRightClick )
-		#self.grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.doCellClick )
+		self.grid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doCellRightClick )
+		self.grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.doCellDoubleClick )
 		self.sortCol = None
 		
 		self.mainSizer = wx.BoxSizer( wx.VERTICAL )
@@ -43,6 +47,53 @@ class MissingRiders( wx.Dialog ):
 		self.SetSizerAndFit( self.mainSizer )
 		
 		self.refresh()
+		
+	def doCellDoubleClick( self, event ):
+		ShowRiderDetailDialog( self, self.bibs[event.GetRow()] )
+		wx.CallAfter( self.refresh )
+		
+	def doCellRightClick( self, event ):
+		bib = self.bibs[event.GetRow()]
+		menu = wx.Menu()
+		item = menu.Append( wx.ID_ANY, 'RiderDetail', 'Rider Detail...' )
+		self.Bind( wx.EVT_MENU, lambda evt: self.riderDetailCallback(bib), item )
+		item = menu.Append( wx.ID_ANY, 'Set DNS', 'Set DNS...' )
+		self.Bind( wx.EVT_MENU, lambda evt: self.setDNSCallback(bib), item )
+		item = menu.Append( wx.ID_ANY, 'Set DQ', 'Set DQ...' )
+		self.Bind( wx.EVT_MENU, lambda evt: self.setDQCallback(bib), item )
+		item = menu.Append( wx.ID_ANY, 'Delete Rider', 'Delete rider...' )
+		self.Bind( wx.EVT_MENU, lambda evt: self.deleteRider(bib), item )
+		
+		self.PopupMenu( menu )
+		
+	def riderDetailCallback( self, bib ):
+		ShowRiderDetailDialog( self, bib )
+		wx.CallAfter( self.refresh )
+	
+	def setDNSCallback( self, bib ):
+		DoDNS( self, bib )
+		wx.CallAfter( self.refresh )
+		
+	def setDQCallback( self, bib ):
+		DoDQ( self, bib )
+		wx.CallAfter( self.refresh )
+		
+	def deleteRider( self, bib ):
+		if not Model.race:
+			return
+			
+		with Model.LockRace() as race:
+			if not bib in race:
+				wx.CallAfter( self.refresh )
+				return
+			
+		if Utils.MessageOKCancel( self, '{}: {}: {}'.format(_('Bib'), bib, _("Confirm Delete")), _("Delete Rider") ):
+			undo.pushState()
+			with Model.LockRace() as race:
+				race.deleteRider( bib )
+			wx.CallAfter( self.refresh )
+			wx.CallAfter( Utils.refreshForecastHistory )
+			wx.CallAfter( Utils.refresh )
 		
 	def refresh( self, event=None ):
 		Finisher = Model.Rider.Finisher
@@ -66,44 +117,70 @@ class MissingRiders( wx.Dialog ):
 			self.grid.SetColAttr( col, attr )
 		
 		riderList = {}
+		self.bibs = []
+		showMachineCol = False
+		showTeamCol = False
 		
 		# Get everyone in the spreadsheet without a time...
 		for bib in externalInfo:
 			rider = race.getRider( bib )
 			riderInfo = externalInfo.get(int(bib), {})
 			riderName = ', '.join( n for n in [riderInfo.get('LastName', ''), riderInfo.get('FirstName', '')] if n)
-			#if rider.status == Finisher and not rider.times:
-				#status = 'Unseen'
-			#else:
-				#status = Model.Rider.statusNames[rider.status]
+			riderMachine = riderInfo.get('Machine')
+			if riderMachine:
+				showMachineCol = True
+			riderTeam = riderInfo.get('Team')
+			if riderTeam:
+				showTeamCol = True
 			if not rider.times:
-				status = Model.Rider.statusNames[rider.status] if rider.status != Finisher else 'Unseen'
-				riderList.update({bib:[str(riderName), status, False]})
-		
+				if rider.status == Finisher:
+					riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
+				else:
+					status = Model.Rider.statusNames[rider.status]
+					riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
+					
 		# Get everyone in the race without a spreadsheet entry...
 		if self.showStrayRiders.GetValue():
 			for bib, rider in race.riders.items():
 				status = Model.Rider.statusNames[rider.status]
 				if rider.times:
 					if not externalInfo.get(bib):
-						riderList.update({bib:['', status, True]})
-		
+						riderList.update({bib:['', '', '', status, 2]})
 		row = 0
 		for bib in sorted(riderList):
+			self.bibs.append(bib)
 			self.grid.InsertRows( pos=row+1, numRows=1)
 			self.grid.SetCellValue( row, 0, str(bib) )
 			self.grid.SetCellAlignment(row, 0, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE_VERTICAL)
 			self.grid.SetCellValue( row, 1, riderList[bib][0] )
 			self.grid.SetCellAlignment(row, 1, wx.ALIGN_LEFT, wx.ALIGN_CENTRE_VERTICAL)
 			self.grid.SetCellValue( row, 2, riderList[bib][1] )
-			if riderList[bib][2]: # Stray rider
-				self.grid.SetCellBackgroundColour( row, 0, wx.Colour( 211, 211, 211 ) )
-				self.grid.SetCellBackgroundColour( row, 1, wx.Colour( 211, 211, 211 ) )
-				self.grid.SetCellBackgroundColour( row, 2, wx.Colour( 211, 211, 211 ) )
+			self.grid.SetCellAlignment(row, 2, wx.ALIGN_LEFT, wx.ALIGN_CENTRE_VERTICAL)
+			self.grid.SetCellValue( row, 3, riderList[bib][2] )
+			self.grid.SetCellAlignment(row, 3, wx.ALIGN_LEFT, wx.ALIGN_CENTRE_VERTICAL)
+			self.grid.SetCellValue( row, 4, riderList[bib][3] )
+			self.grid.SetCellAlignment(row, 4, wx.ALIGN_LEFT, wx.ALIGN_CENTRE_VERTICAL)
+			# Colour rows in table
+			for i in range(len(self.headerNames)):
+				if riderList[bib][4] == 1: # Missing rider:
+					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 255, 255, 0 ) )
+				elif riderList[bib][4] == 2: # Stray rider
+					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 211, 211, 211 ) )
+				else:
+					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 255, 255, 255 ) )
 			row += 1
-				
+		
+		if showMachineCol:
+			self.grid.ShowCol(2)
+		else:
+			self.grid.HideCol(2)
+			
+		if showTeamCol:
+			self.grid.ShowCol(3)
+		else:
+			self.grid.HideCol(3)
+		
 		self.grid.AutoSize()
-		self.GetSizer().Layout()
+		self.Layout()
 		self.grid.EnableEditing(True)
 		self.grid.ForceRefresh()
-		self.Fit()

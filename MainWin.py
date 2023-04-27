@@ -82,6 +82,7 @@ from Playback			import Playback
 from Pulled				import Pulled
 from TeamResults		import TeamResults
 from BibEnter			import BibEnter
+from MissingRiders 		import MissingRiders
 from BackgroundJobMgr	import BackgroundJobMgr
 from Restart			import Restart
 from ReissueBibs	 	import ReissueBibsDialog
@@ -866,6 +867,9 @@ class MainWin( wx.Frame ):
 		
 		item = self.windowMenu.Append( wx.ID_ANY, _("&Bib Enter...\tCtrl+B"), _("Bib Enter...") )
 		self.Bind( wx.EVT_MENU, self.menuShowBibEnter, item )
+		item = self.windowMenu.Append( wx.ID_ANY, _("&Missing riders...\tCtrl+M"), _("Missing riders...") )
+		self.Bind( wx.EVT_MENU, self.menuShowMissingRiders, item )
+		
 		self.windowMenu.AppendSeparator()
 
 		self.menuIdToWindowInfo = {}
@@ -1398,6 +1402,10 @@ class MainWin( wx.Frame ):
 	def menuShowBibEnter( self, event ):
 		#self.bibEnter.populateBibs()
 		self.bibEnter.Show()
+		
+	def menuShowMissingRiders( self, event):
+		missingRiders = MissingRiders( self )
+		missingRiders.Show()
 		
 	def getDirName( self ):
 		return Utils.getDirName()
