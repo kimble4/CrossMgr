@@ -36,13 +36,11 @@ class MissingRiders( wx.Dialog ):
 		self.grid = ReorderableGrid( self, style = wx.BORDER_SUNKEN )
 		self.grid.DisableDragRowSize()
 		self.grid.CreateGrid( 0, len(self.headerNames) )
-		self.grid.SetColFormatBool( 7 )
-		self.grid.SetColLabelSize( 64 )
+		#self.grid.SetColLabelSize( 32 )
 		self.grid.SetRowLabelSize( 0 )
 		self.grid.EnableReorderRows( False )
 		self.grid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doCellRightClick )
 		self.grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.doCellDoubleClick )
-		self.sortCol = None
 		
 		self.mainSizer = wx.BoxSizer( wx.VERTICAL )
 		hbs = wx.BoxSizer( wx.HORIZONTAL )
