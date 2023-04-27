@@ -1,6 +1,7 @@
 import wx
 import Utils
 import Model
+import os
 from EditEntry import DoDNS, DoDQ
 from NumKeypad import getRiderNumsFromText, enterCodes, validKeyCodes
 from ReorderableGrid import ReorderableGrid
@@ -14,6 +15,10 @@ class MissingRiders( wx.Dialog ):
 		size = (min(displaySize[0], 640), displaySize[1]/2)
 		super().__init__( parent, id, _("Missing Riders"), size=size, pos=wx.DefaultPosition, 
 			style = wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER|wx.MINIMIZE_BOX|wx.MAXIMIZE_BOX )
+		
+		# Set the upper left icon.
+		icon = wx.Icon( os.path.join(Utils.getImageFolder(), 'CrossMgr16x16.ico'), wx.BITMAP_TYPE_ICO )
+		self.SetIcon( icon )
 		
 		self.SetLayoutAdaptationMode(wx.DIALOG_ADAPTATION_MODE_ENABLED)
 		
@@ -49,7 +54,7 @@ class MissingRiders( wx.Dialog ):
 		self.SetSizer( self.mainSizer )
 		
 		self.refresh()
-		#self.Fit()
+		self.Fit()
 		
 	def doCellDoubleClick( self, event ):
 		ShowRiderDetailDialog( self, self.bibs[event.GetRow()] )
