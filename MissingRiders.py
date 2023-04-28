@@ -29,9 +29,9 @@ class MissingRiders( wx.Dialog ):
 		self.showStrayRiders.SetValue( True )
 		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
-		self.refreshButton = wx.Button(self, label='&Refresh')
-		self.refreshButton.SetToolTip('Update the list')
-		self.refreshButton.Bind( wx.EVT_BUTTON, self.refresh )
+		#self.refreshButton = wx.Button(self, label='&Refresh')
+		#self.refreshButton.SetToolTip('Update the list')
+		#self.refreshButton.Bind( wx.EVT_BUTTON, self.refresh )
 		
 		self.grid = ReorderableGrid( self, style = wx.BORDER_SUNKEN )
 		self.grid.DisableDragRowSize()
@@ -46,7 +46,7 @@ class MissingRiders( wx.Dialog ):
 		hbs = wx.BoxSizer( wx.HORIZONTAL )
 		hbs.Add( self.showStrayRiders, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		hbs.AddStretchSpacer()
-		hbs.Add( self.refreshButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
+		#hbs.Add( self.refreshButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		self.mainSizer.Add( hbs, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.SetSizer( self.mainSizer )
@@ -55,13 +55,13 @@ class MissingRiders( wx.Dialog ):
 		self.Fit()
 		
 	def doCellDoubleClick( self, event ):
-		ShowRiderDetailDialog( self, self.bibs[event.GetRow()] )
+		ShowRiderDetailDialog( self, self.bibNames[event.GetRow()][0] )
 		wx.CallAfter( self.refresh )
 		
 	def doCellRightClick( self, event ):
-		bib = self.bibs[event.GetRow()]
+		bib, name = self.bibNames[event.GetRow()]
 		menu = wx.Menu()
-		item = menu.Append( wx.ID_ANY, 'RiderDetail', 'Rider Detail...' )
+		item = menu.Append( wx.ID_ANY, '#' + str(bib) + ' ' +  name, 'Rider Detail...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.riderDetailCallback(bib), item )
 		item = menu.Append( wx.ID_ANY, 'Set DNS', 'Set DNS...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.setDNSCallback(bib), item )
@@ -123,7 +123,7 @@ class MissingRiders( wx.Dialog ):
 			self.grid.SetColAttr( col, attr )
 		
 		riderList = {}
-		self.bibs = []
+		self.bibNames = []
 		showMachineCol = False
 		showTeamCol = False
 		
@@ -154,7 +154,7 @@ class MissingRiders( wx.Dialog ):
 						riderList.update({bib:['', '', '', status, 2]})
 		row = 0
 		for bib in sorted(riderList):
-			self.bibs.append(bib)
+			self.bibNames.append((bib, riderList[bib][0]))
 			self.grid.InsertRows( pos=row+1, numRows=1)
 			self.grid.SetCellValue( row, 0, str(bib) )
 			self.grid.SetCellAlignment(row, 0, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE_VERTICAL)

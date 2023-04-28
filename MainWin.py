@@ -742,6 +742,7 @@ class MainWin( wx.Frame ):
 		self.splitter.UpdateSize()
 		
 		self.bibEnter = BibEnter( self )
+		self.missingRiders = MissingRiders( self )
 
 		#-----------------------------------------------------------------------
 		self.chipMenu = wx.Menu()
@@ -1404,8 +1405,9 @@ class MainWin( wx.Frame ):
 		self.bibEnter.Show()
 		
 	def menuShowMissingRiders( self, event):
-		missingRiders = MissingRiders( self )
-		missingRiders.Show()
+		self.missingRiders.refresh()
+		self.missingRiders.Fit()
+		self.missingRiders.Show()
 		
 	def getDirName( self ):
 		return Utils.getDirName()
@@ -4051,6 +4053,11 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			for d in (dialog for attr, name, menuItem, dialog in self.menuIdToWindowInfo.values() if dialog.IsShown()):
 				try:
 					wx.CallAfter( d.refresh )
+				except AttributeError:
+					pass
+			if self.missingRiders.IsShown():
+				try:
+					wx.CallAfter( self.missingRiders.refresh )
 				except AttributeError:
 					pass
 		except AttributeError:
