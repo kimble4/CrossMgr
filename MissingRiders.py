@@ -72,8 +72,9 @@ class MissingRiders( wx.Dialog ):
 		menu = wx.Menu()
 		item = menu.Append( wx.ID_ANY, '#' + str(bib) + ' ' +  name, 'Rider Detail...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.riderDetailCallback(bib), item )
-		item = menu.Append( wx.ID_ANY, 'Add to Bib Enter', 'Add to Bib Enter...' )
-		self.Bind( wx.EVT_MENU, lambda evt: self.parent.bibEnter.populateBibs(bib=bib), item )
+		if self.parent.bibEnter.canAddBib(bib):
+			item = menu.Append( wx.ID_ANY, 'Add to Bib Enter', 'Add to Bib Enter...' )
+			self.Bind( wx.EVT_MENU, lambda evt: self.parent.bibEnter.populateBibs(bib=bib), item )
 		item = menu.Append( wx.ID_ANY, 'Set DNS', 'Set DNS...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.setDNSCallback(bib), item )
 		item = menu.Append( wx.ID_ANY, 'Set DQ', 'Set DQ...' )
@@ -144,11 +145,11 @@ class MissingRiders( wx.Dialog ):
 		showMachineCol = False
 		showTeamCol = False
 		
-		# Get everyone in the spreadsheet without a time...
-		for bib in externalInfo:
+		# Get everyone in the race
+		for bib, rider in race.riders.items():
 			startOffset = race.getStartOffset( bib )
 			if tNow >= startOffset:  # If the rider's wave has started...
-				rider = race.getRider( bib )
+				status = Model.Rider.statusNames[rider.status]
 				riderInfo = externalInfo.get(int(bib), {})
 				riderName = ', '.join( n for n in [riderInfo.get('LastName', ''), riderInfo.get('FirstName', '')] if n)
 				riderMachine = riderInfo.get('Machine')
@@ -157,20 +158,15 @@ class MissingRiders( wx.Dialog ):
 				riderTeam = riderInfo.get('Team')
 				if riderTeam:
 					showTeamCol = True
-				if not rider.times:
+				if not rider.times:  # Rider has no times
 					if rider.status == Finisher:
 						riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
 					elif self.showNonFinishers.GetValue():
-						status = Model.Rider.statusNames[rider.status]
 						riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
-					
-		# Get everyone in the race without a spreadsheet entry...
-		if self.showStrayRiders.GetValue():
-			for bib, rider in race.riders.items():
-				status = Model.Rider.statusNames[rider.status]
-				if rider.times:
-					if not externalInfo.get(bib):
-						riderList.update({bib:['', '', '', status, 2]})
+				elif self.showStrayRiders.GetValue() and not externalInfo.get(bib):  # Rider with times has no spreadsheet entry
+						riderList.update({bib:['', '', '', status , 2]})
+		
+		# Add to list in bib order
 		row = 0
 		for bib in sorted(riderList):
 			self.bibNames.append((bib, riderList[bib][0]))

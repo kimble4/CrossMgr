@@ -136,6 +136,14 @@ class BibEnter( wx.Dialog ):
 		self.Fit()
 		wx.CallAfter( self.numEdit.SetValue, '' )
 		
+	def canAddBib( self, bib ):
+		for i in range(len(self.quickBibs)):
+			if self.quickBibs[i] == bib:  # If we have the bib already...
+				return False
+			if self.quickBibs[i] == '':  # If we have an empty button...
+				return True
+		return False
+		
 	def populateBibs( self, event=None, bib=None ):
 		race = Model.race
 		if bib:
