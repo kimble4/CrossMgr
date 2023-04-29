@@ -10,14 +10,15 @@ from ReadRaceResultsSheet import GetExcelResultsLink, ExcelLink
 	
 class Races(wx.Panel):
 	#----------------------------------------------------------------------
-	headerNames = ['Race', 'Grade', 'Points', 'Team Pts', 'Race File']
+	headerNames = ['Event', 'Race', 'Grade', 'Points', 'Team Pts', 'Race File']
 	
-	RaceCol = 0
-	GradeCol = 1
-	PointsCol = 2
-	TeamPointsCol = 3
-	RaceFileCol = 4
-	RaceStatusCol = 5
+	EventCol = 0
+	RaceCol = 1
+	GradeCol = 2
+	PointsCol = 3
+	TeamPointsCol = 4
+	RaceFileCol = 5
+	RaceStatusCol = 6
 	
 	def __init__(self, parent):
 		wx.Panel.__init__(self, parent)
@@ -106,6 +107,9 @@ class Races(wx.Panel):
 		sizer.Add( self.explanation, 0, flag=wx.EXPAND|wx.ALL, border=4 )
 		sizer.Add(hs, 0, flag=wx.EXPAND)
 		sizer.Add(self.grid, 1, flag=wx.EXPAND|wx.ALL, border = 6)
+		self.commitButton = wx.Button(self, wx.ID_ANY, '&Commit' )
+		self.commitButton.Bind( wx.EVT_BUTTON, self.commit )
+		sizer.Add(self.commitButton, 0, flag=wx.ALL, border = 4 )
 		self.SetSizer(sizer)
 
 	def getGrid( self ):
@@ -201,7 +205,7 @@ class Races(wx.Panel):
 		self.seriesName.SetValue( SeriesModel.model.name )
 		self.organizerName.SetValue( SeriesModel.model.organizer )
 	
-	def commit( self ):
+	def commit( self, event=None ):
 		self.grid.SaveEditControlValue()
 		self.grid.DisableCellEditControl()	# Make sure the current edit is committed.
 		
