@@ -11,6 +11,8 @@ import wx.grid as gridlib
 
 class MissingRiders( wx.Dialog ):
 	def __init__( self, parent, id = wx.ID_ANY):
+		self.parent = parent
+		
 		displaySize = list( wx.GetDisplaySize() )
 		size = (min(displaySize[0], 640), displaySize[1]/2)
 		super().__init__( parent, id, _("Missing Riders"), size=size, pos=wx.DefaultPosition, 
@@ -24,19 +26,23 @@ class MissingRiders( wx.Dialog ):
 		
 		self.headerNames = ['Bib', 'Name', 'Machine', 'Team', 'Status']
 		
-		self.showStrayRiders = wx.CheckBox( self, label='&Show unmatched riders' )
+		self.showStrayRiders = wx.CheckBox( self, label='Show &unmatched riders' )
 		self.showStrayRiders.SetToolTip('Include riders we have times for who are not in the sign-on spreadsheet.  RFID tags which do not have a rider associated with them can be seen in the \'Unmatched RFID Tags\' window.')
 		self.showStrayRiders.SetValue( True )
 		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
-		#self.refreshButton = wx.Button(self, label='&Refresh')
-		#self.refreshButton.SetToolTip('Update the list')
-		#self.refreshButton.Bind( wx.EVT_BUTTON, self.refresh )
+		self.showNonFinishers = wx.CheckBox( self, label='Include &non-finishers' )
+		self.showNonFinishers.SetToolTip('Include riders who are DNS etc.')
+		self.showNonFinishers.SetValue( False )
+		self.showNonFinishers.Bind( wx.EVT_CHECKBOX, self.refresh )
+		
+		self.fitButton = wx.Button(self, label='&Resize')
+		self.fitButton.SetToolTip('Update the list')
+		self.fitButton.Bind( wx.EVT_BUTTON, self.onFitButton )
 		
 		self.grid = ReorderableGrid( self, style = wx.BORDER_SUNKEN )
 		self.grid.DisableDragRowSize()
 		self.grid.CreateGrid( 0, len(self.headerNames) )
-		#self.grid.SetColLabelSize( 32 )
 		self.grid.SetRowLabelSize( 0 )
 		self.grid.EnableReorderRows( False )
 		self.grid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doCellRightClick )
@@ -45,8 +51,10 @@ class MissingRiders( wx.Dialog ):
 		self.mainSizer = wx.BoxSizer( wx.VERTICAL )
 		hbs = wx.BoxSizer( wx.HORIZONTAL )
 		hbs.Add( self.showStrayRiders, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
+		hbs.Add( self.showNonFinishers, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		hbs.AddStretchSpacer()
-		#hbs.Add( self.refreshButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
+		
+		hbs.Add( self.fitButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		self.mainSizer.Add( hbs, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.SetSizer( self.mainSizer )
@@ -63,6 +71,8 @@ class MissingRiders( wx.Dialog ):
 		menu = wx.Menu()
 		item = menu.Append( wx.ID_ANY, '#' + str(bib) + ' ' +  name, 'Rider Detail...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.riderDetailCallback(bib), item )
+		item = menu.Append( wx.ID_ANY, 'Add to Bib Enter', 'Add to Bib Enter...' )
+		self.Bind( wx.EVT_MENU, lambda evt: self.parent.bibEnter.populateBibs(bib=bib), item )
 		item = menu.Append( wx.ID_ANY, 'Set DNS', 'Set DNS...' )
 		self.Bind( wx.EVT_MENU, lambda evt: self.setDNSCallback(bib), item )
 		item = menu.Append( wx.ID_ANY, 'Set DQ', 'Set DQ...' )
@@ -101,6 +111,10 @@ class MissingRiders( wx.Dialog ):
 			wx.CallAfter( Utils.refreshForecastHistory )
 			wx.CallAfter( Utils.refresh )
 		
+	def onFitButton( self, event):
+		self.refresh()
+		self.Fit()
+	
 	def refresh( self, event=None ):
 		Finisher = Model.Rider.Finisher
 		race = Model.race
@@ -141,7 +155,7 @@ class MissingRiders( wx.Dialog ):
 			if not rider.times:
 				if rider.status == Finisher:
 					riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
-				else:
+				elif self.showNonFinishers.GetValue():
 					status = Model.Rider.statusNames[rider.status]
 					riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
 					

@@ -206,8 +206,8 @@ class DNSManagerDialog( wx.Dialog ):
 
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		hs.AddStretchSpacer()
-		hs.Add( self.helpBtn, flag=wx.ALL|wx.ALIGN_RIGHT, border = 4 )
-		hs.Add( self.closeBtn, flag=wx.ALL|wx.ALIGN_RIGHT, border = 4 )
+		hs.Add( self.helpBtn, flag=wx.ALL, border = 4 )
+		hs.Add( self.closeBtn, flag=wx.ALL, border = 4 )
 		vs.Add( hs, flag=wx.EXPAND )
 		
 		self.SetSizerAndFit(vs)

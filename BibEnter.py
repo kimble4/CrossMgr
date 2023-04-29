@@ -136,9 +136,16 @@ class BibEnter( wx.Dialog ):
 		self.Fit()
 		wx.CallAfter( self.numEdit.SetValue, '' )
 		
-	def populateBibs( self, event=None ):
+	def populateBibs( self, event=None, bib=None ):
 		race = Model.race
-		if race:
+		if bib:
+			for i in range(len(self.quickBibs)):
+				if self.quickBibs[i] == '':
+					self.quickBibs[i] = bib
+					self.quickButtons[i].SetLabel( str(self.quickBibs[i]).center(3, ' ') )
+					self.setNameToolTip(bib, self.quickButtons[i])
+					break
+		elif race:
 			riders = Model.race.riders
 			if riders:
 				i = 0
