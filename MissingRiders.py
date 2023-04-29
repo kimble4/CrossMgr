@@ -2,6 +2,7 @@ import wx
 import Utils
 import Model
 import os
+import datetime
 from EditEntry import DoDNS, DoDQ
 from NumKeypad import getRiderNumsFromText, enterCodes, validKeyCodes
 from ReorderableGrid import ReorderableGrid
@@ -126,6 +127,8 @@ class MissingRiders( wx.Dialog ):
 		except Exception:
 			return
 		
+		tNow = race.curRaceTime()  #float
+		
 		self.grid.ClearGrid()
 		if (self.grid.GetNumberRows() > 0):
 			self.grid.DeleteRows( 0, self.grid.GetNumberRows() )
@@ -143,21 +146,23 @@ class MissingRiders( wx.Dialog ):
 		
 		# Get everyone in the spreadsheet without a time...
 		for bib in externalInfo:
-			rider = race.getRider( bib )
-			riderInfo = externalInfo.get(int(bib), {})
-			riderName = ', '.join( n for n in [riderInfo.get('LastName', ''), riderInfo.get('FirstName', '')] if n)
-			riderMachine = riderInfo.get('Machine')
-			if riderMachine:
-				showMachineCol = True
-			riderTeam = riderInfo.get('Team')
-			if riderTeam:
-				showTeamCol = True
-			if not rider.times:
-				if rider.status == Finisher:
-					riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
-				elif self.showNonFinishers.GetValue():
-					status = Model.Rider.statusNames[rider.status]
-					riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
+			startOffset = race.getStartOffset( bib )
+			if tNow >= startOffset:  # If the rider's wave has started...
+				rider = race.getRider( bib )
+				riderInfo = externalInfo.get(int(bib), {})
+				riderName = ', '.join( n for n in [riderInfo.get('LastName', ''), riderInfo.get('FirstName', '')] if n)
+				riderMachine = riderInfo.get('Machine')
+				if riderMachine:
+					showMachineCol = True
+				riderTeam = riderInfo.get('Team')
+				if riderTeam:
+					showTeamCol = True
+				if not rider.times:
+					if rider.status == Finisher:
+						riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
+					elif self.showNonFinishers.GetValue():
+						status = Model.Rider.statusNames[rider.status]
+						riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
 					
 		# Get everyone in the race without a spreadsheet entry...
 		if self.showStrayRiders.GetValue():
