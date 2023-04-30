@@ -79,6 +79,7 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 	scoreByPercent = model.scoreByPercent
 	scoreByTrueSkill = model.scoreByTrueSkill
 	bestResultsToConsider = model.bestResultsToConsider
+	bestEventsToConsider = model.bestEventsToConsider
 	mustHaveCompleted = model.mustHaveCompleted
 	hasUpgrades = model.upgradePaths
 	considerPrimePointsOrTimeBonus = model.considerPrimePointsOrTimeBonus
@@ -105,6 +106,8 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 			pointsStructures[race.pointStructure] = []
 			pointsStructuresList.append( race.pointStructure )
 		pointsStructures[race.pointStructure].append( race )
+		
+	events = { r.getFileName(): r.eventName for r in model.races }
 	
 	html = io.open( htmlfileName, 'w', encoding='utf-8', newline='' )
 	
@@ -449,6 +452,7 @@ function sortTableId( iTable, iCol ) {
 					categoryName,
 					raceResults,
 					pointsForRank,
+					events,
 					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 
@@ -491,9 +495,9 @@ function sortTableId( iTable, iCol ) {
 											pass
 										if r[2]:
 											with tag(html,'a',dict(href='{}?raceCat={}'.format(r[2], quote(categoryName.encode('utf8')))) ):
-												write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+												write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										else:
-											write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+											write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										if r[0]:
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
@@ -562,12 +566,17 @@ function sortTableId( iTable, iCol ) {
 							with tag(html, 'span', {'style':'font-style: italic;'}):
 								write( '+N' )
 						write( ' - {}'.format( 'Bonus Points added to Points for Place.') )
-					
-			if bestResultsToConsider > 0 and not scoreByTrueSkill:
+			
+			if bestEventsToConsider > 0:
 				with tag(html, 'p', {'class':'noprint'}):
 					with tag(html, 'strong'):
 						write( '**' )
-					write( ' - {}'.format( 'Result not considered.  Not in best of {} scores.'.format(bestResultsToConsider) ) )
+					write( ' - {}'.format( 'Result not considered.  Not in best {} events.'.format(bestEventsToConsider) ) )
+			elif bestResultsToConsider > 0 and not scoreByTrueSkill:
+				with tag(html, 'p', {'class':'noprint'}):
+					with tag(html, 'strong'):
+						write( '**' )
+					write( ' - {}'.format( 'Result not considered.  Not in best {} scores.'.format(bestResultsToConsider) ) )
 					
 			if hasUpgrades:
 				with tag(html, 'p', {'class':'noprint'}):
@@ -631,7 +640,7 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'ul'):
 										for r in pointsStructures[ps]:
 											with tag(html, 'li'):
-												write( r.getRaceName() )
+												write( r.raceName )
 						
 						with tag(html, 'tr'):
 							with tag(html, 'td'):
@@ -686,12 +695,12 @@ function sortTableId( iTable, iCol ) {
 									write( "{}: {:.2f} points in pre-upgrade category carried forward".format(model.upgradePaths[i], model.upgradeFactors[i]) )
 			#-----------------------------------------------------------------------------
 			with tag(html, 'p'):
-				with tag(html, 'a', dict(href='http://sites.google.com/site/crossmgrsoftware')):
-					write( 'Powered by CrossMgr' )
+				with tag(html, 'a', dict(href='https://github.com/kimble4/CrossMgr')):
+					write( 'Powered by BHPC CrossMgr' )
 	
 	html.close()
 
-brandText = 'Powered by CrossMgr (sites.google.com/site/crossmgrsoftware)'
+brandText = 'Powered by BHPC CrossMgr (https://github.com/kimble4/CrossMgr)'
 
 textStyle = xlwt.easyxf(
 	"alignment: horizontal left;"
@@ -1050,6 +1059,8 @@ class Results(wx.Panel):
 		scoreByTime = model.scoreByTime
 		scoreByPercent = model.scoreByPercent
 		scoreByTrueSkill = model.scoreByTrueSkill
+		bestResultsToConsider = model.bestResultsToConsider
+		bestEventsToConsider = model.bestEventsToConsider
 		HeaderNames = getHeaderNames()
 		hideCols = [self.grid.GetColLabelValue(c).strip() for c in range(self.grid.GetNumberCols()) if not self.grid.IsColShown(c)]
 		
@@ -1065,6 +1076,7 @@ class Results(wx.Panel):
 			return
 			
 		pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
+		events = { r.getFileName(): r.eventName for r in model.races }
 		
 		wb = xlwt.Workbook()
 		
@@ -1073,6 +1085,7 @@ class Results(wx.Panel):
 				categoryName,
 				self.raceResults,
 				pointsForRank,
+				events,
 				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
@@ -1141,7 +1154,7 @@ class Results(wx.Panel):
 					c += 1
 				for q, (rPoints, rRank, rPrimePoints, rTimeBonus) in enumerate(racePoints):
 					if q not in hideRaces:
-						wsFit.write( rowCur, 6 + q,
+						wsFit.write( rowCur, c + q,
 							'{} ({}) +{}'.format(rPoints, Utils.ordinal(rRank), rPrimePoints) if rPoints and rPrimePoints
 							else '{} ({}) -{}'.format(rPoints, Utils.ordinal(rRank), Utils.formatTime(rTimeBonus, twoDigitMinutes=False)) if rPoints and rRank and rTimeBonus
 							else '{} ({})'.format(rPoints, Utils.ordinal(rRank)) if rPoints
@@ -1149,12 +1162,15 @@ class Results(wx.Panel):
 							else '',
 							centerStyle
 						)
-						c += 1
 				rowCur += 1
 		
 			# Add branding at the bottom of the sheet.
 			style = xlwt.XFStyle()
 			style.alignment.horz = xlwt.Alignment.HORZ_LEFT
+			if bestEventsToConsider > 0:
+				ws.write( rowCur + 1, 0, '** - {}'.format( 'Result not considered.  Not in best {} events.'.format(bestEventsToConsider)), style )
+			elif bestResultsToConsider > 0:
+				ws.write( rowCur + 1, 0, '** - {}'.format( 'Result not considered.  Not in best {} Results.'.format(bestResultsToConsider)), style )
 			ws.write( rowCur + 2, 0, brandText, style )
 		
 		if Utils.mainWin:

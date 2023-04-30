@@ -774,7 +774,6 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			p += points
 			riderEventPoints[rider][events[rr.raceFileName]] = p
 			riderEventPoints[rider][events[rr.raceFileName]] = asInt( riderEventPoints[rider][events[rr.raceFileName]] )
-		#print(riderEventPoints)
 
 		# Apply scoring by points input if set in the last race.
 		# Used for scoring Omniums.

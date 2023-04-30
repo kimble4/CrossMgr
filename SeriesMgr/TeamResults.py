@@ -504,9 +504,9 @@ function sortTableId( iTable, iCol ) {
 											pass
 										if r[2]:
 											with tag(html,'a',dict(href='{}?raceCat={}'.format(r[2], quote(categoryName.encode('utf8')))) ):
-												write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+												write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										else:
-											write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+											write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										if r[0]:
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
@@ -556,7 +556,7 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'ul'):
 										for r in pointsStructures[ps]:
 											with tag(html, 'li'):
-												write( r.getRaceName() )
+												write( r.raceName )
 						
 						with tag(html, 'tr'):
 							with tag(html, 'td'):

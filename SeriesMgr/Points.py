@@ -92,9 +92,9 @@ class Points(wx.Panel):
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		self.considerPrimePointsOrTimeBonus = wx.CheckBox( self, label='Consider Points or Time Bonuses from CrossMgr Primes' )
 		self.considerPrimePointsOrTimeBonus.SetValue( True )
-		self.scoreByLastEventPoints = wx.CheckBox( self, label='Score by Last Event Points' )
+		self.scoreByLastRacePoints = wx.CheckBox( self, label='Score by Last Race Points (for Omniums)' )
 		hb.Add( self.considerPrimePointsOrTimeBonus )
-		hb.Add( self.scoreByLastEventPoints, flag=wx.LEFT, border=8 )
+		hb.Add( self.scoreByLastRacePoints, flag=wx.LEFT, border=8 )
 		bsizer.Add( hb, 0, flag=wx.ALL, border=4 )
 		
 		#--------------------------------------------------------------------------
@@ -239,7 +239,7 @@ class Points(wx.Panel):
 		wx.CallAfter( self.gridAutoSize )
 		
 		self.considerPrimePointsOrTimeBonus.SetValue( model.considerPrimePointsOrTimeBonus )
-		self.scoreByLastEventPoints.SetValue( model.scoreByPointsInput )
+		self.scoreByLastRacePoints.SetValue( model.scoreByPointsInput )
 		self.bestResultsToConsider.SetSelection( model.bestResultsToConsider )
 		self.bestEventsToConsider.SetSelection( model.bestEventsToConsider )
 		self.mustHaveCompleted.SetSelection( model.mustHaveCompleted )
@@ -273,10 +273,9 @@ class Points(wx.Panel):
 		
 		model = SeriesModel.model
 		model.setPoints( pointsList )
-		
 		modelUpdate = {
 			'considerPrimePointsOrTimeBonus':	self.considerPrimePointsOrTimeBonus.GetValue(),
-			'scoreByPointsInput':				self.scoreByLastEventPoints.GetValue(),
+			'scoreByPointsInput':				self.scoreByLastRacePoints.GetValue(),
 			'bestResultsToConsider':			self.bestResultsToConsider.GetSelection(),
 			'bestEventsToConsider':				self.bestEventsToConsider.GetSelection(),
 			'mustHaveCompleted':				self.mustHaveCompleted.GetSelection(),
@@ -286,7 +285,6 @@ class Points(wx.Panel):
 			'scoreByPercent':					self.scoreByPercent.GetValue(),
 			'scoreByTrueSkill':					self.scoreByTrueSkill.GetValue(),
 		}
-		
 		for attr, value in modelUpdate.items():
 			if getattr(model, attr) != value:
 				setattr( model, attr, value )
