@@ -175,6 +175,7 @@ class Points(wx.Panel):
 		self.SetSizer(sizer)
 		
 		self.scoreByPointsControls = [
+			self.bestEventsToConsider,
 			self.ifRidersTiedOnPoints,
 			self.mostRacesCompleted,
 			self.numPlacesTieBreaker,
@@ -215,9 +216,12 @@ class Points(wx.Panel):
 	
 	def fixEnable( self, event = None ):
 		enable = self.scoreByPoints.GetValue()
+		if not enable: 
+			self.bestEventsToConsider.SetSelection( 0 )
 		for c in self.scoreByPointsControls:
 			c.Enable( enable )
-	
+		
+		
 	def refresh( self ):
 		model = SeriesModel.model
 		for row in range(self.grid.GetNumberRows()):
