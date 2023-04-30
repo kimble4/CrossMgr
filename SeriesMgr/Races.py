@@ -195,7 +195,8 @@ class Races(wx.Panel):
 		model = SeriesModel.model
 		Utils.AdjustGridSize( self.grid, len(model.races) )
 		for row, race in enumerate(model.races):
-			self.grid.SetCellValue( row, self.RaceCol, race.getRaceName() )
+			self.grid.SetCellValue( row, self.EventCol, race.eventName if race.eventName else '' )
+			self.grid.SetCellValue( row, self.RaceCol, race.raceName if race.raceName else '' )
 			self.grid.SetCellValue( row, self.GradeCol, race.grade )
 			self.grid.SetCellValue( row, self.PointsCol, race.pointStructure.name )
 			self.grid.SetCellValue( row, self.TeamPointsCol, race.teamPointStructure.name if race.teamPointStructure else '' )
@@ -217,11 +218,12 @@ class Races(wx.Panel):
 			pteamname = self.grid.GetCellValue( row, self.TeamPointsCol ) or None
 			grade = self.grid.GetCellValue(row, self.GradeCol).strip().upper()[:1]
 			raceName = self.grid.GetCellValue( row, self.RaceCol ).strip()
+			eventName = self.grid.GetCellValue( row, self.EventCol ).strip()
 			if not (grade and ord('A') <= ord(grade) <= ord('Z')):
 				grade = 'A'
 			if not fileName or not pname:
 				continue
-			raceList.append( (fileName, pname, pteamname, grade, raceName) )
+			raceList.append( (fileName, pname, pteamname, grade, raceName, eventName) )
 		
 		model = SeriesModel.model
 		model.setRaces( raceList )

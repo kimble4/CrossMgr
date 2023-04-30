@@ -103,13 +103,15 @@ class Points(wx.Panel):
 		maxOptions = 30
 		self.considerLabel = wx.StaticText( self, label='{}:'.format('Consider') )
 		self.bestResultsToConsider = wx.Choice( self, choices = ['All Results', 'Best Result Only'] + ['{} {} {}'.format('Best', i, 'Results Only') for i in range(2,maxOptions+1)] )
+		self.bestEventsToConsider = wx.Choice( self, choices = ['All Events', 'Best Event Only'] + ['{} {} {}'.format('Best', i, 'Events Only') for i in range(2,maxOptions+1)] )
 		
 		self.participationLabel = wx.StaticText( self, label='{}:'.format('Must have completed') )
-		self.mustHaveCompleted = wx.Choice( self, choices = ['{} {}'.format(i, 'or more Events') for i in range(0,maxOptions+1)] )
+		self.mustHaveCompleted = wx.Choice( self, choices = ['{} {}'.format(i, 'or more Races') for i in range(0,maxOptions+1)] )
 		
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		hb.Add( self.considerLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		hb.Add( self.bestResultsToConsider )
+		hb.Add( self.bestEventsToConsider )
 		hb.Add( self.participationLabel, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=16 )
 		hb.Add( self.mustHaveCompleted )
 		bsizer.Add( hb, flag=wx.ALL, border=2 )
@@ -118,9 +120,9 @@ class Points(wx.Panel):
 		bsizer.Add( wx.StaticLine(self), 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.ifRidersTiedOnPoints = wx.StaticText(self, label='If Riders are Tied on Points:')
 		bsizer.Add( self.ifRidersTiedOnPoints, flag=wx.ALL, border=2 )
-		self.mostEventsCompleted = wx.CheckBox( self, label='Consider Number of Events Completed' )
-		self.mostEventsCompleted.SetValue( False )
-		bsizer.Add( self.mostEventsCompleted, 0, flag=wx.ALL, border=4 )
+		self.mostRacesCompleted = wx.CheckBox( self, label='Consider Number of Races Completed' )
+		self.mostRacesCompleted.SetValue( False )
+		bsizer.Add( self.mostRacesCompleted, 0, flag=wx.ALL, border=4 )
 		
 		bsizer.Add( wx.StaticLine(self), 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.numPlacesTieBreaker = wx.RadioBox(self, majorDimension=3, style=wx.RA_SPECIFY_ROWS, choices = [
@@ -171,7 +173,7 @@ class Points(wx.Panel):
 		
 		self.scoreByPointsControls = [
 			self.ifRidersTiedOnPoints,
-			self.mostEventsCompleted,
+			self.mostRacesCompleted,
 			self.numPlacesTieBreaker,
 			self.ifRidersAreStillTiedOnPoints,
 			self.pointsStructures,
@@ -226,9 +228,10 @@ class Points(wx.Panel):
 		self.considerPrimePointsOrTimeBonus.SetValue( model.considerPrimePointsOrTimeBonus )
 		self.scoreByLastEventPoints.SetValue( model.scoreByPointsInput )
 		self.bestResultsToConsider.SetSelection( model.bestResultsToConsider )
+		self.bestEventsToConsider.SetSelection( model.bestEventsToConsider )
 		self.mustHaveCompleted.SetSelection( model.mustHaveCompleted )
 		
-		self.mostEventsCompleted.SetValue( model.useMostEventsCompleted )
+		self.mostRacesCompleted.SetValue( model.useMostRacesCompleted )
 		self.numPlacesTieBreaker.SetSelection( model.numPlacesTieBreaker )
 		
 		if model.scoreByTime:
@@ -262,8 +265,9 @@ class Points(wx.Panel):
 			'considerPrimePointsOrTimeBonus':	self.considerPrimePointsOrTimeBonus.GetValue(),
 			'scoreByPointsInput':				self.scoreByLastEventPoints.GetValue(),
 			'bestResultsToConsider':			self.bestResultsToConsider.GetSelection(),
+			'bestEventsToConsider':				self.bestEventsToConsider.GetSelection(),
 			'mustHaveCompleted':				self.mustHaveCompleted.GetSelection(),
-			'useMostEventsCompleted':			self.mostEventsCompleted.GetValue(),
+			'useMostRacesCompleted':			self.mostRacesCompleted.GetValue(),
 			'numPlacesTieBreaker':				self.numPlacesTieBreaker.GetSelection(),
 			'scoreByTime':						self.scoreByTime.GetValue(),
 			'scoreByPercent':					self.scoreByPercent.GetValue(),

@@ -464,7 +464,7 @@ function sortTableId( iTable, iCol ) {
 					raceResults,
 					pointsForRank,
 					teamPointsForRank,
-					useMostEventsCompleted=model.useMostEventsCompleted,
+					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 				
 				results = filterResults( results, scoreByPoints, scoreByTime )
@@ -579,7 +579,7 @@ function sortTableId( iTable, iCol ) {
 					isFirst = True
 					tieLink = u"if still a tie, use "
 					with tag(html, 'ol'):
-						if model.useMostEventsCompleted:
+						if model.useMostRacesCompleted:
 							with tag(html, 'li'):
 								write( u"{}number of events completed".format( tieLink if not isFirst else "" ) )
 								isFirst = False
@@ -822,7 +822,7 @@ class TeamResults(wx.Panel):
 			self.raceResults,
 			pointsForRank,
 			teamPointsForRank,
-			useMostEventsCompleted=model.useMostEventsCompleted,
+			useMostRacesCompleted=model.useMostRacesCompleted,
 			numPlacesTieBreaker=model.numPlacesTieBreaker,
 		)
 		
@@ -955,7 +955,7 @@ class TeamResults(wx.Panel):
 				self.raceResults,
 				pointsForRank,
 				teamPointsForRank,
-				useMostEventsCompleted=model.useMostEventsCompleted,
+				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
 			

@@ -449,7 +449,7 @@ function sortTableId( iTable, iCol ) {
 					categoryName,
 					raceResults,
 					pointsForRank,
-					useMostEventsCompleted=model.useMostEventsCompleted,
+					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 
 				results = [rr for rr in results if toFloat(rr[4]) > 0.0]				
@@ -654,7 +654,7 @@ function sortTableId( iTable, iCol ) {
 					isFirst = True
 					tieLink = "if still a tie, use "
 					with tag(html, 'ol'):
-						if model.useMostEventsCompleted:
+						if model.useMostRacesCompleted:
 							with tag(html, 'li'):
 								write( "{}number of events completed".format( tieLink if not isFirst else "" ) )
 								isFirst = False
@@ -909,21 +909,24 @@ class Results(wx.Panel):
 			return
 			
 		pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
+		events = { r.getFileName(): r.eventName for r in model.races }
 
 		results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
 			categoryName,
 			self.raceResults,
 			pointsForRank,
-			useMostEventsCompleted=model.useMostEventsCompleted,
+			events,
+			useMostRacesCompleted=model.useMostRacesCompleted,
 			numPlacesTieBreaker=model.numPlacesTieBreaker,
 		)
 		
 		results = [rr for rr in results if toFloat(rr[4]) > 0.0]
 		
-		headerNames = HeaderNames + ['{}\n{}'.format(r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
+		headerNames = HeaderNames + ['{}\n{}\n{}'.format(r[3].eventName,r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
 		
 		Utils.AdjustGridSize( self.grid, len(results), len(headerNames) )
 		self.setColNames( headerNames )
+		self.grid.SetColLabelSize(64)  # fixme constant
 		#These columns start off hidden
 		hideLicense = True
 		hideMachine = True
@@ -1070,7 +1073,7 @@ class Results(wx.Panel):
 				categoryName,
 				self.raceResults,
 				pointsForRank,
-				useMostEventsCompleted=model.useMostEventsCompleted,
+				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
 			results = [rr for rr in results if toFloat(rr[4]) > 0.0]

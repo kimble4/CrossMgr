@@ -457,11 +457,12 @@ def GetPotentialDuplicateFullNames( riderNameLicense ):
 	
 	return {full_name for full_name, licenses in nameLicense.items() if len(licenses) > 1}
 			
-def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsCompleted=False, numPlacesTieBreaker=5 ):
+def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMostRacesCompleted=False, numPlacesTieBreaker=5 ):
 	scoreByTime = SeriesModel.model.scoreByTime
 	scoreByPercent = SeriesModel.model.scoreByPercent
 	scoreByTrueSkill = SeriesModel.model.scoreByTrueSkill
 	bestResultsToConsider = SeriesModel.model.bestResultsToConsider
+	bestEventsToConsider = SeriesModel.model.bestEventsToConsider
 	mustHaveCompleted = SeriesModel.model.mustHaveCompleted
 	showLastToFirst = SeriesModel.model.showLastToFirst
 	considerPrimePointsOrTimeBonus = SeriesModel.model.considerPrimePointsOrTimeBonus
@@ -485,7 +486,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 	races = sorted( races, key = lambda r: r[3].iSequence )
 	raceSequence = dict( (r[3], i) for i, r in enumerate(races) )
 	
-	riderEventsCompleted = defaultdict( int )
+	riderRacesCompleted = defaultdict( int )
 	riderPlaceCount = defaultdict( lambda : defaultdict(int) )		# Indexed by (grade, rank).
 	riderTeam = defaultdict( lambda : '' )
 	riderUpgrades = defaultdict( lambda : [False] * len(races) )
@@ -558,7 +559,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 			riderTFinish[rider] += tFinish
 			riderUpgrades[rider][raceSequence[rr.raceInSeries]] = rr.upgradeResult
 			riderPlaceCount[rider][(raceGrade[rr.raceFileName],rr.rank)] += 1
-			riderEventsCompleted[rider] += 1
+			riderRacesCompleted[rider] += 1
 			
 		# Adjust for the best times.
 		if bestResultsToConsider > 0:
@@ -570,21 +571,21 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 						riderTFinish[rider] -= t
 						v = riderResults[rider][i]
 						riderResults[rider][i] = tuple([ignoreFormat.format(v[0])] + list(v[1:]))
-					riderEventsCompleted[rider] = bestResultsToConsider
+					riderRacesCompleted[rider] = bestResultsToConsider
 
 		# Filter out minimal events completed.
-		riderOrder = [rider for rider, results in riderResults.items() if riderEventsCompleted[rider] >= mustHaveCompleted]
+		riderOrder = [rider for rider, results in riderResults.items() if riderRacesCompleted[rider] >= mustHaveCompleted]
 		
 		# Sort by decreasing events completed, then increasing rider time.
-		riderOrder.sort( key = lambda r: (-riderEventsCompleted[r], riderTFinish[r]) )
+		riderOrder.sort( key = lambda r: (-riderRacesCompleted[r], riderTFinish[r]) )
 		
 		# Compute the time gap.
 		riderGap = {}
 		if riderOrder:
 			leader = riderOrder[0]
 			leaderTFinish = riderTFinish[leader]
-			leaderEventsCompleted = riderEventsCompleted[leader]
-			riderGap = { r : riderTFinish[r] - leaderTFinish if riderEventsCompleted[r] == leaderEventsCompleted else None for r in riderOrder }
+			leaderRacesCompleted = riderRacesCompleted[leader]
+			riderGap = { r : riderTFinish[r] - leaderTFinish if riderRacesCompleted[r] == leaderRacesCompleted else None for r in riderOrder }
 			riderGap = { r : formatTimeGap(gap) if gap else '' for r, gap in riderGap.items() }
 			
 		# Tidy up the machines list for display
@@ -631,7 +632,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 			riderPercentTotal[rider] += percent
 			riderUpgrades[rider][raceSequence[rr.raceInSeries]] = rr.upgradeResult
 			riderPlaceCount[rider][(raceGrade[rr.raceFileName],rr.rank)]
-			riderEventsCompleted[rider] += 1
+			riderRacesCompleted[rider] += 1
 
 		# Adjust for the best percents.
 		if bestResultsToConsider > 0:
@@ -645,7 +646,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 						riderResults[rider][i] = tuple([ignoreFormat.format(v[0])] + list(v[1:]))
 
 		# Filter out minimal events completed.
-		riderOrder = [rider for rider, results in riderResults.items() if riderEventsCompleted[rider] >= mustHaveCompleted]
+		riderOrder = [rider for rider, results in riderResults.items() if riderRacesCompleted[rider] >= mustHaveCompleted]
 		
 		# Sort by decreasing percent total.
 		riderOrder.sort( key = lambda r: -riderPercentTotal[r] )
@@ -748,6 +749,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 	else: # Score by points.
 		# Get the individual results for each rider, and the total points.
 		riderPoints = defaultdict( int )
+		riderEventPoints = defaultdict( lambda: defaultdict(int) )
 		for rr in raceResults:
 			rider = rr.key()
 			riderNameLicense[rider] = (rr.full_name, rr.license)
@@ -764,7 +766,13 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 			riderPoints[rider] = asInt( riderPoints[rider] )
 			riderUpgrades[rider][raceSequence[rr.raceInSeries]] = rr.upgradeResult
 			riderPlaceCount[rider][(raceGrade[rr.raceFileName],rr.rank)] += 1
-			riderEventsCompleted[rider] += 1
+			riderRacesCompleted[rider] += 1
+			#add up rider's points for each event
+			p = riderEventPoints[rider][events[rr.raceFileName]] if riderEventPoints[rider][events[rr.raceFileName]] else 0
+			p += points
+			riderEventPoints[rider][events[rr.raceFileName]] = p
+			riderEventPoints[rider][events[rr.raceFileName]] = asInt( riderEventPoints[rider][events[rr.raceFileName]] )
+		print(riderEventPoints)
 
 		# Apply scoring by points input if set in the last race.
 		# Used for scoring Omniums.
@@ -781,7 +789,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 					if rider not in hasPointsInput:
 						riderPoints[rider] = 0
 
-		# Adjust for the best scores.
+		# Adjust for the best race scores.
 		if bestResultsToConsider > 0:
 			for rider, finishes in riderFinishes.items():
 				iPoints = [(i, p) for i, p in enumerate(finishes) if p is not None]
@@ -791,17 +799,24 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 						riderPoints[rider] -= p
 						v = riderResults[rider][i]
 						riderResults[rider][i] = tuple([ignoreFormat.format(v[0] if v[0] else '')] + list(v[1:]))
+						
+		# Adjust for the best event scores - fixme
+		if bestEventsToConsider > 0:
+			print('Considering ' + str(bestEventsToConsider) + ' events.')
+			pass
+		
+		# Fixme: now copy this to the times etc options above
 
 		FixUpgradeFormat( riderUpgrades, riderResults )
 
 		# Filter out minimal events completed.
-		riderOrder = [rider for rider, results in riderResults.items() if riderEventsCompleted[rider] >= mustHaveCompleted]
+		riderOrder = [rider for rider, results in riderResults.items() if riderRacesCompleted[rider] >= mustHaveCompleted]
 		
 		# Sort by rider points - greatest number of points first.  Break ties with place count, then most recent result.
 		rankDNF = SeriesModel.rankDNF
 		riderOrder.sort(
 			key = lambda r:	[-riderPoints[r]] +
-							([-riderEventsCompleted[r]] if useMostEventsCompleted else []) +
+							([-riderRacesCompleted[r]] if useMostRacesCompleted else []) +
 							[-riderPlaceCount[r][(g,k)] for g,k in itertools.product(gradesUsed, range(1, numPlacesTieBreaker+1))] +
 							[rank if rank>0 else rankDNF for points, rank, primePoints, timeBonus in reversed(riderResults[r])]
 		)
@@ -833,7 +848,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, useMostEventsC
 RaceTuple = namedtuple('RaceTuple', ['date', 'name', 'url', 'raceInSeries'] )
 ResultTuple = namedtuple('ResultTuple', ['points', 'time', 'rank', 'primePoints', 'timeBonus', 'rr'] )
 
-def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPointsForRank, useMostEventsCompleted=False, numPlacesTieBreaker=5 ):
+def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPointsForRank, useMostRacesCompleted=False, numPlacesTieBreaker=5 ):
 	scoreByPoints = SeriesModel.model.scoreByPoints
 	scoreByTime = SeriesModel.model.scoreByTime
 	
@@ -874,7 +889,7 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 	
 	teamResults = {r.raceInSeries:defaultdict(list) for r in races}
 	teamResultsPoints = {r.raceInSeries:defaultdict(int) for r in races}
-	teamEventsCompleted = defaultdict( int )
+	teamRacesCompleted = defaultdict( int )
 	teamPlaceCount = defaultdict( lambda : defaultdict(int) )
 	teamRanks = defaultdict( lambda : defaultdict(int) )
 	
@@ -896,7 +911,7 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 				teamResults[raceInSeries][team] = teamResults[raceInSeries][team][:teamResultsN]
 				teamResultsPoints[raceInSeries][team] += sum( rt.points for rt in teamResults[raceInSeries][team] )
 				teamPoints[team] += sum( rt.points for rt in teamResults[raceInSeries][team] )
-				teamEventsCompleted[team] += 1
+				teamRacesCompleted[team] += 1
 			
 			# Rank teams by sum of individual points.  Use individual rank to break ties.
 			tr = sorted(
@@ -928,7 +943,7 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 		
 		teamOrder.sort(
 			key = lambda t:	[-teamPoints[t]] +
-							([-teamEventsCompleted[t]] if useMostEventsCompleted else []) +
+							([-teamRacesCompleted[t]] if useMostRacesCompleted else []) +
 							[-teamPlaceCount[t][(g,k)] for g,k in itertools.product(gradesUsed,range(1, numPlacesTieBreaker+1))] +
 							getBestResults(t)
 		)
@@ -982,7 +997,7 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 					teamResults[raceInSeries][team] = teamResults[raceInSeries][team][:teamResultsN]
 				
 				teamTime[team] += sum( rt.time for rt in teamResults[raceInSeries][team] )
-				teamEventsCompleted[team] += 1
+				teamRacesCompleted[team] += 1
 
 		# Sort by team time - least time first
 		rankDNF = SeriesModel.rankDNF
@@ -995,7 +1010,7 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 			return results
 		
 		teamOrder.sort(
-			key = lambda t:	[-teamEventsCompleted[t], teamTime[t]] + getBestResults( t )
+			key = lambda t:	[-teamRacesCompleted[t], teamTime[t]] + getBestResults( t )
 		)
 		
 		def formatEventCount( count ):
@@ -1011,9 +1026,9 @@ def GetCategoryResultsTeam( categoryName, raceResults, pointsForRank, teamPoints
 		if teamOrder:
 			leader = teamOrder[0]
 			leaderTime = teamTime[leader]
-			leaderEventsCompleted = teamEventsCompleted[leader]
-			teamGap = { t : teamTime[t] - leaderTime if teamEventsCompleted[t] == leaderEventsCompleted
-					else teamEventsCompleted[t] - leaderEventsCompleted
+			leaderRacesCompleted = teamRacesCompleted[leader]
+			teamGap = { t : teamTime[t] - leaderTime if teamRacesCompleted[t] == leaderRacesCompleted
+					else teamRacesCompleted[t] - leaderRacesCompleted
 				for t in teamOrder }
 			teamGap = { t : Utils.formatTime(gap) if gap > 0.0 else formatEventCount(gap) for t, gap in teamGap.items() }
 		
