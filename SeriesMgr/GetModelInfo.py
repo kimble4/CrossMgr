@@ -526,6 +526,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 	
 	riderResults = defaultdict( lambda : [(0,SeriesModel.rankDidNotParticipate,0,0)] * len(races) )	# (points, rr.rank, primePoints, 0) for each result.
 	riderFinishes = defaultdict( lambda : [None] * len(races) )
+	riderEvents = defaultdict( lambda : [None] * len(races) )
 	if scoreByTime:
 	
 		raceLeader = { rr.raceInSeries: rr for rr in raceResults if rr.rank == 1 }
@@ -761,6 +762,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			earnedPoints = pointsForRank[rr.raceFileName][rr.rank] + primePoints
 			points = asInt( earnedPoints * rr.upgradeFactor )
 			riderResults[rider][raceSequence[rr.raceInSeries]] = (points, rr.rank, primePoints, 0)
+			riderEvents[rider][raceSequence[rr.raceInSeries]] = events[rr.raceFileName]
 			riderFinishes[rider][raceSequence[rr.raceInSeries]] = points
 			riderPoints[rider] += points
 			riderPoints[rider] = asInt( riderPoints[rider] )
@@ -772,7 +774,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			p += points
 			riderEventPoints[rider][events[rr.raceFileName]] = p
 			riderEventPoints[rider][events[rr.raceFileName]] = asInt( riderEventPoints[rider][events[rr.raceFileName]] )
-		print(riderEventPoints)
+		#print(riderEventPoints)
 
 		# Apply scoring by points input if set in the last race.
 		# Used for scoring Omniums.
@@ -788,9 +790,23 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				for rider in list(riderPoints.keys()):
 					if rider not in hasPointsInput:
 						riderPoints[rider] = 0
-
+		
+		# Adjust for the best event scores
+		if bestEventsToConsider > 0:
+			#print('Considering ' + str(bestEventsToConsider) + ' events.')
+			for rider, eventsDict in riderEventPoints.items():
+				eventPointsList = list(eventsDict.items())
+				eventPointsList.sort(key=lambda x: -x[1])
+				if len(eventPointsList) > bestEventsToConsider:
+					for i, eventPoints in enumerate(eventPointsList[bestEventsToConsider:]): # For the events we don't want...
+						riderPoints[rider] -= eventPoints[1]
+						eventPointsList.remove(eventPoints)
+				for i, r in enumerate(riderResults[rider]):
+					if riderEvents[rider][i] and riderEvents[rider][i] not in (ep[0] for ep in eventPointsList):  # If they rode the event and the event's not in the list...
+						v = riderResults[rider][i]
+						riderResults[rider][i] = tuple([ignoreFormat.format(v[0] if v[0] else '')] + list(v[1:]))
 		# Adjust for the best race scores.
-		if bestResultsToConsider > 0:
+		elif bestResultsToConsider > 0:
 			for rider, finishes in riderFinishes.items():
 				iPoints = [(i, p) for i, p in enumerate(finishes) if p is not None]
 				if len(iPoints) > bestResultsToConsider:
@@ -800,12 +816,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 						v = riderResults[rider][i]
 						riderResults[rider][i] = tuple([ignoreFormat.format(v[0] if v[0] else '')] + list(v[1:]))
 						
-		# Adjust for the best event scores - fixme
-		if bestEventsToConsider > 0:
-			print('Considering ' + str(bestEventsToConsider) + ' events.')
-			pass
 		
-		# Fixme: now copy this to the times etc options above
 
 		FixUpgradeFormat( riderUpgrades, riderResults )
 

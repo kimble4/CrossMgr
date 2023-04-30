@@ -103,7 +103,9 @@ class Points(wx.Panel):
 		maxOptions = 30
 		self.considerLabel = wx.StaticText( self, label='{}:'.format('Consider') )
 		self.bestResultsToConsider = wx.Choice( self, choices = ['All Results', 'Best Result Only'] + ['{} {} {}'.format('Best', i, 'Results Only') for i in range(2,maxOptions+1)] )
+		self.bestResultsToConsider.Bind ( wx.EVT_CHOICE, self.onBestResultsChange )
 		self.bestEventsToConsider = wx.Choice( self, choices = ['All Events', 'Best Event Only'] + ['{} {} {}'.format('Best', i, 'Events Only') for i in range(2,maxOptions+1)] )
+		self.bestEventsToConsider.Bind ( wx.EVT_CHOICE, self.onBestEventsChange )
 		
 		self.participationLabel = wx.StaticText( self, label='{}:'.format('Must have completed') )
 		self.mustHaveCompleted = wx.Choice( self, choices = ['{} {}'.format(i, 'or more Races') for i in range(0,maxOptions+1)] )
@@ -111,6 +113,7 @@ class Points(wx.Panel):
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		hb.Add( self.considerLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		hb.Add( self.bestResultsToConsider )
+		hb.Add( wx.StaticText( self, label=' from ' ), flag=wx.ALIGN_CENTRE_VERTICAL )
 		hb.Add( self.bestEventsToConsider )
 		hb.Add( self.participationLabel, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=16 )
 		hb.Add( self.mustHaveCompleted )
@@ -179,6 +182,12 @@ class Points(wx.Panel):
 			self.pointsStructures,
 			self.grid,
 		]
+		
+	def onBestResultsChange( self, event ):
+		self.bestEventsToConsider.SetSelection( 0 )
+		
+	def onBestEventsChange( self, event ):
+		self.bestResultsToConsider.SetSelection( 0 )
 		
 	def getGrid( self ):
 		return self.grid
