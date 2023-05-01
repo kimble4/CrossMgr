@@ -538,7 +538,7 @@ function selectColumns() {
 									# r[0] = RaceData, r[1] = RaceName, r[2] = RaceURL, r[3] = Race
 									
 									# Add aggregate results column for the last event if the event has changed
-									if events[r[3].fileName] != lastEvent:
+									if eventResultsTable and events[r[3].fileName] != lastEvent:
 										with tag(html, 'th', {
 											'class':'leftBorder centerAlign noprint totalscol',
 												'colspan': 2,
@@ -580,7 +580,7 @@ function selectColumns() {
 												write( 'Top {}'.format(len(r[3].pointStructure)) )
 									iCol += 1
 								# Once more for the last column
-								if lastEvent != '':
+								if eventResultsTable and lastEvent != '':
 									with tag(html, 'th', {
 										'class':'leftBorder centerAlign noprint totalscol',
 											'colspan': 2,
@@ -618,7 +618,7 @@ function selectColumns() {
 									iCol = 0
 									aggPoints = 0
 									for rPoints, rRank, rPrimePoints, rTimeBonus in racePoints:
-										if iCol in aggregateCols:
+										if eventResultsTable and iCol in aggregateCols:
 											aggIndex = aggregateCols.index(iCol)
 											if eventResultsTable[aggIndex][pos][0]:
 												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
@@ -664,7 +664,7 @@ function selectColumns() {
 										iRace += 1
 										iCol += 1
 									#once more for the last column
-									if iCol in aggregateCols:
+									if eventResultsTable and iCol in aggregateCols:
 										aggIndex = aggregateCols.index(iCol)
 										if eventResultsTable[aggIndex][pos][0]:
 											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
