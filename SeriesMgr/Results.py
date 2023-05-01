@@ -479,7 +479,7 @@ function toggleColumns() {
 								write( '{}'.format(escape(categoryName)) )
 			html.write('<button onclick="toggleColumns()">Toggle Races/Totals/Both</button>')
 			for iTable, categoryName in enumerate(categoryNames):
-				results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+				results, races, eventResultsTable, potentialDuplicates = GetModelInfo.GetCategoryResults(
 					categoryName,
 					raceResults,
 					pointsForRank,
@@ -525,8 +525,8 @@ function toggleColumns() {
 												'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
 											} ):
 											# Omit this because we don't have ranks for the aggregate points ?fixme
-											#with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
-												#pass
+											with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+												pass
 											write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
 											with tag(html, 'span', {'class': 'smallFont totalscol'}): 
 												write('<br/>&nbsp;')  #Points structure would go here
@@ -599,24 +599,25 @@ function toggleColumns() {
 									aggPoints = 0
 									for rPoints, rRank, rPrimePoints, rTimeBonus in racePoints:
 										if iCol in aggregateCols:
-											if aggPoints:
+											aggIndex = aggregateCols.index(iCol)
+											if eventResultsTable[aggIndex][pos][0]:
 												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
-													write( '{}'.format(str(aggPoints) + ('**' if isIgnored else '')) )
-												aggPoints = 0
+													write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
 											else:
-												with tag(html, 'td', {'class':'leftBorder noprint totalscol'}):
+												with tag(html, 'td', {'class':'leftBorder noprint totalscol' + (' hidden' if iRace in hideRaces else '')}):
 													pass
-											with tag(html, 'td', {'class':'noprint totalscol'}):
-												# Rank would go here
-												pass
+											if eventResultsTable[aggIndex][pos][1]:
+												with tag(html, 'td', {'class':'rank noprint totalscol'}):
+													write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
+											else:
+												with tag(html, 'td', {'class':'noprint totalscol'}):
+													pass
 											iCol += 1
 										if rPoints:
 											#print(rPoints)
 											if isinstance(rPoints, int):
-												aggPoints += rPoints
 												isIgnored = False
 											else:
-												aggPoints += int(rPoints.strip('[*]'))
 												isIgnored = True
 											with tag(html, 'td', {'class':'leftBorder rightAlign noprint racescol' + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
 												write( '{}'.format(rPoints).replace('[','').replace(']','').replace(' ', '&nbsp;') )
@@ -644,16 +645,20 @@ function toggleColumns() {
 										iCol += 1
 									#once more for the last column
 									if iCol in aggregateCols:
-										if aggPoints:
+										aggIndex = aggregateCols.index(iCol)
+										if eventResultsTable[aggIndex][pos][0]:
 											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
-												write( '{}'.format(str(aggPoints) + ('**' if isIgnored else '')) )
-											aggPoints = 0
+												write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
 										else:
-											with tag(html, 'td', {'class':'leftBorder noprint totalscol'}):
+											with tag(html, 'td', {'class':'leftBorder noprint totalscol' + (' hidden' if iRace in hideRaces else '')}):
 												pass
-										with tag(html, 'td', {'class':'noprint totalscol'}):
-											# Rank would go here
-											pass
+										if eventResultsTable[aggIndex][pos][1]:
+											with tag(html, 'td', {'class':'rank noprint totalscol'}):
+												write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
+										else:
+											with tag(html, 'td', {'class':'noprint totalscol'}):
+												pass
+										
 			#-----------------------------------------------------------------------------
 			if considerPrimePointsOrTimeBonus:
 				with tag(html, 'p', {'class':'noprint'}):
@@ -1021,7 +1026,7 @@ class Results(wx.Panel):
 		pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
 		events = { r.getFileName(): r.eventName for r in model.races }
 
-		results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+		results, races, eventScores, potentialDuplicates = GetModelInfo.GetCategoryResults(
 			categoryName,
 			self.raceResults,
 			pointsForRank,

@@ -485,6 +485,10 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 	races = set( (rr.raceDate, rr.raceName, rr.raceURL, rr.raceInSeries) for rr in raceResults )
 	races = sorted( races, key = lambda r: r[3].iSequence )
 	raceSequence = dict( (r[3], i) for i, r in enumerate(races) )
+	eventSequence = []
+	for race in raceSequence:
+		if len(eventSequence) == 0 or eventSequence[-1] != race.eventName:
+			eventSequence.append(race.eventName)
 	
 	riderRacesCompleted = defaultdict( int )
 	riderPlaceCount = defaultdict( lambda : defaultdict(int) )		# Indexed by (grade, rank).
@@ -798,8 +802,12 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				eventPointsList.sort(key=lambda x: -x[1])
 				if len(eventPointsList) > bestEventsToConsider:
 					for i, eventPoints in enumerate(eventPointsList[bestEventsToConsider:]): # For the events we don't want...
+						# subtract points from the rider's total, remove the event from the list
 						riderPoints[rider] -= eventPoints[1]
 						eventPointsList.remove(eventPoints)
+						# rewrite the rider's total in the event points list
+						v = riderEventPoints[rider][eventPoints[0]]
+						riderEventPoints[rider][eventPoints[0]] = ignoreFormat.format(v if v else '')
 				for i, r in enumerate(riderResults[rider]):
 					if riderEvents[rider][i] and riderEvents[rider][i] not in (ep[0] for ep in eventPointsList):  # If they rode the event and the event's not in the list...
 						v = riderResults[rider][i]
@@ -815,8 +823,6 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 						v = riderResults[rider][i]
 						riderResults[rider][i] = tuple([ignoreFormat.format(v[0] if v[0] else '')] + list(v[1:]))
 						
-		
-
 		FixUpgradeFormat( riderUpgrades, riderResults )
 
 		# Filter out minimal events completed.
@@ -838,10 +844,42 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			leaderPoints = riderPoints[leader]
 			riderGap = { r : leaderPoints - riderPoints[r] for r in riderOrder }
 			riderGap = { r : str(gap) if gap else '' for r, gap in riderGap.items() }
+			
+		# Create a table of scores for each event
+		eventRiderPointsPos = defaultdict( lambda: defaultdict() )
+		for rider, eventPoints in riderEventPoints.items():
+			for event, points in eventPoints.items():
+				eventRiderPointsPos[event][rider] = (points, None)
+				
+		# Add positions to event points list
+		for event, riderPointsPos in eventRiderPointsPos.items():
+			scores = []
+			for rider, pointsPos in riderPointsPos.items():
+				if isinstance(pointsPos[0], int):
+					scores.append((pointsPos[0], rider))
+				else:
+					scores.append((int(pointsPos[0].strip('[*]')), rider))
+			scores.sort(key=lambda x: -x[0])
+			for i, score in enumerate(scores):
+				eventRiderPointsPos[event][score[1]] = (eventRiderPointsPos[event][score[1]][0], Utils.ordinal(i+1))
+			
+		# Make a list of points, rank for each event in rider order
+		eventResultsTable = []
+		for i, event in enumerate(eventSequence):
+			rpp = eventRiderPointsPos.get(event)
+			res = []
+			for rider in riderOrder:
+				pp = rpp.get(rider)
+				if pp:
+					res.append((str(pp[0]), str(pp[1])))
+				else:
+					res.append(('', ''))
+			eventResultsTable.append(res)
 		
 		# Reverse the race order if required for display.
 		if showLastToFirst:
 			races.reverse()
+			eventResultsTable.reverse()
 			for results in riderResults.values():
 				results.reverse()
 		
@@ -849,9 +887,9 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		TidyMachinesList( riderMachines )
 		
 		# List of:
-		# lastName, firstName, license, [list of machines], team, points, [list of (points, position) for each race in series]
+		# lastName, firstName, license, [list of machines], team, points, gap, [list of (points, position) for each race in series]
 		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
-		return categoryResult, races, GetPotentialDuplicateFullNames(riderNameLicense)
+		return categoryResult, races, eventResultsTable,  GetPotentialDuplicateFullNames(riderNameLicense)
 
 #------------------------------------------------------------------------------------------------
 
