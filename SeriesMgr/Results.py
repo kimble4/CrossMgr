@@ -297,6 +297,12 @@ hr { clear: both; }
 	display: none;
 }
 
+.racescol {
+}
+
+.totalscol {
+}
+
 @media print {
 	.noprint { display: none; }
 	.title { page-break-after: avoid; }
@@ -418,6 +424,31 @@ function sortTableId( iTable, iCol ) {
 	}
 	ssPersist[id] = sortState;
 }
+
+var show = 0
+function toggleColumns() {
+	var totals = document.getElementsByClassName('totalscol');
+	var races = document.getElementsByClassName('racescol');
+	for(i = 0; i < totals.length; i++) {
+		if (show == 0 || show == 2) {
+			totals[i].style.display = '';
+		} else {
+			totals[i].style.display = 'none';
+		}
+	}
+	for(i = 0; i < races.length; i++) {
+		if (show >= 1) {
+			races[i].style.display = '';
+		} else {
+			races[i].style.display = 'none';
+		}
+	}
+	show++;
+	if (show >= 3) {
+		show = 0;
+	}
+}
+
 ''' )
 
 		with tag(html, 'body'):
@@ -446,7 +477,7 @@ function sortTableId( iTable, iCol ) {
 						with tag(html, 'option', {'value':iTable} ):
 							with tag(html, 'span'):
 								write( '{}'.format(escape(categoryName)) )
-			
+			html.write('<button onclick="toggleColumns()">Toggle Races/Totals/Both</button>')
 			for iTable, categoryName in enumerate(categoryNames):
 				results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
 					categoryName,
@@ -460,6 +491,8 @@ function sortTableId( iTable, iCol ) {
 				hideRaces = []
         
 				headerNames = HeaderNames + ['{}'.format(r[3].raceName) for r in races]
+				lastEvent = events[races[0][3].fileName]
+				aggregateCols = []
 				
 				with tag(html, 'div', {'id':'catContent{}'.format(iTable)} ):
 					write( '<p/>')
@@ -480,18 +513,38 @@ function sortTableId( iTable, iCol ) {
 										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,iHeader)) ):
 											pass
 										write( '{}'.format(escape(col).replace('\n', '<br/>\n')) )
-								for iRace, r in enumerate(races):
+								iCol = 0
+								for r in races:
 									# r[0] = RaceData, r[1] = RaceName, r[2] = RaceURL, r[3] = Race
+									
+									# Add aggregate results column for the last event if the event has changed
+									if events[r[3].fileName] != lastEvent:
+										with tag(html, 'th', {
+											'class':'leftBorder centerAlign noprint totalscol',
+												'colspan': 2,
+												'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
+											} ):
+											# Omit this because we don't have ranks for the aggregate points ?fixme
+											#with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+												#pass
+											write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
+											with tag(html, 'span', {'class': 'smallFont totalscol'}): 
+												write('<br/>&nbsp;')  #Points structure would go here
+										lastEvent = events[r[3].fileName]
+										aggregateCols.append(iCol)
+										iCol += 1
+										
+									# Now add the race column
 									hideClass = ''
 									if r[1] in hideCols:
-										hideRaces.append(iRace)  #list of race columns to hide when rendering points rows
+										hideRaces.append(iCol)  #list of race columns to hide when rendering points rows
 										hideClass = ' hidden'
 									with tag(html, 'th', {
-										'class':'leftBorder centerAlign noprint' + hideClass,
+										'class':'leftBorder centerAlign noprint racescol' + hideClass,
 											'colspan': 2,
-											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iRace),
+											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
 										} ):
-										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iRace)) ):
+										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
 											pass
 										if r[2]:
 											with tag(html,'a',dict(href='{}?raceCat={}'.format(r[2], quote(categoryName.encode('utf8')))) ):
@@ -506,6 +559,19 @@ function sortTableId( iTable, iCol ) {
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
 												write( 'Top {}'.format(len(r[3].pointStructure)) )
+									iCol += 1
+								# Once more for the last column
+								if lastEvent != '':
+									with tag(html, 'th', {
+										'class':'leftBorder centerAlign noprint totalscol',
+											'colspan': 2,
+											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
+										} ):
+										# Omit this because we don't have ranks for the aggregate points ?fixme
+										#with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+											#pass
+										write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
+									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
 							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
 								with tag(html, 'tr', {'class':'odd'} if pos % 2 == 1 else {} ):
@@ -528,31 +594,66 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'td', {'class':'rightAlign noprint' + (' hidden' if 'Gap' in hideCols else '')}):
 										write( '{}'.format(gap or '') )
 									iRace = 0 #simple iterator, is there a more pythonesque way to do this?
+									lastEvent = events[races[0][3].fileName]
+									iCol = 0
+									aggPoints = 0
 									for rPoints, rRank, rPrimePoints, rTimeBonus in racePoints:
+										if iCol in aggregateCols:
+											if aggPoints:
+												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
+													write( '{}'.format(str(aggPoints) + ('**' if isIgnored else '')) )
+												aggPoints = 0
+											else:
+												with tag(html, 'td', {'class':'leftBorder noprint totalscol'}):
+													pass
+											with tag(html, 'td', {'class':'noprint totalscol'}):
+												# Rank would go here
+												pass
+											iCol += 1
 										if rPoints:
-											with tag(html, 'td', {'class':'leftBorder rightAlign noprint' + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
+											#print(rPoints)
+											if isinstance(rPoints, int):
+												aggPoints += rPoints
+												isIgnored = False
+											else:
+												aggPoints += int(rPoints.strip('[*]'))
+												isIgnored = True
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint racescol' + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
 												write( '{}'.format(rPoints).replace('[','').replace(']','').replace(' ', '&nbsp;') )
 										else:
-											with tag(html, 'td', {'class':'leftBorder noprint' + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'leftBorder noprint racescol' + (' hidden' if iRace in hideRaces else '')}):
 												pass
 
 										if rRank <= SeriesModel.rankDNF:
 											if rPrimePoints:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol' + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;+{}'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;'), rPrimePoints) )
 											elif rTimeBonus:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol' + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;-{}'.format(
 														Utils.ordinal(rRank).replace(' ', '&nbsp;'),
 														Utils.formatTime(rTimeBonus, twoDigitMinutes=False)),
 													)
 											else:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol' + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;')) )
 										else:
-											with tag(html, 'td', {'class':'noprint' + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'noprint racescol' + (' hidden' if iRace in hideRaces else '')}):
 												pass
 										iRace += 1
+										iCol += 1
+									#once more for the last column
+									if iCol in aggregateCols:
+										if aggPoints:
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' ignored' if isIgnored else '')}):
+												write( '{}'.format(str(aggPoints) + ('**' if isIgnored else '')) )
+											aggPoints = 0
+										else:
+											with tag(html, 'td', {'class':'leftBorder noprint totalscol'}):
+												pass
+										with tag(html, 'td', {'class':'noprint totalscol'}):
+											# Rank would go here
+											pass
 			#-----------------------------------------------------------------------------
 			if considerPrimePointsOrTimeBonus:
 				with tag(html, 'p', {'class':'noprint'}):
