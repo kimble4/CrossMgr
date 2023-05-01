@@ -599,7 +599,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		# List of:
 		# lastName, firstName, license, [list of machines], team, tTotalFinish, [list of (points, position) for each race in series]
 		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], formatTime(riderTFinish[rider],True), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
-		return categoryResult, races, GetPotentialDuplicateFullNames(riderNameLicense)
+		return categoryResult, races, None, GetPotentialDuplicateFullNames(riderNameLicense)
 	
 	elif scoreByPercent:
 		# Get the individual results for each rider as a percentage of the winner's time.  Ignore DNF riders.
@@ -670,7 +670,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		# List of:
 		# lastName, firstName, license, [list of machines], team, totalPercent, [list of (percent, position) for each race in series]
 		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], percentFormat.format(riderPercentTotal[rider]), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
-		return categoryResult, races, GetPotentialDuplicateFullNames(riderNameLicense)
+		return categoryResult, races, None, GetPotentialDuplicateFullNames(riderNameLicense)
 	
 	elif scoreByTrueSkill:
 		# Get an initial Rating for all riders.
@@ -749,7 +749,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		# List of:
 		# lastName, firstName, license, [list of machines], team, points, [list of (points, position) for each race in series]
 		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
-		return categoryResult, races, GetPotentialDuplicateFullNames(riderNameLicense)
+		return categoryResult, races, None, GetPotentialDuplicateFullNames(riderNameLicense)
 		
 	else: # Score by points.
 		# Get the individual results for each rider, and the total points.
