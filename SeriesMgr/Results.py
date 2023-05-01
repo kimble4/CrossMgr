@@ -425,22 +425,29 @@ function sortTableId( iTable, iCol ) {
 	ssPersist[id] = sortState;
 }
 
-var show = 0
-function toggleColumns() {
-	var totals = document.getElementsByClassName('totalscol');
-	var races = document.getElementsByClassName('racescol');
-	for(i = 0; i < totals.length; i++) {
-		if (show == 0 || show == 2) {
-			totals[i].style.display = '';
-		} else {
-			totals[i].style.display = 'none';
+function selectColumns() {
+	const radioButtons = document.querySelectorAll('input[name="selectcols"]');
+	let show;
+	for (const radioButton of radioButtons) {
+		if (radioButton.checked) {
+			show = radioButton.value;
+			break;
 		}
 	}
+	var totals = document.getElementsByClassName('totalscol');
+	var races = document.getElementsByClassName('racescol');
 	for(i = 0; i < races.length; i++) {
-		if (show >= 1) {
+		if (show == 0 || show == 2) {
 			races[i].style.display = '';
 		} else {
 			races[i].style.display = 'none';
+		}
+	}
+	for(i = 0; i < totals.length; i++) {
+		if (show >= 1) {
+			totals[i].style.display = '';
+		} else {
+			totals[i].style.display = 'none';
 		}
 	}
 	show++;
@@ -448,7 +455,7 @@ function toggleColumns() {
 		show = 0;
 	}
 }
-
+	
 ''' )
 
 		with tag(html, 'body'):
@@ -477,7 +484,20 @@ function toggleColumns() {
 						with tag(html, 'option', {'value':iTable} ):
 							with tag(html, 'span'):
 								write( '{}'.format(escape(categoryName)) )
-			html.write('<button onclick="toggleColumns()">Toggle Races/Totals/Both</button>')
+			with tag(html, 'span'):
+				write('Show:')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'0', 'id':'races', 'onchange':'selectColumns()'}):
+				pass
+			with tag(html, 'label', {'for':'races'}):
+				write('Races')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'1', 'id':'totals', 'onchange':'selectColumns()'}):
+				pass
+			with tag(html, 'label', {'for':'totals'}):
+				write('Event totals')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'2', 'id':'both', 'onchange':'selectColumns()', 'checked':'checked'}):
+				pass
+			with tag(html, 'label', {'for':'both'}):
+				write('Races and event totals')
 			for iTable, categoryName in enumerate(categoryNames):
 				results, races, eventResultsTable, potentialDuplicates = GetModelInfo.GetCategoryResults(
 					categoryName,
@@ -524,7 +544,6 @@ function toggleColumns() {
 												'colspan': 2,
 												'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
 											} ):
-											# Omit this because we don't have ranks for the aggregate points ?fixme
 											with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
 												pass
 											write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
@@ -567,10 +586,11 @@ function toggleColumns() {
 											'colspan': 2,
 											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
 										} ):
-										# Omit this because we don't have ranks for the aggregate points ?fixme
-										#with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
-											#pass
+										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+											pass
 										write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
+										with tag(html, 'span', {'class': 'smallFont totalscol'}): 
+											write('<br/>&nbsp;')  #Points structure would go here
 									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
 							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
