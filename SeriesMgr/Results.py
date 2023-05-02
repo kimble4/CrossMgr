@@ -212,6 +212,11 @@ table.results th {
 	vertical-align:bottom;
 }
 
+table.results tr.odd {
+	color:#000000;
+	background-color:#EAF2D3;
+}
+
 table.results th.riders {
 	background-color:#E5E57F;
 	color:#000000;
@@ -227,18 +232,10 @@ table.results th.totals {
 	color:#000000;
 }
 
-.oddriders {
-	background-color:#EAEAD3;
-}
-
-.oddraces {
+table.points tr.odd {
+	color:#000000;
 	background-color:#EAF2D3;
 }
-
-.oddtotals {
-	background-color:#D3F2EA;
-}
-
 
 .smallFont {
 	font-size: 75%;
@@ -249,12 +246,14 @@ table.results td.leftBorder, table.results th.leftBorder
 	border-left:1px solid #98bf21;
 }
 
-table.results tr:hover td
+table.results tr:hover
 {
+	color:#000000;
 	background-color:#FFFFCC;
 }
-table.results tr.odd:hover td
+table.results tr.odd:hover
 {
+	color:#000000;
 	background-color:#FFFFCC;
 }
 
@@ -290,7 +289,6 @@ table.results th.centerAlign, table.results td.centerAlign {
 
 .ignored {
 	color: #999;
-	font-style: italic;
 }
 
 table.points tr.odd {
@@ -322,7 +320,19 @@ hr { clear: both; }
 }
 
 .totalscol {
+	color:#0000FF;
 }
+
+.totalscol.rank {
+	color: #adadFF;
+	font-style: italic;
+}
+
+.totalscol.ignored {
+	color: #9090FF;
+	font-style: italic;
+}
+
 
 @media print {
 	.noprint { display: none; }
@@ -555,6 +565,7 @@ function selectColumns() {
 											pass
 										write( '{}'.format(escape(col).replace('\n', '<br/>\n')) )
 								iCol = 0
+								lastEvent = events[races[0][3].fileName]
 								for r in races:
 									# r[0] = RaceData, r[1] = RaceName, r[2] = RaceURL, r[3] = Race
 									
@@ -615,24 +626,24 @@ function selectColumns() {
 									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
 							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
-								with tag(html, 'tr', {'class':'odd'} if pos % 2 == 1 else {}):
-									with tag(html, 'td', {'class':'rightAlign' + (' oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Pos' in hideCols else '')}):
+								with tag(html, 'tr',  {'class':'odd'} if pos % 2 == 1 else {} ):
+									with tag(html, 'td', {'class':'rightAlign'  + (' hidden' if 'Pos' in hideCols else '')}):
 										write( '{}'.format(pos+1) )
-									with tag(html, 'td', {'class':('oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Name' in hideCols else '')}):
+									with tag(html, 'td', {'class':('hidden' if 'Name' in hideCols else '')}):
 										write( '{}'.format(name or '') )
-									with tag(html, 'td', {'class':'noprint' + (' oddriders' if pos % 2 == 1 else '') + (' hidden' if 'License' in hideCols else '')}):
+									with tag(html, 'td', {'class':'noprint' + (' hidden' if 'License' in hideCols else '')}):
 										if licenseLinkTemplate and license:
 											with tag(html, 'a', {'href':'{}{}'.format(licenseLinkTemplate, license), 'target':'_blank'}):
 												write( '{}'.format(license or '') )
 										else:
 											write( '{}'.format(license or '') )
-									with tag(html, 'td', {'class':('oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Machine' in hideCols else '')}):
+									with tag(html, 'td', {'class':(' hidden' if 'Machine' in hideCols else '')}):
 										write( '{}'.format(',<br>'.join(list(filter(None, machines))) or '') )
-									with tag(html, 'td', {'class':('oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Team' in hideCols else '')}):
+									with tag(html, 'td', {'class':('hidden' if 'Team' in hideCols else '')}):
 										write( '{}'.format(team or '') )
-									with tag(html, 'td', {'class':'rightAlign' + (' oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Points' in hideCols else '')}):
+									with tag(html, 'td', {'class':'rightAlign' + (' hidden' if 'Points' in hideCols else '')}):
 										write( '{}'.format(points or '') )
-									with tag(html, 'td', {'class':'rightAlign noprint' + (' oddriders' if pos % 2 == 1 else '') +  (' hidden' if 'Gap' in hideCols else '')}):
+									with tag(html, 'td', {'class':'rightAlign noprint' + (' hidden' if 'Gap' in hideCols else '')}):
 										write( '{}'.format(gap or '') )
 									iRace = 0 #simple iterator, is there a more pythonesque way to do this?
 									lastEvent = events[races[0][3].fileName]
@@ -642,16 +653,16 @@ function selectColumns() {
 										if eventResultsTable and iCol in aggregateCols:
 											aggIndex = aggregateCols.index(iCol)
 											if eventResultsTable[aggIndex][pos][0]:
-												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') + (' ignored' if isIgnored else '')}):
+												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol'  + (' ignored' if isIgnored else '')}):
 													write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
 											else:
-												with tag(html, 'td', {'class':'leftBorder noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'leftBorder noprint totalscol'  + (' hidden' if iRace in hideRaces else '')}):
 													pass
 											if eventResultsTable[aggIndex][pos][1]:
-												with tag(html, 'td', {'class':'rank noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') }):
+												with tag(html, 'td', {'class':'rank noprint totalscol'  }):
 													write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
 											else:
-												with tag(html, 'td', {'class':'noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') }):
+												with tag(html, 'td', {'class':'noprint totalscol'  }):
 													pass
 											iCol += 1
 										if rPoints:
@@ -660,27 +671,27 @@ function selectColumns() {
 												isIgnored = False
 											else:
 												isIgnored = True
-											with tag(html, 'td', {'class':'leftBorder rightAlign noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint racescol'  + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
 												write( '{}'.format(rPoints).replace('[','').replace(']','').replace(' ', '&nbsp;') )
 										else:
-											with tag(html, 'td', {'class':'leftBorder noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'leftBorder noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 												pass
 
 										if rRank <= SeriesModel.rankDNF:
 											if rPrimePoints:
-												with tag(html, 'td', {'class':'rank noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;+{}'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;'), rPrimePoints) )
 											elif rTimeBonus:
-												with tag(html, 'td', {'class':'rank noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;-{}'.format(
 														Utils.ordinal(rRank).replace(' ', '&nbsp;'),
 														Utils.formatTime(rTimeBonus, twoDigitMinutes=False)),
 													)
 											else:
-												with tag(html, 'td', {'class':'rank noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;')) )
 										else:
-											with tag(html, 'td', {'class':'noprint racescol' + (' oddraces' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 												pass
 										iRace += 1
 										iCol += 1
@@ -688,16 +699,16 @@ function selectColumns() {
 									if eventResultsTable and iCol in aggregateCols:
 										aggIndex = aggregateCols.index(iCol)
 										if eventResultsTable[aggIndex][pos][0]:
-											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') + (' ignored' if isIgnored else '')}):
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol'  + (' ignored' if isIgnored else '')}):
 												write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
 										else:
-											with tag(html, 'td', {'class':'leftBorder noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'leftBorder noprint totalscol'  + (' hidden' if iRace in hideRaces else '')}):
 												pass
 										if eventResultsTable[aggIndex][pos][1]:
-											with tag(html, 'td', {'class':'rank noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') }):
+											with tag(html, 'td', {'class':'rank noprint totalscol'  }):
 												write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
 										else:
-											with tag(html, 'td', {'class':'noprint totalscol' + (' oddtotals' if pos % 2 == 1 else '') }):
+											with tag(html, 'td', {'class':'noprint totalscol'  }):
 												pass
 										
 			#-----------------------------------------------------------------------------
