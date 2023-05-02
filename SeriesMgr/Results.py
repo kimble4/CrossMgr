@@ -228,17 +228,14 @@ table.results th.totals {
 }
 
 .oddriders {
-	color:#000000;
 	background-color:#EAEAD3;
 }
 
 .oddraces {
-	color:#000000;
 	background-color:#EAF2D3;
 }
 
 .oddtotals {
-	color:#000000;
 	background-color:#D3F2EA;
 }
 
@@ -252,14 +249,12 @@ table.results td.leftBorder, table.results th.leftBorder
 	border-left:1px solid #98bf21;
 }
 
-table.results tr:hover
+table.results tr:hover td
 {
-	color:#000000;
 	background-color:#FFFFCC;
 }
-table.results tr.odd:hover
+table.results tr.odd:hover td
 {
-	color:#000000;
 	background-color:#FFFFCC;
 }
 
@@ -620,7 +615,7 @@ function selectColumns() {
 									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
 							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
-								with tag(html, 'tr'):
+								with tag(html, 'tr', {'class':'odd'} if pos % 2 == 1 else {}):
 									with tag(html, 'td', {'class':'rightAlign' + (' oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Pos' in hideCols else '')}):
 										write( '{}'.format(pos+1) )
 									with tag(html, 'td', {'class':('oddriders' if pos % 2 == 1 else '') + (' hidden' if 'Name' in hideCols else '')}):
