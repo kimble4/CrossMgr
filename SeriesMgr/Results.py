@@ -223,7 +223,7 @@ table.results th.race {
 }
 
 table.results th.totals {
-	background-color:#7F7FE5;
+	background-color:#adadff;
 	color:#000000;
 }
 
