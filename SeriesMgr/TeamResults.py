@@ -828,7 +828,7 @@ class TeamResults(wx.Panel):
 		
 		results = filterResults( results, scoreByPoints, scoreByTime )
 		
-		headerNames = HeaderNames + ['{}\n{}'.format(r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
+		headerNames = HeaderNames + ['{}\n{}'.format((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
     
 		#Show all columns
 		for c in range(self.grid.GetNumberCols()):
@@ -836,6 +836,7 @@ class TeamResults(wx.Panel):
 		
 		Utils.AdjustGridSize( self.grid, len(results), len(headerNames) )
 		self.setColNames( headerNames )
+		self.grid.SetColLabelSize(64)  # fixme constant
 		
 		for row, (team, points, gap, rrs) in enumerate(results):
 			self.grid.SetCellValue( row, 0, '{}'.format(row+1) )
@@ -961,7 +962,7 @@ class TeamResults(wx.Panel):
 			
 			results = filterResults( results, scoreByPoints, scoreByTime )
 			
-			headerNames = HeaderNames + [r[3].raceName for r in races]
+			headerNames = HeaderNames + [(r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName for r in races]
      
 			hideRaces = []
 			for iRace, r in enumerate(races):

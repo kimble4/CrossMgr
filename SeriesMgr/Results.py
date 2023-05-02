@@ -1207,7 +1207,7 @@ class Results(wx.Panel):
 		wb = xlwt.Workbook()
 		
 		for categoryName in categoryNames:
-			results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+			results, races, eventScores, potentialDuplicates = GetModelInfo.GetCategoryResults(
 				categoryName,
 				self.raceResults,
 				pointsForRank,
@@ -1217,7 +1217,7 @@ class Results(wx.Panel):
 			)
 			results = [rr for rr in results if toFloat(rr[4]) > 0.0]
 			
-			headerNames = HeaderNames + [r[3].raceName for r in races]
+			headerNames = HeaderNames + [(r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName for r in races]
 			
 			hideRaces = []
 			for iRace, r in enumerate(races):
