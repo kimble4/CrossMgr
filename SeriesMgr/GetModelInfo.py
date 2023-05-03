@@ -863,7 +863,6 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			lastScore = 999999
 			rank = 0
 			for score in scores:
-				# fixme - tiebreak
 				if score[0] < lastScore:
 					rank += 1
 				eventRiderPointsPos[event][score[1]] = (eventRiderPointsPos[event][score[1]][0], Utils.ordinal(rank))
