@@ -839,6 +839,9 @@ function selectColumns() {
 						with tag(html, 'li'):
 							write( "{}finish position in most recent event".format(tieLink if not isFirst else "") )
 							isFirst = False
+					if eventResultsTable:
+						with tag(html, 'p'):
+							write( "(Event totals are for indication only and are not used to calculate championship ranking, so no tie-breaking is performed.)" )
 					
 					if hasUpgrades:
 						with tag(html, 'p'):

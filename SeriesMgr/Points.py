@@ -120,6 +120,9 @@ class Points(wx.Panel):
 		bsizer.Add( hb, flag=wx.ALL, border=2 )
 		
 		#--------------------------------------------------------------------------
+		
+		# Fixme - option not to break ties?
+		
 		bsizer.Add( wx.StaticLine(self), 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.ifRidersTiedOnPoints = wx.StaticText(self, label='If Riders are Tied on Points:')
 		bsizer.Add( self.ifRidersTiedOnPoints, flag=wx.ALL, border=2 )

@@ -860,8 +860,14 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				else:
 					scores.append((int(pointsPos[0].strip('[*]')), rider))
 			scores.sort(key=lambda x: -x[0])
-			for i, score in enumerate(scores):
-				eventRiderPointsPos[event][score[1]] = (eventRiderPointsPos[event][score[1]][0], Utils.ordinal(i+1))
+			lastScore = 999999
+			rank = 0
+			for score in scores:
+				# fixme - tiebreak
+				if score[0] < lastScore:
+					rank += 1
+				eventRiderPointsPos[event][score[1]] = (eventRiderPointsPos[event][score[1]][0], Utils.ordinal(rank))
+				lastScore = score[0]
 			
 		# Make a list of points, rank for each event in rider order
 		eventResultsTable = []
