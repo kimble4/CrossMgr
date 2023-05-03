@@ -289,6 +289,7 @@ table.results th.centerAlign, table.results td.centerAlign {
 
 .ignored {
 	color: #999;
+	font-style: italic;
 }
 
 table.points tr.odd {
