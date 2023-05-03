@@ -79,6 +79,7 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 	scoreByPercent = model.scoreByPercent
 	scoreByTrueSkill = model.scoreByTrueSkill
 	bestResultsToConsider = model.bestResultsToConsider
+	bestEventsToConsider = model.bestEventsToConsider
 	mustHaveCompleted = model.mustHaveCompleted
 	hasUpgrades = model.upgradePaths
 	considerPrimePointsOrTimeBonus = model.considerPrimePointsOrTimeBonus
@@ -105,6 +106,8 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 			pointsStructures[race.pointStructure] = []
 			pointsStructuresList.append( race.pointStructure )
 		pointsStructures[race.pointStructure].append( race )
+		
+	events = { r.getFileName(): r.eventName for r in model.races }
 	
 	html = io.open( htmlfileName, 'w', encoding='utf-8', newline='' )
 	
@@ -200,16 +203,36 @@ table.results td, table.results th {
 	padding:3px 7px 2px 7px;
 	text-align: left;
 }
+
 table.results th {
 	font-size:1.1em;
 	text-align:left;
 	padding-top:5px;
 	padding-bottom:4px;
-	background-color:#7FE57F;
-	color:#000000;
 	vertical-align:bottom;
 }
+
 table.results tr.odd {
+	color:#000000;
+	background-color:#EAF2D3;
+}
+
+table.results th.riders {
+	background-color:#E5E57F;
+	color:#000000;
+}
+
+table.results th.race {
+	background-color:#7FE57F;
+	color:#000000;
+}
+
+table.results th.totals {
+	background-color:#adadff;
+	color:#000000;
+}
+
+table.points tr.odd {
 	color:#000000;
 	background-color:#EAF2D3;
 }
@@ -238,7 +261,7 @@ table.results td.colSelect
 {
 	color:#000000;
 	background-color:#FFFFCC;
-}}
+}
 
 table.results td {
 	border-top:1px solid #98bf21;
@@ -293,6 +316,24 @@ hr { clear: both; }
 .hidden {
 	display: none;
 }
+
+.racescol {
+}
+
+.totalscol {
+	color:#0000FF;
+}
+
+.totalscol.rank {
+	color: #adadFF;
+	font-style: italic;
+}
+
+.totalscol.ignored {
+	color: #9090FF;
+	font-style: italic;
+}
+
 
 @media print {
 	.noprint { display: none; }
@@ -415,6 +456,38 @@ function sortTableId( iTable, iCol ) {
 	}
 	ssPersist[id] = sortState;
 }
+
+function selectColumns() {
+	const radioButtons = document.querySelectorAll('input[name="selectcols"]');
+	let show;
+	for (const radioButton of radioButtons) {
+		if (radioButton.checked) {
+			show = radioButton.value;
+			break;
+		}
+	}
+	var totals = document.getElementsByClassName('totalscol');
+	var races = document.getElementsByClassName('racescol');
+	for(i = 0; i < races.length; i++) {
+		if (show == 0 || show == 2) {
+			races[i].style.display = '';
+		} else {
+			races[i].style.display = 'none';
+		}
+	}
+	for(i = 0; i < totals.length; i++) {
+		if (show >= 1) {
+			totals[i].style.display = '';
+		} else {
+			totals[i].style.display = 'none';
+		}
+	}
+	show++;
+	if (show >= 3) {
+		show = 0;
+	}
+}
+	
 ''' )
 
 		with tag(html, 'body'):
@@ -443,19 +516,35 @@ function sortTableId( iTable, iCol ) {
 						with tag(html, 'option', {'value':iTable} ):
 							with tag(html, 'span'):
 								write( '{}'.format(escape(categoryName)) )
-			
+			with tag(html, 'span'):
+				write('Show:')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'0', 'id':'races', 'onchange':'selectColumns()'}):
+				pass
+			with tag(html, 'label', {'for':'races'}):
+				write('Races')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'1', 'id':'totals', 'onchange':'selectColumns()'}):
+				pass
+			with tag(html, 'label', {'for':'totals'}):
+				write('Event totals')
+			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'2', 'id':'both', 'onchange':'selectColumns()', 'checked':'checked'}):
+				pass
+			with tag(html, 'label', {'for':'both'}):
+				write('Races and event totals')
 			for iTable, categoryName in enumerate(categoryNames):
-				results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+				results, races, eventResultsTable, potentialDuplicates = GetModelInfo.GetCategoryResults(
 					categoryName,
 					raceResults,
 					pointsForRank,
-					useMostEventsCompleted=model.useMostEventsCompleted,
+					events,
+					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 
 				results = [rr for rr in results if toFloat(rr[4]) > 0.0]				
 				hideRaces = []
         
 				headerNames = HeaderNames + ['{}'.format(r[3].raceName) for r in races]
+				lastEvent = events[races[0][3].fileName]
+				aggregateCols = []
 				
 				with tag(html, 'div', {'id':'catContent{}'.format(iTable)} ):
 					write( '<p/>')
@@ -467,33 +556,53 @@ function sortTableId( iTable, iCol ) {
 						with tag(html, 'thead'):
 							with tag(html, 'tr'):
 								for iHeader, col in enumerate(HeaderNames):
-									colAttr = { 'onclick': 'sortTableId({}, {})'.format(iTable, iHeader) }
+									colAttr = { 'onclick': 'sortTableId({}, {})'.format(iTable, iHeader), 'class':'riders' }
 									if col in ('License', 'Gap'):
-										colAttr['class'] = 'noprint'
+										colAttr['class'] = colAttr.get('class', '') + ' noprint'
 									if col in hideCols:
 										colAttr['class'] = colAttr.get('class', '') + ' hidden'
 									with tag(html, 'th', colAttr):
 										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,iHeader)) ):
 											pass
 										write( '{}'.format(escape(col).replace('\n', '<br/>\n')) )
-								for iRace, r in enumerate(races):
+								iCol = 0
+								lastEvent = events[races[0][3].fileName]
+								for r in races:
 									# r[0] = RaceData, r[1] = RaceName, r[2] = RaceURL, r[3] = Race
+									
+									# Add aggregate results column for the last event if the event has changed
+									if eventResultsTable and events[r[3].fileName] != lastEvent:
+										with tag(html, 'th', {
+											'class':'totals leftBorder centerAlign noprint totalscol',
+												'colspan': 2,
+												'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
+											} ):
+											with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+												pass
+											write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
+											with tag(html, 'span', {'class': 'smallFont totalscol'}): 
+												write('<br/>&nbsp;')  #Points structure would go here
+										lastEvent = events[r[3].fileName]
+										aggregateCols.append(iCol)
+										iCol += 1
+										
+									# Now add the race column
 									hideClass = ''
 									if r[1] in hideCols:
-										hideRaces.append(iRace)  #list of race columns to hide when rendering points rows
+										hideRaces.append(iCol)  #list of race columns to hide when rendering points rows
 										hideClass = ' hidden'
 									with tag(html, 'th', {
-										'class':'leftBorder centerAlign noprint' + hideClass,
+										'class':'race leftBorder centerAlign noprint racescol' + hideClass,
 											'colspan': 2,
-											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iRace),
+											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
 										} ):
-										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iRace)) ):
+										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
 											pass
 										if r[2]:
 											with tag(html,'a',dict(href='{}?raceCat={}'.format(r[2], quote(categoryName.encode('utf8')))) ):
-												write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+												write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										else:
-											write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+											write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										if r[0]:
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
@@ -502,12 +611,26 @@ function sortTableId( iTable, iCol ) {
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
 												write( 'Top {}'.format(len(r[3].pointStructure)) )
+									iCol += 1
+								# Once more for the last column
+								if eventResultsTable and lastEvent != '':
+									with tag(html, 'th', {
+										'class':'totals leftBorder centerAlign noprint totalscol',
+											'colspan': 2,
+											'onclick': 'sortTableId({}, {})'.format(iTable, len(HeaderNames) + iCol),
+										} ):
+										with tag(html, 'span', dict(id='idUpDn{}_{}'.format(iTable,len(HeaderNames) + iCol)) ):
+											pass
+										write( '{}'.format(escape(lastEvent + '\nTotal').replace('\n', '<br/>\n')) ) 
+										with tag(html, 'span', {'class': 'smallFont totalscol'}): 
+											write('<br/>&nbsp;')  #Points structure would go here
+									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
 							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
-								with tag(html, 'tr', {'class':'odd'} if pos % 2 == 1 else {} ):
-									with tag(html, 'td', {'class':'rightAlign' + (' hidden' if 'Pos' in hideCols else '')}):
+								with tag(html, 'tr',  {'class':'odd'} if pos % 2 == 1 else {} ):
+									with tag(html, 'td', {'class':'rightAlign'  + (' hidden' if 'Pos' in hideCols else '')}):
 										write( '{}'.format(pos+1) )
-									with tag(html, 'td', {'class':'' + (' hidden' if 'Name' in hideCols else '')}):
+									with tag(html, 'td', {'class':('hidden' if 'Name' in hideCols else '')}):
 										write( '{}'.format(name or '') )
 									with tag(html, 'td', {'class':'noprint' + (' hidden' if 'License' in hideCols else '')}):
 										if licenseLinkTemplate and license:
@@ -515,40 +638,80 @@ function sortTableId( iTable, iCol ) {
 												write( '{}'.format(license or '') )
 										else:
 											write( '{}'.format(license or '') )
-									with tag(html, 'td', {'class':'' + (' hidden' if 'Machine' in hideCols else '')}):
+									with tag(html, 'td', {'class':(' hidden' if 'Machine' in hideCols else '')}):
 										write( '{}'.format(',<br>'.join(list(filter(None, machines))) or '') )
-									with tag(html, 'td', {'class':'' + (' hidden' if 'Team' in hideCols else '')}):
+									with tag(html, 'td', {'class':('hidden' if 'Team' in hideCols else '')}):
 										write( '{}'.format(team or '') )
 									with tag(html, 'td', {'class':'rightAlign' + (' hidden' if 'Points' in hideCols else '')}):
 										write( '{}'.format(points or '') )
 									with tag(html, 'td', {'class':'rightAlign noprint' + (' hidden' if 'Gap' in hideCols else '')}):
 										write( '{}'.format(gap or '') )
 									iRace = 0 #simple iterator, is there a more pythonesque way to do this?
+									lastEvent = events[races[0][3].fileName]
+									iCol = 0
+									aggPoints = 0
 									for rPoints, rRank, rPrimePoints, rTimeBonus in racePoints:
+										if eventResultsTable and iCol in aggregateCols:
+											aggIndex = aggregateCols.index(iCol)
+											if eventResultsTable[aggIndex][pos][0]:
+												with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol'  + (' ignored' if isIgnored else '')}):
+													write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
+											else:
+												with tag(html, 'td', {'class':'leftBorder noprint totalscol'  + (' hidden' if iRace in hideRaces else '')}):
+													pass
+											if eventResultsTable[aggIndex][pos][1]:
+												with tag(html, 'td', {'class':'rank noprint totalscol'  }):
+													write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
+											else:
+												with tag(html, 'td', {'class':'noprint totalscol'  }):
+													pass
+											iCol += 1
 										if rPoints:
-											with tag(html, 'td', {'class':'leftBorder rightAlign noprint' + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
+											#print(rPoints)
+											if isinstance(rPoints, int):
+												isIgnored = False
+											else:
+												isIgnored = True
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint racescol'  + (' ignored' if '**' in '{}'.format(rPoints) else '') + (' hidden' if iRace in hideRaces else '')}):
 												write( '{}'.format(rPoints).replace('[','').replace(']','').replace(' ', '&nbsp;') )
 										else:
-											with tag(html, 'td', {'class':'leftBorder noprint' + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'leftBorder noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 												pass
 
 										if rRank <= SeriesModel.rankDNF:
 											if rPrimePoints:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;+{}'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;'), rPrimePoints) )
 											elif rTimeBonus:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})&nbsp;-{}'.format(
 														Utils.ordinal(rRank).replace(' ', '&nbsp;'),
 														Utils.formatTime(rTimeBonus, twoDigitMinutes=False)),
 													)
 											else:
-												with tag(html, 'td', {'class':'rank noprint' + (' hidden' if iRace in hideRaces else '')}):
+												with tag(html, 'td', {'class':'rank noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 													write( '({})'.format(Utils.ordinal(rRank).replace(' ', '&nbsp;')) )
 										else:
-											with tag(html, 'td', {'class':'noprint' + (' hidden' if iRace in hideRaces else '')}):
+											with tag(html, 'td', {'class':'noprint racescol'  + (' hidden' if iRace in hideRaces else '')}):
 												pass
 										iRace += 1
+										iCol += 1
+									#once more for the last column
+									if eventResultsTable and iCol in aggregateCols:
+										aggIndex = aggregateCols.index(iCol)
+										if eventResultsTable[aggIndex][pos][0]:
+											with tag(html, 'td', {'class':'leftBorder rightAlign noprint totalscol'  + (' ignored' if isIgnored else '')}):
+												write( '{}'.format(eventResultsTable[aggIndex][pos][0].replace('[','').replace(']','').replace(' ', '&nbsp;') ) )
+										else:
+											with tag(html, 'td', {'class':'leftBorder noprint totalscol'  + (' hidden' if iRace in hideRaces else '')}):
+												pass
+										if eventResultsTable[aggIndex][pos][1]:
+											with tag(html, 'td', {'class':'rank noprint totalscol'  }):
+												write( '({})'.format(eventResultsTable[aggIndex][pos][1].replace(' ', '&nbsp;') ) )
+										else:
+											with tag(html, 'td', {'class':'noprint totalscol'  }):
+												pass
+										
 			#-----------------------------------------------------------------------------
 			if considerPrimePointsOrTimeBonus:
 				with tag(html, 'p', {'class':'noprint'}):
@@ -562,12 +725,17 @@ function sortTableId( iTable, iCol ) {
 							with tag(html, 'span', {'style':'font-style: italic;'}):
 								write( '+N' )
 						write( ' - {}'.format( 'Bonus Points added to Points for Place.') )
-					
-			if bestResultsToConsider > 0 and not scoreByTrueSkill:
+			
+			if bestEventsToConsider > 0:
 				with tag(html, 'p', {'class':'noprint'}):
 					with tag(html, 'strong'):
 						write( '**' )
-					write( ' - {}'.format( 'Result not considered.  Not in best of {} scores.'.format(bestResultsToConsider) ) )
+					write( ' - {}'.format( 'Result not considered.  Not in best {} events.'.format(bestEventsToConsider) ) )
+			elif bestResultsToConsider > 0 and not scoreByTrueSkill:
+				with tag(html, 'p', {'class':'noprint'}):
+					with tag(html, 'strong'):
+						write( '**' )
+					write( ' - {}'.format( 'Result not considered.  Not in best {} scores.'.format(bestResultsToConsider) ) )
 					
 			if hasUpgrades:
 				with tag(html, 'p', {'class':'noprint'}):
@@ -631,7 +799,7 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'ul'):
 										for r in pointsStructures[ps]:
 											with tag(html, 'li'):
-												write( r.getRaceName() )
+												write( r.raceName )
 						
 						with tag(html, 'tr'):
 							with tag(html, 'td'):
@@ -654,7 +822,7 @@ function sortTableId( iTable, iCol ) {
 					isFirst = True
 					tieLink = "if still a tie, use "
 					with tag(html, 'ol'):
-						if model.useMostEventsCompleted:
+						if model.useMostRacesCompleted:
 							with tag(html, 'li'):
 								write( "{}number of events completed".format( tieLink if not isFirst else "" ) )
 								isFirst = False
@@ -672,6 +840,9 @@ function sortTableId( iTable, iCol ) {
 						with tag(html, 'li'):
 							write( "{}finish position in most recent event".format(tieLink if not isFirst else "") )
 							isFirst = False
+					if eventResultsTable:
+						with tag(html, 'p'):
+							write( "(Event totals are for indication only and are not used to calculate championship ranking, so no tie-breaking is performed.)" )
 					
 					if hasUpgrades:
 						with tag(html, 'p'):
@@ -686,12 +857,12 @@ function sortTableId( iTable, iCol ) {
 									write( "{}: {:.2f} points in pre-upgrade category carried forward".format(model.upgradePaths[i], model.upgradeFactors[i]) )
 			#-----------------------------------------------------------------------------
 			with tag(html, 'p'):
-				with tag(html, 'a', dict(href='http://sites.google.com/site/crossmgrsoftware')):
-					write( 'Powered by CrossMgr' )
+				with tag(html, 'a', dict(href='https://github.com/kimble4/CrossMgr')):
+					write( 'Powered by BHPC CrossMgr' )
 	
 	html.close()
 
-brandText = 'Powered by CrossMgr (sites.google.com/site/crossmgrsoftware)'
+brandText = 'Powered by BHPC CrossMgr (https://github.com/kimble4/CrossMgr)'
 
 textStyle = xlwt.easyxf(
 	"alignment: horizontal left;"
@@ -909,21 +1080,24 @@ class Results(wx.Panel):
 			return
 			
 		pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
+		events = { r.getFileName(): r.eventName for r in model.races }
 
-		results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+		results, races, eventScores, potentialDuplicates = GetModelInfo.GetCategoryResults(
 			categoryName,
 			self.raceResults,
 			pointsForRank,
-			useMostEventsCompleted=model.useMostEventsCompleted,
+			events,
+			useMostRacesCompleted=model.useMostRacesCompleted,
 			numPlacesTieBreaker=model.numPlacesTieBreaker,
 		)
 		
 		results = [rr for rr in results if toFloat(rr[4]) > 0.0]
 		
-		headerNames = HeaderNames + ['{}\n{}'.format(r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
+		headerNames = HeaderNames + ['{}\n{}\n{}'.format(r[3].eventName,r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
 		
 		Utils.AdjustGridSize( self.grid, len(results), len(headerNames) )
 		self.setColNames( headerNames )
+		self.grid.SetColLabelSize(64)  # fixme constant
 		#These columns start off hidden
 		hideLicense = True
 		hideMachine = True
@@ -1047,6 +1221,8 @@ class Results(wx.Panel):
 		scoreByTime = model.scoreByTime
 		scoreByPercent = model.scoreByPercent
 		scoreByTrueSkill = model.scoreByTrueSkill
+		bestResultsToConsider = model.bestResultsToConsider
+		bestEventsToConsider = model.bestEventsToConsider
 		HeaderNames = getHeaderNames()
 		hideCols = [self.grid.GetColLabelValue(c).strip() for c in range(self.grid.GetNumberCols()) if not self.grid.IsColShown(c)]
 		
@@ -1062,20 +1238,22 @@ class Results(wx.Panel):
 			return
 			
 		pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
+		events = { r.getFileName(): r.eventName for r in model.races }
 		
 		wb = xlwt.Workbook()
 		
 		for categoryName in categoryNames:
-			results, races, potentialDuplicates = GetModelInfo.GetCategoryResults(
+			results, races, eventScores, potentialDuplicates = GetModelInfo.GetCategoryResults(
 				categoryName,
 				self.raceResults,
 				pointsForRank,
-				useMostEventsCompleted=model.useMostEventsCompleted,
+				events,
+				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
 			results = [rr for rr in results if toFloat(rr[4]) > 0.0]
 			
-			headerNames = HeaderNames + [r[3].raceName for r in races]
+			headerNames = HeaderNames + [(r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName for r in races]
 			
 			hideRaces = []
 			for iRace, r in enumerate(races):
@@ -1138,7 +1316,7 @@ class Results(wx.Panel):
 					c += 1
 				for q, (rPoints, rRank, rPrimePoints, rTimeBonus) in enumerate(racePoints):
 					if q not in hideRaces:
-						wsFit.write( rowCur, 6 + q,
+						wsFit.write( rowCur, c + q,
 							'{} ({}) +{}'.format(rPoints, Utils.ordinal(rRank), rPrimePoints) if rPoints and rPrimePoints
 							else '{} ({}) -{}'.format(rPoints, Utils.ordinal(rRank), Utils.formatTime(rTimeBonus, twoDigitMinutes=False)) if rPoints and rRank and rTimeBonus
 							else '{} ({})'.format(rPoints, Utils.ordinal(rRank)) if rPoints
@@ -1146,12 +1324,15 @@ class Results(wx.Panel):
 							else '',
 							centerStyle
 						)
-						c += 1
 				rowCur += 1
 		
 			# Add branding at the bottom of the sheet.
 			style = xlwt.XFStyle()
 			style.alignment.horz = xlwt.Alignment.HORZ_LEFT
+			if bestEventsToConsider > 0:
+				ws.write( rowCur + 1, 0, '** - {}'.format( 'Result not considered.  Not in best {} events.'.format(bestEventsToConsider)), style )
+			elif bestResultsToConsider > 0:
+				ws.write( rowCur + 1, 0, '** - {}'.format( 'Result not considered.  Not in best {} Results.'.format(bestResultsToConsider)), style )
 			ws.write( rowCur + 2, 0, brandText, style )
 		
 		if Utils.mainWin:

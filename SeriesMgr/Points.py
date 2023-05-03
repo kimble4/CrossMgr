@@ -92,9 +92,9 @@ class Points(wx.Panel):
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		self.considerPrimePointsOrTimeBonus = wx.CheckBox( self, label='Consider Points or Time Bonuses from CrossMgr Primes' )
 		self.considerPrimePointsOrTimeBonus.SetValue( True )
-		self.scoreByLastEventPoints = wx.CheckBox( self, label='Score by Last Event Points' )
+		self.scoreByLastRacePoints = wx.CheckBox( self, label='Score by Last Race Points (for Omniums)' )
 		hb.Add( self.considerPrimePointsOrTimeBonus )
-		hb.Add( self.scoreByLastEventPoints, flag=wx.LEFT, border=8 )
+		hb.Add( self.scoreByLastRacePoints, flag=wx.LEFT, border=8 )
 		bsizer.Add( hb, 0, flag=wx.ALL, border=4 )
 		
 		#--------------------------------------------------------------------------
@@ -103,24 +103,32 @@ class Points(wx.Panel):
 		maxOptions = 30
 		self.considerLabel = wx.StaticText( self, label='{}:'.format('Consider') )
 		self.bestResultsToConsider = wx.Choice( self, choices = ['All Results', 'Best Result Only'] + ['{} {} {}'.format('Best', i, 'Results Only') for i in range(2,maxOptions+1)] )
+		self.bestResultsToConsider.Bind ( wx.EVT_CHOICE, self.onBestResultsChange )
+		self.bestEventsToConsider = wx.Choice( self, choices = ['All Events', 'Best Event Only'] + ['{} {} {}'.format('Best', i, 'Events Only') for i in range(2,maxOptions+1)] )
+		self.bestEventsToConsider.Bind ( wx.EVT_CHOICE, self.onBestEventsChange )
 		
 		self.participationLabel = wx.StaticText( self, label='{}:'.format('Must have completed') )
-		self.mustHaveCompleted = wx.Choice( self, choices = ['{} {}'.format(i, 'or more Events') for i in range(0,maxOptions+1)] )
+		self.mustHaveCompleted = wx.Choice( self, choices = ['{} {}'.format(i, 'or more Races') for i in range(0,maxOptions+1)] )
 		
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		hb.Add( self.considerLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		hb.Add( self.bestResultsToConsider )
+		hb.Add( wx.StaticText( self, label=' from ' ), flag=wx.ALIGN_CENTRE_VERTICAL )
+		hb.Add( self.bestEventsToConsider )
 		hb.Add( self.participationLabel, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=16 )
 		hb.Add( self.mustHaveCompleted )
 		bsizer.Add( hb, flag=wx.ALL, border=2 )
 		
 		#--------------------------------------------------------------------------
+		
+		# Fixme - option not to break ties?
+		
 		bsizer.Add( wx.StaticLine(self), 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.ifRidersTiedOnPoints = wx.StaticText(self, label='If Riders are Tied on Points:')
 		bsizer.Add( self.ifRidersTiedOnPoints, flag=wx.ALL, border=2 )
-		self.mostEventsCompleted = wx.CheckBox( self, label='Consider Number of Events Completed' )
-		self.mostEventsCompleted.SetValue( False )
-		bsizer.Add( self.mostEventsCompleted, 0, flag=wx.ALL, border=4 )
+		self.mostRacesCompleted = wx.CheckBox( self, label='Consider Number of Races Completed' )
+		self.mostRacesCompleted.SetValue( False )
+		bsizer.Add( self.mostRacesCompleted, 0, flag=wx.ALL, border=4 )
 		
 		bsizer.Add( wx.StaticLine(self), 1, flag=wx.EXPAND|wx.ALL, border=4 )
 		self.numPlacesTieBreaker = wx.RadioBox(self, majorDimension=3, style=wx.RA_SPECIFY_ROWS, choices = [
@@ -170,13 +178,20 @@ class Points(wx.Panel):
 		self.SetSizer(sizer)
 		
 		self.scoreByPointsControls = [
+			self.bestEventsToConsider,
 			self.ifRidersTiedOnPoints,
-			self.mostEventsCompleted,
+			self.mostRacesCompleted,
 			self.numPlacesTieBreaker,
 			self.ifRidersAreStillTiedOnPoints,
 			self.pointsStructures,
 			self.grid,
 		]
+		
+	def onBestResultsChange( self, event ):
+		self.bestEventsToConsider.SetSelection( 0 )
+		
+	def onBestEventsChange( self, event ):
+		self.bestResultsToConsider.SetSelection( 0 )
 		
 	def getGrid( self ):
 		return self.grid
@@ -204,9 +219,13 @@ class Points(wx.Panel):
 	
 	def fixEnable( self, event = None ):
 		enable = self.scoreByPoints.GetValue()
+		if not enable and not self.scoreByTime.GetValue():
+			# This is only currently supported for Time and Points based scoring, see GetModelInfo.py
+			self.bestEventsToConsider.SetSelection( 0 )
 		for c in self.scoreByPointsControls:
 			c.Enable( enable )
-	
+		
+		
 	def refresh( self ):
 		model = SeriesModel.model
 		for row in range(self.grid.GetNumberRows()):
@@ -224,11 +243,12 @@ class Points(wx.Panel):
 		wx.CallAfter( self.gridAutoSize )
 		
 		self.considerPrimePointsOrTimeBonus.SetValue( model.considerPrimePointsOrTimeBonus )
-		self.scoreByLastEventPoints.SetValue( model.scoreByPointsInput )
+		self.scoreByLastRacePoints.SetValue( model.scoreByPointsInput )
 		self.bestResultsToConsider.SetSelection( model.bestResultsToConsider )
+		self.bestEventsToConsider.SetSelection( model.bestEventsToConsider )
 		self.mustHaveCompleted.SetSelection( model.mustHaveCompleted )
 		
-		self.mostEventsCompleted.SetValue( model.useMostEventsCompleted )
+		self.mostRacesCompleted.SetValue( model.useMostRacesCompleted )
 		self.numPlacesTieBreaker.SetSelection( model.numPlacesTieBreaker )
 		
 		if model.scoreByTime:
@@ -257,19 +277,18 @@ class Points(wx.Panel):
 		
 		model = SeriesModel.model
 		model.setPoints( pointsList )
-		
 		modelUpdate = {
 			'considerPrimePointsOrTimeBonus':	self.considerPrimePointsOrTimeBonus.GetValue(),
-			'scoreByPointsInput':				self.scoreByLastEventPoints.GetValue(),
+			'scoreByPointsInput':				self.scoreByLastRacePoints.GetValue(),
 			'bestResultsToConsider':			self.bestResultsToConsider.GetSelection(),
+			'bestEventsToConsider':				self.bestEventsToConsider.GetSelection(),
 			'mustHaveCompleted':				self.mustHaveCompleted.GetSelection(),
-			'useMostEventsCompleted':			self.mostEventsCompleted.GetValue(),
+			'useMostRacesCompleted':			self.mostRacesCompleted.GetValue(),
 			'numPlacesTieBreaker':				self.numPlacesTieBreaker.GetSelection(),
 			'scoreByTime':						self.scoreByTime.GetValue(),
 			'scoreByPercent':					self.scoreByPercent.GetValue(),
 			'scoreByTrueSkill':					self.scoreByTrueSkill.GetValue(),
 		}
-		
 		for attr, value in modelUpdate.items():
 			if getattr(model, attr) != value:
 				setattr( model, attr, value )

@@ -158,7 +158,7 @@ class Race:
 	pureTeam = False	# True if the results are by pure teams, that is, no individual results.
 	teamPointStructure = None	# If specified, team points will be recomputed from the top individual results.
 	
-	def __init__( self, fileName, pointStructure, teamPointStructure=None, grade=None, raceName=None ):
+	def __init__( self, fileName, pointStructure, teamPointStructure=None, grade=None, raceName=None, eventName=None ):
 		self.fileName = fileName
 		self.pointStructure = pointStructure
 		self.teamPointStructure = teamPointStructure
@@ -167,9 +167,7 @@ class Race:
 			self.raceName = RaceNameFromPath( self.fileName )
 		else:
 			self.raceName = raceName
-		
-	def getRaceName( self ):
-		return self.raceName
+		self.eventName = eventName
 		
 	def postReadFix( self ):
 		if getattr( self, 'fname', None ):
@@ -177,6 +175,8 @@ class Race:
 			delattr( self, 'fname' )
 		if not hasattr( self, 'raceName' ):
 			self.raceName = RaceNameFromPath( self.fileName )
+		if not hasattr( self, 'eventName' ):
+			self.eventName = None
 		
 	def getFileName( self ):
 		return self.fileName
@@ -226,7 +226,7 @@ rankUnknown				= 99999999
 
 class SeriesModel:
 	DefaultPointStructureName = 'Regular'
-	useMostEventsCompleted = False
+	useMostRacesCompleted = False
 	scoreByTime = False
 	scoreByPercent = False
 	scoreByTrueSkill = False
@@ -235,6 +235,7 @@ class SeriesModel:
 	
 	licenseLinkTemplate = ''	# Used to create an html link from the rider's license number in the html output.
 	bestResultsToConsider = 0	# 0 == all
+	bestEventsToConsider = 0	# 0 == all
 	mustHaveCompleted = 0		# Number of events to complete to be eligible for results.
 	organizer = ''
 	upgradePaths = []
@@ -316,7 +317,7 @@ class SeriesModel:
 		self.setChanged()
 	
 	def setRaces( self, raceList ):
-		if [(r.fileName, r.pointStructure.name, r.teamPointStructure.name if r.teamPointStructure else None, r.grade, r.raceName) for r in self.races] == raceList:
+		if [(r.fileName, r.pointStructure.name, r.teamPointStructure.name if r.teamPointStructure else None, r.grade, r.raceName, r.eventName) for r in self.races] == raceList:
 			return
 		
 		self.setChanged()
@@ -324,7 +325,7 @@ class SeriesModel:
 		racesSeen = set()
 		newRaces = []
 		ps = { p.name:p for p in self.pointStructures }
-		for fileName, pname, pteamname, grade, racename in raceList:
+		for fileName, pname, pteamname, grade, raceName, eventName in raceList:
 			fileName = fileName.strip()
 			if not fileName or fileName in racesSeen:
 				continue
@@ -336,7 +337,7 @@ class SeriesModel:
 			except KeyError:
 				continue
 			pt = ps.get( pteamname, None )
-			newRaces.append( Race(fileName, p, pt, grade, racename) )
+			newRaces.append( Race(fileName, p, pt, grade, raceName, eventName) )
 			
 		self.races = newRaces
 		for i, r in enumerate(self.races):
@@ -589,14 +590,14 @@ class SeriesModel:
 		if changed:
 			memoize.clear()
 	
-	def addRace( self, name ):
-		race = Race( name, self.pointStructures[0] )
+	def addRace( self, filename ):
+		race = Race( filename, self.pointStructures[0] )
 		self.races.append( race )
 		self.setChanged()
 		
-	def removeRace( self, name ):
+	def removeRace( self, filename ):
 		raceCount = len(self.races)
-		self.races = [r for r in self.races if r.fileName != name]
+		self.races = [r for r in self.races if r.fileName != filename]
 		if raceCount != len(self.races):
 			self.setChanged()
 			
@@ -605,11 +606,11 @@ class SeriesModel:
 			self.races = []
 			self.setChanged()
 	
-	def getRaceNames( self ):
-		names = set()
+	def getRaceFileNames( self ):
+		filenames = set()
 		for r in self.races:
-			names.add( os.path.splitext(os.path.basename(r.fileName))[0] )
-		return sorted( names )
+			filenames.add( os.path.splitext(os.path.basename(r.fileName))[0] )
+		return sorted( filenames )
 		
 	def getMetaTags( self ):
 		return (
@@ -617,7 +618,7 @@ class SeriesModel:
 			('copyright', "Edward Sitarski, 2013-{}".format(datetime.datetime.now().year)),
 			('description', 'Series: {}, Races: {}'.format(
 					escape(self.name, quote=True),
-					';'.join('{}'.format(escape(n, quote=True)) for n in self.getRaceNames())
+					';'.join('{}'.format(escape(n, quote=True)) for n in self.getRaceFileNames())
 				)
 			),
 			('generator', "SeriesMgr"),

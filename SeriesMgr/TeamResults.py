@@ -464,7 +464,7 @@ function sortTableId( iTable, iCol ) {
 					raceResults,
 					pointsForRank,
 					teamPointsForRank,
-					useMostEventsCompleted=model.useMostEventsCompleted,
+					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 				
 				results = filterResults( results, scoreByPoints, scoreByTime )
@@ -504,9 +504,9 @@ function sortTableId( iTable, iCol ) {
 											pass
 										if r[2]:
 											with tag(html,'a',dict(href='{}?raceCat={}'.format(r[2], quote(categoryName.encode('utf8')))) ):
-												write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+												write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										else:
-											write( '{}'.format(escape(r[3].raceName).replace('\n', '<br/>\n')) )
+											write( '{}'.format(escape((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName).replace('\n', '<br/>\n')) )
 										if r[0]:
 											write( '<br/>' )
 											with tag(html, 'span', {'class': 'smallFont'}):
@@ -556,7 +556,7 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'ul'):
 										for r in pointsStructures[ps]:
 											with tag(html, 'li'):
-												write( r.getRaceName() )
+												write( r.raceName )
 						
 						with tag(html, 'tr'):
 							with tag(html, 'td'):
@@ -579,7 +579,7 @@ function sortTableId( iTable, iCol ) {
 					isFirst = True
 					tieLink = u"if still a tie, use "
 					with tag(html, 'ol'):
-						if model.useMostEventsCompleted:
+						if model.useMostRacesCompleted:
 							with tag(html, 'li'):
 								write( u"{}number of events completed".format( tieLink if not isFirst else "" ) )
 								isFirst = False
@@ -822,13 +822,13 @@ class TeamResults(wx.Panel):
 			self.raceResults,
 			pointsForRank,
 			teamPointsForRank,
-			useMostEventsCompleted=model.useMostEventsCompleted,
+			useMostRacesCompleted=model.useMostRacesCompleted,
 			numPlacesTieBreaker=model.numPlacesTieBreaker,
 		)
 		
 		results = filterResults( results, scoreByPoints, scoreByTime )
 		
-		headerNames = HeaderNames + ['{}\n{}'.format(r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
+		headerNames = HeaderNames + ['{}\n{}'.format((r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
     
 		#Show all columns
 		for c in range(self.grid.GetNumberCols()):
@@ -836,6 +836,7 @@ class TeamResults(wx.Panel):
 		
 		Utils.AdjustGridSize( self.grid, len(results), len(headerNames) )
 		self.setColNames( headerNames )
+		self.grid.SetColLabelSize(64)  # fixme constant
 		
 		for row, (team, points, gap, rrs) in enumerate(results):
 			self.grid.SetCellValue( row, 0, '{}'.format(row+1) )
@@ -955,13 +956,13 @@ class TeamResults(wx.Panel):
 				self.raceResults,
 				pointsForRank,
 				teamPointsForRank,
-				useMostEventsCompleted=model.useMostEventsCompleted,
+				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
 			
 			results = filterResults( results, scoreByPoints, scoreByTime )
 			
-			headerNames = HeaderNames + [r[3].raceName for r in races]
+			headerNames = HeaderNames + [(r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName for r in races]
      
 			hideRaces = []
 			for iRace, r in enumerate(races):
