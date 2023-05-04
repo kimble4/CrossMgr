@@ -178,7 +178,6 @@ class Points(wx.Panel):
 		self.SetSizer(sizer)
 		
 		self.scoreByPointsControls = [
-			self.bestEventsToConsider,
 			self.ifRidersTiedOnPoints,
 			self.mostRacesCompleted,
 			self.numPlacesTieBreaker,
@@ -222,6 +221,9 @@ class Points(wx.Panel):
 		if not enable and not self.scoreByTime.GetValue():
 			# This is only currently supported for Time and Points based scoring, see GetModelInfo.py
 			self.bestEventsToConsider.SetSelection( 0 )
+			self.bestEventsToConsider.Enable( False )
+		else: 
+			self.bestEventsToConsider.Enable( True )
 		for c in self.scoreByPointsControls:
 			c.Enable( enable )
 		
