@@ -669,7 +669,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 
 		percentFormat = '{:.2f}'
 		riderPercentTotal = defaultdict( float )
-		
+		riderEventPercents = defaultdict( lambda: defaultdict(int) )
 		raceLeader = { rr.raceInSeries: rr for rr in raceResults if rr.rank == 1 }
 		
 		for rr in raceResults:
@@ -695,13 +695,35 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			riderResults[rider][raceSequence[rr.raceInSeries]] = (
 				'{}, {}'.format(percentFormat.format(percent), formatTime(tFinish, False)), rr.rank, 0, 0
 			)
+			riderEvents[rider][raceSequence[rr.raceInSeries]] = events[rr.raceFileName]
 			riderFinishes[rider][raceSequence[rr.raceInSeries]] = percent
 			riderPercentTotal[rider] += percent
 			riderUpgrades[rider][raceSequence[rr.raceInSeries]] = rr.upgradeResult
 			riderPlaceCount[rider][(raceGrade[rr.raceFileName],rr.rank)]
 			riderRacesCompleted[rider] += 1
+			#add up rider's points for each event
+			p = riderEventPercents[rider][events[rr.raceFileName]] if riderEventPercents[rider][events[rr.raceFileName]] else 0
+			p += percent
+			riderEventPercents[rider][events[rr.raceFileName]] = p
 
-		# Adjust for the best percents.
+		# Adjust for the best event percents
+		if bestEventsToConsider > 0:
+			for rider, eventsDict in riderEventPercents.items():
+				eventPercentsList = list(eventsDict.items())
+				eventPercentsList.sort(key=lambda x: -x[1])
+				if len(eventPercentsList) > bestEventsToConsider:
+					for i, eventPercents in enumerate(eventPercentsList[bestEventsToConsider:]): # For the events we don't want...
+						# subtract percents from the rider's total, remove the event from the list
+						riderPercentTotal[rider] -= eventPercents[1]
+						eventPercentsList.remove(eventPercents)
+						# rewrite the rider's total in the event points list
+						v = riderEventPercents[rider][eventPercents[0]]
+						riderEventPercents[rider][eventPercents[0]] = ignoreFormat.format(v if v else '')
+				for i, r in enumerate(riderResults[rider]):
+					if riderEvents[rider][i] and riderEvents[rider][i] not in (ep[0] for ep in eventPercentsList):  # If they rode the event and the event's not in the list...
+						v = riderResults[rider][i]
+						riderResults[rider][i] = tuple([ignoreFormat.format(v[0] if v[0] else '')] + list(v[1:]))
+		# Adjust for the best race percents
 		if bestResultsToConsider > 0:
 			for rider, finishes in riderFinishes.items():
 				iPercents = [(i, p) for i, p in enumerate(finishes) if p is not None]
@@ -726,13 +748,52 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 			riderGap = { r : leaderPercentTotal - riderPercentTotal[r] for r in riderOrder }
 			riderGap = { r : percentFormat.format(gap) if gap else '' for r, gap in riderGap.items() }
 			
+		# Create a table of scores and ranks for each event
+		eventRiderPercentsPos = defaultdict( lambda: defaultdict() )
+		for rider, eventPercents in riderEventPercents.items():
+			for event, time in eventPercents.items():
+				eventRiderPercentsPos[event][rider] = (time, None)
+		# Calculate ranks
+		for event, riderPercentsPos in eventRiderPercentsPos.items():
+			scores = []
+			for rider, percentPos in riderPercentsPos.items():
+				if isinstance(percentPos[0], float):
+					scores.append((percentPos[0], rider))
+				else:
+					scores.append((float(percentPos[0].strip('[*]')), rider))
+			scores.sort(key=lambda x: -x[0])
+			lastScore = 999999
+			rank = 0
+			for score in scores:
+				if score[0] < lastScore:
+					rank += 1
+				if isinstance(eventRiderPercentsPos[event][score[1]][0], str):
+					v = ignoreFormat.format(percentFormat.format((float(eventRiderPercentsPos[event][score[1]][0].strip('[*]')))))
+				else:
+					v = percentFormat.format(eventRiderPercentsPos[event][score[1]][0])
+				eventRiderPercentsPos[event][score[1]] = (v, Utils.ordinal(rank))
+				lastScore = score[0]
+				
+		# Make a list of points, rank for each event in rider order for display
+		eventResultsTable = []
+		for i, event in enumerate(eventSequence):
+			rtp = eventRiderPercentsPos.get(event)
+			res = []
+			for rider in riderOrder:
+				tp = rtp.get(rider)
+				if tp:
+					res.append((tp[0], tp[1]))
+				else:
+					res.append(('', ''))
+			eventResultsTable.append(res)
+			
 		# Tidy up the machines list for display
 		TidyMachinesList( riderMachines )
 		
 		# List of:
 		# lastName, firstName, license, [list of machines], team, totalPercent, [list of (percent, position) for each race in series]
 		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], percentFormat.format(riderPercentTotal[rider]), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
-		return categoryResult, races, None, GetPotentialDuplicateFullNames(riderNameLicense)
+		return categoryResult, races, eventResultsTable, GetPotentialDuplicateFullNames(riderNameLicense)
 	
 	elif scoreByTrueSkill:
 		# Get an initial Rating for all riders.
