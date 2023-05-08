@@ -55,7 +55,7 @@ In each row, add the race, either a CrossMgr race file (.cmn) or an Excel sheet 
 
 You can change the order of races by dragging the row in the grey column to the left of the race name.
 
-* The __Event__ column can be used to give a common name to a group of races eg. those that take place on the same day, or at the same venue.  Races with the same text in the 'Event' field will get an 'Event Total' column in the HTML output, and be considered together for "Consider best n Events" purposes (see [Scoring Criteria][]).  Otherwise, leave this blank.
+* The __Event__ column can be used to give a common name to a group of races eg. those that take place on the same day, or at the same venue.  Races with the same text in the 'Event' field will get an 'Event Total' column in the HTML output, and be considered together for "Consider best n Events" purposes (see __Scoring Criteria__).  Otherwise, leave this blank.
 * The __Race__ column can be edited to change how the race name is displayed in the results.
 * The __Grade__ column is used to break ties (more on that later too).
 * The __Points__ column is the points structure to be used to score that race.  This only applies if you are scoring by Points (more on that later).
