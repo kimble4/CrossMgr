@@ -64,7 +64,7 @@ tdCaptureAfterDefault = timedelta(seconds=2.0)
 
 closeFinishThreshold = 3.0/30.0	# Time gap when two finishes are considered close.
 closeColors = ('E50000','D1D200','00BF00')
-capturePreviewThreshold = 0.1  # Preview capture if within this many seconds of realtime
+capturePreviewThreshold = 1.0/6  # Preview capture if within this many seconds of realtime (1/6 second to match framerate of preview window)
 
 
 def getCloseFinishBitmaps( size=(16,16) ):

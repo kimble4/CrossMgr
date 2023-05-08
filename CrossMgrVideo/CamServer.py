@@ -130,10 +130,13 @@ def CamServer( qIn, qOut, camInfo=None ):
 			
 			while keepCapturing:
 				# Read the frame.  If anything fails, keep going in the loop so we can reset with another camInfo.
-				if suspend or not cap.isOpened():
+				if suspend:
 					ret, frame = False, None
-					time.sleep( 2.0 )		# Keep going so we can get a camInfo to try again.
-					keepCapturing = False
+					time.sleep( 0.1 )  # Short sleep before trying again so we don't miss too much if re-enabled by a trigger
+				elif not cap.isOpened():
+					ret, frame = False, None
+					time.sleep( 2.0 )		
+					keepCapturing = False	# Break out so we can get a camInfo to try again.
 				else:						
 					try:
 						ret, frame = cap.read()
