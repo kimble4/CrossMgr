@@ -126,9 +126,11 @@ def CamServer( qIn, qOut, camInfo=None ):
 			# Get the available usb ports.  If the current port succeeded, don't waste time checking it again.
 			backgroundGetCameraUsb( camInfo['usb'] if cap.isOpened() else None, camInfo )
 			
+			suspend = False
+			
 			while keepCapturing:
 				# Read the frame.  If anything fails, keep going in the loop so we can reset with another camInfo.
-				if not cap.isOpened():
+				if suspend or not cap.isOpened():
 					ret, frame = False, None
 					time.sleep( 0.5 )		# Keep going so we can get a camInfo to try again.
 				else:						
@@ -228,6 +230,14 @@ def CamServer( qIn, qOut, camInfo=None ):
 					elif cmd == 'get_usb':
 						keepCapturing = False	# Forces a camera reconnect to the same camInfo.  This, sends updated usb information.
 						break
+					
+					elif cmd == 'suspend':
+						if not suspend:
+							suspend = True
+						
+					elif cmd == 'resume':
+						if suspend:
+							suspend = False
 					
 					elif cmd == 'terminate':
 						#-----------------------------------------------

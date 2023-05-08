@@ -59,7 +59,15 @@ You are also prompted for the resolution and frames per second of your camera (s
 
 ## Main Screen
 
-### Buttons on Top
+### Tools Menu / Buttons on Top
+
+#### Disable Capture
+
+(Tools menu only)
+
+Disables background capturing to the 10-second buffer.  This is useful for reducing system resource use when analysing data after the race.
+
+Capturing to the buffer will be automatically re-enabled as soon as a capture is triggered, but historical frames will be missed.
 
 #### Monitor/Focus
 

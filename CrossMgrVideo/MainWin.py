@@ -443,10 +443,14 @@ class MainWin( wx.Frame ):
 		#-------------------------------------------
 		self.toolsMenu = wx.Menu()
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, "R&eset Camera", "Reset the camera configuration" )
+		self.disableCapture = self.toolsMenu.Append( wx.ID_ANY, "&Disable Capture\tCtrl+D", "Disable the capture thread", kind=wx.ITEM_CHECK)
+		self.disableCapture.Check( False )
+		self.Bind(wx.EVT_MENU, self.onMenuDisableCapture, self.disableCapture )
+		
+		item = self.toolsMenu.Append( wx.ID_ANY, "R&eset Camera\tCtrl+R", "Reset the camera configuration" )
 		self.Bind(wx.EVT_MENU, self.resetCamera, item )
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, "&Focus", "Large window to focus the camera" )
+		item = self.toolsMenu.Append( wx.ID_ANY, "Monitor/&Focus\tCtrl+F", "Large window to focus the camera" )
 		self.Bind(wx.EVT_MENU, self.onFocus, item )
 
 		item = self.toolsMenu.Append( wx.ID_ANY, "&Configure Autocapture", "Configure Autocapture parameters" )
@@ -1925,6 +1929,7 @@ class MainWin( wx.Frame ):
 	def processRequests( self ):
 		while True:
 			msg = self.requestQ.get()	# Blocking get.
+			wx.CallAfter( self.captureEnable )
 			
 			tSearch = msg['time']
 			advanceSeconds = msg.get('advanceSeconds', 0.0)
@@ -1991,8 +1996,37 @@ class MainWin( wx.Frame ):
 			)
 			self.dbWriterThread.start()
 	
+	def onMenuDisableCapture( self, event ):
+		if self.disableCapture.IsChecked():
+			self.camInQ.put( {'cmd':'suspend'} )
+			self.capturingIcon.SetBitmap( Utils.getBitmap('stop.png') )
+			self.capturingText.SetLabel( 'Capture disabled!' )
+			self.capturingTime.SetLabel( '' )
+		else:
+			self.camInQ.put( {'cmd':'resume'} )
+			self.capturingIcon.SetBitmap( self.pauseBitmap )
+			self.capturingText.SetLabel( 'Waiting for trigger...' )
+			self.capturingTime.SetLabel( '' )
+	
+	def captureEnable( self, enable=True ):
+		if enable:
+			if self.disableCapture.IsChecked():
+				self.camInQ.put( {'cmd':'resume'} )
+				self.disableCapture.Check( False )
+				self.capturingIcon.SetBitmap( self.pauseBitmap )
+				self.capturingText.SetLabel( 'Waiting for trigger...' )
+				self.capturingTime.SetLabel( '' )
+		else:
+			if not self.disableCapture.IsChecked():
+				self.camInQ.put( {'cmd':'suspend'} )
+				self.disableCapture.Check( True )
+				self.capturingIcon.SetBitmap( Utils.getBitmap('stop.png') )
+				self.capturingText.SetLabel( 'Capture disabled!' )
+				self.capturingTime.SetLabel( '' )
+	
 	def resetCamera( self, event=None ):
 		status = False
+		self.captureEnable( True )
 		while True:
 			self.camInQ.put( {'cmd':'get_usb'} )
 			sleep( 1.0 )	# Give the usb scan a chance to work.
