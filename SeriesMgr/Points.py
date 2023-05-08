@@ -218,8 +218,8 @@ class Points(wx.Panel):
 	
 	def fixEnable( self, event = None ):
 		enable = self.scoreByPoints.GetValue()
-		if not enable and not self.scoreByTime.GetValue():
-			# This is only currently supported for Time and Points based scoring, see GetModelInfo.py
+		if not enable and not (self.scoreByTime.GetValue() or self.scoreByPercent.GetValue()):
+			# This is only currently supported for Time, Percent and Points based scoring, see GetModelInfo.py
 			self.bestEventsToConsider.SetSelection( 0 )
 			self.bestEventsToConsider.Enable( False )
 		else: 

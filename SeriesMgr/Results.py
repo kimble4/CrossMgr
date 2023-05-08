@@ -842,7 +842,7 @@ function selectColumns() {
 							isFirst = False
 					if eventResultsTable:
 						with tag(html, 'p'):
-							write( "(Event totals are for indication only and are not used to calculate championship ranking, so no tie-breaking is performed.)" )
+							write( "(Event totals are for indication only, so no tie-breaking is performed on their ranking.)" )
 					
 					if hasUpgrades:
 						with tag(html, 'p'):
