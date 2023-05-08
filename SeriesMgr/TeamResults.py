@@ -140,7 +140,7 @@ def getHtml( htmlfileName=None,  hideCols=[], seriesFileName=None ):
 				pass
 			with tag(html, 'style', dict( type="text/css")):
 				write( '''
-body{ font-family: sans-serif; }
+body{ font-family: sans-serif; background-color: #FFFFFF;}
 
 h1{ font-size: 250%; }
 h2{ font-size: 200%; }
