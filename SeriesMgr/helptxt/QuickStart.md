@@ -55,6 +55,7 @@ In each row, add the race, either a CrossMgr race file (.cmn) or an Excel sheet 
 
 You can change the order of races by dragging the row in the grey column to the left of the race name.
 
+* The __Event__ column can be used to give a common name to a group of races eg. those that take place on the same day, or at the same venue.  Races with the same text in the 'Event' field will get an 'Event Total' column in the HTML output, and be considered together for "Consider best n Events" purposes (see [Scoring Criteria][]).  Otherwise, leave this blank.
 * The __Race__ column can be edited to change how the race name is displayed in the results.
 * The __Grade__ column is used to break ties (more on that later too).
 * The __Points__ column is the points structure to be used to score that race.  This only applies if you are scoring by Points (more on that later).
@@ -89,7 +90,7 @@ SeriesMgr supports race results in Excel (either .xls or .xlsx).  SeriesMgr will
 | Header        | Status | Description
 |---------------|:-------------|:-------------
 | 'Pos','Pos.','Rank', 'Rider Place' or 'Place'           | Required | Finish position of the rider starting from 1.  May also contain DNF, DQ, DNS, PUL.
-| 'LastName','Last Name','LName','Rider Last Name'| Required | Rider's last name
+| 'LastName','Last Name','LName','Rider Last Name','Name'| Required | Rider's last name
 | 'FirstName','First Name','FName','Rider First Name'| Required | Rider's first name
 | 'Licence','Licence #','Rider License #'| Required | Rider's license number
 | 'Race Category','RaceCategory','Race_Category' | Optional | Rider Category.  If not present, the Category will be taken from the Excel Sheet name.
@@ -129,10 +130,17 @@ __Note 4:__ Of course, scoring a series by Points can be an incentive for riders
 
 This option indicates that Points (for Series scored by Points) or Time Bonuses (for Series scored by Time) in the CrossMgr Primes screen should be considered.
 
-## Consider Best Results, Must have Completed
+## Consider Best Results
 
-If you wish the Series to be scored based on the top N __Best__ results, specify it here.
-If you wish to set a Minimum number of events before a Rider's should be included in the series results, specify it here.
+If you wish the Series to be scored based on the top N __Best__ results, specify it here.  (Not available for TrueSkill scoring)
+
+## Consider Best Events
+
+If you wish the Series to be scored based on the top N __Best__ events, specify it here.  (Not available for TrueSkill scoring)
+
+## Must have Completed
+
+If you wish to set a __minimum__ number of events before a Rider's should be included in the series results, specify it here.
 
 ## Tie Breaking Rules
 
@@ -174,13 +182,17 @@ In this way, SeriesMgr will purge riders from the previous category.  This preve
 
 Use this screen to specify name aliases to fix misspellings in your given Race Results.  This is easier than fixing each race file or spreadsheet.
 
-# Team Aliases Screen
-
-Use this screen to specify team aliases to fix misspellings in your given Race Results.
-
 # License Aliases Screen
 
 Use this screen to specify license aliases to fix misspellings in your given Race Results.
+
+# Machine Aliases Screen
+
+Use this screen to specify machine aliases to fix misspellings in your given Race Results.
+
+# Team Aliases Screen
+
+Use this screen to specify team aliases to fix misspellings in your given Race Results.
 
 # Results Screen
 

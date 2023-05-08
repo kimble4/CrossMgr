@@ -222,8 +222,11 @@ class Points(wx.Panel):
 			# This is only currently supported for Time, Percent and Points based scoring, see GetModelInfo.py
 			self.bestEventsToConsider.SetSelection( 0 )
 			self.bestEventsToConsider.Enable( False )
+			self.bestResultsToConsider.SetSelection ( 0 )
+			self.bestResultsToConsider.Enable( False )
 		else: 
 			self.bestEventsToConsider.Enable( True )
+			self.bestResultsToConsider.Enable( True )
 		for c in self.scoreByPointsControls:
 			c.Enable( enable )
 		
