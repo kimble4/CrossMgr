@@ -106,7 +106,8 @@ def CamServer( qIn, qOut, camInfo=None ):
 			qOut.put( {'cmd':'cameraUsb', 'usb_available':getCameraUsb(usbSuccess), 'usb_cur':camInfo.get('usb',0)} )
 		Thread( target=get, args=(usbSuccess, camInfo), daemon=True ).start()
 	
-	while True: 
+	while True:
+		lostCamera = False
 		with VideoCaptureManager(**camInfo) as (cap, retvals):
 			frameCount = 0
 			fpsFrameCount = 0
@@ -124,7 +125,8 @@ def CamServer( qIn, qOut, camInfo=None ):
 			fcb = FrameCircBuf( int(camInfo.get('fps', 30) * bufferSeconds) )
 			
 			# Get the available usb ports.  If the current port succeeded, don't waste time checking it again.
-			backgroundGetCameraUsb( camInfo['usb'] if cap.isOpened() else None, camInfo )
+			# Meanwhile if the camera has unexpectely disconnected we don't want to reconnect to a different one.
+			backgroundGetCameraUsb( camInfo['usb'] if (cap.isOpened() or lostCamera) else None, camInfo )
 			
 			suspend = False
 			
@@ -135,7 +137,7 @@ def CamServer( qIn, qOut, camInfo=None ):
 					time.sleep( 0.5 )  # Short sleep before trying again so we don't miss too much if re-enabled by a trigger
 				elif not cap.isOpened():
 					ret, frame = False, None
-					time.sleep( 2.0 )		
+					time.sleep( 2.0 )
 					keepCapturing = False	# Break out so we can get a camInfo to try again.
 				else:						
 					try:
@@ -143,7 +145,10 @@ def CamServer( qIn, qOut, camInfo=None ):
 						if not ret:  # Camera is probably disconnected, clean up and try again.
 							cap.release()
 							CVUtil.resetCache()
+							lostCamera = True  # Set this so we only attempt to reconnect the same device; avoids getting stuck on the laptop internal camera
 							keepCapturing = False
+						else:
+							lostCamera = False
 					except Exception as e:	# Potential out of memory error?
 						ret, frame = False, None
 					except KeyboardInterrupt:
@@ -231,6 +236,7 @@ def CamServer( qIn, qOut, camInfo=None ):
 					
 					elif cmd == 'cam_info':
 						camInfo = m['info'] or {}
+						lostCamera = False  # Clear this so we can connect to a new camera
 						keepCapturing = False
 						CVUtil.resetCache()
 						break
