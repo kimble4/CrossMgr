@@ -1199,7 +1199,7 @@ class MainWin( wx.Frame ):
 				return
 			
 			dateStr = infoList[0]['ts'].strftime('%Y-%m-%d')
-			fname = os.path.join( dirname, '{}-index.html'.format(dateStr) )
+			fname = os.path.join( dirname, 'index.html' )
 			ftemplate = os.path.join( Utils.getHtmlFolder(), 'PhotoPage.html' )
 			
 			with open(fname, 'w') as fOut, open(ftemplate) as fIn:
