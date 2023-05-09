@@ -1626,6 +1626,7 @@ class MainWin( wx.Frame ):
 	def onFocus( self, event ):
 		if self.focusDialog.IsShown():
 			return
+		self.captureEnable()
 		self.focusDialog.Move((4,4))
 		self.camInQ.put( {'cmd':'send_update', 'name':'focus', 'freq':1} )
 		self.focusDialog.Show()
@@ -1779,7 +1780,7 @@ class MainWin( wx.Frame ):
 		# Create and display a popup menu of columns on right-click event
 		menu = wx.Menu()
 		menu.SetTitle( 'Show/Hide columns' )
-		for c in range(self.triggerList.GetColumnCount() - 1):
+		for c in range(self.triggerList.GetColumnCount() - 1):  # Don't hide the note column
 			menuItem = menu.AppendCheckItem( wx.ID_ANY, self.fieldHeaders[c] )
 			self.Bind(wx.EVT_MENU, self.onToggleTriggerColumn, menuItem)
 			if not c in self.hiddenTriggerCols:
