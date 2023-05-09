@@ -61,7 +61,7 @@ class Database:
 
 	triggerFieldsAll = (
 		'id','ts','s_before','s_after','ts_start','closest_frames','bib','first_name','last_name','machine','team','wave','race_name',
-		'note','kmh','frames',
+		'note', 'publish', 'kmh','frames',
 		'finish_direction',
 		'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height',
 	)
@@ -69,9 +69,9 @@ class Database:
 	triggerFieldsAllSet = set( triggerFieldsAll )
 	
 	triggerFieldsInput = tuple( triggerFieldsAllSet
-		- {'id', 'note', 'kmh', 'frames', 'finish_direction', 'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height',})	# Fields to compare for equality of triggers.
+		- {'id', 'note', 'publish', 'kmh', 'frames', 'finish_direction', 'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height',})	# Fields to compare for equality of triggers.
 	triggerFieldsUpdate = ('wave','race_name',)
-	triggerEditFields = ('bib', 'first_name', 'last_name', 'machine', 'team', 'wave', 'race_name', 'note',)
+	triggerEditFields = ('bib', 'first_name', 'last_name', 'machine', 'team', 'wave', 'race_name', 'note', 'publish')
 	
 	@staticmethod
 	def isValidDatabase( fname ):
@@ -130,6 +130,8 @@ pragma mmap_size = 30000000000;'''
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN machine TEXT DEFAULT ""' )
 					if 'note' not in col_names:
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN note TEXT DEFAULT ""' )
+					if 'publish' not in col_names:
+						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN publish INTEGER DEFAULT 0' )
 					if 'kmh' not in col_names:
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN kmh DOUBLE DEFAULT 0.0' )
 					if 'ts_start' not in col_names:
@@ -176,6 +178,7 @@ pragma mmap_size = 30000000000;'''
 						('wave', 'TEXT', 'ASC', None),
 						('race_name', 'TEXT', 'ASC', None),
 						('note', 'TEXT', False, None),
+						('publish', 'INTEGER', False, None),
 						('kmh', 'DOUBLE', False, 0.0),
 						('frames', 'INTEGER', False, 0),			# Number of frames with this trigger.
 						

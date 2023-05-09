@@ -284,12 +284,17 @@ class TriggerDialog( wx.Dialog ):
 		gs = wx.FlexGridSizer( 2, 2, 4 )
 		gs.AddGrowableCol( 1 )
 		fieldNames = [h.replace('_', ' ').title() for h in GlobalDatabase().triggerEditFields]
+		fieldNames.remove('Publish')
 		self.editFields = []
 		for f in fieldNames:
 			gs.Add( wx.StaticText(self, label=f), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
 			e = wx.TextCtrl(self, size=(500,-1) )
 			gs.Add( e )
 			self.editFields.append(e)
+		gs.Add( wx.StaticText(self, label='Publish'), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		e = wx.CheckBox( self )
+		gs.Add( e )
+		self.editFields.append(e)
 		
 		btnSizer = self.CreateButtonSizer( wx.OK|wx.CANCEL )
 		self.Bind( wx.EVT_BUTTON, self.onOK, id=wx.ID_OK )
@@ -304,7 +309,11 @@ class TriggerDialog( wx.Dialog ):
 		self.triggerId = triggerId
 		ef = db.getTriggerEditFields( triggerId )
 		for e, f in zip(self.editFields, Database.triggerEditFields):
-			e.SetValue( '{}'.format(ef.get(f,'') or '') )
+			v = ef.get(f,'')
+			if f == 'publish':
+				e.SetValue( bool( v ) )
+			else:
+				e.SetValue( '{}'.format(v or '') )
 	
 	def get( self ):
 		values = {}
@@ -315,6 +324,11 @@ class TriggerDialog( wx.Dialog ):
 					v = int(v)
 				except Exception:
 					v = 99999
+			if f == 'publish':
+				if v:
+					v = 'True'
+				else:
+					v = ''
 			values[f] = v
 		return values
 	
@@ -662,8 +676,8 @@ class MainWin( wx.Frame ):
 		images.extend( [self.sm_up, self.sm_dn] )
 		self.triggerList.SetSmallImages( images )
 		
-		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph note'.split())}
-		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Note']
+		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph note publish'.split())}
+		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Note', 'Publish']
 		formatRightHeaders = {'Bib','Frames','km/h','mph'}
 		formatMiddleHeaders = {'View',}
 		self.hiddenTriggerCols = []
@@ -1698,15 +1712,19 @@ class MainWin( wx.Frame ):
 		if not hasattr(self, "triggerDeleteID"):
 			self.triggerDeleteID = wx.NewIdRef()
 			self.triggerEditID = wx.NewIdRef()
+			self.triggerPublishID = wx.NewIdRef()
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerDelete(), id=self.triggerDeleteID)
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerEdit(),   id=self.triggerEditID)
+			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerPublish(), id=self.triggerPublishID)
 
 		menu = wx.Menu()
+		menu.Append(self.triggerPublishID,   "Publish...")
 		menu.Append(self.triggerEditID,   "Edit...")
 		menu.Append(self.triggerDeleteID, "Delete...")
 
 		self.PopupMenu(menu)
 		menu.Destroy()
+		
 		
 	def doTriggerDelete( self, confirm=True ):
 		iTriggerSelect = self.iTriggerSelect
@@ -1742,13 +1760,28 @@ class MainWin( wx.Frame ):
 		self.iTriggerSelect = event.Index
 		self.doTriggerEdit()
 		
+	def doTriggerPublish( self ):
+		data = self.getTriggerInfo( self.iTriggerSelect )
+		values = {}
+		if data['publish']:
+			data['publish'] = ''
+			values['publish'] = ''
+		else:
+			data['publish'] = 'True'
+			values['publish'] = 'True'
+		self.updateTriggerRow( self.iTriggerSelect, data )
+		self.updateTriggerColumnWidths()
+		self.triggerInfo.update( data )
+		GlobalDatabase().setTriggerEditFields( data['id'], **values )
+	
+		
 	def onTriggerColumnRightClick( self, event ):
 		# Create and display a popup menu of columns on right-click event
 		menu = wx.Menu()
 		menu.SetTitle( 'Show/Hide columns' )
 		for c in range(self.triggerList.GetColumnCount()):
 			menuItem = menu.AppendCheckItem( wx.ID_ANY, self.fieldHeaders[c] )
-			self.Bind(wx.EVT_MENU, self.onToggleTriggerColumn)
+			self.Bind(wx.EVT_MENU, self.onToggleTriggerColumn, menuItem)
 			if not c in self.hiddenTriggerCols:
 				menu.Check( menuItem.GetId(), True )
 		self.PopupMenu(menu)
@@ -1939,8 +1972,8 @@ class MainWin( wx.Frame ):
 	def processRequests( self ):
 		while True:
 			msg = self.requestQ.get()	# Blocking get.
-			self.camInQ.put( {'cmd':'resume'} )
-			wx.CallAfter( self.captureEnable )
+			self.camInQ.put( {'cmd':'resume'} )  # Send this immediately so the capture thread can resume as quickly as possible
+			wx.CallAfter( self.captureEnable )   # Sort the UI out later
 			
 			tSearch = msg['time']
 			advanceSeconds = msg.get('advanceSeconds', 0.0)
