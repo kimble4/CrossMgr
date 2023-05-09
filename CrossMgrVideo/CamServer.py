@@ -132,7 +132,7 @@ def CamServer( qIn, qOut, camInfo=None ):
 				# Read the frame.  If anything fails, keep going in the loop so we can reset with another camInfo.
 				if suspend:
 					ret, frame = False, None
-					time.sleep( 0.1 )  # Short sleep before trying again so we don't miss too much if re-enabled by a trigger
+					time.sleep( 0.5 )  # Short sleep before trying again so we don't miss too much if re-enabled by a trigger
 				elif not cap.isOpened():
 					ret, frame = False, None
 					time.sleep( 2.0 )		
@@ -156,7 +156,7 @@ def CamServer( qIn, qOut, camInfo=None ):
 				# we send a group of photos for a capture.
 				opencv_frame = frame
 				frame = CVUtil.toJpeg( frame )
-				
+					
 				# Add the frame to the circular buffer.  Adjust for the capture latency.
 				tsFrame = ts - captureLatency
 				fcb.append( tsFrame, frame )
