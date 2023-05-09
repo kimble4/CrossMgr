@@ -1282,6 +1282,8 @@ class MainWin( wx.Frame ):
 					v = '{:>6}'.format(v)
 				elif k == 'frames':
 					v = '{}'.format(v) if v else ''
+				elif k == 'publish':
+					v = 'True' if v else ''
 				elif isinstance(v, float):
 					v = '{:.2f}'.format(v) if v else ''
 				else:
