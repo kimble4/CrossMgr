@@ -241,11 +241,21 @@ def CamServer( qIn, qOut, camInfo=None ):
 					
 					elif cmd == 'suspend':
 						if not suspend:
+							suspend = True  # Just stop capturing frames
+							
+					elif cmd == 'suspend-release':
+						if not suspend:
 							suspend = True
+							# Actually release the camera device, as the driver can load the CPU even when frames aren't being captured
+							cap.release()
+							CVUtil.resetCache()
 						
 					elif cmd == 'resume':
 						if suspend:
 							suspend = False
+							if not cap.isOpened():
+								keepCapturing = False  # Forces a camera reconnect to the same camInfo.
+								break
 					
 					elif cmd == 'terminate':
 						#-----------------------------------------------

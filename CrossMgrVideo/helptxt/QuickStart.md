@@ -83,6 +83,7 @@ __Reset Camera__ enables the camera to be reset - including the USB port and oth
 * __Camera Resolution__:  The resolution of the camera to use.  Use MAXxMAX for maximum resolution.  Check your camera specs for details on which resolutions are supported - some cameras can only support lower frame rates at the highest resolutions.
 * __Frames per second__:  The frames per second.  See notes below for more details.
 * __FourCC__:  The image encoding from the camera.  For maximum performance, try setting this to MJPG (the default).  If that doesn't work, set it to Blank.
+* __Release camera when capture disabled__:  If selected, the camera device is closed when __Tools/Disable Capture__ is selected.  Otherwise, the camera device is kept open (uses more CPU, but resumes more quickly).
 
 __Notes:__
 

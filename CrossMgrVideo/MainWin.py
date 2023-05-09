@@ -125,7 +125,7 @@ def getCameraResolutionChoice( resolution ):
 FOURCC_DEFAULT = 'MJPG'
 
 class ConfigDialog( wx.Dialog ):
-	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, id=wx.ID_ANY ):
+	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, release=True, id=wx.ID_ANY ):
 		super().__init__( parent, id, title=_('CrossMgr Video Configuration') )
 		
 		fps = int( fps )
@@ -167,6 +167,11 @@ class ConfigDialog( wx.Dialog ):
 				"If your fps is low or your camera doesn't work, try FourCC=MJPG.",
 			])), flag=wx.RIGHT, border=4 )
 		
+		pfgs.Add( wx.StaticText(self, label='Release camera when capture disabled'+':'), flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_RIGHT )
+		self.releaseCamera = wx.CheckBox( self )
+		self.releaseCamera.SetValue( release )
+		pfgs.Add( self.releaseCamera )
+		
 		sizer.Add( self.title, flag=wx.ALL, border=4 )
 		sizer.AddSpacer( 8 )
 		sizer.Add( pfgs, flag=wx.ALL, border=4 )
@@ -187,8 +192,11 @@ class ConfigDialog( wx.Dialog ):
 			'width':		width,
 			'height':		height,
 			'fps':			self.fps.GetValue(),
-			'fourcc':		self.fourccChoices[self.fourcc.GetSelection()],
+			'fourcc':		self.fourccChoices[self.fourcc.GetSelection()]
 		}
+	
+	def GetRelease( self):
+		return( self.releaseCamera.IsChecked() )
 
 snapshotEnableColour = wx.Colour(0,0,100)
 snapshotDisableColour = wx.Colour(100,100,0)
@@ -1931,6 +1939,7 @@ class MainWin( wx.Frame ):
 	def processRequests( self ):
 		while True:
 			msg = self.requestQ.get()	# Blocking get.
+			self.camInQ.put( {'cmd':'resume'} )
 			wx.CallAfter( self.captureEnable )
 			
 			tSearch = msg['time']
@@ -2000,7 +2009,10 @@ class MainWin( wx.Frame ):
 	
 	def onMenuDisableCapture( self, event ):
 		if self.disableCapture.IsChecked():
-			self.camInQ.put( {'cmd':'suspend'} )
+			if self.releaseCamera:
+				self.camInQ.put( {'cmd':'suspend-release'} )
+			else:
+				self.camInQ.put( {'cmd':'suspend'} )
 			self.capturingIcon.SetBitmap( Utils.getBitmap('stop.png') )
 			self.capturingText.SetLabel( 'Capture disabled!' )
 			self.capturingTime.SetLabel( '' )
@@ -2020,7 +2032,10 @@ class MainWin( wx.Frame ):
 				self.capturingTime.SetLabel( '' )
 		else:
 			if not self.disableCapture.IsChecked():
-				self.camInQ.put( {'cmd':'suspend'} )
+				if self.releaseCamera:
+					self.camInQ.put( {'cmd':'suspend-release'} )
+				else:
+					self.camInQ.put( {'cmd':'suspend'} )
 				self.disableCapture.Check( True )
 				self.capturingIcon.SetBitmap( Utils.getBitmap('stop.png') )
 				self.capturingText.SetLabel( 'Capture disabled!' )
@@ -2035,11 +2050,12 @@ class MainWin( wx.Frame ):
 			
 			width, height = self.getCameraResolution()
 			info = {'usb':self.getUsb(), 'fps':self.fps, 'width':width, 'height':height, 'fourcc':self.fourcc.GetLabel(), 'availableCameraUsb':self.availableCameraUsb}
-			with ConfigDialog( self, **info ) as dlg:
+			with ConfigDialog( self, **info, release=self.releaseCamera ) as dlg:
 				ret = dlg.ShowModal()
 				if ret == wx.ID_CANCEL:
 					return status
 				info = dlg.GetValues()
+				release = dlg.GetRelease()
 
 			self.camInQ.put( {'cmd':'cam_info', 'info':info} )			
 
@@ -2047,6 +2063,7 @@ class MainWin( wx.Frame ):
 			self.setCameraResolution( info['width'], info['height'] )
 			self.updateFPS( info['fps'] )
 			self.fourcc.SetLabel( info['fourcc'] )
+			self.releaseCamera = release
 			
 			self.GetSizer().Layout()
 
@@ -2114,6 +2131,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'CameraResolution', self.cameraResolution.GetLabel() )
 		self.config.Write( 'FPS', self.targetFPS.GetLabel() )
 		self.config.Write( 'FourCC', self.fourcc.GetLabel() )
+		self.config.Write( 'release', ('1' if self.releaseCamera else '0') )
 		self.config.Write( 'SecondsBefore', '{:.3f}'.format(self.tdCaptureBefore.total_seconds()) )
 		self.config.Write( 'SecondsAfter', '{:.3f}'.format(self.tdCaptureAfter.total_seconds()) )
 		self.config.WriteFloat( 'ZoomMagnification', self.finishStrip.GetZoomMagnification() )
@@ -2129,6 +2147,11 @@ class MainWin( wx.Frame ):
 		self.cameraResolution.SetLabel( self.config.Read('CameraResolution', '640x480') )
 		self.targetFPS.SetLabel( self.config.Read('FPS', '30.000') )
 		self.fourcc.SetLabel( self.config.Read('FourCC', FOURCC_DEFAULT) )
+		release = self.config.Read('release', '0')
+		if int(release):
+			self.releaseCamera = True
+		else:
+			self.releaseCamera = False
 		s_before = self.config.Read('SecondsBefore', '0.5')
 		s_after = self.config.Read('SecondsAfter', '2.0')
 		try:
