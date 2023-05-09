@@ -323,12 +323,12 @@ class TriggerDialog( wx.Dialog ):
 				try:
 					v = int(v)
 				except Exception:
-					v = 99999
+					v = ''
 			if f == 'publish':
 				if v:
-					v = 'True'
+					v = 1
 				else:
-					v = ''
+					v = 0
 			values[f] = v
 		return values
 	
@@ -679,7 +679,7 @@ class MainWin( wx.Frame ):
 		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph publish note'.split())}
 		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Publish', 'Note']
 		formatRightHeaders = {'Bib','Frames','km/h','mph'}
-		formatMiddleHeaders = {'View',}
+		formatMiddleHeaders = {'View', 'Publish'}
 		self.hiddenTriggerCols = []
 		for i, h in enumerate(self.fieldHeaders):
 			if h in formatRightHeaders:
@@ -1074,6 +1074,14 @@ class MainWin( wx.Frame ):
 				infoListNew.append( info )
 		infoListNew.reverse()
 		return infoListNew
+	
+	def filterSelected( self, infoList):
+		seen = set()
+		infoListNew = []
+		for info in infoList:
+			if info['publish']:
+				infoListNew.append( info )
+		return infoListNew
 		
 	def refreshPhotoPanel( self ):
 		self.photoPanel.playStop()
@@ -1107,10 +1115,13 @@ class MainWin( wx.Frame ):
 		dirname = values['dirname']
 		if not dirname:
 			return
-		if values['lastBibWaveOnly']:
+		if values['lastBibWaveOnly'] == 1:
 			infoList = self.filterLastBibWave( infoList )
+		elif values['lastBibWaveOnly'] == 2:
+			infoList = self.filterSelected( infoList )
 			
 		def write_photos( dirname, infoList ):
+			unknown = 0
 			for info in infoList:
 				tsBest, jpgBest = GlobalDatabase().getBestTriggerPhoto( info['id'] )
 				if jpgBest is None:
@@ -1124,8 +1135,15 @@ class MainWin( wx.Frame ):
 					args['kmh'] = float( '0' + re.sub( '[^0-9.]', '', args['kmh'] ) )
 					
 				jpg = CVUtil.bitmapToJPeg( AddPhotoHeader(CVUtil.jpegToBitmap(jpgBest), **args) )
-				fname = Utils.RemoveDisallowedFilenameChars( '{:04d}-{}-{},{}.jpg'.format(
-						info['bib'],
+				try:
+					bib = int(info['bib'])
+					bib = '{:04d}'.format(bib)
+				except Exception:
+					unknown += 1 
+					bib = 'unknown-' + str(unknown)
+				
+				fname = Utils.RemoveDisallowedFilenameChars( '{}-{}-{},{}.jpg'.format(
+						bib,
 						info['ts'].strftime('%Y%m%dT%H%M%S'),
 						info['last_name'],
 						info['first_name'],
@@ -1165,8 +1183,10 @@ class MainWin( wx.Frame ):
 			return
 		singleFile = (values['htmlOption'] == 1)
 		
-		if values['lastBibWaveOnly']:
+		if values['lastBibWaveOnly'] == 1:
 			infoList = self.filterLastBibWave( infoList )
+		elif values['lastBibWaveOnly'] == 2:
+			infoList = self.filterSelected( infoList )
 			
 		class DateTimeEncoder( json.JSONEncoder ):
 			def default(self, o):
@@ -1184,7 +1204,6 @@ class MainWin( wx.Frame ):
 			
 			with open(fname, 'w') as fOut, open(ftemplate) as fIn:
 				for line in fIn:
-					
 					lineStrip = line.strip()
 					if lineStrip == '<script src="ScaledBitmap.js"></script>':
 						fOut.write( '<script>\n' )
@@ -1204,7 +1223,13 @@ class MainWin( wx.Frame ):
 
 						if jpgBest is None:
 							continue
-						args = {k:info[k] for k in ('ts', 'bib', 'first_name', 'last_name', 'machine', 'team', 'race_name', 'kmh')}
+						args = {k:info[k] for k in ('ts', 'bib', 'machine', 'team', 'race_name', 'kmh')}
+						if info['last_name'] == 'Auto' or info['last_name'] == 'Capture' or info['last_name'] == 'Snapshot':
+							args['first_name'] = 'Unknown Rider'
+							args['last_name'] = ''
+						else:
+							args['first_name'] = info['first_name']
+							args['last_name'] = info['last_name']
 						try:
 							args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
 						except Exception:
@@ -1282,8 +1307,6 @@ class MainWin( wx.Frame ):
 					v = '{:>6}'.format(v)
 				elif k == 'frames':
 					v = '{}'.format(v) if v else ''
-				elif k == 'publish':
-					v = 'True' if v else ''
 				elif isinstance(v, float):
 					v = '{:.2f}'.format(v) if v else ''
 				else:
@@ -1305,6 +1328,8 @@ class MainWin( wx.Frame ):
 			fields['frames'] = max(fields['frames'], fields['closest_frames'])
 		if 'zoom_frame' in fields:
 			fields['view'] = 'Y' if fields['zoom_frame'] >= 0 else ''
+		if 'publish' in fields:
+			fields['publish'] = 'Y' if fields['publish'] > 0 else ''
 		return fields
 	
 	def getTriggerInfo( self, row ):
@@ -1721,7 +1746,7 @@ class MainWin( wx.Frame ):
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerPublish(), id=self.triggerPublishID)
 
 		menu = wx.Menu()
-		menu.Append(self.triggerPublishID,   "Publish...")
+		menu.Append(self.triggerPublishID,   "Toggle Publish")
 		menu.Append(self.triggerEditID,   "Edit...")
 		menu.Append(self.triggerDeleteID, "Delete...")
 
@@ -1768,10 +1793,10 @@ class MainWin( wx.Frame ):
 		values = {}
 		if data['publish']:
 			data['publish'] = ''
-			values['publish'] = ''
+			values['publish'] = '0'
 		else:
-			data['publish'] = 'True'
-			values['publish'] = 'True'
+			data['publish'] = 'Y'
+			values['publish'] = '1'
 		self.updateTriggerRow( self.iTriggerSelect, data )
 		self.updateTriggerColumnWidths()
 		self.triggerInfo.update( data )

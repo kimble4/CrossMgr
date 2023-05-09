@@ -229,8 +229,8 @@ __Trigger Window__
 Window containing the triggers.
 
 * Left-click: shows the photos associated with the trigger.
-* Right-click:  brings up an Edit... and Delete... menu.
-* Double-click:  brings up the Edit window.  This allows you to change the Bib, First, Last, Machine, Team, Wave, Race and Note of the trigger.
+* Right-click:  brings up a 'Toggle Publish', 'Edit...' and 'Delete...' menu.
+* Double-click:  brings up the Edit window.  This allows you to change the Bib, First, Last, Machine, Team, Wave, Race, publish status and Note of the trigger.
 
 Columns can be hidden or shown by right-clicking on the header row.
 

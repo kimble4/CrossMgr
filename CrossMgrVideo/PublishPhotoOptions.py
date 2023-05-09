@@ -26,9 +26,10 @@ class PublishPhotoOptionsDialog( wx.Dialog ):
 		choices = (
 			'All: Output a Photo for each Trigger',
 			'Finish Only: Output the Last Photo for each Bib/Wave',
+			'Selected: Output a photo for each trigger selected for publication'
 		)
 		self.lastBibWaveOnlyBox = wx.RadioBox( self, label="Photo Output", choices=choices, majorDimension=len(choices), style=wx.RA_SPECIFY_ROWS )
-		self.lastBibWaveOnlyBox.SetSelection( 1 )
+		self.lastBibWaveOnlyBox.SetSelection( 2 )
 		sizer.Add( self.lastBibWaveOnlyBox, flag=wx.ALL|wx.EXPAND, border=8 )
 		
 		if webPublish:

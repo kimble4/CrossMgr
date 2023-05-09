@@ -219,7 +219,7 @@ overflow:scroll;
     grid-gap: .8em;
     background: #eee;
     padding: 1.2em;
-    height: 30em;
+    height: 42em;
   }
   .grid_form label  {
     grid-area: labels;
@@ -533,9 +533,9 @@ function triggerScrollToEnd() {
 	trigger_div.scrollTop = trigger_div.scrollHeight;
 }
 	
-const headers = ['', 'Time', 'Bib', 'Last', 'First', 'Machine', 'Team',	'Wave', 'Race', 'Frames', 'View', 'Note'];
-const fields  = ['close', 'ts',	 'bib', 'last_name',  'first_name', 'machine', 'team',	'wave', 'race_name', 'frames', 'view', 'note'];
-const numeric = [false,	false, true, false, false, false, false, false, false,  true, true, false];
+const headers = ['', 'Time', 'Bib', 'Last', 'First', 'Machine', 'Team',	'Wave', 'Race', 'Frames', 'View', 'Publish', 'Note'];
+const fields  = ['close', 'ts',	 'bib', 'last_name',  'first_name', 'machine', 'team',	'wave', 'race_name', 'frames', 'view', 'publish', 'note'];
+const numeric = [false,	false, true, false, false, false, false, false, false,  true, true, true, false];
 
 function showTriggers( triggers ) {
 	playStop();
@@ -599,6 +599,8 @@ function showTriggers( triggers ) {
 			tr.appendChild( td );
 			if( headers[col] == 'View' )
 				td.innerHTML = trig.zoom_frame >= 0 ? 'Y' : '';
+			else if(  headers[col] == 'Publish' )
+				td.innerHTML = trig.publish > 0 ? 'Y' : '';
 			else {
 				if( fields[col] === 'ts' )
 					v = formatEpoch( trig.ts );
@@ -715,6 +717,8 @@ function updateOnScreenTriggerData() {
 		let td = tr.childNodes[col];
 		if( headers[col] == 'View' )
 			td.innerHTML = (trig.zoom_frame >= 0) ? 'Y' : '';
+		else if( headers[col] == 'Publish' )
+			td.innerHTML = (trig.publish > 0) ? 'Y' : '';
 		else {
 			if( fields[col] === 'ts' )
 				v = formatEpoch( trig.ts )
@@ -808,6 +812,12 @@ function submitForm( e, doSubmit ) {
 		value = e.value.trim();
 		if( fields[i] == 'bib' )
 			value = parseInt('0' + value, 10);
+		if( fields[i] == 'publish' )
+			if (parseInt('0' + value, 10) > 0) {
+				value = 1;
+			} else {
+				value = 0;
+			}
 		trig[fields[i]] = value
 		params.push( fields[i] + '=' + encodeURIComponent(''+value) );
 	}

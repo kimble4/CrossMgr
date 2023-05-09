@@ -178,7 +178,7 @@ pragma mmap_size = 30000000000;'''
 						('wave', 'TEXT', 'ASC', None),
 						('race_name', 'TEXT', 'ASC', None),
 						('note', 'TEXT', False, None),
-						('publish', 'INTEGER', False, None),
+						('publish', 'INTEGER', False, 0),
 						('kmh', 'DOUBLE', False, 0.0),
 						('frames', 'INTEGER', False, 0),			# Number of frames with this trigger.
 						
