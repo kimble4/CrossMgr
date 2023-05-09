@@ -676,8 +676,8 @@ class MainWin( wx.Frame ):
 		images.extend( [self.sm_up, self.sm_dn] )
 		self.triggerList.SetSmallImages( images )
 		
-		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph note publish'.split())}
-		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Note', 'Publish']
+		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph publish note'.split())}
+		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Publish', 'Note']
 		formatRightHeaders = {'Bib','Frames','km/h','mph'}
 		formatMiddleHeaders = {'View',}
 		self.hiddenTriggerCols = []
@@ -1779,7 +1779,7 @@ class MainWin( wx.Frame ):
 		# Create and display a popup menu of columns on right-click event
 		menu = wx.Menu()
 		menu.SetTitle( 'Show/Hide columns' )
-		for c in range(self.triggerList.GetColumnCount()):
+		for c in range(self.triggerList.GetColumnCount() - 1):
 			menuItem = menu.AppendCheckItem( wx.ID_ANY, self.fieldHeaders[c] )
 			self.Bind(wx.EVT_MENU, self.onToggleTriggerColumn, menuItem)
 			if not c in self.hiddenTriggerCols:
