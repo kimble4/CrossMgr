@@ -1119,7 +1119,8 @@ class MainWin( wx.Frame ):
 		self.photoPanel.set(
 			self.finishStrip.getIJpg(), self.triggerInfo, self.finishStrip.GetTsJpgs(), self.fps,
 			editCB=self.doTriggerEdit,
-			updateCB=lambda fields: self.updateTriggerRow(self.iTriggerSelect, fields)
+			updateCB=lambda fields: self.updateTriggerRow(self.iTriggerSelect, fields),
+			publishCB=self.doTriggerPublish
 		)
 		wx.CallAfter( self.photoPanel.doRestoreView, self.triggerInfo )
 		
@@ -1821,6 +1822,8 @@ class MainWin( wx.Frame ):
 		self.doTriggerEdit()
 		
 	def doTriggerPublish( self ):
+		if self.iTriggerSelect is None:
+			return
 		data = self.getTriggerInfo( self.iTriggerSelect )
 		values = {}
 		if data['publish']:

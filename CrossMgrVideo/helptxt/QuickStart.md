@@ -192,6 +192,7 @@ The frame time, and the +/- offset from the Trigger time is shown on the left.
 * Save Photo - save the current photo to a file or the clipboard.  A nice header will be added to the photo with the rider information.
 * Restore View - returns to the frame and zoom of this trigger.
 * Save View - saves the frame and zoom of this trigger.
+* Publish - toggles the publish status for this trigger.
 * Speed - a wizard that enables you to estimate the speed of a bicycle by analyzing how far the bicycle moved between two video frames.  This only works if the camera is at right angle to the finish line.
 
 ### Finish Strip

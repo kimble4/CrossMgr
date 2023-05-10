@@ -210,6 +210,11 @@ class PhotoPanel( wx.Panel ):
 		btn.Bind( wx.EVT_BUTTON, self.onSaveView )
 		btnsizer.Add(btn, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=4)
 		
+		self.publishBtn = btn = wx.Button( self, label='Publish' )
+		btn.SetToolTip( wx.ToolTip('Toggle publish status') )
+		btn.Bind( wx.EVT_BUTTON, self.onPublish )
+		btnsizer.Add(btn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=4)
+		
 		btn = wx.BitmapButton(self, bitmap=Utils.getBitmap('speedometer.png'))
 		btn.SetToolTip( wx.ToolTip('Get Speed') )
 		btn.Bind( wx.EVT_BUTTON, self.onGetSpeed )
@@ -237,14 +242,16 @@ class PhotoPanel( wx.Panel ):
 	def ts( self ):
 		return None if self.iJpg is None else self.tsJpg[self.iJpg][0]
 		
-	def set( self, iJpg, triggerInfo, tsJpg, fps=25, editCB=None, updateCB=None ):
+	def set( self, iJpg, triggerInfo, tsJpg, fps=25, editCB=None, updateCB=None, publishCB=None ):
 		self.iJpg = max( 0, min(iJpg or 0, (len(tsJpg)-1) if tsJpg else 0) )
 		self.triggerInfo = triggerInfo or {}
 		self.tsJpg = tsJpg
 		self.fps = fps
 		self.editCB = editCB
 		self.updateCB = updateCB or (lambda update: None)
+		self.publishCB = publishCB
 		
+		self.publishBtn.Enable( self.publishCB is not None and triggerInfo is not None )
 		self.restoreViewBtn.Enable( self.triggerInfo.get('zoom_frame',-1) >= 0 )
 		
 		self.kmh = (triggerInfo.get('kmh',0.0) or 0.0) if triggerInfo else 0.0
@@ -360,6 +367,10 @@ class PhotoPanel( wx.Panel ):
 			wx.CallAfter( self.SetBitmap )
 			wx.CallAfter( self.Refresh )
 			wx.CallAfter( self.updateCB, self.triggerInfo )
+			
+	def onPublish( self, event):
+		if self.publishCB:
+			wx.CallAfter( self.publishCB )
 			
 	def GetZoomInfo( self ):
 		r = self.scaledBitmap.GetSourceRect()
