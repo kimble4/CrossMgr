@@ -125,7 +125,7 @@ def getCameraResolutionChoice( resolution ):
 FOURCC_DEFAULT = 'MJPG'
 
 class ConfigDialog( wx.Dialog ):
-	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, release=True, id=wx.ID_ANY ):
+	def __init__( self, parent, usb=0, fps=30, width=imageWidth, height=imageHeight, fourcc='', availableCameraUsb=None, release=True, warnAnyDisconnectedCamera=False, id=wx.ID_ANY ):
 		super().__init__( parent, id, title=_('CrossMgr Video Configuration') )
 		
 		fps = int( fps )
@@ -172,6 +172,11 @@ class ConfigDialog( wx.Dialog ):
 		self.releaseCamera.SetValue( release )
 		pfgs.Add( self.releaseCamera )
 		
+		pfgs.Add( wx.StaticText(self, label='Warn when any camera disconnects'+':'), flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALIGN_RIGHT )
+		self.warnAnyDisconnectedCamera = wx.CheckBox( self )
+		self.warnAnyDisconnectedCamera.SetValue( warnAnyDisconnectedCamera )
+		pfgs.Add( self.warnAnyDisconnectedCamera )
+		
 		sizer.Add( self.title, flag=wx.ALL, border=4 )
 		sizer.AddSpacer( 8 )
 		sizer.Add( pfgs, flag=wx.ALL, border=4 )
@@ -195,8 +200,11 @@ class ConfigDialog( wx.Dialog ):
 			'fourcc':		self.fourccChoices[self.fourcc.GetSelection()]
 		}
 	
-	def GetRelease( self):
+	def GetRelease( self ):
 		return( self.releaseCamera.IsChecked() )
+	
+	def GetWarnAnyDisconnectedCamera( self ):
+		return( self.warnAnyDisconnectedCamera.IsChecked() )
 
 snapshotEnableColour = wx.Colour(0,0,100)
 snapshotDisableColour = wx.Colour(100,100,0)
@@ -1000,9 +1008,16 @@ class MainWin( wx.Frame ):
 	def updateCameraUsb( self, availableCameraUsb ):
 		if not self.cameraDisconnected and self.currentUSB not in availableCameraUsb:
 			self.cameraDisconnected = True
-			self.messageQ.put( ('USB', 'Camera ' + str(self.currentUSB) + ' has disconnected!') )
+			self.messageQ.put( ('USB', 'In-use camera ' + str(self.currentUSB) + ' has disconnected!') )
 			Utils.PlaySound('awooga.wav')
-			with wx.MessageDialog(self, 'Camera ' + str(self.currentUSB) + ' has disconnected!', 'CrossMgrVideo', style=wx.ICON_WARNING) as dlg:
+			with wx.MessageDialog(self, 'In-use camera ' + str(self.currentUSB) + ' has disconnected!', 'CrossMgrVideo', style=wx.ICON_WARNING) as dlg:
+				dlg.SetExtendedMessage('Check the connections and make sure the correct camera device is being used.\nAvailable USB devices: ' + str(availableCameraUsb))
+				dlg.ShowModal()
+		elif not self.cameraDisconnected and self.warnAnyDisconnectedCamera and len(availableCameraUsb) < len(self.availableCameraUsb):
+			self.cameraDisconnected = True
+			self.messageQ.put( ('USB', 'A camera has disconnected! (current devices: ' + str(availableCameraUsb) + ')' ) )
+			Utils.PlaySound('awooga.wav')
+			with wx.MessageDialog(self, 'A camera has disconnected!', 'CrossMgrVideo', style=wx.ICON_WARNING) as dlg:
 				dlg.SetExtendedMessage('Check the connections and make sure the correct camera device is being used.\nAvailable USB devices: ' + str(availableCameraUsb))
 				dlg.ShowModal()
 		elif self.cameraDisconnected and self.currentUSB in availableCameraUsb:
@@ -2131,12 +2146,13 @@ class MainWin( wx.Frame ):
 			
 			width, height = self.getCameraResolution()
 			info = {'usb':self.getUsb(), 'fps':self.fps, 'width':width, 'height':height, 'fourcc':self.fourcc.GetLabel(), 'availableCameraUsb':self.availableCameraUsb}
-			with ConfigDialog( self, **info, release=self.releaseCamera ) as dlg:
+			with ConfigDialog( self, **info, release=self.releaseCamera, warnAnyDisconnectedCamera=self.warnAnyDisconnectedCamera ) as dlg:
 				ret = dlg.ShowModal()
 				if ret == wx.ID_CANCEL:
 					return status
 				info = dlg.GetValues()
 				release = dlg.GetRelease()
+				warnAnyDisconnectedCamera = dlg.GetWarnAnyDisconnectedCamera()
 
 			self.camInQ.put( {'cmd':'cam_info', 'info':info} )			
 
@@ -2145,6 +2161,7 @@ class MainWin( wx.Frame ):
 			self.updateFPS( info['fps'] )
 			self.fourcc.SetLabel( info['fourcc'] )
 			self.releaseCamera = release
+			self.warnAnyDisconnectedCamera = warnAnyDisconnectedCamera
 			
 			self.GetSizer().Layout()
 
@@ -2216,7 +2233,8 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'CameraResolution', self.cameraResolution.GetLabel() )
 		self.config.Write( 'FPS', self.targetFPS.GetLabel() )
 		self.config.Write( 'FourCC', self.fourcc.GetLabel() )
-		self.config.Write( 'release', ('1' if self.releaseCamera else '0') )
+		self.config.Write( 'ReleaseCamera', ('1' if self.releaseCamera else '0') )
+		self.config.Write( 'WarnAnyDisconnectedCamera', ('1' if self.warnAnyDisconnectedCamera else '0') )
 		self.config.Write( 'SecondsBefore', '{:.3f}'.format(self.tdCaptureBefore.total_seconds()) )
 		self.config.Write( 'SecondsAfter', '{:.3f}'.format(self.tdCaptureAfter.total_seconds()) )
 		self.config.WriteFloat( 'ZoomMagnification', self.finishStrip.GetZoomMagnification() )
@@ -2233,11 +2251,16 @@ class MainWin( wx.Frame ):
 		self.cameraResolution.SetLabel( self.config.Read('CameraResolution', '640x480') )
 		self.targetFPS.SetLabel( self.config.Read('FPS', '30.000') )
 		self.fourcc.SetLabel( self.config.Read('FourCC', FOURCC_DEFAULT) )
-		release = self.config.Read('release', '0')
+		release = self.config.Read('ReleaseCamera', '0')
 		if int(release):
 			self.releaseCamera = True
 		else:
 			self.releaseCamera = False
+		warn = self.config.Read('WarnAnyDisconnectedCamera', '0')
+		if int(warn):
+			self.warnAnyDisconnectedCamera = True
+		else:
+			self.warnAnyDisconnectedCamera = False
 		s_before = self.config.Read('SecondsBefore', '0.5')
 		s_after = self.config.Read('SecondsAfter', '2.0')
 		try:

@@ -86,6 +86,7 @@ __Reset Camera__ enables the camera to be reset - including the USB port and oth
 * __Frames per second__:  The frames per second.  See notes below for more details.
 * __FourCC__:  The image encoding from the camera.  For maximum performance, try setting this to MJPG (the default).  If that doesn't work, set it to Blank.
 * __Release camera when capture disabled__:  If selected, the camera device is closed when __Tools/Disable Capture__ is selected.  Otherwise, the camera device is kept open (uses more CPU, but resumes more quickly).
+* __Warn when any camera disconnects__: Normally, CrossMgrVideo will warn you if the camera it is using disconnects.  If this is selected, a warning will be displayed whenever *any* camera disconnects.  This may be necessary if your operating system does not enumerate devices consistently.
 
 __Notes:__
 
