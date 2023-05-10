@@ -67,7 +67,7 @@ You are also prompted for the resolution and frames per second of your camera (s
 
 Disables background capturing to the 10-second buffer.  This is useful for reducing system resource use when analysing data after the race.
 
-Capturing to the buffer will be automatically re-enabled as soon as a capture is triggered, but historical frames will be missed.
+This will be automatically re-enabled as soon as a capture is triggered, but there is a delay when resuming the capture and no buffered history, so the first rider may be missed.
 
 #### Monitor/Focus
 
@@ -75,7 +75,9 @@ Opens a big window suitable for monitoring or focusing the camera.
 
 #### Reset Camera
 
-__Reminder:__  Make sure all your usb cameras are plugged into the computer before starting CrossMgrVideo.
+__Reminder:__  Make sure all your USB cameras and HID Joystick trigger devices are plugged into the computer before starting CrossMgrVideo.
+
+If the camera device disconnects during use, a warning will be shown.  CrossMgrVideo will attempt to reconnect automatically, but may not reconnect to the right camera, particularly under Windows.
 
 __Reset Camera__ enables the camera to be reset - including the USB port and other parameters:
 
@@ -95,6 +97,7 @@ Similarly, of you set __Frames per second__ to an unsupported value (or a value 
 In low light conditions, some cameras drop their frame rate.  This allows for a higher exposure time per frame, however, it can also lead to out-of-focus objects.  If you camera drops the frame rate, consider additional lighting.
 
 You can see the actual camera parameters and frames per second (fps) at the top of the screen.
+
 
 #### Manage Database
 
@@ -132,6 +135,7 @@ __CrossMgrVideo__ will capture video from 14:07:20.5 to 14:07:22.
 __CrossMgrVideo__ can capture video up to 10 seconds "in the past" because it keeps a 10-second buffer
 
 * __Sequential bib for captures__: If selected, manual/joystick captures will be given a sequential bib number.  Otherwise the bib field is left blank (useful when real bib numbers are being provided by CrossMgr).
+* __Play shutter sound__:  If selected, a sound effect will be played when a capture is started close to real time (delayed captures from CrossMgr RFID reads will not play a sound).
 
 #### Snapshot
 

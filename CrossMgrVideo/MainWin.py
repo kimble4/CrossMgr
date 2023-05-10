@@ -367,6 +367,9 @@ class AutoCaptureDialog( wx.Dialog ):
 		gs.Add( wx.StaticText(self, label="Seqential bib for captures"), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
 		self.sequentialBibs = wx.CheckBox( self )
 		gs.Add( self.sequentialBibs )
+		gs.Add( wx.StaticText(self, label="Play shutter sound"), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		self.shutterSound = wx.CheckBox( self )
+		gs.Add( self.shutterSound )
 			
 		sizer.Add( gs, flag=wx.ALL, border=4 )
 		
@@ -381,11 +384,12 @@ class AutoCaptureDialog( wx.Dialog ):
 		for w in (self.labelFields + self.editFields):
 			w.Enable( enable )
 	
-	def set( self, s_before, s_after, autoCaptureClosestFrames=0, sequentialBibs=True ):
+	def set( self, s_before, s_after, autoCaptureClosestFrames=0, sequentialBibs=True, shutterSound=True ):
 		for w, v in zip( self.editFields, (s_before, s_after) ):
 			w.SetValue( '{:.3f}'.format(v) )
 		self.autoCaptureClosestFrames.SetSelection( autoCaptureClosestFrames )
 		self.sequentialBibs.SetValue( sequentialBibs )
+		self.shutterSound.SetValue( shutterSound )
 		self.onChoice()
 	
 	def get( self ):
@@ -394,7 +398,7 @@ class AutoCaptureDialog( wx.Dialog ):
 				return abs(float(v))
 			except Exception:
 				return None
-		return [fixValue(e.GetValue()) for e in self.editFields] + [self.autoCaptureClosestFrames.GetSelection()] + [self.sequentialBibs.GetValue()]
+		return [fixValue(e.GetValue()) for e in self.editFields] + [self.autoCaptureClosestFrames.GetSelection()] + [self.sequentialBibs.GetValue()] + [self.shutterSound.GetValue()]
 		
 class AutoWidthListCtrl(wx.ListCtrl, listmix.ListCtrlAutoWidthMixin):
 	def __init__(self, parent, ID = wx.ID_ANY, pos=wx.DefaultPosition,
@@ -412,6 +416,7 @@ class MainWin( wx.Frame ):
 		self.curFPS = 30.0
 		self.setFPS( 30 )
 		self.xFinish = None
+		self.cameraDisconnected = True
 		
 		self.tFrameCount = self.tLaunch = self.tLast = now()
 		self.frameCount = 0
@@ -428,6 +433,7 @@ class MainWin( wx.Frame ):
 		self.tdCaptureBefore = tdCaptureBeforeDefault
 		self.tdCaptureAfter = tdCaptureAfterDefault
 		self.autoCaptureClosestFrames = 0
+		self.shutterSound = True
 		self.autoCaptureSequentialBibs = True
 		self.lastCapturePreview = datetime.min
 		
@@ -992,6 +998,16 @@ class MainWin( wx.Frame ):
 		self.curFPS = actualFPS
 		
 	def updateCameraUsb( self, availableCameraUsb ):
+		if not self.cameraDisconnected and self.currentUSB not in availableCameraUsb:
+			self.cameraDisconnected = True
+			self.messageQ.put( ('USB', 'Camera ' + str(self.currentUSB) + ' has disconnected!') )
+			Utils.PlaySound('awooga.wav')
+			with wx.MessageDialog(self, 'Camera ' + str(self.currentUSB) + ' has disconnected!', 'CrossMgrVideo', style=wx.ICON_WARNING) as dlg:
+				dlg.SetExtendedMessage('Check the connections and make sure the correct camera device is being used.\nAvailable USB devices: ' + str(availableCameraUsb))
+				dlg.ShowModal()
+		elif self.cameraDisconnected and self.currentUSB in availableCameraUsb:
+			self.cameraDisconnected = False
+			self.messageQ.put( ('USB', 'Now using camera ' + str(self.currentUSB)) )
 		self.availableCameraUsb = availableCameraUsb
 
 	def updateAutoCaptureLabel( self ):
@@ -1640,13 +1656,14 @@ class MainWin( wx.Frame ):
 		self.triggerList.Select( iTriggerRow )		
 	
 	def autoCaptureConfig( self, event ):
-		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames, self.autoCaptureSequentialBibs )
+		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames, self.autoCaptureSequentialBibs, self.shutterSound )
 		if self.autoCaptureDialog.ShowModal() == wx.ID_OK:
-			s_before, s_after, autoCaptureClosestFrames, autoCaptureSequentialBibs = self.autoCaptureDialog.get()
+			s_before, s_after, autoCaptureClosestFrames, autoCaptureSequentialBibs, shutterSound = self.autoCaptureDialog.get()
 			self.tdCaptureBefore = timedelta(seconds=s_before) if s_before is not None else tdCaptureBeforeDefault
 			self.tdCaptureAfter  = timedelta(seconds=s_after)  if s_after  is not None else tdCaptureAfterDefault
 			self.autoCaptureClosestFrames = autoCaptureClosestFrames
 			self.autoCaptureSequentialBibs = autoCaptureSequentialBibs
+			self.shutterSound = shutterSound
 			self.writeOptions()
 			self.updateAutoCaptureLabel()
  		
@@ -1863,6 +1880,9 @@ class MainWin( wx.Frame ):
 				# Do preview of capture in progress only if the trigger timestamp is within capturePreviewThreshold of realtime, otherwise there'll be nothing to see
 				if self.autoSelect.GetSelection() <= 1 and abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
 					if now() - self.lastCapturePreview >= timedelta(seconds=capturePreviewThreshold):  # Rate limit to capturePreviewThreshold
+						# Play the camera sound
+						if self.shutterSound:
+							Utils.PlaySound('shutter.wav')
 						# Switch to Images tab
 						if self.notebook.GetSelection() != 0:
 							self.notebook.ChangeSelection(0)  # This does not generate a page change event
@@ -2153,6 +2173,10 @@ class MainWin( wx.Frame ):
 		dlg.Destroy()
 	
 	def setUsb( self, num ):
+		try:
+			self.currentUSB = int(num)
+		except:
+			self.currentUSB = None
 		oldLabel = self.usb.GetLabel()
 		label = '{} {}'.format(num, self.availableCameraUsb)
 		if label != oldLabel:
@@ -2199,6 +2223,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'HiddenTriggerCols', repr(self.hiddenTriggerCols) )
 		self.config.WriteInt( 'ClosestFrames', self.autoCaptureClosestFrames )
 		self.config.WriteBool( 'SequentialBibs', self.autoCaptureSequentialBibs )
+		self.config.WriteBool( 'ShutterSound', self.shutterSound )
 		self.config.WriteInt ('AutoSelect', self.autoSelect.GetSelection() )
 		self.config.Flush()
 	
@@ -2227,6 +2252,7 @@ class MainWin( wx.Frame ):
 		self.hiddenTriggerCols = ast.literal_eval( self.config.Read( 'HiddenTriggerCols', '[]' ) )
 		self.autoCaptureClosestFrames = self.config.ReadInt( 'ClosestFrames', 0 )
 		self.autoCaptureSequentialBibs = self.config.ReadBool( 'SequentialBibs', True )
+		self.shutterSound = self.config.ReadBool( 'ShutterSound', True )
 		self.autoSelect.SetSelection( self.config.ReadInt( 'AutoSelect', 0 ) )
 		
 	def getCameraInfo( self ):

@@ -28,6 +28,8 @@ import string
 import socket
 import datetime
 import unicodedata
+import platform
+import subprocess
 
 timeoutSecs = None
 
@@ -154,6 +156,7 @@ def getDocumentsDir():
 	sp = wx.StandardPaths.Get()
 	return sp.GetDocumentsDir()
 	
+	
 #------------------------------------------------------------------------
 if 'WXMAC' in wx.Platform:
 	try:
@@ -211,6 +214,48 @@ def RemoveDisallowedFilenameChars( filename ):
 	cleanedFilename = unicodedata.normalize('NFKD', '{}'.format(filename).strip()).encode('ASCII', 'ignore').decode()
 	cleanedFilename = cleanedFilename.replace( '/', '_' ).replace( '\\', '_' )
 	return invalidFilenameChars.sub( '', cleanedFilename )
+
+
+# Attempt at portable sound player.
+if sys.platform.startswith('win'):
+	soundCache = {}
+	def Play( soundFile ):
+		global soundCache
+		soundFile = os.path.join( imageFolder, soundFile )
+		try:
+			return soundCache[soundFile].Play()
+		except KeyError:
+			pass
+		soundCache[soundFile] = wx.adv.Sound( soundFile )
+		return soundCache[soundFile].Play()
+			
+elif sys.platform.startswith('darwin'):
+	def Play( soundFile ):
+		try:
+			subprocess.Popen(
+				['afplay', os.path.join(imageFolder, soundFile)],
+				shell=False, stdin=None, stdout=None, stderr=None,
+				close_fds=True,
+			)
+		except Exception:
+			pass
+		return True
+		
+else:	# Try Linux
+	def Play( soundFile ):
+		try:
+			subprocess.Popen(
+				['aplay', '-q', os.path.join(imageFolder, soundFile)],
+				shell=False, stdin=None, stdout=None, stderr=None,
+				close_fds=True,
+			)
+		except Exception as e:
+			pass
+		return True
+	
+def PlaySound( soundFile ):
+	return Play( soundFile )
+
 #------------------------------------------------------------------------
 
 def disable_stdout_buffering():
