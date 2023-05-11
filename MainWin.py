@@ -547,7 +547,7 @@ class MainWin( wx.Frame ):
 		self.redoMenuButton.Enable( False )
 		self.editMenu.AppendSeparator()
 		
-		item = self.editMenu.Append( wx.ID_ANY, _("&Find..."), _("Find a Rider") )
+		item = self.editMenu.Append( wx.ID_ANY, _("&Find...\tCtrl+F"), _("Find a Rider") )
 		self.menuFindID = item.GetId()
 		self.Bind(wx.EVT_MENU, self.menuFind, item )
 		
