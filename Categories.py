@@ -469,7 +469,8 @@ class Categories( wx.Panel ):
 
 	def commitButtonCallback( self, event ):
 		if Model.race:
-			wx.CallAfter( self.commit )
+			self.commit()
+			self.refresh()
 		else:
 			Utils.MessageOK(self, _("You must have a valid race.  Open or New a race first."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
 
