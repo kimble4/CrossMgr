@@ -520,6 +520,8 @@ function updateImages( iTrigger ) {
 
 	// Update the restore button status.
 	document.getElementById("id_restore_view").disabled = ( !trig || trig.zoom_frame < 0 );
+	document.getElementById("id_publish").disabled = ( !trig || trig.publish > 0 );
+	document.getElementById("id_unpublish").disabled = ( !trig || trig.publish == 0 );
 	
 	// Switch to the image view.
 	imageScaledBitmap.SetImage( imageWait );
@@ -815,8 +817,12 @@ function submitForm( e, doSubmit ) {
 		if( fields[i] == 'publish' )
 			if (parseInt('0' + value, 10) > 0) {
 				value = 1;
+				document.getElementById("id_publish").disabled = ( true );
+				document.getElementById("id_unpublish").disabled = ( false );
 			} else {
 				value = 0;
+				document.getElementById("id_publish").disabled = ( false );
+				document.getElementById("id_unpublish").disabled = ( true );
 			}
 		trig[fields[i]] = value
 		params.push( fields[i] + '=' + encodeURIComponent(''+value) );
@@ -887,6 +893,43 @@ function saveView() {
 	updateOnScreenTriggerData();
 	document.getElementById("id_restore_view").disabled = ( !trig || trig.zoom_frame < 0 );
 }
+
+function publishTrigger() {
+	let trig = getTriggerCur();
+	if( !trig )
+		return;
+		
+	if( !confirm("Select this trigger for publish?") )
+		return;
+
+	let params = [
+		'id='			+ trig.id,
+		'publish=1'
+	];
+	getJSON( 'trigger_update.js?' + params.join('&'), function(data) { return; } );
+	refreshTriggerFromDatabaseThen();
+	document.getElementById("id_publish").disabled = ( true );
+	document.getElementById("id_unpublish").disabled = ( false );
+}
+
+function unpublishTrigger() {
+	let trig = getTriggerCur();
+	if( !trig )
+		return;
+		
+	if( !confirm("Deselect this trigger for publish?") )
+		return;
+
+	let params = [
+		'id='			+ trig.id,
+		'publish=0'
+	];
+	getJSON( 'trigger_update.js?' + params.join('&'), function(data) { return; } );
+	refreshTriggerFromDatabaseThen();
+	document.getElementById("id_publish").disabled = ( false );
+	document.getElementById("id_unpublish").disabled = ( true );
+}
+
 
 //----------------------------------------------------------------------
 
@@ -974,6 +1017,8 @@ function OnLoad() {
 		<div>
 			<button style="margin-left: 1.5em;" onClick="restoreView(true);" id="id_restore_view" disabled><span style="font-weight:bold">&mapstoup;</span> Restore</button>
 			<button onClick="saveView();"><span style="font-weight:bold">&mapstodown;</span> Save</button>
+			<button onclick="unpublishTrigger();" id="id_unpublish">Unpublish</button>
+			<button onclick="publishTrigger();" id="id_publish">Publish</button>
 		</div>
 		<div style="margin-left: 1.5em;">
 			<button onclick="triggerGoPrev()" style="margin-left: 2.5em;">&#9650; Prev</button>
