@@ -556,7 +556,7 @@ function sortTableId( iTable, iCol ) {
 									with tag(html, 'ul'):
 										for r in pointsStructures[ps]:
 											with tag(html, 'li'):
-												write( r.raceName )
+												write( (r.eventName + ': ' if r.eventName else '') + r.raceName )
 						
 						with tag(html, 'tr'):
 							with tag(html, 'td'):
