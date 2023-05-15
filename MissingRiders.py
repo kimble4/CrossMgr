@@ -30,12 +30,12 @@ class MissingRiders( wx.Dialog ):
 		self.showStrayRiders = wx.CheckBox( self, label='Show &unmatched riders' )
 		self.showStrayRiders.SetToolTip('Include riders we have times for who are not in the sign-on spreadsheet.  RFID tags which do not have a rider associated with them can be seen in the \'Unmatched RFID Tags\' window.')
 		self.showStrayRiders.SetValue( True )
-		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.refresh )
+		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.onCheckbox )
 		
 		self.showNonFinishers = wx.CheckBox( self, label='Include &non-finishers' )
-		self.showNonFinishers.SetToolTip('Include riders who are DNS etc.')
+		self.showNonFinishers.SetToolTip('Include riders who are DNS etc. and unstarted time trial riders.')
 		self.showNonFinishers.SetValue( False )
-		self.showNonFinishers.Bind( wx.EVT_CHECKBOX, self.refresh )
+		self.showNonFinishers.Bind( wx.EVT_CHECKBOX, self.onCheckbox )
 		
 		self.fitButton = wx.Button(self, label='&Resize')
 		self.fitButton.SetToolTip('Update the list')
@@ -60,6 +60,10 @@ class MissingRiders( wx.Dialog ):
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.SetSizer( self.mainSizer )
 		
+		self.refresh()
+		self.Fit()
+		
+	def onCheckbox( self, event ):
 		self.refresh()
 		self.Fit()
 		
@@ -146,25 +150,42 @@ class MissingRiders( wx.Dialog ):
 		showTeamCol = False
 		
 		# Get everyone in the race
-		for bib, rider in race.riders.items():
+		for bib in externalInfo.keys():
 			startOffset = race.getStartOffset( bib )
-			if tNow >= startOffset:  # If the rider's wave has started...
+			rider = race.getRider(bib)
+			if race.isTimeTrial and rider.firstTime is None:
+				continue
+			elif tNow >= startOffset:  # If the rider's wave has started...
 				status = Model.Rider.statusNames[rider.status]
 				riderInfo = externalInfo.get(int(bib), {})
 				riderName = ', '.join( n for n in [riderInfo.get('LastName', ''), riderInfo.get('FirstName', '')] if n)
 				riderMachine = riderInfo.get('Machine')
 				if riderMachine:
 					showMachineCol = True
+				else:
+					riderMachine = ''
 				riderTeam = riderInfo.get('Team')
 				if riderTeam:
 					showTeamCol = True
+				else:
+					riderTeam = ''
 				if not rider.times:  # Rider has no times
 					if rider.status == Finisher:
-						riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
+						if race.isTimeTrial:
+							if tNow > rider.firstTime:
+								riderList.update({bib:[riderName, riderMachine, riderTeam, 'Started', 1]})
+							elif self.showNonFinishers.GetValue():
+								riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unstarted', 0]})
+						else:
+							riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
 					elif self.showNonFinishers.GetValue():
 						riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
-				elif self.showStrayRiders.GetValue() and not externalInfo.get(bib):  # Rider with times has no spreadsheet entry
-						riderList.update({bib:['', '', '', status , 2]})
+				
+		# Get stray riders
+		if self.showStrayRiders.GetValue():
+			for bib, rider in race.riders.items():
+				if not externalInfo.get(bib):  # Rider with times has no spreadsheet entry
+					riderList.update({bib:['[Not in spreadsheet]', '', '', status , 2]})
 		
 		# Add to list in bib order
 		row = 0
@@ -187,7 +208,7 @@ class MissingRiders( wx.Dialog ):
 					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 255, 255, 0 ) )
 				elif riderList[bib][4] == 2: # Stray rider
 					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 211, 211, 211 ) )
-				else:
+				else: # Unstarted/non-finisher
 					self.grid.SetCellBackgroundColour( row, i, wx.Colour( 255, 255, 255 ) )
 			row += 1
 		
@@ -200,6 +221,11 @@ class MissingRiders( wx.Dialog ):
 			self.grid.ShowCol(3)
 		else:
 			self.grid.HideCol(3)
+			
+		if race.isTimeTrial:
+			self.showNonFinishers.SetLabel('Include u&nstarted')
+		else:
+			self.showNonFinishers.SetLabel('Include &non-finishers')
 		
 		self.grid.AutoSize()
 		self.Layout()
