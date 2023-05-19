@@ -506,9 +506,9 @@ function selectColumns() {
 								write( ' Updated:&nbsp;{}'.format(datetime.datetime.now().strftime('%Y-%m-%d&nbsp;%H:%M:%S')) )
 
 			with tag(html, 'h3' ):
-				with tag(html, 'label', {'for':'categoryselect'} ):
+				with tag(html, 'label', {'class':'noprint', 'for':'categoryselect'} ):
 					write( 'Category' + ':' )
-				with tag(html, 'select', {'name': 'categoryselect', 'onchange':'selectCategory(parseInt(this.value,10))'} ):
+				with tag(html, 'select', {'class':'noprint', 'name': 'categoryselect', 'onchange':'selectCategory(parseInt(this.value,10))'} ):
 					with tag(html, 'option', {'value':-1} ):
 						with tag(html, 'span'):
 							write( 'All' )
@@ -516,19 +516,19 @@ function selectColumns() {
 						with tag(html, 'option', {'value':iTable} ):
 							with tag(html, 'span'):
 								write( '{}'.format(escape(categoryName)) )
-			with tag(html, 'span'):
+			with tag(html, 'span', {'class':'noprint'}):
 				write('Show:')
-			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'0', 'id':'races', 'onchange':'selectColumns()'}):
+			with tag(html, 'input', {'class':'noprint', 'type':'radio', 'name':'selectcols', 'value':'0', 'id':'races', 'onchange':'selectColumns()'}):
 				pass
-			with tag(html, 'label', {'for':'races'}):
+			with tag(html, 'label', {'class':'noprint', 'for':'races'}):
 				write('Races')
-			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'1', 'id':'totals', 'onchange':'selectColumns()'}):
+			with tag(html, 'input', {'class':'noprint', 'type':'radio', 'name':'selectcols', 'value':'1', 'id':'totals', 'onchange':'selectColumns()'}):
 				pass
-			with tag(html, 'label', {'for':'totals'}):
+			with tag(html, 'label', {'class':'noprint', 'for':'totals'}):
 				write('Event totals')
-			with tag(html, 'input', {'type':'radio', 'name':'selectcols', 'value':'2', 'id':'both', 'onchange':'selectColumns()', 'checked':'checked'}):
+			with tag(html, 'input', {'class':'noprint', 'type':'radio', 'name':'selectcols', 'value':'2', 'id':'both', 'onchange':'selectColumns()', 'checked':'checked'}):
 				pass
-			with tag(html, 'label', {'for':'both'}):
+			with tag(html, 'label', {'class':'noprint', 'for':'both'}):
 				write('Races and event totals')
 			for iTable, categoryName in enumerate(categoryNames):
 				results, races, eventResultsTable, potentialDuplicates = GetModelInfo.GetCategoryResults(
