@@ -721,7 +721,7 @@ def WsLapCounterQueueListener( q ):
 			if wsLapCounterServer and wsLapCounterServer.hasClients():
 				race = Model.race
 				message['tNow'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-				message['curRaceTime'] = race.curRaceTime() if race and race.startTime else 0.0
+				message['curRaceTime'] = race.curRaceTime() if race and race.startTime and not race.finishTime else 0.0
 				wsLapCounterServer.send_message_to_all( Utils.ToJson(message).encode() )
 		elif cmd == 'exit':
 			keepGoing = False
@@ -742,11 +742,14 @@ lastRaceName, lastMessage = None, None
 def WsLapCounterRefresh():
 	global lastRaceName, lastMessage
 	race = Model.race
-	if not (race and race.isRunning()):
+	if not race:
 		return
 	if not (wsLapCounterServer and wsLapCounterServer.hasClients()):
 		return
 	message, raceName = GetLapCounterRefresh(), GetRaceName()
+	if race.isFinished():  # If the race has finished, clear the lap counters and zero the start time
+		message['labels'] = [('',False,None) for category in race.getCategories(startWaveOnly=True)]
+		message['raceStartTime'] = None
 	if lastMessage != message or lastRaceName != raceName:
 		wsLapCounterQ.put( message )
 		lastMessage, lastRaceName = message, raceName
