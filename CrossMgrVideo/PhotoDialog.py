@@ -133,16 +133,16 @@ class PhotoPanel( wx.Panel ):
 		btnsizer.Add( self.playerForwardToEnd, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=0)
 		btnsizer.Add( wx.StaticText(self, label='or Mousewheel'), flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=2 )
         
-		self.contrast = wx.ToggleButton( self, label='Contrast')
+		self.contrast = wx.ToggleButton( self, label='Contras&t')
 		self.contrast.Bind( wx.EVT_TOGGLEBUTTON, self.onFilter )
 		btnsizer.Add(self.contrast, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=4)		
 
-		self.sharpen = wx.ToggleButton( self, label='Sharpen')
+		self.sharpen = wx.ToggleButton( self, label='Sharpe&n')
 		self.sharpen.Bind( wx.EVT_TOGGLEBUTTON, self.onFilter )
 		btnsizer.Add(self.sharpen, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)		
 
 		#btn = wx.BitmapButton(self, bitmap=Utils.getBitmap('edit_icon.png'))
-		btn = wx.Button( self, label='Edit Info' )
+		btn = wx.Button( self, label='Edit &Info' )
 		btn.SetToolTip( wx.ToolTip('Edit Trigger Info') )
 		btn.Bind( wx.EVT_BUTTON, self.onEdit )
 		btnsizer.Add(btn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=16)
@@ -154,7 +154,7 @@ class PhotoPanel( wx.Panel ):
 		item = self.exportViewMenu.Append(wx.ID_ANY, 'to Clipboard...', 'Save to Clipboard')
 		self.Bind(wx.EVT_MENU, self.onExportClipboard, item)
 		
-		btn = wx.Button( self, label='Export View' )
+		btn = wx.Button( self, label='E&xport View' )
 		btn.SetToolTip( wx.ToolTip('Export current view (includes zoom)') )
 		btn.Bind( wx.EVT_BUTTON, self.onExportView )
 		btnsizer.Add(btn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=16)
@@ -165,7 +165,7 @@ class PhotoPanel( wx.Panel ):
 		item = self.savePhotoMenu.Append(wx.ID_ANY, 'to Clipboard...', 'Save to Clipboard')
 		self.Bind(wx.EVT_MENU, self.onSaveClipboard, item)
 		
-		btn = wx.Button( self, label='Save Photo' )
+		btn = wx.Button( self, label='&Save Photo' )
 		btn.SetToolTip( wx.ToolTip('Save current photo only') )
 		btn.Bind( wx.EVT_BUTTON, self.onSavePhoto )
 		btnsizer.Add(btn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=4)
@@ -210,7 +210,7 @@ class PhotoPanel( wx.Panel ):
 		btn.Bind( wx.EVT_BUTTON, self.onSaveView )
 		btnsizer.Add(btn, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=4)
 		
-		self.publishBtn = btn = wx.Button( self, label='Publish' )
+		self.publishBtn = btn = wx.Button( self, label='Toggle &Publish' )
 		btn.SetToolTip( wx.ToolTip('Toggle publish status') )
 		btn.Bind( wx.EVT_BUTTON, self.onPublish )
 		btnsizer.Add(btn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=4)

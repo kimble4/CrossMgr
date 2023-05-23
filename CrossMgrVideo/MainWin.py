@@ -650,7 +650,7 @@ class MainWin( wx.Frame ):
 		self.date.Bind( wx.adv.EVT_DATE_CHANGED, self.onQueryDateChanged )
 		hsDate.Add( self.date, flag=wx.LEFT, border=2 )
 		
-		self.dateSelect = wx.Button( self, label='Select Date' )
+		self.dateSelect = wx.Button( self, label='Select &Date' )
 		hsDate.Add( self.dateSelect, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2 )
 		self.dateSelect.Bind( wx.EVT_BUTTON, self.onDateSelect )
 		
@@ -659,16 +659,16 @@ class MainWin( wx.Frame ):
 		self.bib.Bind( wx.EVT_TEXT, self.onQueryBibChanged )
 		hsDate.Add( self.bib, flag=wx.LEFT, border=2 )
 		
-		self.refreshBtn = wx.Button( self, label="Refresh" )
+		self.refreshBtn = wx.Button( self, label="&Refresh" )
 		self.refreshBtn.Bind( wx.EVT_BUTTON, lambda event: self.refreshTriggers(replace=True, selectLatest=False) )
 		hsDate.Add( self.refreshBtn, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=8 )
 		
-		self.publishPhotos = wx.Button( self, label="Publish Photos" )
+		self.publishPhotos = wx.Button( self, label="Publish P&hotos" )
 		self.publishPhotos.SetToolTip( "Write a JPG for each Trigger into a Folder" )
 		self.publishPhotos.Bind( wx.EVT_BUTTON, self.onPublishPhotos )
 		hsDate.Add( self.publishPhotos, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
 		
-		self.publishWebPage = wx.Button( self, label="Photo Web Page" )
+		self.publishWebPage = wx.Button( self, label="Photo &Web Page" )
 		self.publishWebPage.SetToolTip( "Write a JPG for each Trigger and create a Web Page" )
 		self.publishWebPage.Bind( wx.EVT_BUTTON, self.onPublishWebPage )
 		hsDate.Add( self.publishWebPage, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
@@ -1774,14 +1774,24 @@ class MainWin( wx.Frame ):
 			self.triggerDeleteID = wx.NewIdRef()
 			self.triggerEditID = wx.NewIdRef()
 			self.triggerPublishID = wx.NewIdRef()
+			self.publishTriggersID = wx.NewIdRef()
+			self.unpublishRaceID = wx.NewIdRef()
+			self.unpublishAllID = wx.NewIdRef()
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerDelete(), id=self.triggerDeleteID)
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerEdit(),   id=self.triggerEditID)
 			self.Bind(wx.EVT_MENU, lambda event: self.doTriggerPublish(), id=self.triggerPublishID)
+			self.Bind(wx.EVT_MENU, lambda event: self.doPublishTriggers(), id=self.publishTriggersID)
+			self.Bind(wx.EVT_MENU, lambda event: self.doUnpublishRace(), id=self.unpublishRaceID)
+			self.Bind(wx.EVT_MENU, lambda event: self.doUnpublishRace( allRaces=True ), id=self.unpublishAllID)
+			
 
 		menu = wx.Menu()
 		menu.Append(self.triggerPublishID,   "Toggle Publish")
 		menu.Append(self.triggerEditID,   "Edit...")
 		menu.Append(self.triggerDeleteID, "Delete...")
+		menu.Append(self.publishTriggersID, "Publish wave finishes from here")
+		menu.Append(self.unpublishRaceID, "Unpublish this race")
+		menu.Append(self.unpublishAllID, "Unpublish all races")
 
 		self.PopupMenu(menu)
 		menu.Destroy()
@@ -1821,7 +1831,7 @@ class MainWin( wx.Frame ):
 		self.iTriggerSelect = event.Index
 		self.doTriggerEdit()
 		
-	def doTriggerPublish( self ):
+	def doTriggerPublish( self ):  # Toggle 'publish' flag for a trigger
 		if self.iTriggerSelect is None:
 			return
 		data = self.getTriggerInfo( self.iTriggerSelect )
@@ -1837,6 +1847,49 @@ class MainWin( wx.Frame ):
 		self.triggerInfo.update( data )
 		GlobalDatabase().setTriggerEditFields( data['id'], **values )
 	
+	def doPublishTriggers( self ):  # Set publish flag for this and subsequent triggers for each bib
+		if self.iTriggerSelect is None:
+			return
+		
+		with wx.BusyCursor():
+			data = self.getTriggerInfo( self.iTriggerSelect )
+			raceName, wave = data['race_name'], data['wave']
+			bibsSeen = []
+			
+			for iTriggerRow in range(self.iTriggerSelect, self.triggerList.GetItemCount()):
+				data = self.getTriggerInfo( iTriggerRow )
+				if data['race_name'] == raceName and data['wave'] == wave:
+					bib = data['bib']
+					if not bib in bibsSeen:
+						bibsSeen.append( bib )
+						values = {}
+						data['publish'] = 'Y'
+						values['publish'] = '1'
+						self.updateTriggerRow( iTriggerRow, data )
+						self.triggerInfo.update( data )
+						GlobalDatabase().setTriggerEditFields( data['id'], **values )
+			self.updateTriggerColumnWidths()
+			
+	def doUnpublishRace( self, allRaces=False ):  # Clear publish flag for all triggers in this race
+		if self.iTriggerSelect is None:
+			return
+		
+		with wx.BusyCursor():
+			data = self.getTriggerInfo( self.iTriggerSelect )
+			raceName = data['race_name']
+			
+			for iTriggerRow in range(self.triggerList.GetItemCount()):
+				data = self.getTriggerInfo( iTriggerRow )
+				if allRaces or data['race_name'] == raceName:
+					if data['publish']:
+						values = {}
+						data['publish'] = ''
+						values['publish'] = '0'
+						self.updateTriggerRow( iTriggerRow, data )
+						self.triggerInfo.update( data )
+						GlobalDatabase().setTriggerEditFields( data['id'], **values )
+			self.updateTriggerColumnWidths()
+		
 		
 	def onTriggerColumnRightClick( self, event ):
 		# Create and display a popup menu of columns on right-click event
