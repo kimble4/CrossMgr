@@ -557,7 +557,10 @@ class PhotoPanel( wx.Panel ):
 	
 	def onGetSpeed( self, event ):
 		self.playStop()
-
+		
+		if self.iJpg == None:
+			return
+		
 		t1, bitmap1, t2, bitmap2 = None, None, None, None
 		speedFrames = 2
 		
