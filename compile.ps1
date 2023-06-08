@@ -16,6 +16,7 @@ param (
 	[switch]$help = $false,
 	[string]$environ = "env",
 	[string]$pythonexe = "python3.10.exe",
+	
 	[switch]$cmgr = $false,
 	[switch]$cmgri = $false,
 	[switch]$trw = $false,
@@ -23,9 +24,11 @@ param (
 	[switch]$cmgra = $false,
 	[switch]$video = $false,
 	[switch]$pts = $false,
+	[switch]$call = $false,
 	[switch]$spr = $false,
 	[switch]$camera = $false,
 	[switch]$all = $false,
+	
 	[switch]$versioncmd = $false,
 	[switch]$setupenv = $false,
 	[switch]$clean = $false,
@@ -157,6 +160,7 @@ function Cleanup($program)
 		'SeriesMgr/__pycache__',
 		'PointsRaceMgr/__pycache__',
 		'CallupSeedingMgr/__pycache__',
+		'StageRaceGC/__pycache__',
 		'SprintMgr/__pycache__',
 		'dist',
 		'build',
@@ -206,6 +210,28 @@ function BuildLocale($program)
 	}
 }
 
+function BuildHelp($program)
+{
+	Set-Location -Path $program
+	if (Test-Path "buildhelp.py")
+	{
+		if (Test-Path "${program}HelpIndex")
+		{
+			Remove-Item -Recurse -Force -Path "${program}HelpIndex"
+		}
+		
+		Write-Host 'Building Help for ${program}...'
+		Start-Process -Wait -NoNewWindow -FilePath "python.exe" -ArgumentList "buildhelp.py"
+		if ($? -eq $false)
+		{
+			Write-Host "Help Build failed. Aborting..."
+			Set-Location -Path '..'
+			exit 1
+		}
+	}
+	Set-Location -Path '..'
+}
+
 function CopyAssets($program)
 {
 	$builddir = GetBuildDir($program)
@@ -246,57 +272,11 @@ function CopyAssets($program)
 		}
 		Copy-Item -Recurse -Force -Path "CrossMgrHelpIndex" -Destination "$resourcedir"
 	}
-	if ($program -eq "CrossMgrVideo")
+	else
 	{
-		Set-Location -Path 'CrossMgrVideo'
-		if (Test-Path "CrossMgrHelpIndex")
-		{
-			Remove-Item -Recurse -Force -Path "CrossMgrHelpIndex"
-		}
-		Write-Host 'Building Help for CrossMgr...'
-		Start-Process -Wait -NoNewWindow -FilePath "python.exe" -ArgumentList "buildhelp.py"
-		if ($? -eq $false)
-		{
-			Write-Host "Help Build failed. Aborting..."
-			Set-Location -Path '..'
-			exit 1
-		}
-		Set-Location -Path '..'
+		BuildHelp( $program )
 	}
-	if ($program -eq "SeriesMgr")
-	{
-		Set-Location -Path 'SeriesMgr'
-		if (Test-Path "SeriesMgrHelpIndex")
-		{
-			Remove-Item -Recurse -Force -Path "SeriesMgrHelpIndex"
-		}
-		Write-Host 'Building Help for SeriesMgr...'
-		Start-Process -Wait -NoNewWindow -FilePath "python.exe" -ArgumentList "buildhelp.py"
-		if ($? -eq $false)
-		{
-			Write-Host "Help Build failed. Aborting..."
-			Set-Location -Path '..'
-			exit 1
-		}
-		Set-Location -Path '..'
-	}
-	if ($program -eq "CallupSeedingMgr")
-	{
-		Set-Location -Path 'CallupSeedingMgr'
-		if (Test-Path "CallupSeedingMgrHelpIndex")
-		{
-			Remove-Item -Recurse -Force -Path "CallupSeedingMgrHelpIndex"
-		}
-		Write-Host 'Building Help for CallupSeedingMgrMgr...'
-		Start-Process -Wait -NoNewWindow -FilePath "python.exe" -ArgumentList "buildhelp.py"
-		if ($? -eq $false)
-		{
-			Write-Host "Help Build failed. Aborting..."
-			Set-Location -Path '..'
-			exit 1
-		}
-		Set-Location -Path '..'
-	}
+	
 	# Copy help files last to ensure they are built by now.
 	if (Test-Path "$builddir/${program}HtmlDoc")
 	{
@@ -376,16 +356,27 @@ OutputDir=$releasepath
 		Write-Host "Cant find Inno Setup 6.x! Is it installed? Aborting...."
 		exit 1
 	}
+	
 	$inno = "${innolocaton}ISCC.exe"
 	Write-Host "$inno"  "${builddir}\${program}.iss"
-	Start-Process -Wait -NoNewWindow -FilePath "$inno" -ArgumentList "${builddir}\${program}.iss"
+	
+	$iss = "${builddir}\${program}.iss"
+	if (!(Test-Path -Path $iss))
+	{
+		Write-Host "Cant find Inno configuration file (.iss):"
+		Write-Host "    " -NoNewline
+		Write-Host "$iss"
+		Write-Host " Aborting...."
+		exit 1
+	}
+	
+	Start-Process -Wait -NoNewWindow -FilePath "$inno" -ArgumentList "$iss"
 	if ($? -eq $false)
 	{
 		Write-Host "Inno Setup failed. Aborting..."
 		Set-Location -Path '..'
 		exit 1
 	}
-	
 }
 
 function EnvSetup($program)
@@ -497,7 +488,7 @@ function BuildAll($programs)
 	CheckEnvActive
 	if ($programs.Length -eq 0)
 	{
-		Write-Host "No programs selected. -cmgr, -cmgri, -cmgra, -trw, -smgr, -pts, -spr or -all required"
+		Write-Host "No programs selected. -cmgr, -cmgri, -cmgra, -trw, -smgr, -pts, -call, -spr or -all required"
 		exit 1
 	}
 	Cleanup
@@ -521,7 +512,7 @@ function FixDependencies($program)
 		Start-Process -Wait -NoNewWindow -FilePath "python.exe" "UpdateDependencies.py"
 		if ($? -eq $false)
 		{
-			Write-Host "Compile failed. Aborting..."
+			Write-Host "FixDependencies failed. Aborting..."
 			exit 1
 		}
 		Set-Location -Path '..'
@@ -626,6 +617,7 @@ function doHelp
 	-cam         - Build CrossMgrCamera (NOT COMPLETE)
 	-pts         - Build PointsRaceMgr
 	-call        - Build CallupSeedingMgr
+	-gc          - Build StageRaceGC
 	-spr         - Build SprintMgr
 	-all         - Build all programs
 	
@@ -688,6 +680,7 @@ if ((($clean -eq $false) -and ($setupenv -eq $false) -and ($fix -eq $false)) -an
 		($cam -eq $false) -and
 		($pts -eq $false) -and
 		($call -eq $false) -and
+		($gc -eq $false) -and
 		($spr -eq $false) -and
 		($all -eq $false))
 {
@@ -734,7 +727,11 @@ if ($pts -eq $true)
 }
 if ($call -eq $true)
 {
-	$programs += 'SprintMgr'
+	$programs += 'CallupSeedingMgr'
+}
+if ($gc -eq $true)
+{
+	$programs += 'StageRaceGC'
 }
 if ($spr -eq $true)
 {
@@ -751,6 +748,7 @@ if ($all -eq $true)
 		'CrossMgrVideo',
 		'PointsRaceMgr',
 		'CallupSeedingMgr',
+		'StageRaceGC',
 		'SprintMgr'
 		)
 	$virus = $true
