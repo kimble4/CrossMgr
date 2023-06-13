@@ -2076,7 +2076,10 @@ class MainWin( wx.Frame ):
 			if len(f) > 6:
 				try:
 					d = f.split('.')[1]
-					return '{:.5f}'.format(float(f)).rstrip('0') if len(d) > 5 else f
+					if int(d[0:5]) == 0:  # If the first 5 decimal places are zero, return a single decimal place
+						return '{:.1f}'.format(float(f))
+					else:
+						return '{:.5f}'.format(float(f)).rstrip('0') if len(d) > 5 else f  # Cannot do rstrip('0') if the decimal part is all zeros!
 				except IndexError:
 					pass
 			return f
