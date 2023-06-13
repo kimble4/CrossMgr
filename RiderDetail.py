@@ -1399,8 +1399,8 @@ class RiderDetail( wx.Panel ):
 						
 				fields['Note'] = getattr(race, 'lapNote', {}).get( (e.num, e.lap), '' )
 				if distanceByLap:
-					fields['Lap Speed'] = '{:.2f}'.format(1000.0 if tLap <= 0.0 else (waveCategory.getLapDistance(r+1) / (tLap / (60.0*60.0))))
-					fields['Race Speed'] = '{:.2f}'.format(1000.0 if tSum <= 0.0 else (waveCategory.getDistanceAtLap(r+1) / (tSum / (60.0*60.0))))
+					fields['Lap Speed'] = '{:.3f}'.format(1000.0 if tLap <= 0.0 else (waveCategory.getLapDistance(r+1) / (tLap / (60.0*60.0))))
+					fields['Race Speed'] = '{:.3f}'.format(1000.0 if tSum <= 0.0 else (waveCategory.getDistanceAtLap(r+1) / (tSum / (60.0*60.0))))
 				
 				dataFields.append( fields )
 				

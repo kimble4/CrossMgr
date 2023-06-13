@@ -594,6 +594,9 @@ class Results( wx.Panel ):
 		if self.numSelect != numSelect:
 			self.numSelect = numSelect
 			self.showNumSelect()
+		else: # De-select when clicking on selected row
+			self.numSelect = None
+			self.showNumSelect()
 		mainWin = Utils.getMainWin()
 		if mainWin:
 			historyCategoryChoice = mainWin.history.categoryChoice

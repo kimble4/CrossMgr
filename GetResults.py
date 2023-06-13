@@ -436,7 +436,7 @@ def _GetResultsCore( category ):
 						else:
 							tCur += t
 							raceSpeeds.append( DefaultSpeed if tCur <= 0.0 else (riderCategory.getDistanceAtLap(i+1) / (tCur / (60.0*60.0))) )
-					rr.speed = '{:.2f} {}'.format(raceSpeeds[-1], ['km/h', 'mph'][race.distanceUnit] )
+					rr.speed = '{:.3f} {}'.format(raceSpeeds[-1], ['km/h', 'mph'][race.distanceUnit] )
 				rr.raceSpeeds = raceSpeeds
 			else:	# Distance is by entire race.
 				if rider.status == Finisher and rr.raceTimes:
@@ -446,7 +446,7 @@ def _GetResultsCore( category ):
 						speed = DefaultSpeed if tCur <= 0.0 else riderDistance / (tCur / (60.0*60.0))
 					except IndexError as e:
 						speed = DefaultSpeed
-					rr.speed = '{:.2f} {}'.format(speed, ['km/h', 'mph'][race.distanceUnit] )
+					rr.speed = '{:.3f} {}'.format(speed, ['km/h', 'mph'][race.distanceUnit] )
 		riderResults.append( rr )
 	
 	if not riderResults:
