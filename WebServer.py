@@ -355,7 +355,7 @@ function Draw() {
 	w( '<canvas id="idqrcode" width="360" height="360"></canvas>' )
 	w( '<h2>Scan the QRCode.<br/>Follow it to the Race Results page.</h2>' )
 	w( '<h2>{}</h2>'.format(urlPage) )
-	w( 'Powered by <a href="http://www.sites.google.com/site/crossmgrsoftware">CrossMgr</a>.' )
+	w( 'Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.' )
 	w( '</body>' )
 	w( '</html>' )
 	return result.getvalue().encode()
