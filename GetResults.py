@@ -87,6 +87,9 @@ class RiderResult:
 		
 	def _getKey( self ):
 		return (statusSortSeq[self.status], -self.laps, self.lastTime, getattr(self, 'startTime', 0.0) or 0.0, self.num)
+	
+	def _getAverageSpeedKey( self ): #fixme
+		return (statusSortSeq[self.status], -(getattr(self, 'raceSpeeds', []) or [0.0])[-1], getattr(self, 'startTime', 0.0) or 0.0, self.num)
 		
 	def _getRunningKey( self ):
 		self.lastInterp = (self.laps and self.interp[self.laps] and self.status == Model.Rider.Finisher)
@@ -247,6 +250,7 @@ def _GetResultsCore( category ):
 	isRunning = race.isRunning()
 	isTimeTrial = race.isTimeTrial
 	isBestNLaps = race.isBestNLaps
+	rankBy = getattr(race, 'rankBy', 0)
 	
 	roadRaceFinishTimes = race.roadRaceFinishTimes
 	estimateLapsDownFinishTime = race.estimateLapsDownFinishTime
@@ -483,7 +487,13 @@ def _GetResultsCore( category ):
 	if isTimeTrial and isBestNLaps:
 		riderResults.sort( key=RiderResult._getBestLapsKey )
 	else:
-		riderResults.sort( key=RiderResult._getRunningKey if isRunning else RiderResult._getKey )
+		if isRunning:
+			riderResults.sort( key=RiderResult._getRunningKey )
+		else:
+			if rankBy == 1:
+				riderResults.sort( key=RiderResult._getAverageSpeedKey )
+			else:
+				riderResults.sort( key=RiderResult._getKey )
 	
 	relegatedNums = { rr.num for rr in riderResults if race.riders[rr.num].isRelegated() }
 	if relegatedNums:
@@ -600,6 +610,7 @@ def GetNonWaveCategoryResults( category ):
 	isBestNLaps= race.isBestNLaps
 	winAndOut = race.winAndOut
 	highPrecision = Model.highPrecisionTimes()
+	rankBy = getattr(race, 'rankBy', 0)
 	
 	rrCache = {}
 	riderResults = []
@@ -634,13 +645,22 @@ def GetNonWaveCategoryResults( category ):
 			
 		rr.raceTimes = [t - startOffset for t in rr.raceTimes]
 	
-	# Sort the new results.  //fixme
+	# Sort the new results.
 	if isTimeTrial and isBestNLaps:
 		riderResults.sort( key=RiderResult._getBestLapsKey )
 	elif winAndOut:	# Make sure we forward-sort the results.  This is required as we assign gaps/pos below and we do not want to use the winAndOut position.
-		riderResults.sort( key = RiderResult._getKey )
+		if rankBy == 1:
+			riderResults.sort( key=RiderResult._getAverageSpeedKey )
+		else:
+			riderResults.sort( key=RiderResult._getKey )
 	else:
-		riderResults.sort( key = RiderResult._getComponentKey if category.catType == Model.Category.CatComponent else RiderResult._getKey )
+		if category.catType == Model.Category.CatComponent:
+			riderResults.sort( key = RiderResult._getComponentKey )
+		else:
+			if rankBy == 1:
+				riderResults.sort( key = RiderResult._getAverageSpeedKey )
+			else:
+				riderResults.sort( key = RiderResult._getKey )
 	
 	# Assign finish position, gaps and status.
 	statusNames = Model.Rider.statusNames
@@ -762,7 +782,10 @@ def GetResultsWithData( category ):
 		elif race.winAndOut:
 			riderResults.sort( key = RiderResult._getWinAndOutKey )
 		else:
-			riderResults.sort( key = RiderResult._getKey )
+			if rankBy == 1:
+				riderResults.sort( key = RiderResult._getAverageSpeedKey )
+			else:
+				riderResults.sort( key = RiderResult._getKey )
 		assignFinishPositions( riderResults )
 		FixRelegations( riderResults )
 		riderResults = tuple( riderResults )

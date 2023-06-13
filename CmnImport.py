@@ -138,8 +138,11 @@ class CmnImportDialog( wx.Dialog ):
 			_('otherwise imported times will be fudged to coincide with the existing race.'),
 			_('(Beware of the Blinovitch Limitation Effect!)'),
 			'',
-			_('Warning: Importing times from another race could corrupt the lap data in this race.'),
-			_('Make a backup and proceed with caution.'),
+			_('If combining races of different lengths, you may want to rank riders by average speed.'),
+			_('(See Race Options.)'),
+			'',
+			_('Warning: Importing times from another race could overwrite the lap data in this race.'),
+			_('Make a backup and proceed with caution!'),
 		]
 		intro = '\n'.join(todoList)
 		

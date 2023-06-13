@@ -23,7 +23,7 @@ import ImageIO
 # Sort sequence by rider status.
 statusSortSeq = Model.Rider.statusSortSeq
 
-brandText = _('Powered by CrossMgr (sites.google.com/site/crossmgrsoftware)')
+brandText = _('Powered by BHPC CrossMgr (https://github.com/kimble4/CrossMgr)')
 def getBrandText():
 	return '{}      {}'.format( brandText, datetime.datetime.now().strftime('%Y/%m/%d %H:%M:%S') )
 
