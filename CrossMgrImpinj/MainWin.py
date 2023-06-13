@@ -908,9 +908,7 @@ class MainWin( wx.Frame ):
 					if d[2] and self.readerDisconnectedWarning:
 						self.readerDisconnectedWarning = False
 					elif not d[2] and not self.readerDisconnectedWarning:
-						print('Reader disconnected!')
 						wx.CallAfter( self.disconnectionWarning )
-						#fixme sound, dialog
 						self.readerDisconnectedWarning = True
 				else:
 					self.impinjMessages.write( message )
@@ -939,8 +937,8 @@ class MainWin( wx.Frame ):
 	
 	def disconnectionWarning( self ):
 		Utils.PlaySound( 'awooga.wav' )
-		with wx.MessageDialog(self, 'RFID tag reader has disconnected!', 'CrossMgrImpinj', style=wx.ICON_WARNING) as dlg:
-			dlg.SetExtendedMessage('Check the connections and power supply.')
+		with wx.MessageDialog(self, 'Lost connection to RFID tag reader!', 'CrossMgrImpinj', style=wx.ICON_WARNING) as dlg:
+			dlg.SetExtendedMessage('Check the connections and power supply.\nYou will need to record lap times manually until the problem is resolved.')
 			dlg.ShowModal()
 
 def disable_stdout_buffering():
