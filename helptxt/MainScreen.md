@@ -7,7 +7,7 @@ The Main Screen is divided into three major areas:
 1. [Recorded](#recorded)
 1. [Tabbed Screens](#screens)
 
-The Expected and Recorded lists are on the left, the Tabbed Screens is the main field.
+The Expected and Recorded lists are on the left, the Tabbed Screens is the main field.  The race clock is shown above the Expected list.
 
 All the areas can be controlled my dragging the "sash" separating the windows.
 

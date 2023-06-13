@@ -162,6 +162,10 @@ class ForecastHistory( wx.Panel ):
 		# Main sizer.
 		bsMain = wx.BoxSizer( wx.VERTICAL )
 		
+		# Race clock
+		self.raceClock = wx.StaticText( self, label='--:--:--', style=wx.ALIGN_CENTRE|wx.ST_NO_AUTORESIZE )
+		self.raceClock.SetFont( wx.Font(40, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.BOLD) )
+		
 		# Put Recorded and Expected in a splitter window.
 		self.splitter = wx.SplitterWindow( self )
 		
@@ -187,6 +191,7 @@ class ForecastHistory( wx.Panel ):
 		self.splitter.SplitHorizontally( self.lgExpected, self.lgHistory, 100 )
 		self.Bind( wx.EVT_SPLITTER_DCLICK, self.doSwapOrientation, self.splitter )
 		
+		bsMain.Add( self.raceClock, flag=wx.EXPAND )
 		bsMain.Add( self.splitter, 1, flag=wx.EXPAND | wx.ALL, border = 4 )
 				
 		self.historyGrid.Reset()
@@ -517,6 +522,16 @@ class ForecastHistory( wx.Panel ):
 			iExpectedTimeCol,
 			[formatTime(getT(e) - tRace) if (e.lap or 0) > 0 else ('[{}]'.format(formatTime(max(0.0, getT(e) - tRace + 0.0000001)))) for e in self.quickExpected]
 		)
+		
+	def updateRaceClock( self ):
+		race = Model.race
+		if race.isUnstarted() or not race:
+			tRace = "--:--:--"
+		elif race.isFinished():
+			tRace = Utils.formatTime(race.lastRaceTime())
+		else:
+			tRace = Utils.formatTime(race.curRaceTime())
+		self.raceClock.SetLabel(tRace)
 	
 	def addGaps( self, recorded ):
 		if not (Model.race and Model.race.enableJChipIntegration):

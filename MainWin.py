@@ -4274,7 +4274,9 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			ChipReader.chipReaderCur.StopListener()
 			self.timer.Stop()
 			return
-
+		
+		self.forecastHistory.updateRaceClock()
+		
 		if race.isUnstarted():
 			status = _('Unstarted')
 		elif race.isRunning():
