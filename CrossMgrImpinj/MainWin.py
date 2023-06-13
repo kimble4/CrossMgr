@@ -279,6 +279,7 @@ class AdvancedSetup( wx.Dialog ):
 		self.EndModal( wx.ID_OK )
 	
 class MainWin( wx.Frame ):
+	
 	def __init__( self, parent, id = wx.ID_ANY, title='', size=(200,200) ):
 		wx.Frame.__init__(self, parent, id, title, size=size)
 
@@ -539,6 +540,8 @@ class MainWin( wx.Frame ):
 		
 		self.SetSizer( self.vbs )
 		self.start()
+		
+		self.readerDisconnectedWarning = True
 
 	def OnAboutBox(self, e):
 			description = """CrossMgrImpinj is an Impinj interface to CrossMgr
@@ -691,6 +694,8 @@ class MainWin( wx.Frame ):
 		self.impinjMessages.clear()
 		self.crossMgrMessages.clear()
 		self.shutdown()
+		
+		self.readerDisconnectedWarning = True
 		
 		self.reset.Enable( True )
 		QuadReg.ResetStats()
@@ -900,6 +905,13 @@ class MainWin( wx.Frame ):
 				if 'state' in d:
 					self.impinjMessages.messageList.SetForegroundColour( wx.BLACK if d[2] else wx.BLACK )
 					self.impinjMessages.messageList.SetBackgroundColour( self.LightGreen if d[2] else self.LightRed )
+					if d[2] and self.readerDisconnectedWarning:
+						self.readerDisconnectedWarning = False
+					elif not d[2] and not self.readerDisconnectedWarning:
+						print('Reader disconnected!')
+						wx.CallAfter( self.disconnectionWarning )
+						#fixme sound, dialog
+						self.readerDisconnectedWarning = True
 				else:
 					self.impinjMessages.write( message )
 					if antennaReadCount is not None:
@@ -924,6 +936,12 @@ class MainWin( wx.Frame ):
 					self.crossMgrMessages.write( message )
 			elif d[0] == 'BackupFile':
 				self.backupFile.SetLabel( d[1] )
+	
+	def disconnectionWarning( self ):
+		Utils.PlaySound( 'awooga.wav' )
+		with wx.MessageDialog(self, 'RFID tag reader has disconnected!', 'CrossMgrImpinj', style=wx.ICON_WARNING) as dlg:
+			dlg.SetExtendedMessage('Check the connections and power supply.')
+			dlg.ShowModal()
 
 def disable_stdout_buffering():
 	fileno = sys.stdout.fileno()
