@@ -239,7 +239,14 @@ class RaceOptionsProperties( wx.Panel ):
 		mplths = wx.BoxSizer( wx.HORIZONTAL )
 		mplths.Add( self.minPossibleLapTime )		
 		mplths.Add( self.minPossibleLapTimeUnit, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
-
+		
+		self.leaderArrivalWarningSecondsLabel = wx.StaticText( self, label=_('Play reminder sound: ') )
+		self.leaderArrivalWarningSeconds = intctrl.IntCtrl( self, min=0, max=3600, allow_none=True, value=10, size=(64,-1), style=wx.ALIGN_RIGHT )
+		self.leaderArrivalWarningSecondsSuffix = wx.StaticText( self, label=_(' seconds before leader is due to arrive.') )
+		lawshs = wx.BoxSizer( wx.HORIZONTAL )
+		lawshs.Add( self.leaderArrivalWarningSeconds )
+		lawshs.Add( self.leaderArrivalWarningSecondsSuffix )
+		
 		self.licenseLinkTemplateLabel = wx.StaticText( self, label=_('License Link HTML Template: ') )
 		self.licenseLinkTemplate = wx.TextCtrl( self, size=(64,-1), style=wx.TE_PROCESS_ENTER )
 		
@@ -274,6 +281,7 @@ class RaceOptionsProperties( wx.Panel ):
 			(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
 			(self.minPossibleLapTimeLabel,0, labelAlign),(mplths,						0, 0),
+			(self.leaderArrivalWarningSecondsLabel, 0, labelAlign), (lawshs,				0, 0),
 			(self.licenseLinkTemplateLabel,0, labelAlign),(self.licenseLinkTemplate,	1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.winAndOut,				1, fieldAlign),
 		]
@@ -303,6 +311,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
 		self.winAndOut.SetValue( race.winAndOut )
 		self.minPossibleLapTime.SetSeconds( race.minPossibleLapTime )
+		self.leaderArrivalWarningSeconds.SetValue( getattr(race, 'leaderArrivalWarningSeconds', 10) )
 		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( getattr(race, 'allCategoriesFinishAfterFastestRidersLastLap', False) )
 		self.autocorrectLapsDefault.SetValue( getattr(race, 'autocorrectLapsDefault', True) )
 		self.highPrecisionTimes.SetValue( getattr(race, 'highPrecisionTimes', False) )
@@ -342,6 +351,7 @@ class RaceOptionsProperties( wx.Panel ):
 		race.showCourseAnimationInHtml = self.showCourseAnimationInHtml.IsChecked()
 		race.winAndOut = self.winAndOut.IsChecked()
 		race.minPossibleLapTime = self.minPossibleLapTime.GetSeconds()
+		race.leaderArrivalWarningSeconds = self.leaderArrivalWarningSeconds.GetValue()
 		race.licenseLinkTemplate = self.licenseLinkTemplate.GetValue().strip()
 	
 #------------------------------------------------------------------------------------------------

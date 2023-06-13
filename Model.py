@@ -1166,6 +1166,7 @@ class Race:
 	isTimeTrial = False
 	isBestNLaps = False
 	minPossibleLapTime = 2.0	# Default to 2 seconds to avoid bounce read lap blowup in timed races.
+	leaderArrivalWarningSeconds = 10
 	
 	showFullNamesInChart = False
 	
