@@ -2075,12 +2075,14 @@ class MainWin( wx.Frame ):
 		def fixBigFloat( f ):
 			if len(f) > 6:
 				try:
-					d = f.split('.')[1]
-					if int(d[0:5]) == 0:  # If the first 5 decimal places are zero, return a single decimal place
-						return '{:.1f}'.format(float(f))
-					else:
-						return '{:.5f}'.format(float(f)).rstrip('0') if len(d) > 5 else f  # Cannot do rstrip('0') if the decimal part is all zeros!
+					d = f.split('.')[1]					# Get decimal part of the number.
+					max_precision = 5
+					if len(d) > max_precision:
+						f = '{val:.{pr}f}'.format(pr=max_precision, val=float(f)).rstrip('0')	# Reformat with a shorter decimal and remove trailing zeros.
+						if f.endswith('.'):
+							f += '0'		# Ensure a zero follows the decimal point (json format spec).
 				except IndexError:
+					# Number does not have a decimal point.
 					pass
 			return f
 			
