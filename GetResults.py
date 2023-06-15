@@ -250,7 +250,7 @@ def _GetResultsCore( category ):
 	isRunning = race.isRunning()
 	isTimeTrial = race.isTimeTrial
 	isBestNLaps = race.isBestNLaps
-	rankBy = getattr(race, 'rankBy', 0)
+	rankBy = getattr(race, 'rankBy', Model.Race.rankByLapsTime)
 	
 	roadRaceFinishTimes = race.roadRaceFinishTimes
 	estimateLapsDownFinishTime = race.estimateLapsDownFinishTime
@@ -610,7 +610,7 @@ def GetNonWaveCategoryResults( category ):
 	isBestNLaps= race.isBestNLaps
 	winAndOut = race.winAndOut
 	highPrecision = Model.highPrecisionTimes()
-	rankBy = getattr(race, 'rankBy', 0)
+	rankBy = getattr(race, 'rankBy', Model.Race.rankByLapsTime)
 	
 	rrCache = {}
 	riderResults = []
@@ -649,7 +649,7 @@ def GetNonWaveCategoryResults( category ):
 	if isTimeTrial and isBestNLaps:
 		riderResults.sort( key=RiderResult._getBestLapsKey )
 	elif winAndOut:	# Make sure we forward-sort the results.  This is required as we assign gaps/pos below and we do not want to use the winAndOut position.
-		if rankBy == 1:
+		if rankBy == Model.Race.rankByAverageSpeed:
 			riderResults.sort( key=RiderResult._getAverageSpeedKey )
 		else:
 			riderResults.sort( key=RiderResult._getKey )
@@ -657,7 +657,7 @@ def GetNonWaveCategoryResults( category ):
 		if category.catType == Model.Category.CatComponent:
 			riderResults.sort( key = RiderResult._getComponentKey )
 		else:
-			if rankBy == 1:
+			if rankBy == Model.Race.rankByAverageSpeed:
 				riderResults.sort( key = RiderResult._getAverageSpeedKey )
 			else:
 				riderResults.sort( key = RiderResult._getKey )
@@ -782,7 +782,7 @@ def GetResultsWithData( category ):
 		elif race.winAndOut:
 			riderResults.sort( key = RiderResult._getWinAndOutKey )
 		else:
-			if rankBy == 1:
+			if rankBy == Model.Race.rankByAverageSpeed:
 				riderResults.sort( key = RiderResult._getAverageSpeedKey )
 			else:
 				riderResults.sort( key = RiderResult._getKey )

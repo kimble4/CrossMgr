@@ -206,7 +206,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.estimateLapsDownFinishTime = wx.CheckBox( self, label=_('Estimate Laps Down Finish Time (requires Road Race Finish Times)') )
 		
 		self.rankByLabel = wx.StaticText( self, label=_('Rank finishers by: ') )
-		self.rankBy = wx.Choice( self, choices=['Number of laps, then finish time', 'Average speed'] )
+		self.rankBy = wx.Choice( self, choices=Model.Race.rankByNames )
 		self.rankBy.SetSelection( 0 )
 		self.rankBySizer = wx.BoxSizer ( wx.HORIZONTAL )
 		self.rankBySizer.Add( self.rankBy )
@@ -317,7 +317,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.highPrecisionTimes.SetValue( getattr(race, 'highPrecisionTimes', False) )
 		self.roadRaceFinishTimes.SetValue( race.roadRaceFinishTimes )
 		self.estimateLapsDownFinishTime.SetValue( race.estimateLapsDownFinishTime )
-		self.rankBy.SetSelection( getattr(race, 'rankBy', 0) )
+		self.rankBy.SetSelection( getattr(race, 'rankBy', Model.Race.rankByLapsTime) )
 		self.setNoDataDNS.SetValue( getattr(race, 'setNoDataDNS', False) )
 		if race.rule80MinLapCount == 1:
 			self.rule80MinLapCount1.SetValue( True )

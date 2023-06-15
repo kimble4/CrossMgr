@@ -3167,7 +3167,8 @@ function RefreshResultsTable()
 					_('Winner') + ': ' + tFinishStr + ' ' + _('at') + ' ' +
 					FormatSpeed(parseFloat(d['speed'].split(' ')[0]), cd.distanceUnit ? cd.distanceUnit : 'km', true) + ', ' +
 					starters + ' ' + _('starters') + ', ' +
-					finishers + ' ' + _('finishers') + ' (' + finishersPercent.toFixed(1) + '%)';
+					finishers + ' ' + _('finishers') + ' (' + finishersPercent.toFixed(1) + '%)' +
+					', ' +  _('ranked by') + ' ' + rankFinishersBy;
 				catTitleTD.innerHTML = '<span class="biggerFont">' + catName +
 						(raceIsRunning ? " (" + _('race in progress') + ')' : '') + '</span>' +
 						'<br/><span class="smallfont">' + catStr + '</span>';

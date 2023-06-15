@@ -1108,6 +1108,11 @@ class NumTimeInfo:
 		return self.info.get( num, {} )
 		
 class Race:
+	#rankBy algorithms
+	rankByLapsTime = 0
+	rankByAverageSpeed = 1
+	rankByNames = ['number of laps then finish time', 'average speed']
+	
 	finisherStatusList = [Rider.Finisher, Rider.Pulled]
 	finisherStatusSet = set( finisherStatusList )
 	

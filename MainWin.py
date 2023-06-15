@@ -1926,6 +1926,7 @@ class MainWin( wx.Frame ):
 		payload['raceIsRunning']	= race.isRunning()
 		payload['raceIsUnstarted']	= race.isUnstarted()
 		payload['raceIsFinished']	= race.isFinished()
+		payload['rankFinishersBy']	= Model.Race.rankByNames[getattr(race, 'rankBy', Model.Race.rankByLapsTime)]
 		payload['lapDetails']		= GetLapDetails() if not race.hideDetails else {}
 		payload['hideDetails']		= race.hideDetails
 		payload['showCourseAnimation'] = race.showCourseAnimationInHtml
