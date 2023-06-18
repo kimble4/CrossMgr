@@ -173,24 +173,38 @@ class Impinj2JChip:
 			self.messageQ.put( ('Impinj2JChip', 'Start sending data to CrossMgr...') )
 			self.messageQ.put( ('Impinj2JChip', 'Waiting for RFID reader data...') )
 			while self.checkKeepGoing():
-				# Get all the entries from the receiver and forward them to CrossMgr.
-				d = self.dataQ.get()
-				
-				if d == 'shutdown':
-					self.keepGoing = False
-					break
-				
-				# Expect message if the form [tag, time].
-				message = formatMessage( d[0], d[1] )
 				try:
-					sock.sendall( message.encode() )
-					self.tagCount += 1
-					self.messageQ.put( ('Impinj2JChip', 'Forwarded {}: {}'.format(self.tagCount, message[:-1])) )
-				except Exception as e:
-					self.dataQ.put( d )	# Put the data back on the queue for resend.
-					self.messageQ.put( ('Impinj2JChip', 'CrossMgr error: {}.'.format(e)) )
-					self.messageQ.put( ('Impinj2JChip', 'Attempting to reconnect...') )
-					break
+					# Get all the entries from the receiver and forward them to CrossMgr.
+					d = self.dataQ.get(timeout=60)
+					
+					if d == 'shutdown':
+						self.keepGoing = False
+						break
+					
+					# Expect message if the form [tag, time].
+					message = formatMessage( d[0], d[1] )
+					try:
+						sock.sendall( message.encode() )
+						self.tagCount += 1
+						self.messageQ.put( ('Impinj2JChip', 'Forwarded {}: {}'.format(self.tagCount, message[:-1])) )
+					except Exception as e:
+						self.dataQ.put( d )	# Put the data back on the queue for resend.
+						self.messageQ.put( ('Impinj2JChip', 'CrossMgr error: {}.'.format(e)) )
+						self.messageQ.put( ('Impinj2JChip', 'Attempting to reconnect...') )
+						break
+				except Empty:
+					# Timeout getting data - resend the current time as a keepalive.
+					dBase = datetime.datetime.now()
+					message = 'GT0{} date={}{}'.format(
+						dBase.strftime('%H%M%S%f'),
+						dBase.strftime('%Y%m%d'),
+						CR)
+					self.messageQ.put( ('Impinj2JChip', message[:-1]) )
+					try:
+						sock.sendall( message.encode() )
+					except Exception as e:
+						self.messageQ.put( ('Impinj2JChip', 'CrossMgr exception: {}.'.format(e)) )
+						break
 		
 			sock.close()
 			sock = None

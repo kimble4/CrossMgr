@@ -252,6 +252,9 @@ class Impinj:
 		# Get the connected antennas.
 		self.getConnectedAntennas()
 		
+		# Get the GPI state.
+		self.getGpiState()
+		
 		# Configure a periodic Keepalive message.
 		# Change receiver sensitivity (if specified).  This value is reader dependent.
 		receiverSensitivityParameter = []
@@ -353,7 +356,16 @@ class Impinj:
 			self.connectedAntennas = [p.AntennaID for p in response.Parameters
 				if isinstance(p, AntennaProperties_Parameter) and p.AntennaConnected and p.AntennaID <= 4]
 		return success
-		
+	
+	def getGpiState( self ):
+		success, response = self.sendCommand( GET_READER_CONFIG_Message(RequestedData=GetReaderConfigRequestedData.GPIPortCurrentState) )
+		if success:
+			self.gpiState = {}
+			for p in response.Parameters:
+				if isinstance(p, GPIPortCurrentState_Parameter) and p.GPIPortNum <= 4:
+					self.gpiState[p.GPIPortNum] = p.State
+		return success
+	
 	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, quadReg=False ):
 		lrt = self.lastReadTime.get(tagID, tOld)
 		if discoveryTime > lrt:
@@ -517,9 +529,10 @@ class Impinj:
 				# Check on the antenna connection status.
 				#
 				if (t - tAntennaConnectedLast).total_seconds() >= antennaCheckInterval:
-					self.messageQ.put( ('Impinj', 'Checking Antenna Connections...') )
+					self.messageQ.put( ('Impinj', 'Checking antennas and GPI states...') )
 					try:
 						GET_READER_CONFIG_Message(RequestedData=GetReaderConfigRequestedData.AntennaProperties).send( self.readerSocket )
+						GET_READER_CONFIG_Message(RequestedData=GetReaderConfigRequestedData.GPIPortCurrentState).send( self.readerSocket )
 						with tAntennaConnectedLastLock:
 							tAntennaConnectedLast = t
 					except Exception as e:
@@ -527,6 +540,7 @@ class Impinj:
 						self.readerSocket.close()
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
+					
 				
 				#------------------------------------------------------------
 				# Messages from the reader.
@@ -579,13 +593,34 @@ class Impinj:
 				# Reader config (to get antenna connection status).
 				#
 				if isinstance(response, GET_READER_CONFIG_RESPONSE_Message):
-					self.connectedAntennas = sorted( p.AntennaID for p in response.Parameters
-						if isinstance(p, AntennaProperties_Parameter) and p.AntennaConnected and p.AntennaID <= 4 )
-					self.messageQ.put( ('Impinj', 'Connected antennas: {}'.format(','.join(str(a) for a in self.connectedAntennas)) ) )
-					self.statusCB(
-						connectedAntennas = self.connectedAntennas,
-						timeCorrection = self.timeCorrection,
-					)
+					gotAntennaData = False
+					connectedAntennas = []
+					gpiState = {}
+					for p in response.Parameters:
+						if isinstance(p, AntennaProperties_Parameter) and p.AntennaID <= 4:
+							gotAntennaData = True
+							if p.AntennaConnected:
+								connectedAntennas.append( p.AntennaID )
+						
+						if isinstance(p, GPIPortCurrentState_Parameter) and p.GPIPortNum <= 4:
+							gpiState[p.GPIPortNum] = p.State
+					
+					if gotAntennaData:
+						self.connectedAntennas = sorted( connectedAntennas )
+						self.messageQ.put( ('Impinj', 'Connected antennas: {}'.format(','.join(str(a) for a in self.connectedAntennas)) ) )
+						self.statusCB(
+							connectedAntennas = self.connectedAntennas,
+							timeCorrection = self.timeCorrection,
+						)
+						
+					if gpiState:
+						self.gpiState = gpiState
+						self.messageQ.put( ('Impinj', 'GPI state: {}'.format(','.join(str(self.gpiState[key]) for key in sorted(self.gpiState.keys())) ) ) )
+						self.statusCB(
+							gpiState = self.gpiState,
+							timeCorrection = self.timeCorrection,
+						)
+					
 					continue
 				
 				#------------------------------------------------------------

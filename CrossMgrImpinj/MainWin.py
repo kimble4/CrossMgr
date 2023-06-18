@@ -239,6 +239,7 @@ class AdvancedSetup( wx.Dialog ):
 		
 		row += 1
 		bs.Add( wx.StaticLine(self), pos=(row, 0), span=(1, 3), flag=wx.EXPAND )
+		
 
 		row += 1
 		self.restoreDefaultButton = wx.Button( self, label='Restore Defaults' )
@@ -399,6 +400,8 @@ class MainWin( wx.Frame ):
 		self.antennaLabels = []
 		self.antennas = []
 		self.antennaConnected = []
+		self.powerSources = []
+		self.gpiStates = []
 
 		gs.Add( wx.StaticText(self, label=''), flag=wx.EXPAND )
 		for i in range(4):
@@ -408,6 +411,7 @@ class MainWin( wx.Frame ):
 		gs.Add( wx.StaticText(self, label='Antenna Ports:'), flag=wx.ALIGN_RIGHT )
 		for i in range(4):
 			cb = wx.CheckBox( self, label='')
+			cb.SetToolTip( wx.ToolTip('Use \'ANT' + str(i+1) + '\'') )
 			if i < 2:
 				cb.SetValue( True )
 			cb.Bind( wx.EVT_CHECKBOX, lambda x: self.getAntennaStr() )
@@ -417,15 +421,34 @@ class MainWin( wx.Frame ):
 		self.antennaConnectedChar = '\u2795'
 		self.antennaUnconnectedChar = '\u274C'
 		self.antennaInactiveChar = ' '
+		self.powerChars = ['\U0001F50C', '\U0001F50B', '\U0001F50B', '\U0001F50B',]
+		self.powerTooltips = ['AC power', 'DC power source 1', 'DC power source 2', 'DC power source 3']
 		self.connected = hl.HyperLinkCtrl( self, label='Connected:', style=wx.ALIGN_RIGHT )
 		self.connected.AutoBrowse( False )
 		self.connected.EnableRollover( True )
-		self.connected.SetToolTip( wx.ToolTip("Check Antenna Connections") )
+		self.connected.SetToolTip( wx.ToolTip('Check Antenna Connections') )
 		self.connected.Bind( hl.EVT_HYPERLINK_LEFT, self.doUpdateAntennaConnection )
 		gs.Add( self.connected, flag=wx.EXPAND )
 		for i in range(4):
 			self.antennaConnected.append( wx.StaticText(self, label=self.antennaInactiveChar, style=wx.ALIGN_CENTRE) )
 			gs.Add( self.antennaConnected[-1], flag=wx.EXPAND )
+			
+		monitorText = wx.StaticText( self, label='Monitor GPIs:', style=wx.ALIGN_RIGHT )
+		monitorText.SetToolTip( wx.ToolTip('Monitor the tag reader\'s power sources using the tag reader\'s GPIO port.  See the Impinj documentation for wiring details.  The first input is assumed to be AC power.'))
+		gs.Add( monitorText )
+		for i in range(4):
+			cb = wx.CheckBox( self, label='')
+			cb.SetToolTip( wx.ToolTip('\'User IN' + str(i+1) + '\' monitors a power source') )
+			if i < 1:
+				cb.SetValue( True )
+			cb.Bind( wx.EVT_CHECKBOX, lambda x: self.getPowerStr() )
+			gs.Add( cb, flag=wx.ALIGN_CENTER )
+			self.powerSources.append( cb )
+		gs.Add(wx.StaticText( self, label='', style=wx.ALIGN_RIGHT)  )
+		for i in range(4):
+			self.gpiStates.append( wx.StaticText(self, label=self.antennaInactiveChar, style=wx.ALIGN_CENTRE) )
+			gs.Add( self.gpiStates[-1], flag=wx.EXPAND )
+			
 		
 		hb = wx.BoxSizer()
 		hb.Add( gs )
@@ -518,13 +541,20 @@ class MainWin( wx.Frame ):
 		#------------------------------------------------------------------------------------------------
 		# Add messages
 		#
+		trbs = wx.BoxSizer(wx.VERTICAL)
+		trbs.Add( setFont(bigFont,wx.StaticText( self, label='Communications with tag reader:')), flag=wx.ALIGN_CENTER )
 		self.impinjMessagesText = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.HSCROLL, size=(-1,400) )
-		fgs.Add( self.impinjMessagesText, flag=wx.EXPAND, proportion=2 )
+		trbs.Add( self.impinjMessagesText, flag=wx.EXPAND, proportion=2)
 		self.impinjMessages = MessageManager( self.impinjMessagesText )
+		fgs.Add(trbs, flag=wx.EXPAND, proportion=2)
 		
+		cmbs = wx.BoxSizer(wx.VERTICAL)
+		cmbs.Add( setFont(bigFont,wx.StaticText( self, label='Communications with CrossMgr:')), flag=wx.ALIGN_CENTER )
 		self.crossMgrMessagesText = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.HSCROLL, size=(-1,400) )
-		fgs.Add( self.crossMgrMessagesText, flag=wx.EXPAND, proportion=2 )
+		cmbs.Add( self.crossMgrMessagesText, flag=wx.EXPAND, proportion=2 )
 		self.crossMgrMessages = MessageManager( self.crossMgrMessagesText )
+		fgs.Add(cmbs, flag=wx.EXPAND, proportion=2)
+		
 		self.fgs = fgs
 		
 		#------------------------------------------------------------------------------------------------
@@ -575,14 +605,33 @@ class MainWin( wx.Frame ):
 
 	def readerStatusCB( self, **kwargs ):
 		# As this is called from another thread, make sure all UI updates are done from CallAfter.
-		connectedAntennas = set(kwargs.get( 'connectedAntennas', [] ))
-		for i in range(4):
-			if self.antennas[i].GetValue():
-				c = self.antennaConnectedChar if (i+1) in connectedAntennas else self.antennaUnconnectedChar
-			else:
-				c = self.antennaInactiveChar
-			wx.CallAfter( self.antennaConnected[i].SetLabel, c )
-		wx.CallAfter( self.connected.Enable, True )
+		if 'connectedAntennas' in kwargs:
+			previousAntennas = getattr( self, 'connectedAntennas', None)
+			self.connectedAntennas = set(kwargs.get( 'connectedAntennas', [] ))
+			for i in range(4):
+				if self.antennas[i].GetValue():
+					c = self.antennaConnectedChar if (i+1) in self.connectedAntennas else self.antennaUnconnectedChar
+					if previousAntennas is not None and (i+1) in previousAntennas and (i+1) not in self.connectedAntennas:
+						wx.CallAfter( self.antennaDisconnectionWarning, antenna=i+1 )
+				else:
+					c = self.antennaInactiveChar
+				wx.CallAfter( self.antennaConnected[i].SetLabel, c )
+			wx.CallAfter( self.connected.Enable, True )
+		if 'gpiState' in kwargs:
+			previousState = getattr( self, 'gpiState', None )
+			self.gpiState = kwargs.get( 'gpiState', {} )
+			for i in range(4):
+				if self.gpiState.get(i+1) is not None:
+					c = self.powerChars[i] if self.gpiState[i+1] else ('\u26A0' if self.powerSources[i].GetValue() else ' ')
+					t = 'available' if self.gpiState[i+1] else 'disconnected'
+					if previousState is not None and self.powerSources[i].GetValue() and self.gpiState[i+1] == 0 and previousState[i+1] == 1:
+						wx.CallAfter( self.powerWarning, source=i )
+				else:
+					c = '?'
+					t = 'unknown'
+				wx.CallAfter( self.gpiStates[i].SetLabel, c )
+				wx.CallAfter( self.gpiStates[i].SetToolTip, self.powerTooltips[i] + ' ' + t )
+				
 
 	def refreshMethodName( self ):
 		if Impinj.ProcessingMethod == 0 and QuadReg.samplesTotal:
@@ -825,6 +874,15 @@ class MainWin( wx.Frame ):
 		antennas = set( int(a) for a in s.split() )
 		for i in range(4):
 			self.antennas[i].SetValue( (i+1) in antennas )
+			
+	def getPowerStr( self ):
+		selectedGPIs = [ i for i in range(4) if self.powerSources[i].GetValue() ]
+		return ' '.join( '{}'.format(a+1) for a in selectedGPIs )
+	
+	def setPowerStr( self, s ):
+		selectedGPIs = set( int(a) for a in s.split() )
+		for i in range(4):
+			self.powerSources[i].SetValue( (i+1) in selectedGPIs )
 	
 	def writeOptions( self ):
 		self.config.Write( 'CrossMgrHost', self.getCrossMgrHost() )
@@ -833,6 +891,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'ImpinjAddr', self.impinjHost.GetAddress() )
 		self.config.Write( 'ImpinjPort', '{}'.format(ImpinjInboundPort) )
 		self.config.Write( 'Antennas', self.getAntennaStr() )
+		self.config.Write( 'MonitorPowerGPIs', self.getPowerStr() )
 		
 		self.config.Write( 'ConnectionTimeoutSeconds', '{}'.format(Impinj.ConnectionTimeoutSeconds) )
 		self.config.Write( 'KeepaliveSeconds', '{}'.format(Impinj.KeepaliveSeconds) )
@@ -857,6 +916,7 @@ class MainWin( wx.Frame ):
 		self.impinjHostName.SetValue( self.config.Read('ImpinjHostName', ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix)[len(ImpinjHostNamePrefix):-len(ImpinjHostNameSuffix)] )
 		self.impinjHost.SetValue( self.config.Read('ImpinjAddr', '0.0.0.0') )
 		self.setAntennaStr( self.config.Read('Antennas', '1 2 3 4') )
+		self.setPowerStr( self.config.Read('MonitorPowerGPIs', '') )
 		Utils.playBell = (self.config.Read('PlaySounds', 'True').upper()[:1] == 'T')
 		
 		Impinj.ConnectionTimeoutSeconds = int(self.config.Read( 'ConnectionTimeoutSeconds',
@@ -908,7 +968,7 @@ class MainWin( wx.Frame ):
 					if d[2] and self.readerDisconnectedWarning:
 						self.readerDisconnectedWarning = False
 					elif not d[2] and not self.readerDisconnectedWarning:
-						wx.CallAfter( self.disconnectionWarning )
+						wx.CallAfter( self.readerDisconnectionWarning )
 						self.readerDisconnectedWarning = True
 				else:
 					self.impinjMessages.write( message )
@@ -935,11 +995,27 @@ class MainWin( wx.Frame ):
 			elif d[0] == 'BackupFile':
 				self.backupFile.SetLabel( d[1] )
 	
-	def disconnectionWarning( self ):
+	def readerDisconnectionWarning( self ):
 		Utils.PlaySound( 'awooga.wav' )
-		with wx.MessageDialog(self, 'Lost connection to RFID tag reader!', 'CrossMgrImpinj', style=wx.ICON_WARNING) as dlg:
+		with wx.MessageDialog(self, 'Lost connection to RFID tag reader!', 'CrossMgrImpinj @' + datetime.datetime.now().strftime('%H:%M:%S'), style=wx.ICON_WARNING) as dlg:
 			dlg.SetExtendedMessage('Check the connections and power supply.\nYou will need to record lap times manually until the problem is resolved.')
 			dlg.ShowModal()
+	
+	
+	def antennaDisconnectionWarning( self, antenna=None ):
+		Utils.PlaySound( 'awooga.wav' )
+		ant = 'Antenna ' + str(antenna) if antenna is not None else 'An antenna'
+		with wx.MessageDialog(self, ant + ' has disconnected!', 'CrossMgrImpinj @' + datetime.datetime.now().strftime('%H:%M:%S'), style=wx.ICON_WARNING) as dlg:
+			dlg.SetExtendedMessage('Check the coaxial cable connections.\nYou may need to record lap times manually until the problem is resolved.')
+			dlg.ShowModal()
+			
+	def powerWarning( self, source=None ):
+		Utils.PlaySound( 'awooga.wav' )
+		ps = '\'' + self.powerTooltips[source] + '\'' if source is not None else 'A power source'
+		with wx.MessageDialog(self, 'GPI monitorning: ' + ps + ' has disconnected!', 'CrossMgrImpinj @' + datetime.datetime.now().strftime('%H:%M:%S'), style=wx.ICON_WARNING) as dlg:
+			dlg.SetExtendedMessage('Check the connections and power supply.\nThe tag reader is still operating on another source of power. (For now!)')
+			dlg.ShowModal()
+
 
 def disable_stdout_buffering():
 	fileno = sys.stdout.fileno()
