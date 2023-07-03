@@ -407,8 +407,10 @@ class MainWin( wx.Frame ):
 		for i in range(4):
 			self.antennaLabels.append( wx.StaticText(self, label='{}'.format(i+1), style=wx.ALIGN_CENTRE) )
 			gs.Add( self.antennaLabels[-1], flag=wx.EXPAND )
-
-		gs.Add( wx.StaticText(self, label='Antenna Ports:'), flag=wx.ALIGN_RIGHT )
+		
+		apText = wx.StaticText(self, label='Antenna Ports:')
+		apText.SetToolTip( wx.ToolTip('Select the antenna ports to use') )
+		gs.Add( apText, flag=wx.ALIGN_RIGHT )
 		for i in range(4):
 			cb = wx.CheckBox( self, label='')
 			cb.SetToolTip( wx.ToolTip('Use \'ANT' + str(i+1) + '\'') )
@@ -417,11 +419,18 @@ class MainWin( wx.Frame ):
 			cb.Bind( wx.EVT_CHECKBOX, lambda x: self.getAntennaStr() )
 			gs.Add( cb, flag=wx.ALIGN_CENTER )
 			self.antennas.append( cb )
-
-		self.antennaConnectedChar = '\u2795'
-		self.antennaUnconnectedChar = '\u274C'
-		self.antennaInactiveChar = ' '
-		self.powerChars = ['\U0001F50C', '\U0001F50B', '\U0001F50B', '\U0001F50B',]
+		
+		self.antennaIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'antenna.png') )
+		self.warningIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'warning.png') )
+		acPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'ac_power.png') )
+		dcPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'dc_power.png') )
+		self.unmonitoredIcon = wx.Bitmap(32, 32)
+		dc = wx.MemoryDC(self.unmonitoredIcon)
+		dc.SetBackground(wx.Brush('black'))
+		dc.Clear()
+		del dc
+		self.unmonitoredIcon.SetMaskColour('black')
+		self.powerIcons = [acPowerIcon, dcPowerIcon, dcPowerIcon, dcPowerIcon ]
 		self.powerTooltips = ['AC power', 'DC power source 1', 'DC power source 2', 'DC power source 3']
 		self.connected = hl.HyperLinkCtrl( self, label='Connected:', style=wx.ALIGN_RIGHT )
 		self.connected.AutoBrowse( False )
@@ -430,15 +439,15 @@ class MainWin( wx.Frame ):
 		self.connected.Bind( hl.EVT_HYPERLINK_LEFT, self.doUpdateAntennaConnection )
 		gs.Add( self.connected, flag=wx.EXPAND )
 		for i in range(4):
-			self.antennaConnected.append( wx.StaticText(self, label=self.antennaInactiveChar, style=wx.ALIGN_CENTRE) )
+			self.antennaConnected.append( wx.BitmapButton( self, bitmap=self.unmonitoredIcon ) )
 			gs.Add( self.antennaConnected[-1], flag=wx.EXPAND )
 			
-		monitorText = wx.StaticText( self, label='Monitor GPIs:', style=wx.ALIGN_RIGHT )
+		monitorText = wx.StaticText( self, label='Power sources:', style=wx.ALIGN_RIGHT )
 		monitorText.SetToolTip( wx.ToolTip('Monitor the tag reader\'s power sources using the tag reader\'s GPIO port.  See the Impinj documentation for wiring details.  The first input is assumed to be AC power.'))
 		gs.Add( monitorText )
 		for i in range(4):
 			cb = wx.CheckBox( self, label='')
-			cb.SetToolTip( wx.ToolTip('\'User IN' + str(i+1) + '\' monitors a power source') )
+			cb.SetToolTip( wx.ToolTip('Monitor GPIO pin \'User IN' + str(i+1) + '\' for status of ' + self.powerTooltips[i]) )
 			if i < 1:
 				cb.SetValue( True )
 			cb.Bind( wx.EVT_CHECKBOX, lambda x: self.getPowerStr() )
@@ -446,7 +455,7 @@ class MainWin( wx.Frame ):
 			self.powerSources.append( cb )
 		gs.Add(wx.StaticText( self, label='', style=wx.ALIGN_RIGHT)  )
 		for i in range(4):
-			self.gpiStates.append( wx.StaticText(self, label=self.antennaInactiveChar, style=wx.ALIGN_CENTRE) )
+			self.gpiStates.append( wx.BitmapButton( self, bitmap=self.unmonitoredIcon ) )
 			gs.Add( self.gpiStates[-1], flag=wx.EXPAND )
 			
 		
@@ -609,27 +618,26 @@ class MainWin( wx.Frame ):
 			previousAntennas = getattr( self, 'connectedAntennas', None)
 			self.connectedAntennas = set(kwargs.get( 'connectedAntennas', [] ))
 			for i in range(4):
-				if self.antennas[i].GetValue():
-					c = self.antennaConnectedChar if (i+1) in self.connectedAntennas else self.antennaUnconnectedChar
-					if previousAntennas is not None and (i+1) in previousAntennas and (i+1) not in self.connectedAntennas:
-						wx.CallAfter( self.antennaDisconnectionWarning, antenna=i+1 )
-				else:
-					c = self.antennaInactiveChar
-				wx.CallAfter( self.antennaConnected[i].SetLabel, c )
+				img = self.antennaIcon if (i+1) in self.connectedAntennas else (self.warningIcon if self.antennas[i].GetValue() else self.unmonitoredIcon )
+				t = 'Antenna ' + str(i+1) + (' connected' if (i+1) in self.connectedAntennas else (' disconnected' if self.antennas[i].GetValue() else ' not used') )
+				if previousAntennas is not None and (i+1) in previousAntennas and (i+1) not in self.connectedAntennas:
+					wx.CallAfter( self.antennaDisconnectionWarning, antenna=i+1 )
+				wx.CallAfter( self.antennaConnected[i].SetBitmap, img )
+				wx.CallAfter( self.antennaConnected[i].SetToolTip, t )
 			wx.CallAfter( self.connected.Enable, True )
 		if 'gpiState' in kwargs:
 			previousState = getattr( self, 'gpiState', None )
 			self.gpiState = kwargs.get( 'gpiState', {} )
 			for i in range(4):
 				if self.gpiState.get(i+1) is not None:
-					c = self.powerChars[i] if self.gpiState[i+1] else ('\u26A0' if self.powerSources[i].GetValue() else ' ')
+					img = self.powerIcons[i] if self.gpiState[i+1] else (self.warningIcon if self.powerSources[i].GetValue() else self.unmonitoredIcon )
 					t = 'available' if self.gpiState[i+1] else 'disconnected'
 					if previousState is not None and self.powerSources[i].GetValue() and self.gpiState[i+1] == 0 and previousState[i+1] == 1:
 						wx.CallAfter( self.powerWarning, source=i )
 				else:
-					c = '?'
+					img = self.unmonitoredIcon
 					t = 'unknown'
-				wx.CallAfter( self.gpiStates[i].SetLabel, c )
+				wx.CallAfter( self.gpiStates[i].SetBitmap, img )
 				wx.CallAfter( self.gpiStates[i].SetToolTip, self.powerTooltips[i] + ' ' + t )
 				
 
