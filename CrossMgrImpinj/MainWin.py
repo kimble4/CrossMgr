@@ -1037,7 +1037,7 @@ class MainWin( wx.Frame ):
 	def powerWarning( self, source=None ):
 		Utils.PlaySound( 'awooga.wav' )
 		ps = '\'' + self.powerTooltips[source] + '\'' if source is not None else 'A power source'
-		with wx.MessageDialog(self, 'GPI monitorning: ' + ps + ' has disconnected!', 'CrossMgrImpinj @' + datetime.datetime.now().strftime('%H:%M:%S'), style=wx.ICON_WARNING) as dlg:
+		with wx.MessageDialog(self, ps + ' has disconnected!', 'CrossMgrImpinj @' + datetime.datetime.now().strftime('%H:%M:%S'), style=wx.ICON_WARNING) as dlg:
 			dlg.SetExtendedMessage('Check the connections and power supply.\nThe tag reader is still operating on another source of power. (For now!)')
 			dlg.ShowModal()
 
