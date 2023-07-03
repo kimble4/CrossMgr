@@ -401,6 +401,7 @@ class MainWin( wx.Frame ):
 		self.antennas = []
 		self.antennaConnected = []
 		self.powerSources = []
+		self.seenPower = [False, False, False, False]
 		self.gpiStates = []
 
 		gs.Add( wx.StaticText(self, label=''), flag=wx.EXPAND )
@@ -424,7 +425,7 @@ class MainWin( wx.Frame ):
 		self.warningIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'warning.png') )
 		acPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'ac_power.png') )
 		dcPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'dc_power.png') )
-		self.unmonitoredIcon = wx.Bitmap(32, 32)
+		self.unmonitoredIcon = wx.Bitmap(26, 26)
 		dc = wx.MemoryDC(self.unmonitoredIcon)
 		dc.SetBackground(wx.Brush('black'))
 		dc.Clear()
@@ -442,7 +443,7 @@ class MainWin( wx.Frame ):
 			self.antennaConnected.append( wx.BitmapButton( self, bitmap=self.unmonitoredIcon ) )
 			gs.Add( self.antennaConnected[-1], flag=wx.EXPAND )
 			
-		monitorText = wx.StaticText( self, label='Power sources:', style=wx.ALIGN_RIGHT )
+		monitorText = wx.StaticText( self, label='Monitor power:', style=wx.ALIGN_RIGHT )
 		monitorText.SetToolTip( wx.ToolTip('Monitor the tag reader\'s power sources using the tag reader\'s GPIO port.  See the Impinj documentation for wiring details.  The first input is assumed to be AC power.'))
 		gs.Add( monitorText )
 		for i in range(4):
@@ -629,14 +630,28 @@ class MainWin( wx.Frame ):
 			previousState = getattr( self, 'gpiState', None )
 			self.gpiState = kwargs.get( 'gpiState', {} )
 			for i in range(4):
-				if self.gpiState.get(i+1) is not None:
-					img = self.powerIcons[i] if self.gpiState[i+1] else (self.warningIcon if self.powerSources[i].GetValue() else self.unmonitoredIcon )
-					t = 'available' if self.gpiState[i+1] else 'disconnected'
-					if previousState is not None and self.powerSources[i].GetValue() and self.gpiState[i+1] == 0 and previousState[i+1] == 1:
-						wx.CallAfter( self.powerWarning, source=i )
+				if self.powerSources[i].GetValue():
+					if self.gpiState.get(i+1) is not None:
+						if self.gpiState[i+1]:
+							self.seenPower[i] = True
+							img = self.powerIcons[i]
+							t = 'available'
+						else:
+							if self.seenPower[i]:
+								img = self.warningIcon
+								t = 'disconnected'
+							else:
+								img = self.unmonitoredIcon
+								t = 'unavailable'
+						if previousState is not None and self.powerSources[i].GetValue() and self.gpiState[i+1] == 0 and previousState[i+1] == 1:
+							wx.CallAfter( self.powerWarning, source=i )
+					else:
+						img = self.unmonitoredIcon
+						t = 'unknown'
 				else:
+					self.seenPower[i] = False
 					img = self.unmonitoredIcon
-					t = 'unknown'
+					t = 'unmonitored'
 				wx.CallAfter( self.gpiStates[i].SetBitmap, img )
 				wx.CallAfter( self.gpiStates[i].SetToolTip, self.powerTooltips[i] + ' ' + t )
 				
@@ -752,6 +767,8 @@ class MainWin( wx.Frame ):
 		self.crossMgrMessages.clear()
 		self.shutdown()
 		
+		for i in self.seenPower:
+			self.seenPower[i] = False
 		self.readerDisconnectedWarning = True
 		
 		self.reset.Enable( True )
