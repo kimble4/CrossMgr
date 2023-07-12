@@ -147,6 +147,24 @@ For time trial courses that are not multi-lap (eg. out-and-back), the __Bib Time
 
 You can switch between __Time Trial__ mode and __Bib Time__ mode at any time.
 
+### Criterium Mode
+
+__Criterium__ mode gives you buttons for telling CrossMgr when a Criterium race is due to finish.  These buttons have no effect unless 'Criterium' is selected in __Race options__ under [Properties][].
+
+CrossMgr cannot determine which is the last lap of a criterium on its own, as it cannot determin exactly when the leader will cross the finish line until after they have done so.  As such, it is up to the race organiser to work out whether the leader gets the bell and adjust the race duration in CrossMgr accordingly.
+
+The normal approach is to set the race duration to something significantly longer than the nominal duration of the race to allow for the extra lap(s), and then edit this to the correct value (next whole minute after their last lap time) after the leader has finished.
+
+These buttons automate the process, by telling CrossMgr when the leader has been given the bell (or the chequered flag).
+
+Click __Leader on Bell Lap__ after the leader has been given the bell, _and the respective lap time has been recorded in CrossMgr_.  The race duration will automatically be changed when their next lap time is recorded.
+
+The __Normal lap__ button undoes this setting, and restores the original race duration.
+
+Note that the __Leader has Finished__ button adjusts the race duration according to the leader's last lap time - it does not finish the race.
+
+
+
 ## Race Information
 
 Field|Description

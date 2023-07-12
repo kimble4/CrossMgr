@@ -1129,7 +1129,7 @@ class Race:
 	automaticManual = 0
 	
 	isChangedFlag = False
-	isTimeTrial = False
+
 	roadRaceFinishTimes = False
 	estimateLapsDownFinishTime = False
 	
@@ -1167,6 +1167,7 @@ class Race:
 	geoTrack = None
 	
 	groupByStartWave = True
+	isCriterium = False
 	winAndOut = False
 	isTimeTrial = False
 	isBestNLaps = False
@@ -1225,6 +1226,13 @@ class Race:
 	googleMapsApiKey = ''
 	
 	#--------------------------------------
+	
+	# Criterium status
+	CritFinishLap = 0
+	CritBellLap = 1
+	CritNormalLap = 2
+	critStatusNames = ['Finished', 'Bell Lap', 'Normal Lap']
+	critStatus = CritNormalLap
 	
 	def __init__( self ):
 		self.reset()
@@ -1475,6 +1483,18 @@ class Race:
 					self.getRider(num).addTime( t )
 			else:
 				self.getRider(num).addTime( t )
+		
+		#fixme criterium finish
+		if self.isCriterium and self.critStatus == Race.CritBellLap:
+			if num == self.getLeader():
+				print('Criterium leader ' + str(num) + ' finishing at ' + str(t))
+				self.critStatus = Race.CritFinishLap
+				# Store the original race minutes
+				self.critMinutes = self.minutes
+				# Set race minutes to next whole minute
+				self.minutes = int(t/60.0) + 1
+				print('Race minutes changed to: ' + str(self.minutes) + ' (' + str(self.minutes*60) + ' seconds)')
+				doSetChanged = True
 		
 		if doSetChanged:
 			self.setChanged()

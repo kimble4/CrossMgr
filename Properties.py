@@ -190,10 +190,14 @@ class RaceOptionsProperties( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__( parent, id )
 		
+		self.criteriumMode = wx.CheckBox( self, label=_('Criterium') )
+		self.criteriumMode.Bind(wx.EVT_CHECKBOX, self.onChangeCriterium )
+		
 		self.timeTrial = wx.CheckBox( self, label=_('Time Trial') )
 		self.timeTrial.Bind(wx.EVT_CHECKBOX, self.onChangeTimeTrial )
 		
 		self.bestNLaps = wx.CheckBox( self, label=_('Best n laps') )
+		self.bestNLaps.Disable()
 		
 		self.allCategoriesFinishAfterFastestRidersLastLap = wx.CheckBox( self, label=_("All Categories Finish After Fastest Rider's Last Lap") )
 		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( True )
@@ -267,6 +271,7 @@ class RaceOptionsProperties( wx.Panel ):
 		blank = lambda : wx.StaticText( self, label='' )
 		
 		labelFieldBatchPublish = [
+			(blank(),				0, labelAlign),		(self.criteriumMode,			1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.timeTrial,				1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.bestNLaps,				1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.allCategoriesFinishAfterFastestRidersLastLap,	1, fieldAlign),
@@ -293,10 +298,26 @@ class RaceOptionsProperties( wx.Panel ):
 		if self.timeTrial.GetValue():
 			self.timeTrial.SetBackgroundColour( wx.Colour(255, 204, 153) )
 			self.bestNLaps.Enable()
+			self.criteriumMode.SetValue( False )
+			self.criteriumMode.Disable()
 		else:
 			self.timeTrial.SetBackgroundColour( wx.WHITE )
-			self.bestNLaps.SetValue(False)
+			self.bestNLaps.SetValue( False )
 			self.bestNLaps.Disable()
+			self.criteriumMode.Enable()
+		if event:
+			event.Skip()
+			
+	def onChangeCriterium( self, event=None ):
+		if self.criteriumMode.GetValue():
+			self.criteriumMode.SetBackgroundColour( wx.Colour(255, 204, 153) )
+			self.timeTrial.SetValue( False )
+			self.timeTrial.Disable()
+			self.bestNLaps.SetValue( False )
+			self.bestNLaps.Disable()
+		else:
+			self.criteriumMode.SetBackgroundColour( wx.WHITE )
+			self.timeTrial.Enable()
 		if event:
 			event.Skip()
      
@@ -307,6 +328,7 @@ class RaceOptionsProperties( wx.Panel ):
      
 	def refresh( self ):
 		race = Model.race
+		self.criteriumMode.SetValue( getattr(race, 'isCriterium', False) )
 		self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
 		self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
 		self.winAndOut.SetValue( race.winAndOut )
@@ -329,6 +351,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.licenseLinkTemplate.SetValue( race.licenseLinkTemplate )
 		self.onChangeWinAndOut()
 		self.onChangeTimeTrial()
+		self.onChangeCriterium()
 		
 	@property
 	def distanceUnitValue( self ):
@@ -336,6 +359,7 @@ class RaceOptionsProperties( wx.Panel ):
 	
 	def commit( self ):
 		race = Model.race
+		race.isCriterium = self.criteriumMode.IsChecked()
 		race.isTimeTrial = self.timeTrial.IsChecked()
 		race.isBestNLaps = self.bestNLaps.IsChecked()
 		race.allCategoriesFinishAfterFastestRidersLastLap = self.allCategoriesFinishAfterFastestRidersLastLap.IsChecked()
@@ -1373,6 +1397,12 @@ class Properties( wx.Panel ):
 				self.cameraProperties.commit()
 			if notebook.GetPage(event.GetSelection()) == self.cameraProperties:
 				self.cameraProperties.refresh()
+				
+		if hasattr(self, 'generalInfoProperties'):
+			notebook = event.GetEventObject()
+			if notebook.GetPage(event.GetSelection()) == self.generalInfoProperties:
+				self.generalInfoProperties.refresh()
+				
 		event.Skip()	# Required to properly repaint the screen.
 	
 	def commitButtonCallback( self, event ):
@@ -1517,7 +1547,7 @@ class Properties( wx.Panel ):
 	def getFileName( self ):
 		return self.updateFileName()
 	
-	def refresh( self, forceUpdate=False ):
+	def refresh( self, forceUpdate=True ):
 		self.updateFileName()
 		if not forceUpdate and not self.state.changed():
 			return

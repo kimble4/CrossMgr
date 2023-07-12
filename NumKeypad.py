@@ -18,6 +18,7 @@ from RaceHUD import RaceHUD
 from EditEntry import DoDNF, DoDNS, DoPull, DoDQ
 from TimeTrialRecord import TimeTrialRecord
 from BibTimeRecord import BibTimeRecord
+from CriteriumRecord import CriteriumRecord
 from ClockDigital import ClockDigital
 from NonBusyCall import NonBusyCall
 from SetLaps import SetLaps
@@ -240,10 +241,12 @@ class NumKeypad( wx.Panel ):
 		self.keypad = Keypad( self.notebook, self )
 		self.timeTrialRecord = TimeTrialRecord( self.notebook, self )
 		self.bibTimeRecord = BibTimeRecord( self.notebook, self )
+		self.criteriumRecord = CriteriumRecord( self.notebook, self )
 		
 		self.notebook.AddPage( self.keypad, _("Bib"), select=True )
 		self.notebook.AddPage( self.timeTrialRecord, _("TimeTrial") )
 		self.notebook.AddPage( self.bibTimeRecord, _("BibTime") )
+		self.notebook.AddPage( self.criteriumRecord, _("Criterium") )
 		self.notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onPageChanged )
 		horizontalMainSizer.Add( self.notebook, 0, flag=wx.TOP|wx.LEFT|wx.EXPAND, border = 4 )
 		
@@ -401,6 +404,9 @@ class NumKeypad( wx.Panel ):
 	def isBibTimeInputMode( self ):
 		return self.notebook.GetSelection() == 2
 	
+	def isCriteriumInputMode( self ):
+		return self.notebook.GetSelection() == 3
+	
 	def setTimeTrialInput( self, isTimeTrial=True ):
 		page = 1 if isTimeTrial else 0
 		if self.notebook.GetSelection() != page:
@@ -410,6 +416,8 @@ class NumKeypad( wx.Panel ):
 	def onPageChanged( self, event ):
 		if self.isBibTimeInputMode():
 			self.bibTimeRecord.refresh()
+		if self.isCriteriumInputMode():
+			self.criteriumRecord.refresh()
 
 	def swapKeypadTimeTrialRecord( self ):
 		self.notebook.SetSelection( 1 - self.notebook.GetSelection() )
@@ -748,6 +756,8 @@ class NumKeypad( wx.Panel ):
 				self.keypad.numEdit.SetValue( '' )
 		if self.isBibTimeInputMode():
 			self.bibTimeRecord.refresh()
+		if self.isCriteriumInputMode:
+			self.criteriumRecord.refresh()
 			
 		self.photoCount.Show( bool(race and race.enableUSBCamera) )
 		self.photoBitmap.Show( bool(race and race.enableUSBCamera) )

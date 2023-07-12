@@ -530,7 +530,12 @@ class ForecastHistory( wx.Panel ):
 		elif race.isFinished():
 			tRace = Utils.formatTime(race.lastRaceTime())
 		else:
-			tRace = Utils.formatTime(race.curRaceTime())
+			if race.isCriterium and race.critStatus == Model.Race.CritBellLap:
+				tRace = "Bell lap"
+			elif race.isCriterium and race.critStatus == Model.Race.CritFinishLap:
+				tRace = "Finish"
+			else:
+				tRace = Utils.formatTime(race.curRaceTime())
 		self.raceClock.SetLabel(tRace)
 	
 	def addGaps( self, recorded ):
