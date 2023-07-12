@@ -425,14 +425,15 @@ class MainWin( wx.Frame ):
 		self.warningIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'warning.png') )
 		acPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'ac_power.png') )
 		dcPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'dc_power.png') )
+		usbPowerIcon = wx.Bitmap(os.path.join(Utils.getImageFolder(), 'usb.png') )
 		self.unmonitoredIcon = wx.Bitmap(26, 26)
 		dc = wx.MemoryDC(self.unmonitoredIcon)
 		dc.SetBackground(wx.Brush('black'))
 		dc.Clear()
 		del dc
 		self.unmonitoredIcon.SetMaskColour('black')
-		self.powerIcons = [acPowerIcon, dcPowerIcon, dcPowerIcon, dcPowerIcon ]
-		self.powerTooltips = ['AC power', 'DC power source 1', 'DC power source 2', 'DC power source 3']
+		self.powerIcons = [acPowerIcon, dcPowerIcon, dcPowerIcon, usbPowerIcon ]
+		self.powerTooltips = ['AC power', 'DC power source 1', 'DC power source 2', 'USB power']
 		self.connected = hl.HyperLinkCtrl( self, label='Connected:', style=wx.ALIGN_RIGHT )
 		self.connected.AutoBrowse( False )
 		self.connected.EnableRollover( True )
@@ -444,7 +445,7 @@ class MainWin( wx.Frame ):
 			gs.Add( self.antennaConnected[-1], flag=wx.EXPAND )
 			
 		monitorText = wx.StaticText( self, label='Monitor power:', style=wx.ALIGN_RIGHT )
-		monitorText.SetToolTip( wx.ToolTip('Monitor the tag reader\'s power sources using the tag reader\'s GPIO port.  See the Impinj documentation for wiring details.  The first input is assumed to be AC power.'))
+		monitorText.SetToolTip( wx.ToolTip('Monitor the tag reader\'s power sources using the tag reader\'s GPIO port.  See the Impinj documentation for wiring details.  The first input is assumed to be AC power, the fourth USB.'))
 		gs.Add( monitorText )
 		for i in range(4):
 			cb = wx.CheckBox( self, label='')
