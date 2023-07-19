@@ -486,6 +486,11 @@ class PhotoPanel( wx.Panel ):
 				self.triggerInfo.update( zinfo )
 				GlobalDatabase().updateTriggerRecord( self.triggerInfo['id'], zinfo )
 				self.restoreViewBtn.Enable( self.triggerInfo.get('zoom_frame',-1) >= 0 )
+			tsCur = self.tsJpg[self.iJpg][0]
+			if tsCur:
+				self.triggerInfo.update( {'ts_view':tsCur, 'view':tsCur.strftime('%H:%M:%S.%f')[:-3] } )
+				GlobalDatabase().updateTriggerRecord( self.triggerInfo['id'], {'ts_view':tsCur} )
+				wx.CallAfter( self.updateCB, self.triggerInfo )
 
 	def SetBitmap( self ):
 		self.scaledBitmap.SetBitmap( self.getPhoto() )

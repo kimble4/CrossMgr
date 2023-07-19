@@ -63,13 +63,13 @@ class Database:
 		'id','ts','s_before','s_after','ts_start','closest_frames','bib','first_name','last_name','machine','team','wave','race_name',
 		'note', 'publish', 'kmh','frames',
 		'finish_direction',
-		'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height',
+		'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height', 'ts_view'
 	)
 	TriggerRecord = namedtuple( 'TriggerRecord', triggerFieldsAll )
 	triggerFieldsAllSet = set( triggerFieldsAll )
 	
 	triggerFieldsInput = tuple( triggerFieldsAllSet
-		- {'id', 'note', 'publish', 'kmh', 'frames', 'finish_direction', 'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height',})	# Fields to compare for equality of triggers.
+		- {'id', 'note', 'publish', 'kmh', 'frames', 'finish_direction', 'zoom_frame', 'zoom_x', 'zoom_y', 'zoom_width', 'zoom_height', 'ts_view'})	# Fields to compare for equality of triggers.
 	triggerFieldsUpdate = ('wave','race_name',)
 	triggerEditFields = ('bib', 'first_name', 'last_name', 'machine', 'team', 'wave', 'race_name', 'note', 'publish')
 	
@@ -156,6 +156,9 @@ pragma mmap_size = 30000000000;'''
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN zoom_y      INTEGER DEFAULT 0' )
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN zoom_width  INTEGER DEFAULT 0' )
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN zoom_height INTEGER DEFAULT 0' )
+					# Saved view timestamp
+					if 'ts_view' not in col_names:
+						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN ts_view timestamp DEFAULT 0' )
 		
 				_createTable( self.conn, 'photo', (
 						('id', 'INTEGER PRIMARY KEY', False, None),
@@ -189,6 +192,7 @@ pragma mmap_size = 30000000000;'''
 						('zoom_y', 		'INTEGER', False, 0),		# Zoom y coord
 						('zoom_width',	'INTEGER', False, 0),		# Zoom width
 						('zoom_height', 'INTEGER', False, 0),		# Zoom height
+						('ts_view', 'timestamp', False, None)	# Saved finish line crossing time
 					)
 				)
 				

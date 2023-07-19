@@ -183,6 +183,7 @@ class CrossMgrVideoHandler( BaseHTTPRequestHandler ):
 				for trig in triggers:
 					trig['ts'] = trig['ts'].timestamp()
 					trig['ts_start'] = trig['ts_start'].timestamp()
+					trig['ts_view'] = trig['ts_view'].timestamp() if trig['ts_view'] is not None else ''
 					trig['tsJpgIds'] = [(ts.timestamp(), id) for ts,id in trig['tsJpgIds']]
 				
 				content = json.dumps( triggers ).encode()
@@ -201,6 +202,12 @@ class CrossMgrVideoHandler( BaseHTTPRequestHandler ):
 					query['bib'] = int(query['bib'])
 				except Exception as e:
 					pass
+				# Convert ts_view to datestamp (if present).
+				try:
+					query['ts_view'] = datetime.datetime.fromtimestamp(float(query['ts_view']))
+				except Exception as e:
+					pass
+					
 				if id is not None:
 					success = GlobalDatabase().updateTriggerRecord( id, query )
 				else:
@@ -220,6 +227,7 @@ class CrossMgrVideoHandler( BaseHTTPRequestHandler ):
 					fields = GlobalDatabase().getTriggerFields( id )
 					fields['ts'] = fields['ts'].timestamp()
 					fields['ts_start'] = fields['ts_start'].timestamp()
+					fields['ts_view'] = fields['ts_view'].timestamp() if fields['ts_view'] is not None else ''
 
 				content = json.dumps( fields ).encode()
 				content_type = self.json_content
@@ -283,6 +291,7 @@ class CrossMgrVideoHandler( BaseHTTPRequestHandler ):
 				raise ValueError( 'Unknown url="{}"'.format(up) )
 				
 		except Exception as e:
+			print(e)
 			self.send_error(404,'Error: {} {}\n{}'.format(self.path, e, traceback.format_exc()))
 			return
 		

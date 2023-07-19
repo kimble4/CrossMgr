@@ -599,8 +599,16 @@ function showTriggers( triggers ) {
 		for( let col = 0; col < headers.length; ++col ) {
 			let td = document.createElement( 'td' );
 			tr.appendChild( td );
-			if( headers[col] == 'View' )
-				td.innerHTML = trig.zoom_frame >= 0 ? 'Y' : '';
+			if( headers[col] == 'View' ) {
+				//td.innerHTML = trig.zoom_frame >= 0 ? 'Y' : '';
+				if( trig.ts_view )
+					v = formatEpoch( trig.ts_view );
+				else if( trig.zoom_frame >= 0)
+					v = "Frame " + trig.zoom_frame;
+				else
+					v = '';
+				td.innerHTML = v;
+				}
 			else if(  headers[col] == 'Publish' )
 				td.innerHTML = trig.publish > 0 ? 'Y' : '';
 			else {
@@ -717,8 +725,16 @@ function updateOnScreenTriggerData() {
 	let tr = rows[iTriggerCur+1];	// Allow for the title row.
 	for( let col = 0; col < headers.length; ++col ) {
 		let td = tr.childNodes[col];
-		if( headers[col] == 'View' )
-			td.innerHTML = (trig.zoom_frame >= 0) ? 'Y' : '';
+		if( headers[col] == 'View' ) {
+			//td.innerHTML = trig.zoom_frame >= 0 ? 'Y' : '';
+			if( trig.ts_view )
+				v = formatEpoch( trig.ts_view );
+			else if( trig.zoom_frame >= 0)
+				v = "Frame " + trig.zoom_frame;
+			else
+				v = '';
+			td.innerHTML = v;
+			}
 		else if( headers[col] == 'Publish' )
 			td.innerHTML = (trig.publish > 0) ? 'Y' : '';
 		else {
@@ -881,13 +897,20 @@ function saveView() {
 	trig.zoom_width =	~~r[2];
 	trig.zoom_height =	~~r[3];
 
+	const tsImage = trig.tsJpgIds[iImageCur][0];
+	if( tsImage )
+		trig.ts_view = tsImage;
+	else
+		trig.ts_view = '';
+	
 	let params = [
 		'id='			+ trig.id,
 		'zoom_frame=' 	+ trig.zoom_frame,
 		'zoom_x=' 		+ trig.zoom_x,
 		'zoom_y=' 		+ trig.zoom_y,
 		'zoom_width=' 	+ trig.zoom_width,
-		'zoom_height='	+ trig.zoom_height
+		'zoom_height='	+ trig.zoom_height,
+		'ts_view='		+ trig.ts_view
 	];
 	getJSON( 'trigger_update.js?' + params.join('&'), function(data) { return; } );
 	updateOnScreenTriggerData();
