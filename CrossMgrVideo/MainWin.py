@@ -691,7 +691,7 @@ class MainWin( wx.Frame ):
 		self.triggerList.SetSmallImages( images )
 		
 		self.fieldCol = {f:c for c, f in enumerate('ts bib name machine team wave race_name frames view kmh mph publish note'.split())}
-		self.fieldHeaders = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Publish', 'Note']
+		self.fieldHeaders = ['Triggered at', 'Bib', 'Name', 'Machine', 'Team', 'Wave', 'Race', 'Frames', 'View', 'km/h', 'mph', 'Publish', 'Note']
 		formatRightHeaders = {'Bib','Frames','km/h','mph'}
 		formatMiddleHeaders = {'View', 'Publish'}
 		self.hiddenTriggerCols = []
@@ -1263,7 +1263,11 @@ class MainWin( wx.Frame ):
 							args['first_name'] = info['first_name']
 							args['last_name'] = info['last_name']
 						try:
-							args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
+							if info['ts_view'] is not None:
+								args['ts'] = info['ts_view']
+								args['raceSeconds'] = (info['ts_view'] - info['ts_start']).total_seconds()
+							else:
+								args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
 						except Exception:
 							args['raceSeconds'] = None
 						if isinstance(args['kmh'], str):
@@ -1335,6 +1339,8 @@ class MainWin( wx.Frame ):
 			fields = self.computeTriggerFields( fields )
 		for k, v in fields.items():
 			if k in self.fieldCol:
+				if k == 'ts':
+					v = v.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
 				if k == 'bib':
 					v = '{:>6}'.format(v)
 				elif k == 'frames':
@@ -1358,8 +1364,11 @@ class MainWin( wx.Frame ):
 			fields['mph'] = (fields['kmh'] * 0.621371) if fields['kmh'] else 0.0
 		if 'frames' in fields and 'closest_frames' in fields:
 			fields['frames'] = max(fields['frames'], fields['closest_frames'])
-		if 'zoom_frame' in fields:
-			fields['view'] = 'Y' if fields['zoom_frame'] >= 0 else ''
+		if 'ts_view' in fields and fields['ts_view'] is not None:
+			fields['view'] = fields['ts_view'].strftime('%H:%M:%S.%f')[:-3]
+		elif 'zoom_frame' in fields:
+			#fields['view'] = 'Y' if fields['zoom_frame'] >= 0 else ''
+			fields['view'] = 'Frame ' + str(fields['zoom_frame']) if fields['zoom_frame'] >= 0 else ''
 		if 'publish' in fields:
 			fields['publish'] = 'Y' if fields['publish'] > 0 else ''
 		return fields
@@ -1464,7 +1473,7 @@ class MainWin( wx.Frame ):
 			
 	def Start( self ):
 		self.messageQ.put( ('', '************************************************') )
-		self.messageQ.put( ('started', now().strftime('%Y/%m/%d %H:%M:%S')) )
+		self.messageQ.put( ('started', now().strftime('%Y-%m-%d %H:%M:%S')) )
 		self.startThreads()
 
 	def updateSnapshot( self, t, f ):
@@ -1846,6 +1855,7 @@ class MainWin( wx.Frame ):
 		self.updateTriggerColumnWidths()
 		self.triggerInfo.update( data )
 		GlobalDatabase().setTriggerEditFields( data['id'], **values )
+				
 	
 	def doPublishTriggers( self ):  # Set publish flag for this and subsequent triggers for each bib
 		if self.iTriggerSelect is None:
