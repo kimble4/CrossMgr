@@ -1265,7 +1265,7 @@ class MainWin( wx.Frame ):
 						try:
 							if info['ts_view'] is not None:
 								args['ts'] = info['ts_view']
-								args['raceSeconds'] = (info['ts_view'] - info['ts_start']).total_seconds()
+								args['raceSeconds'] = (info['ts_view'] - info['ts_start']).total_seconds() if info['ts_start'] != info['ts'] else None
 							else:
 								args['raceSeconds'] = (info['ts'] - info['ts_start']).total_seconds()
 						except Exception:

@@ -115,12 +115,13 @@ function select_row( iRow ) {
 	
 }
 
-function secondsToStr( s ) {
-	s = Math.floor( s );
+function secondsToStr( t ) {
+	s = Math.floor( t );
 	hh = Math.floor(s / (60*60));
 	mm = Math.floor(s / 60) % 60;
 	ss = s % 60;
-	return hh + ':' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+	d = (t-s).toFixed(3).substring(2);
+	return hh + ':' + (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss + '.' + d
 }
 
 function do_search() {
@@ -147,7 +148,7 @@ function do_search() {
 	table.appendChild( thead );
 	let tr = document.createElement( 'tr' );
 	thead.appendChild( tr );
-	const headers = ['', 'Bib', 'First Name', 'Last Name', 'Machine', 'Team', 'Time', 'Time of Day', 'Race'];
+	const headers = ['', 'Bib', 'First Name', 'Last Name', 'Machine', 'Team', 'Race Time', 'Time of Day', 'Race'];
 	for( const h of headers ) {
 		let th = document.createElement('th');
 		th.appendChild( document.createTextNode(h) );
@@ -177,8 +178,11 @@ function do_search() {
 			if( value ) {
 				if( attr == 'raceSeconds' )
 					value = secondsToStr( value );
-				else if( attr == 'ts' )
-					value = value.split('T')[1].replace( /\.[0-9]+$/, '' );
+				else if( attr == 'ts' ) {
+					value = value.split('T')[1]
+					value = value.substring(0, value.length - 3);
+					}
+					//.replace( /\.[0-9]+$/, '' );
 			}
 			td.appendChild( document.createTextNode(value ? value : '') );
 			tr.appendChild( td );
