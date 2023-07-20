@@ -159,6 +159,7 @@ pragma mmap_size = 30000000000;'''
 					# Saved view timestamp
 					if 'ts_view' not in col_names:
 						self.conn.execute( 'ALTER TABLE trigger ADD COLUMN ts_view timestamp DEFAULT 0' )
+						self.conn.execute( 'UPDATE trigger SET ts_view=ts' )
 		
 				_createTable( self.conn, 'photo', (
 						('id', 'INTEGER PRIMARY KEY', False, None),
@@ -328,7 +329,7 @@ pragma mmap_size = 30000000000;'''
 					'SELECT {} FROM trigger WHERE bib=? AND ts BETWEEN ? AND ? ORDER BY ts'.format(','.join(self.triggerFieldsAll)),
 					(bib, tsLower, tsUpper)
 				)
-				
+			
 			return [self.TriggerRecord(*trig) for trig in triggers]
 	
 	def _deleteIds( self, table, ids ):

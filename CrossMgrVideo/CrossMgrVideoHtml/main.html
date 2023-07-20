@@ -537,7 +537,7 @@ function triggerScrollToEnd() {
 	
 const headers = ['', 'Time', 'Bib', 'Last', 'First', 'Machine', 'Team',	'Wave', 'Race', 'Frames', 'View', 'Publish', 'Note'];
 const fields  = ['close', 'ts',	 'bib', 'last_name',  'first_name', 'machine', 'team',	'wave', 'race_name', 'frames', 'view', 'publish', 'note'];
-const numeric = [false,	false, true, false, false, false, false, false, false,  true, true, true, false];
+const numeric = [false,	false, true, false, false, false, false, false, false,  true, false, true, false];
 
 function showTriggers( triggers ) {
 	playStop();
@@ -601,7 +601,7 @@ function showTriggers( triggers ) {
 			tr.appendChild( td );
 			if( headers[col] == 'View' ) {
 				//td.innerHTML = trig.zoom_frame >= 0 ? 'Y' : '';
-				if( trig.ts_view )
+				if( trig.ts_view && trig.ts_view != trig.ts )
 					v = formatEpoch( trig.ts_view );
 				else if( trig.zoom_frame >= 0)
 					v = "Frame " + trig.zoom_frame;

@@ -183,7 +183,11 @@ class CrossMgrVideoHandler( BaseHTTPRequestHandler ):
 				for trig in triggers:
 					trig['ts'] = trig['ts'].timestamp()
 					trig['ts_start'] = trig['ts_start'].timestamp()
-					trig['ts_view'] = trig['ts_view'].timestamp() if trig['ts_view'] is not None else ''
+					if trig['ts_view'] is not None and trig['ts_view'].timestamp != trig['ts']:
+						trig['ts_view'] = trig['ts_view'].timestamp()
+					else:
+						trig['ts_view'] = ''
+					#trig['ts_view'] = trig['ts_view'].timestamp() if trig['ts_view'] is not None else ''
 					trig['tsJpgIds'] = [(ts.timestamp(), id) for ts,id in trig['tsJpgIds']]
 				
 				content = json.dumps( triggers ).encode()

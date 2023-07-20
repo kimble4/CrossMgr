@@ -1364,11 +1364,14 @@ class MainWin( wx.Frame ):
 			fields['mph'] = (fields['kmh'] * 0.621371) if fields['kmh'] else 0.0
 		if 'frames' in fields and 'closest_frames' in fields:
 			fields['frames'] = max(fields['frames'], fields['closest_frames'])
-		if 'ts_view' in fields and fields['ts_view'] is not None:
+		if 'ts_view' in fields and fields['ts_view'] is not None and fields['ts_view'] != fields['ts']:
+			# ts_view defaults to the same value as ts - only display if it has been changed
 			fields['view'] = fields['ts_view'].strftime('%H:%M:%S.%f')[:-3]
-		elif 'zoom_frame' in fields:
-			#fields['view'] = 'Y' if fields['zoom_frame'] >= 0 else ''
-			fields['view'] = 'Frame ' + str(fields['zoom_frame']) if fields['zoom_frame'] >= 0 else ''
+		elif 'zoom_frame' in fields and fields['zoom_frame'] >= 0:
+			# Otherwise, use the frame number for backward compatibility
+			fields['view'] = 'Frame ' + str(fields['zoom_frame'])
+		else:
+			fields['view'] = ''
 		if 'publish' in fields:
 			fields['publish'] = 'Y' if fields['publish'] > 0 else ''
 		return fields
@@ -1494,6 +1497,7 @@ class MainWin( wx.Frame ):
 				'team':				'',
 				'wave':				'',
 				'race_name':		'',
+				'ts_view':			t
 			}
 		) )
 		self.doUpdateAutoCapture( t, self.snapshotCount, self.snapshot, snapshotEnableColour )
@@ -2128,6 +2132,7 @@ class MainWin( wx.Frame ):
 						'team':				msg.get('team',''),
 						'wave':				msg.get('wave',''),
 						'race_name':		msg.get('race_name','') or msg.get('raceName',''),
+						'ts_view':			tSearch - timedelta(seconds=advanceSeconds),
 					}
 				)
 			)
