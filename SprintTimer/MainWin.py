@@ -4407,7 +4407,7 @@ def MainLoop():
 			#sys.exit( -2 )
 	
 	# Set the upper left icon.
-	icon = wx.Icon( os.path.join(Utils.getImageFolder(), 'CrossMgr16x16.ico'), wx.BITMAP_TYPE_ICO )
+	icon = wx.Icon( os.path.join(Utils.getImageFolder(), 'SprintTimer16x16.ico'), wx.BITMAP_TYPE_ICO )
 	mainWin.SetIcon( icon )
 
 	# Show the main window.
