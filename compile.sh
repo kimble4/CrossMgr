@@ -92,7 +92,7 @@ getVersion() {
 
 cleanup() {
 	echo "Cleaning up everything..."
-	rm -rf __pycache__ CrossMgrImpinj/__pycache__ CrossMgrVideo/__pycache__ SprintMgr/__pycache__ PointsRaceMgr/__pycache__ TagReadWrite/__pycache__ CrossMgrAlien/__pycache__ SeriesMgr/__pycache__
+	rm -rf __pycache__ CrossMgrImpinj/__pycache__ CrossMgrVideo/__pycache__ SprintMgr/__pycache__ PointsRaceMgr/__pycache__ TagReadWrite/__pycache__ CrossMgrAlien/__pycache__ SeriesMgr/__pycache__ SprintTimer/__pycache__
 	rm -rf dist build release
 	rm -f *.spec
 }
@@ -476,7 +476,7 @@ dorelease() {
 
 doHelp() {
 	cat <<EOF
-$0 [ -hcitywVqseCtaep: ]
+$0 [ -hcitywVqserCtaep: ]
  -h        - Help
  -E [env]  - Use Environment ($VIRTUAL_ENV)
  -p [pythonexe]  - Python version (Default $PYTHONVER)
@@ -490,6 +490,7 @@ $0 [ -hcitywVqseCtaep: ]
  -s        - Build SprintMgr
  -e        - Build CallupSeedingMgr
  -g        - Build StageRaceGC
+ -r        - Build SprintTimer
  -a        - Build all programs
 
  -d		   - Download AppImage builder
@@ -526,7 +527,7 @@ do
 		h) doHelp
 		;;
 		a) 
- 		    PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr CrossMgr"
+ 		    PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer CrossMgr"
 		;;
 		c) PROGRAMS="$PROGRAMS CrossMgr"
 		;;
@@ -546,6 +547,8 @@ do
 		;;
 		s) PROGRAMS="$PROGRAMS SprintMgr"
 		;;
+		r) PROGRAMS="$PROGRAMS SprintTimer"
+		;;
 		V) PROGRAMS="$PROGRAMS CrossMgrVideo"
 		;;
 		v) 	getVersion "CrossMgr"
@@ -556,6 +559,7 @@ do
 			getVersion "CrossMgrVideo"
 			getVersion "PointsRaceMgr"
 			getVersion "SprintMgr"
+			getVersion "SprintTimer"
 			getVersion "CallupSeedingMgr"
 			getVersion "StageRaceGC"
 		;;
@@ -643,6 +647,7 @@ do
 		f) fixDependencies 'SeriesMgr'
 		   fixDependencies 'CrossMgrVideo'
 		   fixDependencies 'SprintMgr'
+		   fixDependencies 'SprintTimer'
 		   fixDependencies 'CallupSeedingMgr'
 		   fixDependencies 'StageRaceGC'
 		;;

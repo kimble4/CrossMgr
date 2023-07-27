@@ -27,6 +27,7 @@ param (
 	[switch]$call = $false,
 	[switch]$spr = $false,
 	[switch]$camera = $false,
+	[switch]$timer = $false,
 	[switch]$all = $false,
 	
 	[switch]$versioncmd = $false,
@@ -162,6 +163,7 @@ function Cleanup($program)
 		'CallupSeedingMgr/__pycache__',
 		'StageRaceGC/__pycache__',
 		'SprintMgr/__pycache__',
+		'SprintTimer/__pycache__',
 		'dist',
 		'build',
 		'release',
@@ -488,7 +490,7 @@ function BuildAll($programs)
 	CheckEnvActive
 	if ($programs.Length -eq 0)
 	{
-		Write-Host "No programs selected. -cmgr, -cmgri, -cmgra, -trw, -smgr, -pts, -call, -spr or -all required"
+		Write-Host "No programs selected. -cmgr, -cmgri, -cmgra, -trw, -smgr, -pts, -call, -spr, -timer or -all required"
 		exit 1
 	}
 	Cleanup
@@ -619,6 +621,7 @@ function doHelp
 	-call        - Build CallupSeedingMgr
 	-gc          - Build StageRaceGC
 	-spr         - Build SprintMgr
+	-timer       - Build SprintTimer
 	-all         - Build all programs
 	
 	-checkver     - check python version
@@ -682,6 +685,7 @@ if ((($clean -eq $false) -and ($setupenv -eq $false) -and ($fix -eq $false)) -an
 		($call -eq $false) -and
 		($gc -eq $false) -and
 		($spr -eq $false) -and
+		($timer -eq $false) -and
 		($all -eq $false))
 {
 	Write-Host "You must specify a program to build or -all"
@@ -737,6 +741,10 @@ if ($spr -eq $true)
 {
 	$programs += 'SprintMgr'
 }
+if ($timer -eq $true)
+{
+	$programs += 'SprintTimer'
+}
 if ($all -eq $true)
 {
 	$programs = @(
@@ -749,7 +757,8 @@ if ($all -eq $true)
 		'PointsRaceMgr',
 		'CallupSeedingMgr',
 		'StageRaceGC',
-		'SprintMgr'
+		'SprintMgr',
+		'SprintTimer',
 		)
 	$virus = $true
 }
