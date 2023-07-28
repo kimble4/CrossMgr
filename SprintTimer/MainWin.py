@@ -415,7 +415,7 @@ class MainWin( wx.Frame ):
 		#self.Bind(wx.EVT_MENU, self.menuCloseRace, item )
 		
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit"), _("Exit CrossMgr"), Utils.GetPngBitmap('exit.png') )
-		#self.Bind(wx.EVT_MENU, self.menuExit, item )
+		self.Bind(wx.EVT_MENU, self.menuExit, item )
 		
 		#self.Bind(wx.EVT_MENU_RANGE, self.menuFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
 		
@@ -2700,17 +2700,17 @@ class MainWin( wx.Frame ):
 			#fld.ShowModal()
 		
 	#--------------------------------------------------------------------------------------------
-	#def doCleanup( self ):
+	def doCleanup( self ):
 		#self.showResultsPage()
-		#race = Model.race
-		#if race:
-			#try:
-				#race.resetAllCaches()
-				#self.writeRace()
-				#Model.writeModelUpdate()
-				#self.config.Flush()
-			#except Exception as e:
-				#Utils.writeLog( 'call: doCleanup: (1) "{}"'.format(e) )
+		race = Model.race
+		if race:
+			try:
+				race.resetAllCaches()
+				self.writeRace()
+				Model.writeModelUpdate()
+				self.config.Flush()
+			except Exception as e:
+				Utils.writeLog( 'call: doCleanup: (1) "{}"'.format(e) )
 
 		#try:
 			#self.timer.Stop()
@@ -2733,10 +2733,10 @@ class MainWin( wx.Frame ):
 		#except Exception as e:
 			#Utils.writeLog( 'call: doCleanup: (4) "{}"'.format(e) )
 	
-	#@logCall
-	#def onCloseWindow( self, event ):
-		#self.doCleanup()
-		#wx.Exit()
+	@logCall
+	def onCloseWindow( self, event ):
+		self.doCleanup()
+		wx.Exit()
 
 	def writeRace( self, doCommit = True ):
 		if doCommit:
@@ -3297,9 +3297,9 @@ class MainWin( wx.Frame ):
 		#Model.setRace( None )
 		#self.refresh()
 	
-	#@logCall
-	#def menuExit(self, event):
-		#self.onCloseWindow( event )
+	@logCall
+	def menuExit(self, event):
+		self.onCloseWindow( event )
 
 	#def genTimes( self, regen=False ):
 		#if regen:
