@@ -206,9 +206,9 @@ class MainWin( wx.Frame ):
 		#self.numSelect = None
 		
 		#Setup the objects for the race clock.
-		#self.timer = wx.Timer( self, id=wx.ID_ANY )
-		#self.secondCount = 0
-		#self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
+		self.timer = wx.Timer( self, id=wx.ID_ANY )
+		self.secondCount = 0
+		self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
 
 		#self.simulateTimer = None
 		#self.simulateSeen = set()
@@ -270,7 +270,7 @@ class MainWin( wx.Frame ):
 			#Utils.GetPngBitmap('document-close.png') )
 		#self.Bind(wx.EVT_MENU, self.menuCloseRace, item )
 		
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit"), _("Exit CrossMgr"), Utils.GetPngBitmap('exit.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit"), _("Exit SprintTimer"), Utils.GetPngBitmap('exit.png') )
 		self.Bind(wx.EVT_MENU, self.menuExit, item )
 		
 		#self.Bind(wx.EVT_MENU_RANGE, self.menuFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
@@ -625,7 +625,15 @@ class MainWin( wx.Frame ):
 		#----------------------------------------------------------------------------------------------
 		#self.backgroundJobMgr = BackgroundJobMgr( self )
 		
-		#self.toolsMenu = wx.Menu()
+		self.toolsMenu = wx.Menu()
+		
+		item = self.toolsMenu.Append( wx.ID_ANY, _("&Start Race"), _("Start the race") )
+		self.Bind(wx.EVT_MENU, self.menuStartRace, item )
+		
+		item = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Race..."), _("Finish the race.") )
+		self.Bind(wx.EVT_MENU, self.menuFinishRace, item )
+		
+		#self.toolsMenu.AppendSeparator()
 		
 		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Change Race Start Time..."), _("Change the Start Time of the Race") )
 		#self.Bind(wx.EVT_MENU, self.menuChangeRaceStartTime, item )
@@ -654,7 +662,7 @@ class MainWin( wx.Frame ):
 		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Playback..."), _("Playback this race from original data.") )
 		#self.Bind(wx.EVT_MENU, self.menuPlayback, item )
 		
-		#self.menuBar.Append( self.toolsMenu, _("&Tools") )
+		self.menuBar.Append( self.toolsMenu, _("&Tools") )
 		
 		#-----------------------------------------------------------------------
 		#self.optionsMenu = wx.Menu()
@@ -806,34 +814,34 @@ class MainWin( wx.Frame ):
 		
 	
 
-	#@property
-	#def chipReader( self ):
-		#return ChipReader.chipReaderCur
+	@property
+	def chipReader( self ):
+		return ChipReader.chipReaderCur
 		
-	#def handleChipReaderEvent( self, event ):
-		#race = Model.race
-		#if not race or not race.isRunning() or not race.enableUSBCamera:
-			#return
-		#if not getattr(race, 'tagNums', None):
-			#GetTagNums()
-		#if not race.tagNums:
-			#return
+	def handleChipReaderEvent( self, event ):
+		race = Model.race
+		if not race or not race.isRunning() or not race.enableUSBCamera:
+			return
+		if not getattr(race, 'tagNums', None):
+			GetTagNums()
+		if not race.tagNums:
+			return
 		
-		#requests = []
-		#for tag, dt in event.tagTimes:
-			#if race.startTime > dt:
-				#continue
+		requests = []
+		for tag, dt in event.tagTimes:
+			if race.startTime > dt:
+				continue
 			
-			#try:
-				#num = race.tagNums[tag]
-			#except (KeyError, TypeError, ValueError):
-				#continue
+			try:
+				num = race.tagNums[tag]
+			except (KeyError, TypeError, ValueError):
+				continue
 			
-			#requests.append( (num, (dt - race.startTime).total_seconds()) )
+			requests.append( (num, (dt - race.startTime).total_seconds()) )
 			
-		#success, error = SendPhotoRequests( requests )
-		#if success:
-			#race.photoCount += len(requests) * 2
+		success, error = SendPhotoRequests( requests )
+		if success:
+			race.photoCount += len(requests) * 2
 	
 	#def updateLapCounter( self, labels=None ):
 		#labels = labels or []
@@ -1045,6 +1053,68 @@ class MainWin( wx.Frame ):
 			#if race:
 				#race.syncCategories = self.menuItemSyncCategories.IsChecked()
 				
+				
+	@logCall
+	def menuStartRace( self, event ):
+		race = Model.race
+		if not race:
+			return
+		if race.isRunning():
+			Utils.MessageOK( self, _('Race is already running.'), _('Already running') )
+			return
+		else:
+			if not Utils.MessageOKCancel(self, _('Start the race now?.'), _('Start race') ):
+				return
+			
+			ChipReader.chipReaderCur.reset( Model.race.chipReaderType if Model.race else None )
+			
+			undo.clear()
+			undo.pushState()
+			with Model.LockRace() as race:
+				if race is None:
+					return
+				
+				Model.resetCache()
+				race.startRaceNow()
+				
+			#OutputStreamer.writeRaceStart()
+			
+			# Refresh the main window
+			self.refresh()
+			
+			# For safety, clear the undo stack after 8 seconds.
+			undoResetTimer = wx.CallLater( 8000, undo.clear )
+			
+			#if race.ftpUploadDuringRace:
+				#realTimeFtpPublish.publishEntry( True )
+			
+	@logCall
+	def menuFinishRace( self, event, confirm = True ):
+		if Model.race is None:
+			return
+		if confirm and not Utils.MessageOKCancel(self, _('Finish Race Now?'), _('Finish Race')):
+			return
+			
+		with Model.LockRace() as race:
+			race.finishRaceNow()
+			#if race.numLaps is None:
+				#race.numLaps = race.getMaxLap()
+			#SetNoDataDNS()
+			Model.resetCache()
+		
+		self.writeRace()
+		self.refresh()
+		
+		#OutputStreamer.writeRaceFinish()
+		#OutputStreamer.StopStreamer()
+		try:
+			ChipReader.chipReaderCur.StopListener()
+		except Exception:
+			pass
+
+		#if getattr(Model.race, 'ftpUploadDuringRace', False):
+			#realTimeFtpPublish.publishEntry( True )
+				
 	#@logCall
 	#def menuChangeRaceStartTime( self, event ):
 		#race = Model.race
@@ -1061,9 +1131,6 @@ class MainWin( wx.Frame ):
 		#race = Model.race
 		#if not race:
 			#return
-		#if race.isTimeTrial:
-			#Utils.MessageOK( self, _('Cannot restart a Time Trial'), _('Race Not Restarted') )
-			#return			
 		#if race.isUnstarted():
 			#Utils.MessageOK( self, _('Cannot restart an Unstarted Race.'), _('Race Not Restarted') )
 			#return
@@ -3962,7 +4029,7 @@ class MainWin( wx.Frame ):
 		#self.menuItemHighPrecisionTimes.Check( bool(race and race.highPrecisionTimes) )
 		#self.menuItemSyncCategories.Check( bool(race and race.syncCategories) )
 		
-		#self.updateRaceClock()
+		self.updateRaceClock()
 
 	#def refreshTTStart( self ):
 		#if self.notebook.GetSelection() in (self.iHistoryPage, self.iRecordPage):
@@ -4011,170 +4078,169 @@ class MainWin( wx.Frame ):
 
 	#-------------------------------------------------------------
 	
-	#def processNumTimes( self ):
-		#if not self.numTimes:
-			#return False
+	def processNumTimes( self ):
+		if not self.numTimes:
+			return False
 		
-		#race = Model.race
+		race = Model.race
 		
-		#for num, t in self.numTimes:
-			#race.addTime( num, t, doSetChanged=False )
-		#race.setChanged()
+		for num, t in self.numTimes:
+			race.addTime( num, t, doSetChanged=False )
+		race.setChanged()
 		
-		#OutputStreamer.writeNumTimes( self.numTimes )
+		OutputStreamer.writeNumTimes( self.numTimes )
 		
-		#if race.enableUSBCamera:
-			#photoRequests = [(num, t) for num, t in self.numTimes if okTakePhoto(num, t)]
-			#if photoRequests:
-				#success, error = SendPhotoRequests( photoRequests )
-				#if success:
-					#race.photoCount += len(photoRequests)
-				#else:
-					#Utils.writeLog( 'USB Camera Error: {}'.format(error) )
+		if race.enableUSBCamera:
+			photoRequests = [(num, t) for num, t in self.numTimes if okTakePhoto(num, t)]
+			if photoRequests:
+				success, error = SendPhotoRequests( photoRequests )
+				if success:
+					race.photoCount += len(photoRequests)
+				else:
+					Utils.writeLog( 'USB Camera Error: {}'.format(error) )
 		
-		#del self.numTimes[:]
-		#return True
+		del self.numTimes[:]
+		return True
 	
-	#def processRfidRefresh( self ):
-		#if self.processNumTimes():
-			#self.refresh()
-			#if Model.race and Model.race.ftpUploadDuringRace:
-				#realTimeFtpPublish.publishEntry()		
+	def processRfidRefresh( self ):
+		if self.processNumTimes():
+			self.refresh()
+			if Model.race and Model.race.ftpUploadDuringRace:
+				realTimeFtpPublish.publishEntry()		
 	
-	#def processJChipListener( self, refreshNow=False ):
-		#race = Model.race
-		#if not race:
-			#return
+	def processJChipListener( self, refreshNow=False ):
+		race = Model.race
+		if not race:
+			return
 			
-		#if not race or not race.enableJChipIntegration:
-			#if ChipReader.chipReaderCur.IsListening():
-				#ChipReader.chipReaderCur.StopListener()
-			#return False
+		if not race or not race.enableJChipIntegration:
+			if ChipReader.chipReaderCur.IsListening():
+				ChipReader.chipReaderCur.StopListener()
+			return False
 		
-		#if not ChipReader.chipReaderCur.IsListening():
-			#ChipReader.chipReaderCur.reset( race.chipReaderType )
-			#ChipReader.chipReaderCur.StartListener( race.startTime )
-			#GetTagNums( True )
+		if not ChipReader.chipReaderCur.IsListening():
+			ChipReader.chipReaderCur.reset( race.chipReaderType )
+			ChipReader.chipReaderCur.StartListener( race.startTime )
+			GetTagNums( True )
 	
-		#data = ChipReader.chipReaderCur.GetData()
+		data = ChipReader.chipReaderCur.GetData()
 		
-		#if not getattr(race, 'tagNums', None):
-			#GetTagNums()
-		#if not race.tagNums:
-			#return False
+		if not getattr(race, 'tagNums', None):
+			GetTagNums()
+		if not race.tagNums:
+			return False
 		
-		#for d in data:
-			#if d[0] != 'data':
-				#continue
-			#tag, dt = d[1], d[2]
+		for d in data:
+			if d[0] != 'data':
+				continue
+			tag, dt = d[1], d[2]
 			
 			#Ignore unrecorded reads that happened before the restart time.
-			#if race.rfidRestartTime and dt <= race.rfidRestartTime:
-				#continue
+			if race.rfidRestartTime and dt <= race.rfidRestartTime:
+				continue
 			
-			#try:
-				#num = race.tagNums[tag]
-			#except KeyError:
-				#if race.isRunning() and race.startTime <= dt:
-					#race.addUnmatchedTag( tag, (dt - race.startTime).total_seconds() )
-				#continue
-			#except (TypeError, ValueError):
-				#race.missingTags.add( tag )
-				#continue
+			try:
+				num = race.tagNums[tag]
+			except KeyError:
+				if race.isRunning() and race.startTime <= dt:
+					race.addUnmatchedTag( tag, (dt - race.startTime).total_seconds() )
+				continue
+			except (TypeError, ValueError):
+				race.missingTags.add( tag )
+				continue
 				
 			#Only process times after the start of the race.
-			#if race.isRunning() and race.startTime <= dt:
+			if race.isRunning() and race.startTime <= dt:
 				#Always process times for mass start races and when timeTrialNoRFIDStart unset.
-				#if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
-					#self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
-				#else:
+				if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
+					self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+				else:
 					#Only process the time if the rider has already started
-					#rider = race.getRider( num )
-					#if rider.firstTime is not None:
-						#self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+					rider = race.getRider( num )
+					if rider.firstTime is not None:
+						self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
 		
 		#Ensure that we don't update too often if riders arrive in a bunch.
-		#if not self.callLaterProcessRfidRefresh:
-			#class ProcessRfidRefresh( wx.Timer ):
-				#def __init__( self, *args, **kwargs ):
-					#self.mainWin = kwargs.pop('mainWin')
-					#super().__init__(*args, **kwargs)
-				#def Notify( self ):
-					#self.mainWin.processRfidRefresh()
-			#self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
+		if not self.callLaterProcessRfidRefresh:
+			class ProcessRfidRefresh( wx.Timer ):
+				def __init__( self, *args, **kwargs ):
+					self.mainWin = kwargs.pop('mainWin')
+					super().__init__(*args, **kwargs)
+				def Notify( self ):
+					self.mainWin.processRfidRefresh()
+			self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
 		
-		#delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-		#delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
-		#if not self.callLaterProcessRfidRefresh.IsRunning():
+		delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+		delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
+		if not self.callLaterProcessRfidRefresh.IsRunning():
 			#Start the timer for the first interval.
-			#self.clprIndex = 0
-			#self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
-			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
-				#self.processRfidRefresh()
-		#elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
-					#self.clprIndex < len(delayIntervals)-1 ):
+			self.clprIndex = 0
+			self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
+			if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
+				self.processRfidRefresh()
+		elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
+					self.clprIndex < len(delayIntervals)-1 ):
 			#If we get another read within the last 25% of the interval, increase the update to the next interval.
-			#self.callLaterProcessRfidRefresh.Stop()
-			#self.clprIndex += 1
-			#self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
-			#delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
-			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
-				#self.processRfidRefresh()
-		#return False	# Never signal for an update.
+			self.callLaterProcessRfidRefresh.Stop()
+			self.clprIndex += 1
+			self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
+			delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
+			if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
+				self.processRfidRefresh()
+		return False	# Never signal for an update.
 
-	#def updateRaceClock( self, event = None ):
+	def updateRaceClock( self, event = None ):
 		#self.record.refreshAll()
 
-		#doRefresh = False
-		#race = Model.race
+		doRefresh = False
+		race = Model.race
 		
-		#if race is None:
-			#self.SetTitle( Version.AppVerName )
-			#ChipReader.chipReaderCur.StopListener()
-			#self.timer.Stop()
-			#return
+		if race is None:
+			self.SetTitle( Version.AppVerName )
+			ChipReader.chipReaderCur.StopListener()
+			self.timer.Stop()
+			return
 		
 		#self.forecastHistory.updateRaceClock()
 		
-		#if race.isUnstarted():
-			#status = _('Unstarted')
-		#elif race.isRunning():
-			#status = _('Running')
-			#if race.enableJChipIntegration:
-				#doRefresh = self.processJChipListener()
-			#elif ChipReader.chipReaderCur.IsListening():
-				#ChipReader.chipReaderCur.StopListener()
+		if race.isUnstarted():
+			status = _('Unstarted')
+		elif race.isRunning():
+			status = _('Running')
+			if race.enableJChipIntegration:
+				doRefresh = self.processJChipListener()
+			elif ChipReader.chipReaderCur.IsListening():
+				ChipReader.chipReaderCur.StopListener()
 			#self.forecastHistory.updatedExpectedTimes( (now() - race.startTime).total_seconds() )
-		#else:
-			#status = _('Finished')
+		else:
+			status = _('Finished')
 
-		#if not race.isRunning():
-			#self.SetTitle( '{}-r{} - {} - {}{}'.format(
-							#race.name, race.raceNum,
-							#status,
-							#Version.AppVerName,
-							#' <{}>'.format(_('TimeTrial')) if race.isTimeTrial else '') )
-			#self.timer.Stop()
-			#return
+		if not race.isRunning():
+			self.SetTitle( '{}-r{} - {} - {}'.format(
+							race.name, race.raceNum,
+							status,
+							Version.AppVerName ) )
+			self.timer.Stop()
+			return
 
-		#self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
-						#Utils.formatTime(race.curRaceTime()),
-						#race.name, race.raceNum,
-						#status, Version.AppVerName,
-						#' <{}>'.format(_('RFID')) if ChipReader.chipReaderCur.IsListening() else '',
-						#' <{}>'.format(_('TimeTrial')) if race.isTimeTrial else '',
-						#' <{}>'.format(_('Photos')) if race.enableUSBCamera else '',
-		#) )
+		self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
+						Utils.formatTime(race.curRaceTime()),
+						race.name, race.raceNum,
+						status, Version.AppVerName,
+						' <{}>'.format(_('SprintTimer')) if race.enableSprintTimer else '',
+						' <{}>'.format(_('RFID')) if ChipReader.chipReaderCur.IsListening() else '',
+						' <{}>'.format(_('Photos')) if race.enableUSBCamera else '',
+		) )
 
-		#if not self.timer.IsRunning():
-			#wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
+		if not self.timer.IsRunning():
+			wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
 
-		#self.secondCount += 1
-		#if self.secondCount % 45 == 0 and race.isChanged():
-			#self.writeRace()
+		self.secondCount += 1
+		if self.secondCount % 45 == 0 and race.isChanged():
+			self.writeRace()
 			
-		#if doRefresh:
-			#self.nonBusyRefresh()
+		if doRefresh:
+			self.nonBusyRefresh()
 			#if race.ftpUploadDuringRace:
 				#realTimeFtpPublish.publishEntry()		
 
