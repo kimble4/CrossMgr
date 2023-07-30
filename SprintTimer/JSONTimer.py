@@ -18,7 +18,7 @@ import json
 
 class JSONTimer:
 	EOL = b'\r\n'		# Sprint timer delimiter
-	DEFAULT_PORT = 123
+	DEFAULT_PORT = 10123
 	DEFAULT_HOST = '81.187.184.219'		# Port to connect to the sprint timer
 	
 	SPEED_UNKNOWN_UNIT = 0

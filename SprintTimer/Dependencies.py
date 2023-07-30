@@ -1,4 +1,3 @@
-import Model
 import LapStats
 import InSortedIntervalList
 import minimal_intervals

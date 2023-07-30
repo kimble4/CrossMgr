@@ -123,7 +123,7 @@ import ChipReader
 #import Flags
 #import WebServer
 #import ImageIO
-#from ModuleUnpickler import ModuleUnpickler
+from ModuleUnpickler import ModuleUnpickler
 #import GpxTimesImport
 
 now = datetime.datetime.now
@@ -171,7 +171,14 @@ def AppendMenuItemBitmap( menu, id, name, help, bitmap ):
 	mi.SetBitmap( bitmap )
 	menu.Append( mi )
 	return mi
-		
+
+class ForecastHistory:
+	def __init__( self ):
+		pass
+	
+	def refresh( self ):
+		pass
+
 class MainWin( wx.Frame ):
 	def __init__( self, parent, id = wx.ID_ANY, title='', size=(200,200) ):
 		super().__init__(parent, id, title, size=size)
@@ -382,19 +389,19 @@ class MainWin( wx.Frame ):
 		#self.menuBar.Append( self.publishMenu, _("&Publish") )
 		
 		#-----------------------------------------------------------------------
-		#self.editMenu = wx.Menu()
-		#item = self.undoMenuButton = wx.MenuItem( self.editMenu, wx.ID_UNDO , _("&Undo\tCtrl+Z"), _("Undo the last edit") )
-		#self.undoMenuButton.SetBitmap( Utils.GetPngBitmap('Undo-icon.png') )
-		#self.editMenu.Append( self.undoMenuButton )
-		#self.Bind(wx.EVT_MENU, self.menuUndo, item )
-		#self.undoMenuButton.Enable( False )
+		self.editMenu = wx.Menu()
+		item = self.undoMenuButton = wx.MenuItem( self.editMenu, wx.ID_UNDO , _("&Undo\tCtrl+Z"), _("Undo the last edit") )
+		self.undoMenuButton.SetBitmap( Utils.GetPngBitmap('Undo-icon.png') )
+		self.editMenu.Append( self.undoMenuButton )
+		self.Bind(wx.EVT_MENU, self.menuUndo, item )
+		self.undoMenuButton.Enable( False )
 		
-		#self.redoMenuButton = wx.MenuItem( self.editMenu, wx.ID_REDO , _("&Redo\tCtrl+Y"), _("Redo the last edit") )
-		#self.redoMenuButton.SetBitmap( Utils.GetPngBitmap('Redo-icon.png') )
-		#item = self.editMenu.Append( self.redoMenuButton )
-		#self.Bind(wx.EVT_MENU, self.menuRedo, item )
-		#self.redoMenuButton.Enable( False )
-		#self.editMenu.AppendSeparator()
+		self.redoMenuButton = wx.MenuItem( self.editMenu, wx.ID_REDO , _("&Redo\tCtrl+Y"), _("Redo the last edit") )
+		self.redoMenuButton.SetBitmap( Utils.GetPngBitmap('Redo-icon.png') )
+		item = self.editMenu.Append( self.redoMenuButton )
+		self.Bind(wx.EVT_MENU, self.menuRedo, item )
+		self.redoMenuButton.Enable( False )
+		self.editMenu.AppendSeparator()
 		
 		#item = self.editMenu.Append( wx.ID_ANY, _("&Find...\tCtrl+F"), _("Find a Rider") )
 		#self.menuFindID = item.GetId()
@@ -426,7 +433,7 @@ class MainWin( wx.Frame ):
 		#item = self.editMenu.Append( wx.ID_ANY, _('&Give unfinished riders a finish time...'), _('Give unfinished riders a finish time...') )
 		#self.Bind( wx.EVT_MENU, self.menuGiveTimes, item )
 		
-		#self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
+		self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
 
 		#-----------------------------------------------------------------------
 		#self.dataMgmtMenu = wx.Menu()
@@ -526,6 +533,8 @@ class MainWin( wx.Frame ):
 		#----------------------------------------------------------------------------------------------
 
 		#Configure the field of the display.
+		
+		self.forecastHistory = ForecastHistory()  #dummy to satisfy Utils
 
 		bookStyle = (
 			  flatnotebook.FNB_NO_X_BUTTON
@@ -984,13 +993,13 @@ class MainWin( wx.Frame ):
 			#self.findDialog.refresh()
 			#self.findDialog.Show()
 		
-	#def menuUndo( self, event ):
-		#undo.doUndo()
-		#self.refresh()
+	def menuUndo( self, event ):
+		undo.doUndo()
+		self.refresh()
 		
-	#def menuRedo( self, event ):
-		#undo.doRedo()
-		#self.refresh()
+	def menuRedo( self, event ):
+		undo.doRedo()
+		self.refresh()
 		
 	#@logCall
 	#def menuAutocorrect( self, event ):
@@ -2550,7 +2559,7 @@ class MainWin( wx.Frame ):
 			try:
 				race.resetAllCaches()
 				self.writeRace()
-				Model.writeModelUpdate()
+				#Model.writeModelUpdate()
 				self.config.Flush()
 			except Exception as e:
 				Utils.writeLog( 'call: doCleanup: (1) "{}"'.format(e) )
@@ -2587,6 +2596,7 @@ class MainWin( wx.Frame ):
 		with Model.LockRace() as race:
 			if race is not None:
 				with open(self.fileName, 'wb') as fp:
+					print('dumping race')
 					pickle.dump( race, fp, 2 )
 				race.setChanged( False )
 
@@ -2600,87 +2610,79 @@ class MainWin( wx.Frame ):
 	def menuNew( self, event ):
 		#self.showPage(self.iActionsPage)
 		#self.closeFindDialog()
-		self.writeRace()
+		#self.writeRace()
 		
-		race = Model.race
-		if race:
-			geoTrack, geoTrackFName = getattr(race, 'geoTrack', None), getattr(race, 'geoTrackFName', None)
-			excelLink = getattr(race, 'excelLink', None)
-		else:
-			geoTrack, geoTrackFName, excelLink = None, None, None
+		#race = Model.race
+		#if race:
+			#geoTrack, geoTrackFName = getattr(race, 'geoTrack', None), getattr(race, 'geoTrackFName', None)
+			#excelLink = getattr(race, 'excelLink', None)
+		#else:
+			#excelLink = None
 			
-		geoTrack, geoTrackFName = None, None		# Do not retain the GPX file after a full new.
+			
+		#geoTrack, geoTrackFName = None, None		# Do not retain the GPX file after a full new.
 		
-		raceSave = Model.race
+		#raceSave = Model.race
 		
 		Model.setRace( Model.Race() )
 		race = Model.race
 		
-		if geoTrack:
-			race.geoTrack, race.geoTrackFName = geoTrack, geoTrackFName
-			distance = geoTrack.length if race.distanceUnit == race.UnitKm else geoTrack.length * 0.621371
-			if distance > 0.0:
-				for c in race.categories.values():
-					c.distance = distance
-			race.showOval = False
-		if excelLink:
-			race.excelLink = excelLink
+		print(race)
+		
+		#if geoTrack:
+			#race.geoTrack, race.geoTrackFName = geoTrack, geoTrackFName
+			#distance = geoTrack.length if race.distanceUnit == race.UnitKm else geoTrack.length * 0.621371
+			#if distance > 0.0:
+				#for c in race.categories.values():
+					#c.distance = distance
+			#race.showOval = False
+		#if excelLink:
+			#race.excelLink = excelLink
 			
-		dlg = wx.FileDialog( self, message=_("Choose a Race file"),
-							defaultFile = 'new.cmn',
-							defaultDir = Utils.getFileDir(),
-							wildcard = _('CrossMgr files (*.cmn)|*.cmn'),
-							style=wx.FD_SAVE | wx.FD_CHANGE_DIR )
-		if dlg.ShowModal() == wx.ID_OK:
-			fileName = dlg.GetPath()
-		else:
-			return
-		
-		
 		#dlg = PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE )
 		#ApplyDefaultTemplate( race )
 		#dlg.properties.refresh()
 		#ret = dlg.ShowModal()
 		#fileName = dlg.GetPath()
 		#categoriesFile = dlg.GetCategoriesFile()
-		#properties = dlg.properties
+		#properties = dlg.properties	
 
 		#if ret != wx.ID_OK:
 			#Model.race = raceSave
 			#return
 			
 		#Check for existing file.
-		if os.path.exists(fileName) and \
-		   not Utils.MessageOKCancel(
-				self,
-				'{}.\n\n    "{}"\n\n{}?'.format(
-					_('File already exists'), fileName, _('Overwrite')
-				)
-			):
-			Model.race = raceSave
-			return
+		#if os.path.exists(fileName) and \
+		   #not Utils.MessageOKCancel(
+				#self,
+				#'{}.\n\n    "{}"\n\n{}?'.format(
+					#_('File already exists'), fileName, _('Overwrite')
+				#)
+			#):
+			#Model.race = raceSave
+			#return
 
 		#Try to open the file.
-		try:
-			with open(fileName, 'w') as fp:
-				pass
-		except IOError:
-			Utils.MessageOK( self, '{}\n\n    "{}"'.format(_('Cannot Open File'),fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
-			Model.race = raceSave
-			return
+		#try:
+			#with open(fileName, 'w') as fp:
+				#pass
+		#except IOError:
+			#Utils.MessageOK( self, '{}\n\n    "{}"'.format(_('Cannot Open File'),fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
+			#Model.race = raceSave
+			#return
 
-		race.resetAllCaches()
+		#race.resetAllCaches()
 		
 		#Create a new race and initialize it with the properties.
-		self.fileName = fileName
+		#self.fileName = fileName
 		#WebServer.SetFileName( self.fileName )
-		Model.resetCache()
-		ResetExcelLinkCache()
+		#Model.resetCache()
+		#ResetExcelLinkCache()
 		#properties.commit()
 		
-		self.updateRecentFiles()
+		#self.updateRecentFiles()
 
-		importedCategories = False
+		#importedCategories = False
 		#if categoriesFile:
 			#try:
 				#with open(categoriesFile) as fp:
@@ -2692,17 +2694,17 @@ class MainWin( wx.Frame ):
 				#Utils.MessageOK( self, "{}:\n{}".format(_('Bad file format'), categoriesFile), _("File Read Error"), iconMask=wx.ICON_ERROR)
 
 		#Create some defaults so the page is not blank.
-		if not importedCategories:
-			race.categoriesImportFile = ''
-			race.setCategories( [{'name':'{} {}-{}'.format(_('Category'), max(1, i*100), (i+1)*100-1),
-								  'catStr':'{}-{}'.format(max(1, i*100), (i+1)*100-1)} for i in range(8)] )
+		#if not importedCategories:
+			#race.categoriesImportFile = ''
+			#race.setCategories( [{'name':'{} {}-{}'.format(_('Category'), max(1, i*100), (i+1)*100-1),
+								  #'catStr':'{}-{}'.format(max(1, i*100), (i+1)*100-1)} for i in range(8)] )
 		#else:
 			#race.categoriesImportFile = categoriesFile
 			
-		self.setNumSelect( None )
-		self.writeRace()
+		#self.setNumSelect( None )
+		#self.writeRace()
 		#self.showPage(self.iActionsPage)
-		self.refreshAll()
+		#self.refreshAll()
 	
 	#@logCall
 	#def menuNewNext( self, event ):
@@ -2946,16 +2948,17 @@ class MainWin( wx.Frame ):
 
 	def openRace( self, fileName ):
 		if not fileName:
+			print('no filename, not opening race')
 			return
 		#self.showResultsPage()
-		self.refresh()
-		Model.resetCache()
-		ResetExcelLinkCache()
-		self.writeRace()
-		Model.writeModelUpdate()
+		#self.refresh()
+		#Model.resetCache()
+		#ResetExcelLinkCache()
+		#self.writeRace()
+		#Model.writeModelUpdate()
 		#self.closeFindDialog()
 		
-		fileNameSave = self.fileName
+		#fileNameSave = self.fileName
 		
 		try:
 			with open(fileName, 'rb') as fp, Model.LockRace() as race:
@@ -2963,16 +2966,15 @@ class MainWin( wx.Frame ):
 					race = pickle.load( fp, encoding='latin1', errors='replace' )
 				except Exception:
 					fp.seek( 0 )
-					race = ModuleUnpickler( fp, module='CrossMgr', encoding='latin1', errors='replace' ).load()
-				race.sortLap = None			# Remove results lap sorting to avoid confusion.
-				isFinished = race.isFinished()
-				race.tagNums = None
+					race = ModuleUnpickler( fp, module='SprintTimer', encoding='latin1', errors='replace' ).load()
 				race.resetAllCaches()
 				race.lastOpened = now()
 				Model.setRace( race )
+				print(race)
 			
 			ChipReader.chipReaderCur.reset( race.chipReaderType )
 			self.fileName = fileName
+			print(self.fileName)
 			
 			undo.clear()
 			ResetExcelLinkCache()
@@ -2982,8 +2984,8 @@ class MainWin( wx.Frame ):
 			#self.record.setTimeTrialInput( race.isTimeTrial )
 			#self.showPage( self.iResultsPage if isFinished else self.iActionsPage )
 			self.refreshAll()
-			Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
-			Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
+			#Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
+			#Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
 			
 			#eventFileName = os.path.join( os.path.dirname(self.fileName), race.getFileName() )
 			#if self.fileName != eventFileName:
@@ -3010,32 +3012,32 @@ class MainWin( wx.Frame ):
 				#Utils.writeLog( 'openRace: changed FileName to "{}".'.format(eventFileName) )
 				#self.fileName = eventFileName
 			
-			self.updateRecentFiles()
+			#self.updateRecentFiles()
 			#WebServer.SetFileName( self.fileName )
 
-			excelLink = getattr(race, 'excelLink', None)
-			if excelLink is None or not excelLink.fileName:
-				return
+			#excelLink = getattr(race, 'excelLink', None)
+			#if excelLink is None or not excelLink.fileName:
+				#return
 				
-			if os.path.isfile(excelLink.fileName):
-				Utils.writeLog( 'openRace: Excel file "{}"'.format(excelLink.fileName) )
-				return
+			#if os.path.isfile(excelLink.fileName):
+				#Utils.writeLog( 'openRace: Excel file "{}"'.format(excelLink.fileName) )
+				#return
 				
 			#Check if we have a missing spreadsheet but can find one in the same folder as the race.
-			Utils.writeLog( 'openRace: cannot open Excel file "{}"'.format(excelLink.fileName) )
-			newFileName = GetMatchingExcelFile(fileName, excelLink.fileName)
-			if newFileName and Utils.MessageOKCancel(self,
-				'{}:\n\n"{}"\n\n{}:\n\n"{}"\n\n{}'.format(
-					_('Could not find Excel file'), excelLink.fileName,
-					_('Found this Excel file in the race folder with matching name'), newFileName, _('Use this Excel file from now on?')
-				),
-				_('Excel Link Not Found') ):
-				race.excelLink.fileName = newFileName
-				race.setChanged()
-				ResetExcelLinkCache()
-				Model.resetCache()
-				self.refreshAll()
-				Utils.writeLog( 'openRace: changed Excel file to "{}"'.format(newFileName) )
+			#Utils.writeLog( 'openRace: cannot open Excel file "{}"'.format(excelLink.fileName) )
+			#newFileName = GetMatchingExcelFile(fileName, excelLink.fileName)
+			#if newFileName and Utils.MessageOKCancel(self,
+				#'{}:\n\n"{}"\n\n{}:\n\n"{}"\n\n{}'.format(
+					#_('Could not find Excel file'), excelLink.fileName,
+					#_('Found this Excel file in the race folder with matching name'), newFileName, _('Use this Excel file from now on?')
+				#),
+				#_('Excel Link Not Found') ):
+				#race.excelLink.fileName = newFileName
+				#race.setChanged()
+				#ResetExcelLinkCache()
+				#Model.resetCache()
+				#self.refreshAll()
+				#Utils.writeLog( 'openRace: changed Excel file to "{}"'.format(newFileName) )
 				
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
@@ -3911,15 +3913,15 @@ class MainWin( wx.Frame ):
 	#def showResultsPage( self ):
 		#self.showPage( self.iResultsPage )
 
-	#def callPageRefresh( self, i ):
-		#try:
-			#page = self.pages[i]
-		#except IndexError:
-			#return
-		#try:
-			#page.refresh()
-		#except AttributeError:
-			#pass
+	def callPageRefresh( self, i ):
+		try:
+			page = self.pages[i]
+		except IndexError:
+			return
+		try:
+			page.refresh()
+		except AttributeError:
+			pass
 
 	def refreshWindows( self ):
 		try:
@@ -3946,14 +3948,13 @@ class MainWin( wx.Frame ):
 	def commit( self ):
 		self.callPageCommit( self.notebook.GetSelection() )
 				
-	#def refreshCurrentPage( self ):
-		#self.callPageRefresh( self.notebook.GetSelection() )
-		#self.refreshWindows()
+	def refreshCurrentPage( self ):
+		self.callPageRefresh( self.notebook.GetSelection() )
+		self.refreshWindows()
 		#WebServer.WsRefresh()
 
 	def refresh( self ):
-		pass
-		#self.refreshCurrentPage()
+		self.refreshCurrentPage()
 		#self.forecastHistory.refresh()
 		#if self.riderDetailDialog:
 			#self.riderDetailDialog.refresh()
@@ -3967,21 +3968,21 @@ class MainWin( wx.Frame ):
 		#if self.notebook.GetSelection() in (self.iHistoryPage, self.iRecordPage):
 			#self.refreshCurrentPage()
 
-	#def updateUndoStatus( self, event = None ):
-		#race = Model.race
-		#self.undoMenuButton.Enable( bool(not race.isRunning() and undo.isUndo()) )
-		#self.redoMenuButton.Enable( bool(not race.isRunning() and undo.isRedo()) )
+	def updateUndoStatus( self, event = None ):
+		race = Model.race
+		self.undoMenuButton.Enable( bool(not race.isRunning() and undo.isUndo()) )
+		self.redoMenuButton.Enable( bool(not race.isRunning() and undo.isRedo()) )
 		
-	#def onPageChanging( self, event ):
-		#notebook = event.GetEventObject()
-		#if notebook == self.notebook:
-			#self.callPageCommit( event.GetOldSelection() )
-			#self.callPageRefresh( event.GetSelection() )
-		#try:
-			#Utils.writeLog( 'page: {}\n'.format(notebook.GetPage(event.GetSelection()).__class__.__name__) )
-		#except IndexError:
-			#pass
-		#event.Skip()	# Required to properly repaint the screen.
+	def onPageChanging( self, event ):
+		notebook = event.GetEventObject()
+		if notebook == self.notebook:
+			self.callPageCommit( event.GetOldSelection() )
+			self.callPageRefresh( event.GetSelection() )
+		try:
+			Utils.writeLog( 'page: {}\n'.format(notebook.GetPage(event.GetSelection()).__class__.__name__) )
+		except IndexError:
+			pass
+		event.Skip()	# Required to properly repaint the screen.
 
 	#def refreshRaceAnimation( self ):
 		#if self.pages[self.notebook.GetSelection()] == self.raceAnimation:
@@ -4230,10 +4231,10 @@ def MainLoop():
 	# Configure the main window.
 	mainWin = MainWin( None, title=Version.AppVerName, size=(1128,600) )
 	
-	# Try to open a specified filename.
+	#Try to open a specified filename.
 	#fileName = args.filename
 	
-	# Try to load a race.
+	#Try to load a race.
 	#raceLoaded = False
 	#if fileName:
 		#try:

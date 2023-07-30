@@ -1,18 +1,18 @@
 import Utils
 import Model
-#from Undo import undo
+from Undo import undo
 import wx
 #import re
-#import os
-#import wx.lib.intctrl as intctrl
-#import wx.lib.masked.numctrl as numctrl
+import os
+import wx.lib.intctrl as intctrl
+import wx.lib.masked.numctrl as numctrl
 import wx.lib.agw.flatnotebook as flatnotebook
 #import glob
 #import webbrowser
-#import threading
-#import datetime
-#import subprocess
-#import platform
+import threading
+import datetime
+import subprocess
+import platform
 #from RaceInputState import RaceInputState
 #import ImageIO
 #from SetGraphic			import SetGraphicDialog
@@ -24,7 +24,7 @@ import wx.lib.agw.flatnotebook as flatnotebook
 #from TemplateSubstitute import TemplateSubstitute
 #import Template
 #from BatchPublishAttrs import batchPublishAttr, batchPublishRaceAttr
-#from HighPrecisionTimeEdit import HighPrecisionTimeEdit
+from HighPrecisionTimeEdit import HighPrecisionTimeEdit
 import JChipSetup
 #import WebServer
 import ChipReader
@@ -44,145 +44,147 @@ def addToFGS( fgs, labelFieldBatchPublish ):
 			flag |= wx.EXPAND
 		fgs.Add( item, flag=flag )
 
-#class GeneralInfoProperties( wx.Panel ):
-	#def __init__( self, parent, id = wx.ID_ANY ):
-		#super().__init__( parent, id )
+class GeneralInfoProperties( wx.Panel ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id )
 		
-		#self.raceNameLabel = wx.StaticText( self, label=_('Event Name:') )
-		#self.raceName = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceName )
+		self.raceNameLabel = wx.StaticText( self, label=_('Event Name:') )
+		self.raceName = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceName )
 		
-		#self.raceLongNameLabel = wx.StaticText( self, label=_('Long Name:') )
-		#self.raceLongName = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceLongName )
+		self.raceLongNameLabel = wx.StaticText( self, label=_('Long Name:') )
+		self.raceLongName = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceLongName )
 		
-		#self.raceCityLabel = wx.StaticText( self, label=_('City') )
-		#self.raceCity = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceCity )
+		self.raceCityLabel = wx.StaticText( self, label=_('City') )
+		self.raceCity = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceCity )
 		
-		#self.raceStateProvLabel = wx.StaticText( self, label=_('State/Prov') )
-		#self.raceStateProv = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceStateProv )
+		self.raceStateProvLabel = wx.StaticText( self, label=_('State/Prov') )
+		self.raceStateProv = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceStateProv )
 		
-		#self.raceCountryLabel = wx.StaticText( self, label=_('Country') )
-		#self.raceCountry = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceCountry )
+		self.raceCountryLabel = wx.StaticText( self, label=_('Country') )
+		self.raceCountry = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceCountry )
 		
-		#self.locationSizer = wx.BoxSizer( wx.HORIZONTAL )
-		#self.locationSizer.Add( self.raceCity, 4, flag=wx.EXPAND )
-		#self.locationSizer.Add( self.raceStateProvLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=16 )
-		#self.locationSizer.Add( self.raceStateProv, 2, flag=wx.EXPAND|wx.LEFT, border=3 )
-		#self.locationSizer.Add( self.raceCountryLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=16 )
-		#self.locationSizer.Add( self.raceCountry, 2, flag=wx.EXPAND|wx.LEFT, border=3 )
+		self.locationSizer = wx.BoxSizer( wx.HORIZONTAL )
+		self.locationSizer.Add( self.raceCity, 4, flag=wx.EXPAND )
+		self.locationSizer.Add( self.raceStateProvLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=16 )
+		self.locationSizer.Add( self.raceStateProv, 2, flag=wx.EXPAND|wx.LEFT, border=3 )
+		self.locationSizer.Add( self.raceCountryLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=16 )
+		self.locationSizer.Add( self.raceCountry, 2, flag=wx.EXPAND|wx.LEFT, border=3 )
 		
-		#self.dateLabel = wx.StaticText( self, label = _('Date') )
-		#self.date = wx.adv.DatePickerCtrl(
-			#self,
-			#dt = Utils.GetDateTimeToday(),
-			#style = wx.adv.DP_DROPDOWN,
-			#size=(160,-1)
-		#)
-		#self.Bind(wx.adv.EVT_DATE_CHANGED, self.onChanged, self.date)
+		self.dateLabel = wx.StaticText( self, label = _('Date') )
+		self.date = wx.adv.DatePickerCtrl(
+			self,
+			dt = Utils.GetDateTimeToday(),
+			style = wx.adv.DP_DROPDOWN,
+			size=(160,-1)
+		)
+		self.Bind(wx.adv.EVT_DATE_CHANGED, self.onChanged, self.date)
 		
-		#self.raceDisciplineLabel = wx.StaticText( self, label = _('Discipline') )
-		#self.raceDiscipline = wx.TextCtrl( self, value='Cyclo-cross', size=(160,-1) )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.raceDiscipline )
+		self.raceDisciplineLabel = wx.StaticText( self, label = _('Discipline') )
+		self.raceDiscipline = wx.TextCtrl( self, value='Sprints', size=(160,-1) )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.raceDiscipline )
 		
-		#self.dateDisciplineSizer = wx.BoxSizer( wx.HORIZONTAL )
-		#self.dateDisciplineSizer.Add( self.date )
-		#self.dateDisciplineSizer.Add( self.raceDisciplineLabel, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border = 16 )
-		#self.dateDisciplineSizer.Add( self.raceDiscipline, flag=wx.LEFT, border=3 )
-		#self.dateDisciplineSizer.AddStretchSpacer()
+		self.dateDisciplineSizer = wx.BoxSizer( wx.HORIZONTAL )
+		self.dateDisciplineSizer.Add( self.date )
+		self.dateDisciplineSizer.Add( self.raceDisciplineLabel, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border = 16 )
+		self.dateDisciplineSizer.Add( self.raceDiscipline, flag=wx.LEFT, border=3 )
+		self.dateDisciplineSizer.AddStretchSpacer()
 
-		#self.raceNumLabel = wx.StaticText( self, label=_('Race #') )
-		#self.raceNum = intctrl.IntCtrl( self, min=1, max=1000, allow_none=False, value=1, size=(64,-1), style=wx.ALIGN_RIGHT )
-		#self.Bind(intctrl.EVT_INT, self.onChanged, self.raceNum)
+		self.raceNumLabel = wx.StaticText( self, label=_('Race #') )
+		self.raceNum = intctrl.IntCtrl( self, min=1, max=1000, allow_none=False, value=1, size=(64,-1), style=wx.ALIGN_RIGHT )
+		self.Bind(intctrl.EVT_INT, self.onChanged, self.raceNum)
 		
-		#self.scheduledStartLabel = wx.StaticText( self, label=_('Scheduled Start') )
-		#self.scheduledStart = HighPrecisionTimeEdit( self, display_seconds=False, value='10:00', size=(64,-1) )
+		self.scheduledStartLabel = wx.StaticText( self, label=_('Scheduled Start') )
+		self.scheduledStart = HighPrecisionTimeEdit( self, display_seconds=False, value='10:00', size=(64,-1) )
 		
-		#self.minutesLabel = wx.StaticText( self, label=_('Race Minutes') )
-		#self.minutes = intctrl.IntCtrl( self, min=1, max=60*48, allow_none=False, value=40, size=(64,-1), style=wx.ALIGN_RIGHT )
+		self.minutesLabel = wx.StaticText( self, label=_('Race Minutes') )
+		self.minutes = intctrl.IntCtrl( self, min=1, max=60*48, allow_none=False, value=40, size=(64,-1), style=wx.ALIGN_RIGHT )
 
-		#self.numStartMinutesSizer = wx.BoxSizer( wx.HORIZONTAL )
-		#self.numStartMinutesSizer.Add( self.raceNum )
-		#self.numStartMinutesSizer.Add( self.scheduledStartLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border = 16 )
-		#self.numStartMinutesSizer.Add( self.scheduledStart, flag=wx.FIXED_MINSIZE|wx.LEFT, border = 3 )
-		#self.numStartMinutesSizer.Add( self.minutesLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border = 16 )
-		#self.numStartMinutesSizer.Add( self.minutes, flag=wx.LEFT, border = 3 )
-		#self.numStartMinutesSizer.AddStretchSpacer()
+		self.numStartMinutesSizer = wx.BoxSizer( wx.HORIZONTAL )
+		self.numStartMinutesSizer.Add( self.raceNum )
+		self.numStartMinutesSizer.Add( self.scheduledStartLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border = 16 )
+		self.numStartMinutesSizer.Add( self.scheduledStart, flag=wx.FIXED_MINSIZE|wx.LEFT, border = 3 )
+		self.numStartMinutesSizer.Add( self.minutesLabel, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border = 16 )
+		self.numStartMinutesSizer.Add( self.minutes, flag=wx.LEFT, border = 3 )
+		self.numStartMinutesSizer.AddStretchSpacer()
 
-		#self.organizerLabel = wx.StaticText( self, label=_('Organizer') )
-		#self.organizer = wx.TextCtrl( self )
+		self.organizerLabel = wx.StaticText( self, label=_('Organizer') )
+		self.organizer = wx.TextCtrl( self )
 
-		#self.commissaireLabel = wx.StaticText( self, label=_('Official/Commissaire') )
-		#self.commissaire = wx.TextCtrl( self )
+		self.commissaireLabel = wx.StaticText( self, label=_('Official/Commissaire') )
+		self.commissaire = wx.TextCtrl( self )
 
-		#self.memoLabel = wx.StaticText( self, label=_('Memo') )
-		#self.memo = wx.TextCtrl( self )
-		#self.Bind( wx.EVT_TEXT, self.onChanged, self.memo )
+		self.memoLabel = wx.StaticText( self, label=_('Memo') )
+		self.memo = wx.TextCtrl( self )
+		self.Bind( wx.EVT_TEXT, self.onChanged, self.memo )
 		
 		#-------------------------------------------------------------------------------
-		#ms = wx.BoxSizer( wx.VERTICAL )
-		#self.SetSizer( ms )
+		ms = wx.BoxSizer( wx.VERTICAL )
+		self.SetSizer( ms )
 		
-		#fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=12, hgap=3 )
-		#fgs.AddGrowableCol( 1 )
+		fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=12, hgap=3 )
+		fgs.AddGrowableCol( 1 )
 		
-		#labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
-		#fieldAlign = wx.EXPAND
+		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
+		fieldAlign = wx.EXPAND
 		
-		#labelFieldBatchPublish = [
-			#(self.raceNameLabel,	0, labelAlign),	(self.raceName,				1, fieldAlign),
-			#(self.raceLongNameLabel,0, labelAlign),	(self.raceLongName,			1, fieldAlign),
-			#(self.raceCityLabel,	0, labelAlign),	(self.locationSizer,		1, fieldAlign),
-			#(self.dateLabel,		0, labelAlign),	(self.dateDisciplineSizer,	1, fieldAlign),
-			#(self.raceNumLabel,		0, labelAlign),	(self.numStartMinutesSizer,	1, fieldAlign),
-			#(self.organizerLabel,	0, labelAlign),	(self.organizer, 			1, fieldAlign),
-			#(self.commissaireLabel,	0, labelAlign),	(self.commissaire, 			1, fieldAlign),
-			#(self.memoLabel,		0, labelAlign),	(self.memo, 				1, fieldAlign),
-		#]
-		#addToFGS( fgs, labelFieldBatchPublish )
+		labelFieldBatchPublish = [
+			(self.raceNameLabel,	0, labelAlign),	(self.raceName,				1, fieldAlign),
+			(self.raceLongNameLabel,0, labelAlign),	(self.raceLongName,			1, fieldAlign),
+			(self.raceCityLabel,	0, labelAlign),	(self.locationSizer,		1, fieldAlign),
+			(self.dateLabel,		0, labelAlign),	(self.dateDisciplineSizer,	1, fieldAlign),
+			(self.raceNumLabel,		0, labelAlign),	(self.numStartMinutesSizer,	1, fieldAlign),
+			(self.organizerLabel,	0, labelAlign),	(self.organizer, 			1, fieldAlign),
+			(self.commissaireLabel,	0, labelAlign),	(self.commissaire, 			1, fieldAlign),
+			(self.memoLabel,		0, labelAlign),	(self.memo, 				1, fieldAlign),
+		]
+		addToFGS( fgs, labelFieldBatchPublish )
 		
-		#ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
+		ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
 
-	#def refresh( self ):
-		#race = Model.race
-		#self.raceName.SetValue( race.name )
-		#self.raceLongName.SetValue( race.longName )
-		#self.raceCity.SetValue( race.city )
-		#self.raceStateProv.SetValue( race.stateProv )
-		#self.raceCountry.SetValue( race.country )
-		#self.raceDiscipline.SetValue( getattr(race, 'discipline', 'Cyclo-cross') )
-		#d = wx.DateTime()
-		#d.ParseDate(race.date)
-		#self.date.SetValue( d )
-		#self.raceNum.SetValue( race.raceNum )
-		#self.scheduledStart.SetValue( race.scheduledStart )
-		#self.minutes.SetValue( race.minutes )
-		#self.organizer.SetValue( getattr(race, 'organizer', '') )
-		#self.commissaire.SetValue( getattr(race, 'commissaire', '') )
-		#self.memo.SetValue( race.memo )
+	def refresh( self ):
+		race = Model.race
+		if race:
+			self.raceName.SetValue( race.name )
+			self.raceLongName.SetValue( race.longName )
+			self.raceCity.SetValue( race.city )
+			self.raceStateProv.SetValue( race.stateProv )
+			self.raceCountry.SetValue( race.country )
+			self.raceDiscipline.SetValue( getattr(race, 'discipline', 'Cyclo-cross') )
+			d = wx.DateTime()
+			d.ParseDate(race.date)
+			self.date.SetValue( d )
+			self.raceNum.SetValue( race.raceNum )
+			self.scheduledStart.SetValue( race.scheduledStart )
+			self.minutes.SetValue( race.minutes )
+			self.organizer.SetValue( getattr(race, 'organizer', '') )
+			self.commissaire.SetValue( getattr(race, 'commissaire', '') )
+			self.memo.SetValue( race.memo )
 
-	#def commit( self ):
-		#race = Model.race
-		#race.name = self.raceName.GetValue().strip()
-		#race.longName = self.raceLongName.GetValue().strip()
-		#race.city = self.raceCity.GetValue().strip()
-		#race.stateProv = self.raceStateProv.GetValue().strip()
-		#race.country = self.raceCountry.GetValue().strip()
-		#race.discipline = self.raceDiscipline.GetValue().strip()
-		#race.date = self.date.GetValue().Format(Properties.dateFormat)
-		#race.raceNum = self.raceNum.GetValue()
-		#race.scheduledStart = self.scheduledStart.GetValue()
-		#race.minutes = self.minutes.GetValue()
-		#race.organizer = self.organizer.GetValue().strip()
-		#race.commissaire = self.commissaire.GetValue().strip()
-		#race.memo = self.memo.GetValue().strip()
+	def commit( self ):
+		race = Model.race
+		if race:
+			race.name = self.raceName.GetValue().strip()
+			race.longName = self.raceLongName.GetValue().strip()
+			race.city = self.raceCity.GetValue().strip()
+			race.stateProv = self.raceStateProv.GetValue().strip()
+			race.country = self.raceCountry.GetValue().strip()
+			race.discipline = self.raceDiscipline.GetValue().strip()
+			race.date = self.date.GetValue().Format(Properties.dateFormat)
+			race.raceNum = self.raceNum.GetValue()
+			race.scheduledStart = self.scheduledStart.GetValue()
+			race.minutes = self.minutes.GetValue()
+			race.organizer = self.organizer.GetValue().strip()
+			race.commissaire = self.commissaire.GetValue().strip()
+			race.memo = self.memo.GetValue().strip()
 
-	#def onChanged( self, event ):
+	def onChanged( self, event ):
 		#self.updateFileName()
-		#pass
+		pass
 
 #------------------------------------------------------------------------------------------------
 
@@ -390,11 +392,11 @@ class SprintTimerProperties( wx.Panel ):
 		gridBagSizer = wx.GridBagSizer()
 		gridBagSizer.Add( wx.StaticText( self, label=_('Remote IP Address:') ),
 						pos=(0,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
-		self.ipaddr = wx.TextCtrl( self, value ='127.0.0.1', style = wx.TE_READONLY, size=(240,-1) )
+		self.ipaddr = wx.TextCtrl( self, value ='127.0.0.1', size=(240,-1) )
 		gridBagSizer.Add( self.ipaddr, pos=(0, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
-		self.port = wx.lib.intctrl.IntCtrl( self, -1, min=1, max=65535, value=123,
-											limited=True, style = wx.TE_READONLY )
+		self.port = wx.lib.intctrl.IntCtrl( self, -1, min=1, max=65535, value=10123,
+											limited=True )
 		gridBagSizer.Add( wx.StaticText(self, label = _('Remote Port:')), pos=(1,0),
 						flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
 		gridBagSizer.Add( self.port, pos=(1,1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
@@ -414,10 +416,20 @@ class SprintTimerProperties( wx.Panel ):
 		pass
 	
 	def refresh( self ):
-		pass
+		race = Model.race
+		if not race:
+			return
+		self.sprintTimer.SetValue( getattr(race, 'enableSprintTimer', True) )
+		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', '127.0.0.1') )
+		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		
 	def commit( self ):
-		pass
+		race = Model.race
+		if not race:
+			return
+		race.enableSprintTimer = self.sprintTimer.IsChecked()
+		race.sprintTimerAddress = self.ipaddr.GetValue()
+		race.sprintTimerPort	= self.port.GetValue()
 	
 #------------------------------------------------------------------------------------------------
 
@@ -457,12 +469,24 @@ class RfidProperties( wx.Panel ):
 		with JChipSetup.JChipSetupDialog(self) as dlg:
 			dlg.ShowModal()
 		self.refresh()
-		
+	
 	def refresh( self ):
-		pass
+		race = Model.race
+		if not race:
+			return
+		self.jchip.SetValue( getattr(race, 'enableJChipIntegration', False) )
+		self.chipReaderType.SetLabel( self.chipReaderChoices[max(getattr(race, 'chipReaderType', 0), 0)] )
+		self.GetSizer().Layout()
 		
 	def commit( self ):
-		pass
+		race = Model.race
+		if not race:
+			return
+		race.enableJChipIntegration = self.jchip.IsChecked()
+		race.timeTrialNoRFIDStart = False
+		race.resetStartClockOnFirstTag	= False
+		race.skipFirstTagRead			= False
+		
 	
 #------------------------------------------------------------------------------------------------
 
@@ -733,8 +757,8 @@ class CameraProperties( wx.Panel ):
 		
 		choices = [
 			_("Do Not Use Camera for Photo Finish"),
-			_("Photos on T2"),
 			_("Photos on T1"),
+			_("Photos on T2"),
 		]
 		self.radioBox = wx.RadioBox( self, label=_("USB Camera Options"), choices=choices, majorDimension=1, style=wx.RA_SPECIFY_COLS )
 		self.radioBox.SetBackgroundColour( wx.WHITE )
@@ -749,10 +773,30 @@ class CameraProperties( wx.Panel ):
 		self.SetSizer( ms )
 
 	def refresh( self ):
-		pass
+		race = Model.race
+		if not race or not race.enableUSBCamera:
+			self.radioBox.SetSelection( 0 )
+		else:
+			if not race.photosAtRaceEndOnly:
+				self.radioBox.SetSelection( 2 )
+			else:
+				self.radioBox.SetSelection( 1 )
+		self.GetSizer().Layout()
 		
 	def commit( self ):
-		pass
+		race = Model.race
+		if not race:
+			return
+		
+		race.enableUSBCamera = False
+		race.photosAtRaceEndOnly = False
+		v = self.radioBox.GetSelection()
+		if v == 2:
+			race.enableUSBCamera = True
+		elif v == 1:
+			race.enableUSBCamera = True
+			race.photosAtRaceEndOnly = True
+
 
 #------------------------------------------------------------------------------------------------
 #class AnimationProperties( wx.Panel ):
@@ -1222,63 +1266,63 @@ class CameraProperties( wx.Panel ):
 		#race.notes = self.notes.GetValue()
 
 #------------------------------------------------------------------------------------------------
-#class FilesProperties( wx.Panel ):
-	#def __init__( self, parent, id = wx.ID_ANY ):
-		#super().__init__( parent, id )
+class FilesProperties( wx.Panel ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id )
 		
-		#self.fileNameLabel = wx.StaticText( self, label=_('File Name') )
-		#self.fileName = wx.StaticText( self )
+		self.fileNameLabel = wx.StaticText( self, label=_('File Name') )
+		self.fileName = wx.StaticText( self )
 
-		#self.excelButton = wx.Button(self, label=_('Link External Excel Sheet...'))
-		#self.excelButton.Bind( wx.EVT_BUTTON, self.excelButtonCallback )
+		self.excelButton = wx.Button(self, label=_('Link External Excel Sheet...'))
+		self.excelButton.Bind( wx.EVT_BUTTON, self.excelButtonCallback )
 
-		#self.excelName = wx.StaticText( self )
+		self.excelName = wx.StaticText( self )
 
-		#self.categoriesFileLabel = wx.StaticText( self, label=_('Categories Initially Loaded From') )
-		#self.categoriesFile = wx.StaticText( self )
+		self.categoriesFileLabel = wx.StaticText( self, label=_('Categories Initially Loaded From') )
+		self.categoriesFile = wx.StaticText( self )
 		
-		#self.templateFileNameLabel = wx.StaticText( self, label=_('Template File') )
-		#self.templateFileName = wx.StaticText( self )
+		self.templateFileNameLabel = wx.StaticText( self, label=_('Template File') )
+		self.templateFileName = wx.StaticText( self )
 		
-		#ms = wx.BoxSizer( wx.VERTICAL )
-		#self.SetSizer( ms )
+		ms = wx.BoxSizer( wx.VERTICAL )
+		self.SetSizer( ms )
 		
-		#fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=12, hgap=8 )
-		#fgs.AddGrowableCol( 1 )
+		fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=12, hgap=8 )
+		fgs.AddGrowableCol( 1 )
 		
-		#labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
-		#fieldAlign = wx.EXPAND
+		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
+		fieldAlign = wx.EXPAND
 		
-		#blank = lambda : wx.StaticText( self, label='' )
+		blank = lambda : wx.StaticText( self, label='' )
 		
-		#labelFieldBatchPublish = [
-			#(self.fileNameLabel,		0, labelAlign),		(self.fileName,			1, fieldAlign),
-			#(self.excelButton,			0, labelAlign),		(self.excelName,		1, fieldAlign),
-			#(self.categoriesFileLabel,	0, labelAlign),		(self.categoriesFile,	1, fieldAlign),
-			#(self.templateFileNameLabel,0, labelAlign),		(self.templateFileName,	1, fieldAlign),
-		#]
-		#addToFGS( fgs, labelFieldBatchPublish )
-		#ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
+		labelFieldBatchPublish = [
+			(self.fileNameLabel,		0, labelAlign),		(self.fileName,			1, fieldAlign),
+			(self.excelButton,			0, labelAlign),		(self.excelName,		1, fieldAlign),
+			(self.categoriesFileLabel,	0, labelAlign),		(self.categoriesFile,	1, fieldAlign),
+			(self.templateFileNameLabel,0, labelAlign),		(self.templateFileName,	1, fieldAlign),
+		]
+		addToFGS( fgs, labelFieldBatchPublish )
+		ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
 		
-	#def excelButtonCallback( self, event ):
-		#mainWin = Utils.getMainWin()
-		#if mainWin:
-			#mainWin.menuLinkExcel()
+	def excelButtonCallback( self, event ):
+		mainWin = Utils.getMainWin()
+		if mainWin:
+			mainWin.menuLinkExcel()
 	
-	#def refresh( self ):
-		#race = Model.race
-		#excelLink = getattr(race, 'excelLink', None)
-		#if excelLink:
-			#self.excelName.SetLabel( '{}|{}'.format(
-				#os.path.basename(excelLink.fileName) if excelLink.fileName else '',
-				#excelLink.sheetName if excelLink.sheetName else '') )
-		#else:
-			#self.excelName.SetLabel( '' )
-		#self.categoriesFile.SetLabel( os.path.basename(getattr(race, 'categoriesImportFile', '')) )
-		#self.templateFileName.SetLabel( os.path.basename(getattr(race, 'templateFileName', '')) )
+	def refresh( self ):
+		race = Model.race
+		excelLink = getattr(race, 'excelLink', None)
+		if excelLink:
+			self.excelName.SetLabel( '{}|{}'.format(
+				os.path.basename(excelLink.fileName) if excelLink.fileName else '',
+				excelLink.sheetName if excelLink.sheetName else '') )
+		else:
+			self.excelName.SetLabel( '' )
+		self.categoriesFile.SetLabel( os.path.basename(getattr(race, 'categoriesImportFile', '')) )
+		self.templateFileName.SetLabel( os.path.basename(getattr(race, 'templateFileName', '')) )
 		
-	#def commit( self ):
-		#pass
+	def commit( self ):
+		pass
 		
 #------------------------------------------------------------------------------------------------
 
@@ -1307,7 +1351,7 @@ class Properties( wx.Panel ):
 		self.notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onPageChanging )
 
 		self.propClassName = [
-			#('generalInfoProperties',	GeneralInfoProperties,		_('General Info') ),
+			('generalInfoProperties',	GeneralInfoProperties,		_('General Info') ),
 			#('raceOptionsProperties',	RaceOptionsProperties,		_('Race Options') ),
 			('sprintTimerProperties',	SprintTimerProperties,		_('Sprint Timer') ),
 			('rfidProperties',			RfidProperties,				_('RFID') ),
@@ -1319,14 +1363,14 @@ class Properties( wx.Panel ):
 			('cameraProperties',		CameraProperties,			_('Camera') ),
 			#('lapCounterProperties',	LapCounterProperties,		_('Lap Counter') ),
 			#('animationProperties',		AnimationProperties,		_('Animation') ),
-			#('filesProperties',			FilesProperties,			_('Files/Excel') ),
+			('filesProperties',			FilesProperties,			_('Files/Excel') ),
 			#('teamResultsProperties',	TeamResultsProperties,		_('Team Results') ),
 		]
 		for prop, PropClass, name in self.propClassName:
 			setattr( self, prop, PropClass(self.notebook) )
 			self.notebook.AddPage( getattr(self, prop), name )
 		
-		#self.updateFileName()
+		self.updateFileName()
 		
 		mainSizer.Add( self.notebook, 1, flag=wx.ALL|wx.EXPAND, border=4 )
 		
@@ -1348,10 +1392,10 @@ class Properties( wx.Panel ):
 
 			mainSizer.AddSpacer( 12 )
 			mainSizer.Add( hs, flag=wx.ALL, border=4 )
-			mainSizer.Add(
-				wx.StaticText(self, label=_('Save as "default" for a default Template that is applied automatically to all New races')),
-				flag=wx.ALL, border=4
-			)
+			#mainSizer.Add(
+				#wx.StaticText(self, label=_('Save as "default" for a default Template that is applied automatically to all New races')),
+				#flag=wx.ALL, border=4
+			#)
 			
 		#self.setEditable()
 		mainSizer.Fit(self)
@@ -1360,31 +1404,31 @@ class Properties( wx.Panel ):
 	#def onJChipIntegration( self, event ):
 		#self.rfidProperties.autocorrectLapsDefault.SetValue( not self.rfidProperties.jchip.GetValue() )
 	
-	#def setPage( self, pageName ):
-		#for i, d in enumerate(self.propClassName):
-			#if pageName in d:
-				#self.notebook.SetSelection( i )
-				#break
+	def setPage( self, pageName ):
+		for i, d in enumerate(self.propClassName):
+			if pageName in d:
+				self.notebook.SetSelection( i )
+				break
 	
 	def onPageChanging( self, event ):
-		#'''
-		#if Model.race:
-			#notebook = event.GetEventObject()
+		if Model.race:
+			notebook = event.GetEventObject()
 			#notebook.GetPage( event.GetOldSelection() ).commit()
-			#notebook.GetPage( event.GetSelection() ).refresh()
-			#self.updateFileName()
-		#'''
-		if hasattr(self, 'cameraProperties'):
-			notebook = event.GetEventObject()
-			if notebook.GetPage(event.GetOldSelection()) == self.cameraProperties:
-				self.cameraProperties.commit()
-			if notebook.GetPage(event.GetSelection()) == self.cameraProperties:
-				self.cameraProperties.refresh()
+			notebook.GetPage( event.GetSelection() ).refresh()
+			self.updateFileName()
+
+
+		#if hasattr(self, 'cameraProperties'):
+			#notebook = event.GetEventObject()
+			#if notebook.GetPage(event.GetOldSelection()) == self.cameraProperties:
+				#self.cameraProperties.commit()
+			#if notebook.GetPage(event.GetSelection()) == self.cameraProperties:
+				#self.cameraProperties.refresh()
 				
-		if hasattr(self, 'generalInfoProperties'):
-			notebook = event.GetEventObject()
-			if notebook.GetPage(event.GetSelection()) == self.generalInfoProperties:
-				self.generalInfoProperties.refresh()
+		#if hasattr(self, 'generalInfoProperties'):
+			#notebook = event.GetEventObject()
+			#if notebook.GetPage(event.GetSelection()) == self.generalInfoProperties:
+				#self.generalInfoProperties.refresh()
 				
 		event.Skip()	# Required to properly repaint the screen.
 	
@@ -1492,8 +1536,8 @@ class Properties( wx.Panel ):
 				#sNew = '{:02d}:{:02d}:00'.format(int(mins/60), mins%60)
 				#gi.scheduledStart.SetValue( sNew )
 	
-	#def onChanged( self, event ):
-		#self.updateFileName()
+	def onChanged( self, event ):
+		self.updateFileName()
 	
 	def updateFileName( self ):
 		try:
@@ -1511,24 +1555,24 @@ class Properties( wx.Panel ):
 		fi.fileName.SetLabel( fname )
 		return fname
 	
-	#def saveFileNameFields( self ):
-		#try:
-			#gi = self.generalInfoProperties
-		#except AttributeError:
-			#return ''		
-		#for f in ('date', 'raceName', 'raceNum', 'memo'):
-			#setattr(self, f + 'Original', getattr(gi, f).GetValue())
+	def saveFileNameFields( self ):
+		try:
+			gi = self.generalInfoProperties
+		except AttributeError:
+			return ''		
+		for f in ('date', 'raceName', 'raceNum', 'memo'):
+			setattr(self, f + 'Original', getattr(gi, f).GetValue())
 		
-	#def restoreFileNameFields( self ):
-		#try:
-			#gi = self.generalInfoProperties
-		#except AttributeError:
-			#return ''
-		#for f in ('date', 'raceName', 'raceNum', 'memo'):
-			#getattr(gi, f).SetValue( getattr(self, f + 'Original') )
+	def restoreFileNameFields( self ):
+		try:
+			gi = self.generalInfoProperties
+		except AttributeError:
+			return ''
+		for f in ('date', 'raceName', 'raceNum', 'memo'):
+			getattr(gi, f).SetValue( getattr(self, f + 'Original') )
 	
-	#def getFileName( self ):
-		#return self.updateFileName()
+	def getFileName( self ):
+		return self.updateFileName()
 	
 	def refresh( self, forceUpdate=True ):
 		self.updateFileName()
@@ -1547,30 +1591,30 @@ class Properties( wx.Panel ):
 			
 		self.GetSizer().Layout()
 		
-	#def doCommit( self ):
-		#undo.pushState()
-		#with Model.LockRace() as race:
-			#if race is None:
-				#return
-			#for prop, PropClass, name in self.propClassName:
-				#getattr(self, prop).commit()
-			#race.setChanged()
-			#race.resetAllCaches()
+	def doCommit( self ):
+		undo.pushState()
+		with Model.LockRace() as race:
+			if race is None:
+				return
+			for prop, PropClass, name in self.propClassName:
+				getattr(self, prop).commit()
+			race.setChanged()
+			race.resetAllCaches()
 			
 		#if Utils.getMainWin():
 			#Utils.getMainWin().record.setTimeTrialInput( race.isTimeTrial )
 		
-	#def commit( self ):
-		#success = SetNewFilename( self, self )
-		#self.doCommit()
-		#Model.resetCache()
-		#mainWin = Utils.getMainWin()
-		#if mainWin:
+	def commit( self ):
+		success = SetNewFilename( self, self )
+		self.doCommit()
+		Model.resetCache()
+		mainWin = Utils.getMainWin()
+		if mainWin:
 			#wx.CallAfter( mainWin.lapCounterDialog.refresh )
-			#wx.CallAfter( mainWin.writeRace, False )
+			wx.CallAfter( mainWin.writeRace, False )
 		#wx.CallAfter( Utils.refreshForecastHistory )
-		#if not success and mainWin:
-			#wx.CallAfter( mainWin.showPage, mainWin.iPropertiesPage )
+		if not success and mainWin:
+			wx.CallAfter( mainWin.showPage, mainWin.iPropertiesPage )
 		
 class PropertiesDialog( wx.Dialog ):
 	def __init__(
@@ -1682,65 +1726,65 @@ class PropertiesDialog( wx.Dialog ):
 		categoriesFile = self.categoriesFile.GetValue()
 		return categoriesFile if categoriesFile.endswith( '.brc' ) else None
 
-#def SetNewFilename( parent, properties ):
-	#mainWin = Utils.getMainWin()
-	#if not mainWin:
-		#return True
+def SetNewFilename( parent, properties ):
+	mainWin = Utils.getMainWin()
+	if not mainWin:
+		return True
 	
-	#dir = os.path.dirname(mainWin.fileName) if mainWin.fileName else Utils.getDocumentsDir()
+	dir = os.path.dirname(mainWin.fileName) if mainWin.fileName else Utils.getDocumentsDir()
 	
-	#newBaseName = properties.getFileName()
-	#if not newBaseName:
-		#newBaseName = _('UnnamedRace')
-	#newFName = os.path.join( dir, newBaseName )
+	newBaseName = properties.getFileName()
+	if not newBaseName:
+		newBaseName = _('UnnamedRace')
+	newFName = os.path.join( dir, newBaseName )
 	
-	#success = True
-	#if newFName != mainWin.fileName:
-		#if (
-			#not mainWin.fileName or
-			#Utils.MessageOKCancel(parent, '\n\n'.join( [
-				#_("The filename will be changed to:"),
-				#'{}',
-				#_("Continue?")]).format(newBaseName), _("Change Filename?"))
-		#):
-			#if os.path.exists(newFName):
-				#if not Utils.MessageOKCancel(parent, '\n\n'.join( [
-						#_("This file already exists:"),
-						#'{}',
-						#_("Overwrite?")]).format(newFName), _("Overwrite Existing File?")):
-					#properties.restoreFileNameFields()
-					#success = False
-		#else:
-			#properties.restoreFileNameFields()
-			#success = False
+	success = True
+	if newFName != mainWin.fileName:
+		if (
+			not mainWin.fileName or
+			Utils.MessageOKCancel(parent, '\n\n'.join( [
+				_("The filename will be changed to:"),
+				'{}',
+				_("Continue?")]).format(newBaseName), _("Change Filename?"))
+		):
+			if os.path.exists(newFName):
+				if not Utils.MessageOKCancel(parent, '\n\n'.join( [
+						_("This file already exists:"),
+						'{}',
+						_("Overwrite?")]).format(newFName), _("Overwrite Existing File?")):
+					properties.restoreFileNameFields()
+					success = False
+		else:
+			properties.restoreFileNameFields()
+			success = False
 	
-	#newBaseName = properties.getFileName()
-	#newFName = os.path.join( dir, newBaseName )
+	newBaseName = properties.getFileName()
+	newFName = os.path.join( dir, newBaseName )
 	
-	#mainWin.fileName = newFName
-	#return success
+	mainWin.fileName = newFName
+	return success
 
-#def ChangeProperties( parent ):
-	#with PropertiesDialog( parent, showFileFields=False, updateProperties=True, size=(600,400) ) as propertiesDialog:
-		#propertiesDialog.properties.setEditable( True )
-		#try:
-			#if propertiesDialog.ShowModal() != wx.ID_OK:
-				#raise NameError('User Cancel')
+def ChangeProperties( parent ):
+	with PropertiesDialog( parent, showFileFields=False, updateProperties=True, size=(600,400) ) as propertiesDialog:
+		propertiesDialog.properties.setEditable( True )
+		try:
+			if propertiesDialog.ShowModal() != wx.ID_OK:
+				raise NameError('User Cancel')
 				
-			#if not SetNewFilename( propertiesDialog, propertiesDialog.properties ):
-				#raise NameError('User Cancel')
+			if not SetNewFilename( propertiesDialog, propertiesDialog.properties ):
+				raise NameError('User Cancel')
 				
-			#mainWin = Utils.getMainWin()
-			#dir = os.path.dirname( mainWin.fileName )
+			mainWin = Utils.getMainWin()
+			dir = os.path.dirname( mainWin.fileName )
 			
-			#propertiesDialog.properties.refresh()
-			#Model.resetCache()
-			#mainWin.writeRace()
-			#Utils.refresh()
-			#wx.CallAfter( Utils.refreshForecastHistory )
+			propertiesDialog.properties.refresh()
+			Model.resetCache()
+			mainWin.writeRace()
+			Utils.refresh()
+			wx.CallAfter( Utils.refreshForecastHistory )
 				
-		#except (NameError, AttributeError, TypeError):
-			#pass
+		except (NameError, AttributeError, TypeError):
+			pass
 	
 #def ApplyDefaultTemplate( race ):
 	#if not race:
@@ -1753,19 +1797,19 @@ class PropertiesDialog( wx.Dialog ):
 		#return
 	#template.toRace( race )
 
-#if __name__ == '__main__':
-	#race = Model.newRace()
-	#race._populate()
+if __name__ == '__main__':
+	race = Model.newRace()
+	race._populate()
 	
-	#app = wx.App(False)
-	#mainWin = wx.Frame(None,title="CrossMan", size=(600,660))
+	app = wx.App(False)
+	mainWin = wx.Frame(None,title="CrossMan", size=(600,660))
 	
-	#with PropertiesDialog( mainWin, title=_("Properties Dialog Test"), showFileFields=True, updateProperties=True ) as propertiesDialog:
-		#propertiesDialog.Show()
+	with PropertiesDialog( mainWin, title=_("Properties Dialog Test"), showFileFields=True, updateProperties=True ) as propertiesDialog:
+		propertiesDialog.Show()
 	
-	#properties = Properties( mainWin )
-	#properties.setEditable( True )
-	#properties.refresh()
-	#mainWin.Show()
+	properties = Properties( mainWin )
+	properties.setEditable( True )
+	properties.refresh()
+	mainWin.Show()
 	
-	#app.MainLoop()
+	app.MainLoop()
