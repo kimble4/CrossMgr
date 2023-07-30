@@ -185,8 +185,8 @@ class JSONTimer:
 			#-----------------------------------------------------------------------------------------------------
 			
 			lastHeartbeat = now()
-			lastSprintTime = 0
-			lastSprintStart = 0
+			lastT2 = 0
+			lastT1 = 0
 			clockOffset = None # positive value means we are ahead of the timer
 			while keepGoing():
 				try:
@@ -194,25 +194,24 @@ class JSONTimer:
 					receivedTime = now()
 					if buffer:
 						sprintDict = json.loads(buffer)
-						if sprintDict["wallTime"]:  #Use the presence of wallTime as the heartbeat
-							lastHeartbeat = receivedTime
-							ms = 0;
-							if sprintDict["wallMillis"]:
-								ms = sprintDict["wallMillis"] / 1000.0
-							timersTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
-							clockOffset = receivedTime - timersTime
-							qLog( 'time', '{}: {}'.format(_('Our clock is ahead by'), clockOffset.total_seconds() ) )
+						if "wallTime" in sprintDict:
+							if sprintDict["wallTime"]:  #Use the presence of wallTime as the heartbeat
+								lastHeartbeat = receivedTime
+								ms = 0;
+								if "wallMillis" in sprintDict:
+									ms = sprintDict["wallMillis"] / 1000.0
+								timersTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
+								clockOffset = receivedTime - timersTime
+								qLog( 'time', '{}: {}'.format(_('Our clock is ahead by'), clockOffset.total_seconds() ) )
 							
-						if "sprintTime" in sprintDict:
-							if sprintDict["sprintTime"] != lastSprintTime:
-								lastSprintTime = sprintDict["sprintTime"]
-								if "sprintStart" in sprintDict:
-									lastSprintStart = sprintDict["sprintStart"]
+						if "T2micros" in sprintDict:
+							if sprintDict["T2micros"] != lastT2:
+								lastT2 = sprintDict["T2micros"]
 								qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
 								self.sendReaderEvent(sprintDict, receivedTime)
-						elif "sprintStart" in sprintDict:
-							if sprintDict["sprintStart"] != lastSprintStart:
-								lastSprintStart = sprintDict["sprintStart"]
+						elif "T1micros" in sprintDict:
+							if sprintDict["T1micros"] != lastT1:
+								lastT1 = sprintDict["T1micros"]
 								qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
 								self.sendReaderEvent(sprintDict, receivedTime)
 					else:
@@ -223,7 +222,7 @@ class JSONTimer:
 					continue
 				except socket.timeout:
 					# timeouts are normal and ordinary, we just go round the loop and try again until we get some data
-					if (now() - lastHeartbeat).total_seconds() > 60:
+					if (now() - lastHeartbeat).total_seconds() > 35:
 						qLog( 'connection', _('Lost heartbeat.') )
 						break
 					continue
