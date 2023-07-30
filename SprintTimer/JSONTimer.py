@@ -21,11 +21,24 @@ class JSONTimer:
 	DEFAULT_PORT = 123
 	DEFAULT_HOST = '81.187.184.219'		# Port to connect to the sprint timer
 	
+	SPEED_UNKNOWN_UNIT = 0
+	SPEED_MPS = 1
+	SPEED_MPH = 2
+	SPEED_KPH = 3
+	SPEED_KTS = 4
+	SPEED_FPF = 5
+	
 	def __init__( self ):
 		self.q = None
 		self.shutdownQ = None
+		self.sendQ = None
 		self.listener = None
 		SprintTimerEvent, EVT_SPRINT_TIMER = wx.lib.newevent.NewEvent()
+		self.socket = None
+		self.socketLock = None
+		
+		self.sprintDistance = None
+		self.speedUnit = None
 
 		self.readerEventWindow = None
 		atexit.register(self.CleanupListener)
@@ -34,15 +47,47 @@ class JSONTimer:
 		if json and self.readerEventWindow:
 			wx.PostEvent( self.readerEventWindow, SprintTimerEvent(json = json, receivedTime = receivedTime) )
 
+	def setSprintDistance( self, distance = None ):
+		self.sprintDistance = distance
+		self.writeSettings()
 	
+	def setSpeedUnit( self, unit = SPEED_UNKNOWN_UNIT ):
+		self.speedUnit = unit
+		self.writeSettings()
+		
+	def setBib( self, bib = None):
+		if self.sendQ:
+			try:
+				settings = { "sprintBib": bib }
+				message = json.dumps(settings) + '\n'
+				self.sendQ.put(message)
+			except Exception as e:
+				print(e)
+				self.qLog( 'send', '{}: {}: "{}"'.format(cmd, _('Failed to write to sendQ'), e) )
+			self.processSendQ()
 
-	def parseTagTime(  self, s ):
-		_, ChipCode, Seconds, Milliseconds, _ = s.split(',', 4)
-		t = datetime.datetime(1980, 1, 1) + datetime.timedelta( seconds=int(Seconds), milliseconds=int(Milliseconds) )
-		return ChipCode, t
-
-	
-
+	def writeSettings( self ):
+		if self.sendQ:
+			try:
+				settings = { "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit }
+				message = json.dumps(settings) + '\n'
+				self.sendQ.put(message)
+			except Exception as e:
+				print(e)
+				self.qLog( 'send', '{}: {}: "{}"'.format(cmd, _('Failed to write to sendQ'), e) )
+			self.processSendQ()
+				
+	def processSendQ( self ):
+		while self.sendQ:
+			try:
+				message = self.sendQ.get_nowait()
+				self.socketWriteLock.acquire()
+				self.qLog( 'data', '{}: {}'.format(_('Sending'), message))
+				self.socketSend( self.socket, message.encode('utf-8'))
+				self.socketWriteLock.release()
+			except Empty:
+				return
+				
 	def socketSend( self, s, message ):
 		sLen = 0
 		while sLen < len(message):
@@ -50,9 +95,9 @@ class JSONTimer:
 			
 	def socketReadDelimited( self, s, delimiter=EOL ):
 		len_EOL = len(delimiter)
-		buffer = s.recv( 4096 )
+		buffer = self.socket.recv( 4096 )
 		while not buffer.endswith( delimiter ):
-			more = s.recv( 4096 )
+			more = self.socket.recv( 4096 )
 			if more:
 				buffer += more
 			else:
@@ -85,8 +130,8 @@ class JSONTimer:
 			
 			try:
 				s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-				s.settimeout( 0.5 )
-				s.connect( (host, port) )
+				self.socket.settimeout( 0.5 )
+				self.socket.connect( (host, port) )
 			except Exception as e:
 				continue
 
@@ -96,7 +141,7 @@ class JSONTimer:
 				continue
 				
 			try:
-				s.close()
+				self.socket.close()
 			except Exception as e:
 				pass
 			
@@ -104,27 +149,21 @@ class JSONTimer:
 				return host
 				
 		return None
+	
+	def qLog( self, category, message ):
+			self.q.put( (category, message) )
+			Utils.writeLog( 'JSONTimer: {}: {}'.format(category, message) )
 
-	def Server( self, q, shutdownQ, HOST, PORT, startTime ):
-		#global readerEventWindow
+	def Server( self, q, shutdownQ, sendQ, HOST, PORT ):
 		
 		if not self.readerEventWindow:
 			self.readerEventWindow = Utils.mainWin
 		
-		timeoutSecs = 5
+		timeoutSecs = 1
 		delaySecs = 3
 		
 		readerTime = None
 		readerComputerTimeDiff = None
-		
-		s = None
-		passingsCur = 0
-		status = None
-		startOperation = None
-		
-		def qLog( category, message ):
-			self.q.put( (category, message) )
-			Utils.writeLog( 'JSONTimer: {}: {}'.format(category, message) )
 		
 		def keepGoing():
 			try:
@@ -134,53 +173,58 @@ class JSONTimer:
 			return False
 		
 		def autoDetectCallback( m ):
-			qLog( 'autodetect', '{} {}'.format(_('Checking'), m) )
+			self.qLog( 'autodetect', '{} {}'.format(_('Checking'), m) )
 			return keepGoing()
 			
 		def makeCall( s, message, getReply=True, comment='' ):
 			cmd = message.split(';', 1)[0]
 			buffer = None
-			qLog( 'command', 'sending: {}{}'.format(message, ' ({})'.format(comment) if comment else '') )
+			self.qLog( 'command', 'sending: {}{}'.format(message, ' ({})'.format(comment) if comment else '') )
 			try:
 				#socketSend( s, bytes('{}{}'.format(message,EOL)) )
 				socketSend( s, bytes(message) )
 				if getReply:
 					buffer = socketReadDelimited( s )
 			except Exception as e:
-				qLog( 'connection', '{}: {}: "{}"'.format(cmd, _('Connection failed'), e) )
+				self.qLog( 'connection', '{}: {}: "{}"'.format(cmd, _('Connection failed'), e) )
 				raise ValueError
 			
 			return buffer
 		
 		while keepGoing():
-			if s:
+			if self.socket:
 				try:
-					s.shutdown( socket.SHUT_RDWR )
-					s.close()
+					self.socket.shutdown( socket.SHUT_RDWR )
+					self.socket.close()
 				except Exception as e:
 					pass
 				time.sleep( delaySecs )
 			
 			#-----------------------------------------------------------------------------------------------------
-			qLog( 'connection', '{} {}:{}'.format(_('Attempting to connect to sprint timer at'), HOST, PORT) )
+			self.qLog( 'connection', '{} {}:{}'.format(_('Attempting to connect to sprint timer at'), HOST, PORT) )
 			try:
-				s = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-				s.settimeout( timeoutSecs )
-				s.connect( (HOST, PORT) )
+				self.socket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+				self.socket.settimeout( timeoutSecs )
+				self.socket.connect( (HOST, PORT) )
 			except Exception as e:
-				qLog( 'connection', '{}: {}'.format(_('Connection to sprint timer failed'), e) )
-				s, status, startOperation = None, None, None
-				
-				qLog( 'connection', '{}'.format(_('Attempting AutoDetect...')) )
+				self.qLog( 'connection', '{}: {}'.format(_('Connection to sprint timer failed'), e) )
+				self.socket = None
+				self.qLog( 'connection', '{}'.format(_('Attempting AutoDetect...')) )
 				HOST_AUTO = self.AutoDetect( callback = autoDetectCallback )
 				if HOST_AUTO:
-					qLog( 'connection', '{}: {}'.format(_('AutoDetect sprint timer at'), HOST_AUTO) )
+					self.qLog( 'connection', '{}: {}'.format(_('AutoDetect sprint timer at'), HOST_AUTO) )
 					HOST = HOST_AUTO
 				else:
 					time.sleep( delaySecs )
 				continue
 
-			qLog( 'connection', '{} {}:{}'.format(_('connect to sprint timer SUCCEEDS on'), HOST, PORT) )
+			self.qLog( 'connection', '{} {}:{}'.format(_('connect to sprint timer SUCCEEDS on'), HOST, PORT) )
+			# send the settings and epoch time immediately
+			self.socketWriteLock.acquire()
+			settings = { "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit, "wallTime": int(now().timestamp()) }
+			message = json.dumps(settings) + '\n'
+			self.socketSend(self.socket, message.encode('utf-8'))
+			self.socketWriteLock.release()
 			
 			#-----------------------------------------------------------------------------------------------------
 			
@@ -189,8 +233,9 @@ class JSONTimer:
 			lastT1 = 0
 			clockOffset = None # positive value means we are ahead of the timer
 			while keepGoing():
+				# read from the reader
 				try:
-					buffer = self.socketReadDelimited( s )
+					buffer = self.socketReadDelimited( self.socket )
 					receivedTime = now()
 					if buffer:
 						sprintDict = json.loads(buffer)
@@ -200,40 +245,42 @@ class JSONTimer:
 								ms = 0;
 								if "wallMillis" in sprintDict:
 									ms = sprintDict["wallMillis"] / 1000.0
-								timersTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
-								clockOffset = receivedTime - timersTime
-								qLog( 'time', '{}: {}'.format(_('Our clock is ahead by'), clockOffset.total_seconds() ) )
+								readerTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
+								readerComputerTimeDiff = receivedTime - readerTime
+								self.qLog( 'time', '{}: {}'.format(_('Our clock is ahead by'), readerComputerTimeDiff.total_seconds() ) )
 							
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								lastT2 = sprintDict["T2micros"]
-								qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
+								self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
 								self.sendReaderEvent(sprintDict, receivedTime)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								lastT1 = sprintDict["T1micros"]
-								qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
+								self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
 								self.sendReaderEvent(sprintDict, receivedTime)
 					else:
-						qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
+						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break
 				except json.JSONDecodeError:
-					qLog( 'connection', _('Failed to parse JSON.') )
+					self.qLog( 'connection', _('Failed to parse JSON.') )
 					continue
 				except socket.timeout:
 					# timeouts are normal and ordinary, we just go round the loop and try again until we get some data
 					if (now() - lastHeartbeat).total_seconds() > 35:
-						qLog( 'connection', _('Lost heartbeat.') )
+						self.qLog( 'connection', _('Lost heartbeat.') )
 						break
 					continue
 				except Exception as e:
-					qLog( 'connection', '{}: "{}"'.format(_('Connection failed'), e) )
+					self.qLog( 'connection', '{}: "{}"'.format(_('Connection failed'), e) )
 					break
-		
+				
+				self.processSendQ()
+				
 		# Final cleanup.
 		try:
-			s.shutdown( socket.SHUT_RDWR )
-			s.close()
+			self.socket.shutdown( socket.SHUT_RDWR )
+			self.socket.close()
 		except Exception:
 			pass
 			
@@ -265,22 +312,23 @@ class JSONTimer:
 		
 		self.shutdownQ = None
 		
+		self.socketWriteLock = None
+		
 	def IsListening( self ):
 		return self.listener is not None
 
-	def StartListener( self, startTime=now(), HOST=None, PORT=None, test=False ):
+	def StartListener( self, HOST=None, PORT=None, test=False ):
 		self.StopListener()
-		
 		self.q = Queue()
 		self.shutdownQ = Queue()
-		self.listener = Process( target = self.Server, args=(self.q, self.shutdownQ, HOST, PORT, startTime) )
+		self.sendQ = Queue()
+		self.socketWriteLock = threading.Lock()
+		self.listener = Process( target = self.Server, args=(self.q, self.shutdownQ, self.sendQ, HOST, PORT) )
 		self.listener.name = 'JSONTimer Listener'
 		self.listener.daemon = True
 		self.listener.start()
 		
 	def CleanupListener( self ):
-		#global shutdownQ
-		#global listener
 		if self.listener and self.listener.is_alive():
 			self.shutdownQ.put( 'shutdown' )
 			self.listener.join()
@@ -291,21 +339,17 @@ if __name__ == '__main__':
 	def doTest():
 		try:
 			sprintTimer = JSONTimer()
+			sprintTimer.setSprintDistance(50)
+			sprintTimer.setSpeedUnit(JSONTimer.SPEED_KPH)
 			sprintTimer.StartListener( HOST='81.187.184.219', PORT=JSONTimer.DEFAULT_PORT )
-			count = 0
-			while 1:
-				time.sleep( 1 )
-				#sys.stdout.write( '.' )
-				#messages = sprintTimer.GetData()
-				#if messages:
-					#sys.stdout.write( '\n' )
-				#for m in messages:
-					#if m[0] == 'data':
-						#count += 1
-						#print( '{}: {}'.format(count, m[1]) )
-					#else:
-						#print( 'other: {}, {}'.format(m[0], ', '.join('"{}"'.format(s) for s in m[1:])) )
-				#sys.stdout.flush()
+
+			time.sleep( 10 )
+			sprintTimer.setSprintDistance(10)
+			time.sleep( 10 )
+			sprintTimer.setBib( 136 )
+			time.sleep( 60 )
+			#sprintTimer.setBib( None )
+				
 		except KeyboardInterrupt:
 			return
 		
