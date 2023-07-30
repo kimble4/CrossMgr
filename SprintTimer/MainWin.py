@@ -101,6 +101,7 @@ import Model
 #import OutputStreamer
 #import GpxImport
 #import CmnImport
+from JSONTimer import JSONTimer
 from Undo import undo
 #from Printing			import CrossMgrPrintout, CrossMgrPrintoutPNG, CrossMgrPrintoutPDF, CrossMgrPodiumPrintout, getRaceCategories
 #from Printing			import ChoosePrintCategoriesDialog, ChoosePrintCategoriesPodiumDialog
@@ -163,160 +164,6 @@ def ShowSplashScreen():
 			
 #----------------------------------------------------------------------------------
 
-#class MyTipProvider( adv.TipProvider ):
-	#def __init__( self, fname, tipNo = None ):
-		#self.tips = []
-		#try:
-			#with open(fname) as f:
-				#for line in f:
-					#line = line.strip()
-					#if line and line[0] != '#':
-						#self.tips.append( line )
-			#if tipNo is None:
-				#tipNo = (int(round(time.time() * 1000)) * 13) % (len(self.tips) - 1)
-		#except Exception:
-			#pass
-		#if tipNo is None:
-			#tipNo = 0
-		#self.tipNo = tipNo
-		#wx.PyTipProvider.__init__( self, self.tipNo )
-			
-	#def GetCurrentTip( self ):
-		#if self.tipNo < 0 or self.tipNo >= len(self.tips):
-			#self.tipNo = 0
-		#return self.tipNo
-		
-	#def GetTip( self ):
-		#if not self.tips:
-			#return _('No tips available.')
-		#tip = self.tips[self.GetCurrentTip()].replace(r'\n','\n').replace(r'\t','    ')
-		#self.tipNo += 1
-		#return tip
-		
-	#def PreprocessTip( self, tip ):
-		#return tip
-		
-	#def DeleteFirstTip( self ):
-		#if self.tips:
-			#self.tips.pop(0)
-		
-	#def __len__( self ):
-		#return len(self.tips)
-		
-	#@property
-	#def CurrentTip( self ):
-		#return self.GetCurrentTip()
-		
-	#@property
-	#def Tip( self ):
-		#return self.GetTip()
-
-#def ShowTipAtStartup():
-	#mainWin = Utils.getMainWin()
-	#if mainWin and not mainWin.config.ReadBool('showTipAtStartup', True):
-		#return
-	
-	#tipFile = os.path.join(Utils.getImageFolder(), "tips.txt")
-	#try:
-		#provider = MyTipProvider( tipFile )
-		#'''
-		#if VersionMgr.isUpgradeRecommended():
-			#provider.tipNo = 0
-		#else:
-			#provider.DeleteFirstTip()
-		#'''
-		#showTipAtStartup = wx.ShowTip( None, provider, True )
-		#if mainWin:
-			#mainWin.config.WriteBool('showTipAtStartup', showTipAtStartup)
-	#except Exception:
-		#pass
-
-#class SimulateDialog(wx.Dialog):
-	#ID_MASS_START = 0
-	#ID_TIME_TRIAL = 1
-
-	#def __init__(
-			#self, parent, fName, id=wx.ID_ANY, title=_('Simulation'), size=wx.DefaultSize, pos=wx.DefaultPosition,
-			#style=wx.DEFAULT_DIALOG_STYLE, name='dialog'
-			#):
-
-		#super().__init__(parent, id, title, pos, size, style, name)
-
-		#explain = '\n'.join( [
-				#_('Simulate Race'),
-				#'',
-				#_('This will simulate a race using randomly generated data.'),
-				#_("It is a good illustration of CrossMgr's functionality with real time data."),
-				#'',
-				#_('The simulation takes about 8 minutes.'),
-				#_('In the Time Trial simulation, riders start on 15 second intervals.'),
-				#'',
-				#'{}:\n    "{}"'.format(_('The race will be written to'), fName),
-				#'',
-				#_('Continue?'),
-				#] )
-		
-		#Now continue with the normal construction of the dialog
-		#contents
-		#sizer = wx.BoxSizer(wx.VERTICAL)
-
-		#label = wx.StaticText(self, label=explain )
-		#sizer.Add(label, flag=wx.ALIGN_CENTRE|wx.ALL, border=4)
-
-		#btnsizer = wx.BoxSizer(wx.HORIZONTAL)
-
-		#---------------------------------------------------------------
-		#box = wx.StaticBox( self, label=_('Mass Start Race') )
-		#sboxsizer = wx.StaticBoxSizer( box, wx.VERTICAL )
-		
-		#btn = wx.Button(self, label=_('Start') )
-		#btn.Bind( wx.EVT_BUTTON, lambda e: self.EndModal(self.ID_MASS_START) )
-		#btn.SetDefault()
-		#sboxsizer.Add( btn, flag=wx.ALL, border=4 )
-		
-		#self.rfidResetStartClockOnFirstTag = wx.CheckBox( self, label=_('Simulate RFID Reset Start Clock on First Read') )
-		#sboxsizer.Add( self.rfidResetStartClockOnFirstTag, flag=wx.ALL, border=4 )
-		
-		#btnsizer.Add(sboxsizer, flag=wx.ALL, border=4)
-		
-		#---------------------------------------------------------------
-		
-		#box = wx.StaticBox( self, label=_('Time Trial') )
-		#sboxsizer = wx.StaticBoxSizer( box, wx.VERTICAL )
-		
-		#btn = wx.Button(self, label=_('Start') )
-		#btn.Bind( wx.EVT_BUTTON, lambda e: self.EndModal(self.ID_TIME_TRIAL) )
-		#sboxsizer.Add(btn, flag=wx.ALL, border=4)
-				
-		#btnsizer.Add(sboxsizer, flag=wx.ALL, border=4)
-		
-		#---------------------------------------------------------------
-		#sizer.Add(btnsizer, 0, wx.ALL, 8)
-
-		#---------------------------------------------------------------
-		#btn = wx.Button(self, wx.ID_CANCEL)
-		#sizer.Add(btn, flag=wx.ALIGN_RIGHT|wx.ALL, border=8)
-				
-		#self.SetSizer(sizer)
-		#sizer.Fit(self)
-
-#def replaceJsonVar( s, varName, value ):
-	#return s.replace( '{} = null'.format(varName), '{} = {}'.format(varName, Utils.ToJson(value, separators=(',',':'))), 1 )
-
-#Code on web page required by Google Analytics.
-#gaSnippet = '''
-#<script>
-#var gaNow = 1*new Date();
-#setTimeout( function() {
-		#(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		#(i[r].q=i[r].q||[]).push(arguments)},i[r].l=gaNow;a=s.createElement(o),
-		#m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		#})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		#ga('create', 'UA-XXXX-Y', 'auto'); ga('send', 'pageview');
-		#console.log( 'Google Analytics: initialized' );
-	#}, 3000 );
-#</script>
-#'''
 
 #----------------------------------------------------------------------------------
 def AppendMenuItemBitmap( menu, id, name, help, bitmap ):
@@ -334,14 +181,16 @@ class MainWin( wx.Frame ):
 		#self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
 		#self.numTimes = []
 		
+		self.SprintTimer = JSONTimer()
+		
 		self.nonBusyRefresh = NonBusyCall( self.refresh, min_millis=1500, max_millis=7500 )
 
 		#Add code to configure file history.
 		self.filehistory = wx.FileHistory(8)
 		dataDir = Utils.getHomeDir()
 		configFileName = os.path.join(dataDir, 'CrossMgr.cfg')
-		self.config = wx.Config(appName="CrossMgr",
-								vendorName="Edward.Sitarski@gmail.com",
+		self.config = wx.Config(appName="SprintTimer",
+								vendorName="BHPC",
 								localFilename=configFileName
 		)
 		self.filehistory.Load(self.config)
@@ -678,14 +527,6 @@ class MainWin( wx.Frame ):
 
 		#Configure the field of the display.
 
-		#Forecast/History shown in left pane of scrolled window.
-		#forecastHistoryWidth = 20
-		#sty = wx.BORDER_SUNKEN
-		#self.splitter = wx.SplitterWindow( self )
-		#self.splitter.SetMinimumPaneSize( forecastHistoryWidth )
-		#self.forecastHistory = ForecastHistory( self.splitter, style=sty )
-
-		#Other data shown in right pane.
 		bookStyle = (
 			  flatnotebook.FNB_NO_X_BUTTON
 			| flatnotebook.FNB_NODRAG
@@ -954,6 +795,8 @@ class MainWin( wx.Frame ):
 		#self.Bind(JChip.EVT_CHIP_READER, self.handleChipReaderEvent)
 		#self.lastPhotoTime = now()
 		
+	
+
 	#@property
 	#def chipReader( self ):
 		#return ChipReader.chipReaderCur
@@ -2790,6 +2633,8 @@ class MainWin( wx.Frame ):
 							style=wx.FD_SAVE | wx.FD_CHANGE_DIR )
 		if dlg.ShowModal() == wx.ID_OK:
 			fileName = dlg.GetPath()
+		else:
+			return
 		
 		
 		#dlg = PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE )
