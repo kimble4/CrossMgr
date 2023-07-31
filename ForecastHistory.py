@@ -165,6 +165,7 @@ class ForecastHistory( wx.Panel ):
 		# Race clock
 		self.raceClock = wx.StaticText( self, label='--:--:--', style=wx.ALIGN_CENTRE|wx.ST_NO_AUTORESIZE )
 		self.raceClock.SetFont( wx.Font(48, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.BOLD) )
+		self.raceClock.SetDoubleBuffered( True )
 		
 		# Put Recorded and Expected in a splitter window.
 		self.splitter = wx.SplitterWindow( self )
