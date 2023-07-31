@@ -28,6 +28,9 @@ class JSONTimer:
 	SPEED_KTS = 4
 	SPEED_FPF = 5
 	
+	SprintTimerEvent, EVT_SPRINT_TIMER = wx.lib.newevent.NewEvent()
+	
+	
 	def __init__( self ):
 		self.q = None
 		self.shutdownQ = None
@@ -41,11 +44,11 @@ class JSONTimer:
 		self.speedUnit = None
 
 		self.readerEventWindow = None
-		atexit.register(self.CleanupListener)
+		atexit.register(self.StopListener)
 	
-	def sendReaderEvent( self, json, receivedTime ):
+	def sendReaderEvent( self, sprintDict, receivedTime, readerComputerTimeDiff ):
 		if json and self.readerEventWindow:
-			wx.PostEvent( self.readerEventWindow, SprintTimerEvent(json = json, receivedTime = receivedTime) )
+			wx.PostEvent( self.readerEventWindow, JSONTimer.SprintTimerEvent(sprintDict = sprintDict, receivedTime = receivedTime, readerComputerTimeDiff = readerComputerTimeDiff) )
 
 	def setSprintDistance( self, distance = None ):
 		self.sprintDistance = distance
@@ -82,7 +85,7 @@ class JSONTimer:
 			try:
 				message = self.sendQ.get_nowait()
 				self.socketWriteLock.acquire()
-				self.qLog( 'data', '{}: {}'.format(_('Sending'), message))
+				self.qLog( 'send', '{}: {}'.format(_('Sending'), message))
 				self.socketSend( self.socket, message.encode('utf-8'))
 				self.socketWriteLock.release()
 			except Empty:
@@ -252,13 +255,14 @@ class JSONTimer:
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								lastT2 = sprintDict["T2micros"]
-								self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
-								self.sendReaderEvent(sprintDict, receivedTime)
+								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
+								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
+								self.sendReaderEvent(sprintDict, receivedTime, readerComputerTimeDiff)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								lastT1 = sprintDict["T1micros"]
-								self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
-								self.sendReaderEvent(sprintDict, receivedTime)
+								#self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
+								#self.sendReaderEvent(sprintDict, receivedTime)
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break
@@ -297,6 +301,7 @@ class JSONTimer:
 		# Terminate the server process if it is running.
 		# Add a number of shutdown commands as we may check a number of times.
 		if self.listener:
+			self.qLog( 'connection', _('Shutting down listener') )
 			for i in range(32):
 				self.shutdownQ.put( 'shutdown' )
 			self.listener.join()
@@ -328,13 +333,8 @@ class JSONTimer:
 		self.listener.daemon = True
 		self.listener.start()
 		
-	def CleanupListener( self ):
-		if self.listener and self.listener.is_alive():
-			self.shutdownQ.put( 'shutdown' )
-			self.listener.join()
-		self.listener = None
-		
-	
+jsonTimer = JSONTimer()
+
 if __name__ == '__main__':
 	def doTest():
 		try:
@@ -343,12 +343,22 @@ if __name__ == '__main__':
 			sprintTimer.setSpeedUnit(JSONTimer.SPEED_KPH)
 			sprintTimer.StartListener( HOST='81.187.184.219', PORT=JSONTimer.DEFAULT_PORT )
 
-			time.sleep( 10 )
+			time.sleep( 1 )
 			sprintTimer.setSprintDistance(10)
-			time.sleep( 10 )
+			time.sleep( 5 )
 			sprintTimer.setBib( 136 )
-			time.sleep( 60 )
-			#sprintTimer.setBib( None )
+			while True:
+				time.sleep(1)
+				try:
+					items = sprintTimer.GetData()
+					for item in items:
+						if item[0] == 'data':
+							print('Got data: ' + str(item[2]) + ' ' + str(item[1]))
+				except Empty:
+					pass
+				
+				
+				
 				
 		except KeyboardInterrupt:
 			return

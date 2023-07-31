@@ -41,6 +41,7 @@ import Utils
 
 #from AddExcelInfo import AddExcelInfo
 #from LogPrintStackStderr import LogPrintStackStderr
+from Data				import Data
 #from ForecastHistory	import ForecastHistory
 #from NumKeypad			import NumKeypad
 #from Actions			import Actions
@@ -93,7 +94,7 @@ import Model
 #import JChipSetup
 #import JChipImport
 #import RaceResultImport
-#import JChip
+import JChip
 #import OrionImport
 #import AlienImport
 #import ImpinjImport
@@ -112,7 +113,7 @@ from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, Report
 #from SetGraphic			import SetGraphicDialog
 #from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM
 #from PhotoFinish		import DeletePhotos, okTakePhoto
-#from SendPhotoRequests	import SendPhotoRequests
+from SendPhotoRequests	import SendPhotoRequests
 #from PhotoViewer		import PhotoViewerDialog
 #from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
 #from TemplateSubstitute import TemplateSubstitute
@@ -188,7 +189,7 @@ class MainWin( wx.Frame ):
 		#self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
 		#self.numTimes = []
 		
-		self.SprintTimer = JSONTimer()
+		self.sprintTimer = JSONTimer()
 		
 		self.nonBusyRefresh = NonBusyCall( self.refresh, min_millis=1500, max_millis=7500 )
 
@@ -556,6 +557,7 @@ class MainWin( wx.Frame ):
 			self.pages.append( page )
 			
 		self.attrClassName = [
+			[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
 			#[ 'record',			NumKeypad,			_('Record') ],
 			#[ 'results',		Results,			_('Results') ],
@@ -808,17 +810,17 @@ class MainWin( wx.Frame ):
 		self.SetAcceleratorTable(aTable)
 		
 		#------------------------------------------------------------------------------
-		#self.Bind(wx.EVT_CLOSE, self.onCloseWindow)
-		#self.Bind(JChip.EVT_CHIP_READER, self.handleChipReaderEvent)
-		#self.lastPhotoTime = now()
+		self.Bind(wx.EVT_CLOSE, self.onCloseWindow)
+		self.Bind(JChip.EVT_CHIP_READER, self.handleChipReaderEvent)
+		self.Bind(JSONTimer.EVT_SPRINT_TIMER, self.handleSprintTimerEvent)
+		self.lastPhotoTime = now()
 		
-	
 
 	@property
 	def chipReader( self ):
 		return ChipReader.chipReaderCur
 		
-	def handleChipReaderEvent( self, event ):
+	def handleChipReaderEvent( self, event ):  #this triggers CrossMgrVideo
 		race = Model.race
 		if not race or not race.isRunning() or not race.enableUSBCamera:
 			return
@@ -842,6 +844,23 @@ class MainWin( wx.Frame ):
 		success, error = SendPhotoRequests( requests )
 		if success:
 			race.photoCount += len(requests) * 2
+			
+	def handleSprintTimerEvent( self, event ):  #this triggers CrossMgrVideo
+		race = Model.race
+		if not race or not race.isRunning() or not race.enableUSBCamera:
+			return
+
+		dt = event.receivedTime
+		
+		if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
+			dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
+			
+		requests = [(0, (dt - race.startTime).total_seconds())]
+		
+		success, error = SendPhotoRequests( requests )
+		if success:
+			race.photoCount += len(requests) * 2
+			
 	
 	#def updateLapCounter( self, labels=None ):
 		#labels = labels or []
@@ -1073,7 +1092,6 @@ class MainWin( wx.Frame ):
 			with Model.LockRace() as race:
 				if race is None:
 					return
-				
 				Model.resetCache()
 				race.startRaceNow()
 				
@@ -4105,8 +4123,8 @@ class MainWin( wx.Frame ):
 	def processRfidRefresh( self ):
 		if self.processNumTimes():
 			self.refresh()
-			if Model.race and Model.race.ftpUploadDuringRace:
-				realTimeFtpPublish.publishEntry()		
+			#if Model.race and Model.race.ftpUploadDuringRace:
+				#realTimeFtpPublish.publishEntry()		
 	
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race
@@ -4188,11 +4206,53 @@ class MainWin( wx.Frame ):
 			if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
 				self.processRfidRefresh()
 		return False	# Never signal for an update.
+	
+	def processSprintTimer( self, refreshNow=False ):
+		race = Model.race
+		if not race:
+			return
+			
+		if not race or not race.enableSprintTimer:
+			if self.SprintTimer.IsListening():
+				self.SprintTimer.StopListener()
+			return False
+		
+		if not self.sprintTimer.IsListening():
+			self.sprintTimer.setSprintDistance( race.sprintDistance )
+			self.sprintTimer.StartListener( HOST=race.sprintTimerAddress, PORT=race.sprintTimerPort)
+	
+		data = self.sprintTimer.GetData()
+		
+		for d in data:
+			if d[0] != 'data':
+				continue
+			sprintDict, receivedTime, readerComputerTimeDiff = d[1], d[2], d[3]
+			
+			sortTime = receivedTime;
+			
+			if "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds()) < 1.0:
+				#if the clocks are less than a second out, use the timer's time for the sprint
+				sortTime = datetime.datetime.fromtimestamp(sprintDict["sprintStart"])
+				print('Using timer\'s clock.')
+			else:
+				print('using receivedTime')
+			
+			#print('race start: ' + str(race.startTime) + ' sortTime: ' + str(sortTime)) 
+			if race.isRunning() and race.startTime <= sortTime:
+				try:
+					race.addSprint(sortTime, sprintDict)
+					continue
+				except (TypeError, ValueError):
+					continue
+				
+		return False	# Never signal for an update.
+	
 
 	def updateRaceClock( self, event = None ):
 		#self.record.refreshAll()
 
 		doRefresh = False
+		alsoRefresh = False
 		race = Model.race
 		
 		if race is None:
@@ -4211,6 +4271,12 @@ class MainWin( wx.Frame ):
 				doRefresh = self.processJChipListener()
 			elif ChipReader.chipReaderCur.IsListening():
 				ChipReader.chipReaderCur.StopListener()
+				
+			if race.enableSprintTimer:
+				alsoRefresh = self.processSprintTimer()
+			elif self.sprintTimer.IsListening():
+				self.sprintTimer.StopListener()
+				
 			#self.forecastHistory.updatedExpectedTimes( (now() - race.startTime).total_seconds() )
 		else:
 			status = _('Finished')
@@ -4239,7 +4305,7 @@ class MainWin( wx.Frame ):
 		if self.secondCount % 45 == 0 and race.isChanged():
 			self.writeRace()
 			
-		if doRefresh:
+		if doRefresh or alsoRefresh:
 			self.nonBusyRefresh()
 			#if race.ftpUploadDuringRace:
 				#realTimeFtpPublish.publishEntry()		

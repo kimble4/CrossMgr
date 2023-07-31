@@ -27,7 +27,6 @@ CompileHelp( 'helptxt' )
 
 # Copy all dependent files into this folder.
 copyFiles = [
-	"Model.py"
     "LapStats.py"
     "InSortedIntervalList.py"
     "minimal_intervals.py"
@@ -71,6 +70,7 @@ copyFiles = [
     "WebReader.py"
     "MyLapsServer.py"
     "JChipSetup.py"
+    "ColGrid.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

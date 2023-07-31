@@ -401,8 +401,14 @@ class SprintTimerProperties( wx.Panel ):
 						flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
 		gridBagSizer.Add( self.port, pos=(1,1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
-		self.testButton = wx.Button( self, label=_('Test Sprint Timer...') )
-		self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
+		gridBagSizer.Add( wx.StaticText( self, label=_('Sprint trap distance (metres):') ),
+						pos=(2,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.distance = wx.TextCtrl( self, value ='0', size=(240,-1) )
+		gridBagSizer.Add( self.distance, pos=(2, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
+		
+		
+		#self.testButton = wx.Button( self, label=_('Test Sprint Timer...') )
+		#self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
 		
 		ms = wx.BoxSizer( wx.VERTICAL )
 		self.SetSizer( ms )
@@ -410,7 +416,7 @@ class SprintTimerProperties( wx.Panel ):
 		ms.Add( self.sprintTimer, flag=wx.ALL, border=16 )
 		ms.Add( gridBagSizer, 0, wx.EXPAND|wx.ALL, 4 )
 		ms.AddSpacer( 16 )
-		ms.Add( self.testButton, flag=wx.ALL, border=4 )
+		#ms.Add( self.testButton, flag=wx.ALL, border=4 )
 		
 	def onTest(self, event ):
 		pass
@@ -422,6 +428,7 @@ class SprintTimerProperties( wx.Panel ):
 		self.sprintTimer.SetValue( getattr(race, 'enableSprintTimer', True) )
 		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', '127.0.0.1') )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
+		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
 		
 	def commit( self ):
 		race = Model.race
@@ -430,6 +437,7 @@ class SprintTimerProperties( wx.Panel ):
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
 		race.sprintTimerAddress = self.ipaddr.GetValue()
 		race.sprintTimerPort	= self.port.GetValue()
+		race.sprintDistance		= self.distance.GetValue()
 	
 #------------------------------------------------------------------------------------------------
 
