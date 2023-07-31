@@ -4235,7 +4235,7 @@ class MainWin( wx.Frame ):
 			return False
 		
 		if not self.sprintTimer.IsListening():
-			self.sprintTimer.setSprintDistance( race.sprintDistance )
+			self.updateSprintTimerSettings()
 			self.sprintTimer.StartListener( HOST=race.sprintTimerAddress, PORT=race.sprintTimerPort)
 	
 		data = self.sprintTimer.GetData()
@@ -4250,20 +4250,45 @@ class MainWin( wx.Frame ):
 			if "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds()) < 1.0:
 				#if the clocks are less than a second out, use the timer's time for the sprint
 				sortTime = datetime.datetime.fromtimestamp(sprintDict["sprintStart"])
+				if "sprintStartMillis" in sprintDict:
+					sortTime += datetime.timedelta(milliseconds=sprintDict["sprintStartMillis"])
 				print('Using timer\'s clock.')
 			else:
+				if "sprintTime" in sprintDict:
+					sortTime -= datetime.timedelta(seconds=sprintDict["sprintTime"])
 				print('using receivedTime')
 			
 			#print('race start: ' + str(race.startTime) + ' sortTime: ' + str(sortTime)) 
 			if race.isRunning() and race.startTime <= sortTime:
 				try:
 					race.addSprint(sortTime, sprintDict)
+					return True  #signal for an update.
 					continue
 				except (TypeError, ValueError):
 					continue
 				
-		return False	# Never signal for an update.
+		return False	# don't signal for an update.
 	
+	def updateSprintTimerSettings( self ):
+		race = Model.race
+		if not race:
+			return
+		
+		if not self.sprintTimer:
+			return
+		
+		self.sprintTimer.setSprintDistance( getattr(race, 'sprintDistance', None) )
+		unit = JSONTimer.SPEED_UNKNOWN_UNIT
+		if race.distanceUnit == Model.Race.UnitKm:
+			unit = JSONTimer.SPEED_KPH
+		elif race.distanceUnit == Model.Race.UnitMiles:
+			unit = JSONTimer.SPEED_MPH
+		print('setting speed unit to ' + str(unit))
+		self.sprintTimer.setSpeedUnit( unit )
+		if self.sprintTimer.IsListening():
+			# Only write now if the timer is connected, otherwise settings will be written automatically on reconnect
+			self.sprintTimer.writeSettings()
+		
 
 	def updateRaceClock( self, event = None ):
 		#self.record.refreshAll()
@@ -4278,7 +4303,7 @@ class MainWin( wx.Frame ):
 			self.timer.Stop()
 			return
 		
-		#self.forecastHistory.updateRaceClock()
+		self.data.refreshRaceTime()
 		
 		if race.isUnstarted():
 			status = _('Unstarted')

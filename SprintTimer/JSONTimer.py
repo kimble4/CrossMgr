@@ -52,11 +52,11 @@ class JSONTimer:
 
 	def setSprintDistance( self, distance = None ):
 		self.sprintDistance = distance
-		self.writeSettings()
+		#self.writeSettings()
 	
 	def setSpeedUnit( self, unit = SPEED_UNKNOWN_UNIT ):
 		self.speedUnit = unit
-		self.writeSettings()
+		#self.writeSettings()
 		
 	def setBib( self, bib = None):
 		if self.sendQ:
@@ -254,15 +254,15 @@ class JSONTimer:
 							
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
-								lastT2 = sprintDict["T2micros"]
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff)
+								lastT2 = sprintDict["T2micros"]
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
-								lastT1 = sprintDict["T1micros"]
 								#self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
 								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff)
+								lastT1 = sprintDict["T1micros"]
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break

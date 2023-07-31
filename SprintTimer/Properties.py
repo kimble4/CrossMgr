@@ -406,6 +406,12 @@ class SprintTimerProperties( wx.Panel ):
 		self.distance = wx.TextCtrl( self, value ='0', size=(240,-1) )
 		gridBagSizer.Add( self.distance, pos=(2, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
+		self.distanceUnitLabel = wx.StaticText( self, label=_('Speed unit: ') )
+		self.distanceUnit = wx.Choice( self, choices=['Kilometres per hour', 'Miles per hour'] )
+		self.distanceUnit.SetSelection( 0 )
+		gridBagSizer.Add( self.distanceUnitLabel, pos=(3,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		gridBagSizer.Add( self.distanceUnit, pos=(3,1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
+		
 		
 		#self.testButton = wx.Button( self, label=_('Test Sprint Timer...') )
 		#self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
@@ -429,6 +435,7 @@ class SprintTimerProperties( wx.Panel ):
 		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', '127.0.0.1') )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
+		self.distanceUnit.SetSelection( getattr(race, 'distanceUnit', 0) )
 		
 	def commit( self ):
 		race = Model.race
@@ -438,34 +445,46 @@ class SprintTimerProperties( wx.Panel ):
 		race.sprintTimerAddress = self.ipaddr.GetValue()
 		race.sprintTimerPort	= self.port.GetValue()
 		race.sprintDistance		= self.distance.GetValue()
+		race.distanceUnit = self.distanceUnit.GetSelection()
+		mainWin = Utils.getMainWin()
+		mainWin.updateSprintTimerSettings()
 	
 #------------------------------------------------------------------------------------------------
 
 class RfidProperties( wx.Panel ):
-	iResetStartClockOnFirstTag = 1
-	iSkipFirstTagRead = 2
-	choices = [	_('Manual Start: Collect every RFID read.') + '\n' + _('Does NOT restart race clock on first read.'),
-				_('Automatic Start: Reset start clock on first RFID read.') + '\n' + _('All riders get the start time of the first read.'),
-				_('Manual Start: Skip first RFID read for all riders.') + '\n' + _('Required when start run-up passes the finish on the first lap.')]
-
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__( parent, id )
 		self.jchip = wx.CheckBox( self, style=wx.ALIGN_LEFT, label = _('Use RFID reader to identify riders') )
 
+		choices = [
+			_("RFID is at T1"),
+			_("RFID is at T2"),
+		]
+		self.radioBox = wx.RadioBox( self, label=_("RFID aerial position"), choices=choices, majorDimension=1, style=wx.RA_SPECIFY_COLS )
+		self.radioBox.SetBackgroundColour( wx.WHITE )
+		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
-		hs.Add( wx.StaticText( self, label='{}:'.format(_('Reader Type')) ), flag=wx.ALIGN_CENTER_VERTICAL )
+		hs.Add( wx.StaticText( self, label='{}:'.format(_('Associate tag reads within')) ), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.tagAssociateSeconds = intctrl.IntCtrl( self, min=1, max=60, allow_none=True, value=5, limited=True, size=(64,-1), style=wx.ALIGN_RIGHT )
+		hs.Add( self.tagAssociateSeconds, flag=wx.LEFT, border=4 )
+		hs.Add( wx.StaticText( self, label='{}'.format(_('seconds of trap time.')) ), flag=wx.ALIGN_CENTER_VERTICAL )
+
+		hs2 = wx.BoxSizer( wx.HORIZONTAL )
+		hs2.Add( wx.StaticText( self, label='{}:'.format(_('Reader Type')) ), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.chipReaderChoices = ChipReader.ChipReader.Choices
 		self.chipReaderType = wx.StaticText( self )
-		hs.Add( self.chipReaderType, flag=wx.LEFT, border=4)
+		hs2.Add( self.chipReaderType, flag=wx.LEFT, border=4)
 		
 		self.setupButton = wx.Button( self, label=_('Setup/Test Rfid Reader...') )
 		self.setupButton.Bind( wx.EVT_BUTTON, self.onSetup )
-#-------------------------------------------------------------------------------
+		
 		ms = wx.BoxSizer( wx.VERTICAL )
 		self.SetSizer( ms )
 		
 		ms.Add( self.jchip, flag=wx.ALL, border=16 )
+		ms.Add( self.radioBox, flag=wx.ALL, border=16 )
 		ms.Add( hs, flag=wx.ALL, border=4 )
+		ms.Add( hs2, flag=wx.ALL, border=4 )
 		ms.AddSpacer( 16 )
 		ms.Add( self.setupButton, flag=wx.ALL, border=4 )
 
@@ -482,6 +501,14 @@ class RfidProperties( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
+		if getattr(race, 'rfidAtT2', False):
+			self.radioBox.SetSelection( 1 )
+		else:
+			self.radioBox.SetSelection( 0 )
+		try:
+			self.tagAssociateSeconds.SetValue( getattr(race, 'rfidTagAssociateSeconds', 5) )
+		except ValueError:
+			self.tagAssociateSeconds.SetValue( 5 )
 		self.jchip.SetValue( getattr(race, 'enableJChipIntegration', False) )
 		self.chipReaderType.SetLabel( self.chipReaderChoices[max(getattr(race, 'chipReaderType', 0), 0)] )
 		self.GetSizer().Layout()
@@ -490,6 +517,11 @@ class RfidProperties( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
+		if self.radioBox.GetSelection():
+			race.rfidAtT2 = True
+		else:
+			race.rfidAtT2 = False
+		race.rfidTagAssociateSeconds = self.tagAssociateSeconds.GetValue()
 		race.enableJChipIntegration = self.jchip.IsChecked()
 		race.timeTrialNoRFIDStart = False
 		race.resetStartClockOnFirstTag	= False
