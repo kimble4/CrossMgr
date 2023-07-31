@@ -851,11 +851,28 @@ class MainWin( wx.Frame ):
 			return
 
 		dt = event.receivedTime
+		if (not event.isT2) and (not race.photosAtRaceEndOnly):  
+			# we want the T1 photo time
+			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
+				dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
+				if "sprintStartMillis" in event.sprintDict:
+					dt += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+			elif "sprintTime" in event.sprintDict:
+				# subtract sprint time from receivedTime for a guess at T1 time
+				dt -= datetime.timedelta(seconds = sprintDict["sprintTime"])
+		elif event.isT2 and race.photosAtRaceEndOnly:
+			# we want the T2 photo time
+			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintFinish" in event.sprintDict:
+				dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintFinish"])
+				if "sprintFinishMillis" in event.sprintDict:
+					dt += datetime.timedelta(milliseconds = event.sprintDict["sprintFinishMillis"])
+		else:
+			return
 		
-		if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
-			dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
-			
-		requests = [(0, (dt - race.startTime).total_seconds())]
+		num = None
+		if "sprintBib" in event.sprintDict:
+			num = event.sprintDict["sprintBib"]
+		requests = [(num, (dt - race.startTime).total_seconds())]
 		
 		success, error = SendPhotoRequests( requests )
 		if success:

@@ -46,9 +46,9 @@ class JSONTimer:
 		self.readerEventWindow = None
 		atexit.register(self.StopListener)
 	
-	def sendReaderEvent( self, sprintDict, receivedTime, readerComputerTimeDiff ):
+	def sendReaderEvent( self, isT2, sprintDict, receivedTime, readerComputerTimeDiff ):
 		if json and self.readerEventWindow:
-			wx.PostEvent( self.readerEventWindow, JSONTimer.SprintTimerEvent(sprintDict = sprintDict, receivedTime = receivedTime, readerComputerTimeDiff = readerComputerTimeDiff) )
+			wx.PostEvent( self.readerEventWindow, JSONTimer.SprintTimerEvent(isT2 = isT2, sprintDict = sprintDict, receivedTime = receivedTime, readerComputerTimeDiff = readerComputerTimeDiff) )
 
 	def setSprintDistance( self, distance = None ):
 		self.sprintDistance = distance
@@ -257,12 +257,12 @@ class JSONTimer:
 								lastT2 = sprintDict["T2micros"]
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
-								self.sendReaderEvent(sprintDict, receivedTime, readerComputerTimeDiff)
+								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								lastT1 = sprintDict["T1micros"]
 								#self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
-								#self.sendReaderEvent(sprintDict, receivedTime)
+								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff)
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break

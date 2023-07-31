@@ -786,9 +786,9 @@ class CameraProperties( wx.Panel ):
 			self.radioBox.SetSelection( 0 )
 		else:
 			if not race.photosAtRaceEndOnly:
-				self.radioBox.SetSelection( 2 )
-			else:
 				self.radioBox.SetSelection( 1 )
+			else:
+				self.radioBox.SetSelection( 2 )
 		self.GetSizer().Layout()
 		
 	def commit( self ):
@@ -799,9 +799,9 @@ class CameraProperties( wx.Panel ):
 		race.enableUSBCamera = False
 		race.photosAtRaceEndOnly = False
 		v = self.radioBox.GetSelection()
-		if v == 2:
+		if v == 1:
 			race.enableUSBCamera = True
-		elif v == 1:
+		elif v == 2:
 			race.enableUSBCamera = True
 			race.photosAtRaceEndOnly = True
 
