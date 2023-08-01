@@ -40,7 +40,7 @@ class BibEntry( wx.Panel ):
 		
 		self.numEditHS = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.numEditLabel = wx.StaticText(self, label='{}'.format(_('Bib')))
+		self.numEditLabel = wx.StaticText(self, label='{}'.format(_('Enter Bib:')))
 		self.numEditLabel.SetFont( font )
 		
 		editWidth = 140
@@ -246,10 +246,12 @@ class Data( wx.Panel ):
 		#self.clock.Start()
 
 		race = Model.race
+		excelLink = race.excelLink
+		externalInfo = excelLink.read()
+		
 		enable = bool(race and race.isRunning())
 		if self.isEnabled != enable:
 			self.isEnabled = enable
-			
 		
 		sprints = race.getSprints()
 		
@@ -257,27 +259,57 @@ class Data( wx.Panel ):
 			self.dataGrid.DeleteRows(0, self.dataGrid.GetNumberRows())
 		
 		for sprint in sprints:
+			bib = None
 			sortTime = sprint[0]
 			sprintDict = sprint[1]
 			self.dataGrid.AppendRows(1)
 			row = self.dataGrid.GetNumberRows() -1
 			col = 0
-			self.dataGrid.SetCellValue(row, col, str(sortTime))
+			self.dataGrid.SetCellValue(row, col, str(sortTime)[:-3])
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
+			bib = None
 			self.dataGrid.SetCellValue(row, col, bibstring)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			if ',' in bibstring:
 				self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 0 ))
 			else:
 				self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 255 ))
+				try:
+					bib = int(bibstring)
+				except:
+					pass
 			col += 1
 			#name
+			name = ''
+			if bib and excelLink is not None and excelLink.hasField('FirstName'):
+				try:
+					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
+					self.dataGrid.SetCellValue(row, col, name)
+					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+				except:
+					pass
 			col += 1
 			#Machine
+			machine = ''
+			if bib and excelLink is not None and excelLink.hasField('Machine'):
+				try:
+					machine = externalInfo[bib]['Machine']
+					self.dataGrid.SetCellValue(row, col, machine)
+					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+				except:
+					pass
 			col += 1
 			#team
+			team = ''
+			if bib and excelLink is not None and excelLink.hasField('Team'):
+				try:
+					machine = externalInfo[bib]['Team']
+					self.dataGrid.SetCellValue(row, col, team)
+					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+				except:
+					pass
 			col += 1
 			self.dataGrid.SetCellValue(row, col, '{:.3f}'.format(sprintDict["sprintTime"]) if "sprintTime" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)

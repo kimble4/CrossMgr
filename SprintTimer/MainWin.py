@@ -719,7 +719,7 @@ class MainWin( wx.Frame ):
 			else:
 				item = self.pageMenu.Append( wx.ID_ANY, name, '{} {}'.format(_('Jump to'), name) )
 			self.idPage[item.GetId()] = i
-			#self.Bind(wx.EVT_MENU, self.menuShowPage, item )
+			self.Bind(wx.EVT_MENU, self.menuShowPage, item )
 			jumpToIds.append( item.GetId() )
 			
 		self.menuBar.Append( self.pageMenu, _("&JumpTo") )
@@ -1376,8 +1376,8 @@ class MainWin( wx.Frame ):
 			#dlg.ShowModal()
 		#wx.CallAfter( self.refresh )
 		
-	#def menuShowPage( self, event ):
-		#self.showPage( self.idPage[event.GetId()] )
+	def menuShowPage( self, event ):
+		self.showPage( self.idPage[event.GetId()] )
 		
 	#def menuShowBibEnter( self, event ):
 		#self.bibEnter.populateBibs()
@@ -3110,6 +3110,7 @@ class MainWin( wx.Frame ):
 			self.setNumSelect( None )
 			#self.record.setTimeTrialInput( race.isTimeTrial )
 			#self.showPage( self.iResultsPage if isFinished else self.iActionsPage )
+			self.showPage( self.iDataPage )
 			self.refreshAll()
 			#Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
 			#Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
