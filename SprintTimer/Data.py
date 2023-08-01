@@ -267,6 +267,7 @@ class Data( wx.Panel ):
 				bib = timeBib[1]
 				sprintDict = {}
 				sprintDict["sprintBib"] = bib
+				sprintDict["isRFID"] = True
 				sprints.append( (t, sprintDict) )
 
 		sprints.sort()
@@ -284,7 +285,7 @@ class Data( wx.Panel ):
 			self.dataGrid.AppendRows(1)
 			row = self.dataGrid.GetNumberRows() -1
 			# Shade tag reads light grey
-			if not "sprintTime" in sprintDict:
+			if "isRFID" in sprintDict and sprintDict["isRFID"]:
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, wx.Colour ( 211, 211, 211 ))
 			else:
