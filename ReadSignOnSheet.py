@@ -207,8 +207,7 @@ class HeaderNamesPage(adv.WizardPageSimple):
 		border = 4
 		# Create a map for the field names we are looking for
 		# and the headers we found in the Excel sheet.
-		sp = scrolled.ScrolledPanel( self, size=(750, 64), style = wx.TAB_TRAVERSAL )
-		
+		sp = scrolled.ScrolledPanel( self, size=(750, -1), style = wx.TAB_TRAVERSAL )
 		boldFont = None
 		
 		GetTranslation = _
@@ -446,6 +445,9 @@ class GetExcelLink:
 				self.headerNamesPage.setExpectedFieldCol( excelLink.fieldCol )
 
 		self.wizard.GetPageAreaSizer().Add( self.fileNamePage )
+		self.wizard.GetPageAreaSizer().Add( self.sheetNamePage )
+		self.wizard.GetPageAreaSizer().Add( self.headerNamesPage )
+		self.wizard.GetPageAreaSizer().Add( self.summaryPage )
 		self.wizard.SetPageSize( wx.Size(800,560) )
 		self.wizard.FitToPage( self.fileNamePage )
 	
