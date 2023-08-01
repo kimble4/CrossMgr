@@ -240,6 +240,7 @@ class JSONTimer:
 				try:
 					buffer = self.socketReadDelimited( self.socket )
 					receivedTime = now()
+					readerComputerTimeDiff = None
 					if buffer:
 						sprintDict = json.loads(buffer)
 						if "wallTime" in sprintDict:
@@ -258,11 +259,20 @@ class JSONTimer:
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff)
 								lastT2 = sprintDict["T2micros"]
+							else:
+								#just update the time difference
+								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								#self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
 								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff)
 								lastT1 = sprintDict["T1micros"]
+							else:
+								#just update the time difference
+								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
+						else:
+							#just update the time difference
+							self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break

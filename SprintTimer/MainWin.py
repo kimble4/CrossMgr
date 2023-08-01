@@ -190,6 +190,7 @@ class MainWin( wx.Frame ):
 		#self.numTimes = []
 		
 		self.sprintTimer = JSONTimer()
+		self.sprintTimerClockDelta = float("NAN")
 		
 		self.nonBusyRefresh = NonBusyCall( self.refresh, min_millis=1500, max_millis=7500 )
 
@@ -437,11 +438,11 @@ class MainWin( wx.Frame ):
 		self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
 
 		#-----------------------------------------------------------------------
-		#self.dataMgmtMenu = wx.Menu()
+		self.dataMgmtMenu = wx.Menu()
 		
-		#item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Link to External Excel Data..."), _("Link to information in an Excel spreadsheet"),
-			#Utils.GetPngBitmap('excel-icon.png') )
-		#self.Bind(wx.EVT_MENU, self.menuLinkExcel, item )
+		item = AppendMenuItemBitmap( self.dataMgmtMenu, wx.ID_ANY, _("&Link to External Excel Data..."), _("Link to information in an Excel spreadsheet"),
+			Utils.GetPngBitmap('excel-icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuLinkExcel, item )
 		
 		#self.dataMgmtMenu.AppendSeparator()
 		
@@ -529,7 +530,7 @@ class MainWin( wx.Frame ):
 		#item = self.dataMgmtMenu.Append( wx.ID_ANY, _("FinishLynx Integration..."), _("Export/Import with FinishLynx") )
 		#self.Bind(wx.EVT_MENU, self.menuFinishLynx, item )
 		
-		#self.menuBar.Append( self.dataMgmtMenu, _("&DataMgmt") )
+		self.menuBar.Append( self.dataMgmtMenu, _("&DataMgmt") )
 
 		#----------------------------------------------------------------------------------------------
 
@@ -629,10 +630,10 @@ class MainWin( wx.Frame ):
 		
 		self.toolsMenu = wx.Menu()
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, _("&Start Race"), _("Start the race") )
+		item = self.toolsMenu.Append( wx.ID_ANY, _("&Start Recording"), _("Start the race") )
 		self.Bind(wx.EVT_MENU, self.menuStartRace, item )
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Race..."), _("Finish the race.") )
+		item = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Recording"), _("Finish the race.") )
 		self.Bind(wx.EVT_MENU, self.menuFinishRace, item )
 		
 		#self.toolsMenu.AppendSeparator()
@@ -845,23 +846,47 @@ class MainWin( wx.Frame ):
 		if success:
 			race.photoCount += len(requests) * 2
 			
-	def handleSprintTimerEvent( self, event ):  #this triggers CrossMgrVideo
+	def handleSprintTimerEvent( self, event ):  
 		race = Model.race
-		if not race or not race.isRunning() or not race.enableUSBCamera:
+		if not race or not race.isRunning():
 			return
-
+		
+		self.sprintTimerClockDelta = event.readerComputerTimeDiff
+		self.data.updateClockDelta( self.sprintTimerClockDelta )
+		
+		if event.sprintDict is None:
+			#we didn't get a sprint, just the clock status
+			return
+		
+		#get the start time
+		startTime = event.receivedTime
+		if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
+			startTime = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
+			if "sprintStartMillis" in event.sprintDict:
+				startTime += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+		elif "sprintTime" in event.sprintDict:
+			# subtract sprint time from receivedTime for a guess at T1 time
+			startTime -= datetime.timedelta(seconds = event.sprintDict["sprintTime"])
+		else:
+			#otherwise, we just use the receivedTime
+			pass
+			
+		#record that a sprint is in progress
+		if not event.isT2:
+			race.setInProgressSprintStart( startTime )
+		else:
+			race.setInProgressSprintStart( None )
+			
+		#this triggers CrossMgrVideo
+		if not race.enableUSBCamera:
+			return
+		
 		dt = event.receivedTime
 		if (not event.isT2) and (not race.photosAtRaceEndOnly):  
-			# we want the T1 photo time
-			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
-				dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
-				if "sprintStartMillis" in event.sprintDict:
-					dt += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
-			elif "sprintTime" in event.sprintDict:
-				# subtract sprint time from receivedTime for a guess at T1 time
-				dt -= datetime.timedelta(seconds = sprintDict["sprintTime"])
+			# we want the T1 photo time, calculated above
+			dt = startTime
 		elif event.isT2 and race.photosAtRaceEndOnly:
-			# we want the T2 photo time
+			# we want the T2 photo time, otherwise just use the receivedTime
 			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintFinish" in event.sprintDict:
 				dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintFinish"])
 				if "sprintFinishMillis" in event.sprintDict:
@@ -877,7 +902,7 @@ class MainWin( wx.Frame ):
 		success, error = SendPhotoRequests( requests )
 		if success:
 			race.photoCount += len(requests) * 2
-			
+		
 	
 	#def updateLapCounter( self, labels=None ):
 		#labels = labels or []
@@ -1746,32 +1771,32 @@ class MainWin( wx.Frame ):
 		#self.commit()
 		#PrintCategories()
 
-	#@logCall
-	#def menuLinkExcel( self, event = None ):
-		#if not Model.race:
-			#Utils.MessageOK(self, _("You must have a valid race."), _("Link ExcelSheet"), iconMask=wx.ICON_ERROR)
-			#return
+	@logCall
+	def menuLinkExcel( self, event = None ):
+		if not Model.race:
+			Utils.MessageOK(self, _("You must have a valid race."), _("Link ExcelSheet"), iconMask=wx.ICON_ERROR)
+			return
 		#self.showResultsPage()
 		#self.closeFindDialog()
-		#ResetExcelLinkCache()
-		#gel = GetExcelLink( self, getattr(Model.race, 'excelLink', None) )
-		#link = gel.show()
-		#undo.pushState()
-		#with Model.LockRace() as race:
-			#if not link:
-				#try:
-					#del race.excelLink
-				#except AttributeError:
-					#pass
-			#else:
-				#if os.path.dirname(link.fileName) == os.path.dirname(self.fileName):
-					#link.fileName = os.path.join( '.', os.path.basename(link.fileName) )
-				#race.excelLink = link
-			#race.setChanged()
-			#race.resetAllCaches()
-		#self.writeRace()
-		#ResetExcelLinkCache()
-		#self.refresh()
+		ResetExcelLinkCache()
+		gel = GetExcelLink( self, getattr(Model.race, 'excelLink', None) )
+		link = gel.show()
+		undo.pushState()
+		with Model.LockRace() as race:
+			if not link:
+				try:
+					del race.excelLink
+				except AttributeError:
+					pass
+			else:
+				if os.path.dirname(link.fileName) == os.path.dirname(self.fileName):
+					link.fileName = os.path.join( '.', os.path.basename(link.fileName) )
+				race.excelLink = link
+			race.setChanged()
+			race.resetAllCaches()
+		self.writeRace()
+		ResetExcelLinkCache()
+		self.refresh()
 		
 		#wx.CallAfter( self.menuFind )
 		#try:
@@ -4171,13 +4196,14 @@ class MainWin( wx.Frame ):
 			tag, dt = d[1], d[2]
 			
 			#Ignore unrecorded reads that happened before the restart time.
-			if race.rfidRestartTime and dt <= race.rfidRestartTime:
-				continue
+			#if race.rfidRestartTime and dt <= race.rfidRestartTime:
+				#continue
 			
 			try:
 				num = race.tagNums[tag]
 			except KeyError:
 				if race.isRunning() and race.startTime <= dt:
+					print('got unmatched tag:' + str(tag))
 					race.addUnmatchedTag( tag, (dt - race.startTime).total_seconds() )
 				continue
 			except (TypeError, ValueError):
@@ -4186,42 +4212,48 @@ class MainWin( wx.Frame ):
 				
 			#Only process times after the start of the race.
 			if race.isRunning() and race.startTime <= dt:
+				print('RFID got bib:' + str(num))
+				# add them to the sprintbibs list, don't process as lapt times
+				race.addSprintBib( num, dt, doSetChanged = False )
+					
+		race.setChanged()
+		
 				#Always process times for mass start races and when timeTrialNoRFIDStart unset.
-				if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
-					self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
-				else:
+				#if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
+					#self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+				#else:
 					#Only process the time if the rider has already started
-					rider = race.getRider( num )
-					if rider.firstTime is not None:
-						self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+					#rider = race.getRider( num )
+					#if rider.firstTime is not None:
+						#self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
 		
 		#Ensure that we don't update too often if riders arrive in a bunch.
-		if not self.callLaterProcessRfidRefresh:
-			class ProcessRfidRefresh( wx.Timer ):
-				def __init__( self, *args, **kwargs ):
-					self.mainWin = kwargs.pop('mainWin')
-					super().__init__(*args, **kwargs)
-				def Notify( self ):
-					self.mainWin.processRfidRefresh()
-			self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
+		#if not self.callLaterProcessRfidRefresh:
+			#class ProcessRfidRefresh( wx.Timer ):
+				#def __init__( self, *args, **kwargs ):
+					#self.mainWin = kwargs.pop('mainWin')
+					#super().__init__(*args, **kwargs)
+				#def Notify( self ):
+					#self.mainWin.processRfidRefresh()
+			#self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
 		
-		delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-		delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
-		if not self.callLaterProcessRfidRefresh.IsRunning():
+		#delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+		#delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
+		#if not self.callLaterProcessRfidRefresh.IsRunning():
 			#Start the timer for the first interval.
-			self.clprIndex = 0
-			self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
-			if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
-				self.processRfidRefresh()
-		elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
-					self.clprIndex < len(delayIntervals)-1 ):
+			#self.clprIndex = 0
+			#self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
+			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
+				#self.processRfidRefresh()
+		#elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
+					#self.clprIndex < len(delayIntervals)-1 ):
 			#If we get another read within the last 25% of the interval, increase the update to the next interval.
-			self.callLaterProcessRfidRefresh.Stop()
-			self.clprIndex += 1
-			self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
-			delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
-			if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
-				self.processRfidRefresh()
+			#self.callLaterProcessRfidRefresh.Stop()
+			#self.clprIndex += 1
+			#self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
+			#delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
+			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
+				#self.processRfidRefresh()
 		return False	# Never signal for an update.
 	
 	def processSprintTimer( self, refreshNow=False ):
@@ -4288,6 +4320,17 @@ class MainWin( wx.Frame ):
 		if self.sprintTimer.IsListening():
 			# Only write now if the timer is connected, otherwise settings will be written automatically on reconnect
 			self.sprintTimer.writeSettings()
+		
+	def sendBibToSprintTimer( self, bib ):
+		race = Model.race
+		if not race:
+			return
+		
+		if not self.sprintTimer:
+			return
+		
+		if self.sprintTimer.IsListening():
+			self.sprintTimer.setBib( bib )
 		
 
 	def updateRaceClock( self, event = None ):
