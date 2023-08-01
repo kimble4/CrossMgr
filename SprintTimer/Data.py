@@ -140,11 +140,15 @@ class Data( wx.Panel ):
 		self.raceTime.SetDoubleBuffered( True )
 				
 		self.clockSync = wx.StaticText( self, label = 'δt=?')
+		self.showTagReads = wx.CheckBox( self, label='Show RFID reads' )
+		
+		self.showTagReads.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		hs.Add( self.bibEntry, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4 )
 		hs.Add( self.raceTime, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4  )
 		hs.Add( self.clockSync, flag=wx.ALIGN_BOTTOM|wx.ALL, border = 4  )
+		hs.Add( self.showTagReads, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4  )
 		vs.Add( hs, flag=wx.EXPAND|wx.ALL, border = 2 )
 		#self.raceHUD = RaceHUD( splitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, lapInfoFunc=getLapInfo, leftClickFunc=self.doLeftClickHUD )
 		
@@ -242,28 +246,51 @@ class Data( wx.Panel ):
 	def commit( self ):
 		pass
 			
-	def refresh( self ):
+	def refresh( self, event=None ):
 		#self.clock.Start()
 
 		race = Model.race
-		excelLink = race.excelLink
-		externalInfo = excelLink.read()
+		
+		excelLink = getattr(race, 'excelLink', None)
+		if excelLink:
+			externalInfo = excelLink.read()
 		
 		enable = bool(race and race.isRunning())
 		if self.isEnabled != enable:
 			self.isEnabled = enable
-		
+			
 		sprints = race.getSprints()
-		
+		if self.showTagReads.IsChecked():
+			timeBibs = race.getSprintBibs()
+			for timeBib in timeBibs:
+				t = timeBib[0]
+				bib = timeBib[1]
+				sprintDict = {}
+				sprintDict["sprintBib"] = bib
+				sprints.append( (t, sprintDict) )
+
+		sprints.sort()
+			
 		if self.dataGrid.GetNumberRows():
 			self.dataGrid.DeleteRows(0, self.dataGrid.GetNumberRows())
 		
 		for sprint in sprints:
 			bib = None
+			name = ''
+			machine = ''
+			team = ''
 			sortTime = sprint[0]
 			sprintDict = sprint[1]
 			self.dataGrid.AppendRows(1)
 			row = self.dataGrid.GetNumberRows() -1
+			# Shade tag reads light grey
+			if not "sprintTime" in sprintDict:
+				for c in range(len(self.colnames)):
+					self.dataGrid.SetCellBackgroundColour(row, c, wx.Colour ( 211, 211, 211 ))
+			else:
+				for c in range(len(self.colnames)):
+					self.dataGrid.SetCellBackgroundColour(row, c, wx.Colour ( 255, 255, 255 ))
+			
 			col = 0
 			self.dataGrid.SetCellValue(row, col, str(sortTime)[:-3])
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
@@ -273,26 +300,26 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellValue(row, col, bibstring)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			if ',' in bibstring:
+				name = '[Multiple Bibs]'
 				self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 0 ))
 			else:
-				self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 255 ))
+				#self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 255 ))
 				try:
 					bib = int(bibstring)
 				except:
 					pass
 			col += 1
 			#name
-			name = ''
 			if bib and excelLink is not None and excelLink.hasField('FirstName'):
 				try:
 					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
-					self.dataGrid.SetCellValue(row, col, name)
-					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 				except:
 					pass
+			# Do this outside the try, because name may have been written above
+			self.dataGrid.SetCellValue(row, col, name)
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			#Machine
-			machine = ''
 			if bib and excelLink is not None and excelLink.hasField('Machine'):
 				try:
 					machine = externalInfo[bib]['Machine']
@@ -302,7 +329,6 @@ class Data( wx.Panel ):
 					pass
 			col += 1
 			#team
-			team = ''
 			if bib and excelLink is not None and excelLink.hasField('Team'):
 				try:
 					machine = externalInfo[bib]['Team']
@@ -320,6 +346,8 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellValue(row, col, str(sprintDict["speedUnit"]) if "speedUnit" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
+			
+				
 		
 		row = self.dataGrid.GetNumberRows() -1
 		self.dataGrid.MakeCellVisible(row, 0)

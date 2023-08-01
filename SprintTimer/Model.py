@@ -1532,7 +1532,10 @@ class Race:
 			return False
 
 	def getSprints( self ):
-		return self.sprints
+		return self.sprints.copy()
+	
+	def getSprintBibs( self ):
+		return self.sprintBibs.copy()
 	
 	def setInProgressSprintStart( self, t = None ):
 		if t is None or t > datetime.datetime.now():
