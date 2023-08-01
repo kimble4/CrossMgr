@@ -207,7 +207,9 @@ class HeaderNamesPage(adv.WizardPageSimple):
 		border = 4
 		# Create a map for the field names we are looking for
 		# and the headers we found in the Excel sheet.
+		#sp = scrolled.ScrolledPanel( self, size=(750, 64), style = wx.TAB_TRAVERSAL )
 		sp = scrolled.ScrolledPanel( self, size=(750, -1), style = wx.TAB_TRAVERSAL )
+		
 		boldFont = None
 		
 		GetTranslation = _
@@ -274,6 +276,8 @@ class HeaderNamesPage(adv.WizardPageSimple):
 		for c, f in enumerate(Fields):
 			r = self.mapSummary.InsertItem( self.mapSummary.GetItemCount(), GetTranslation(f) )
 			self.mapSummary.SetItem( r, 1, self.choices[c].GetStringSelection() )
+		self.mapSummary.SetColumnWidth( 0, wx.LIST_AUTOSIZE )
+		self.mapSummary.SetColumnWidth( 1, wx.LIST_AUTOSIZE )
 		
 	def getFieldCol( self ):
 		headerLen = len(self.headers) - 1
