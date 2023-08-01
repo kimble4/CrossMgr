@@ -251,15 +251,17 @@ class Data( wx.Panel ):
 		col = event.GetCol()
 		old = event.GetString()
 		value = self.dataGrid.GetCellValue(row, col)
-		print('cell ' + str(row) + ', ' + str(col) + ' changed to: ' + str(value) + ' from: ' + str(old))
 		if col == 2:
-			try:
-				newBib = int(value)
-				iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
-			except:
-				# restore the old value
-				self.dataGrid.SetCellValue(row, col, old)
-				return
+			if value != '':
+				try:
+					newBib = int(value)
+				except:
+					# restore the old value
+					self.dataGrid.SetCellValue(row, col, old)
+					return
+			else:
+				newBib = ''
+			iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
 			race = Model.race
 			race.sprints[iSprint][1]["sprintBib"] = newBib
 			race.sprints[iSprint][1]["sprintBibEdited"] = True
