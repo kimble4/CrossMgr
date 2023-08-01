@@ -1475,21 +1475,21 @@ class Race:
 		for sprint in self.sprints:
 			start = sprint[1]["sprintStart"] if "sprintStart" in sprint[1] else None
 			if start == newSprintStart:
-				print('not adding duplicate item')
+				#Utils.writeLog('not adding duplicate item')
 				return
 		self.sprints.append( (sortTime, sprintDict) )
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
 		
-	def findBibsForSprint( self, index=-1 ):
+	def findBibsForSprint( self, index=-1, manualEntry = False ):
 		try:
 			sprint = self.sprints[index]
 			if sprint is None:
 				return False
 		except ValueError:
-			print(str(index) + ' is not a valid sprint index')
+			Utils.writeLog(str(index) + ' is not a valid sprint index')
 			return False
 		sortTime = sprint[0]
-		print('looking up bibs for sprint at ' + str(sortTime))
+		Utils.writeLog('Looking up bibs for sprint at ' + str(sortTime))
 		sprintDict = sprint[1]
 		# See if we've had any bibs entered near that time
 		possibleDiffBibs = []
@@ -1500,11 +1500,22 @@ class Race:
 			if self.rfidAtT2 and "sprintTime" in sprintDict:
 				# add the sprint time so we're comparing with the T2 time
 				compareToRifdTime += datetime.timedelta(seconds=sprintDict["sprintTime"])
-			diff = abs((compareToRifdTime - rfidTime).total_seconds())
-			if diff < self.rfidTagAssociateSeconds:
+			diff = (compareToRifdTime - rfidTime).total_seconds()
+			if abs(diff) < self.rfidTagAssociateSeconds:
 				possibleDiffBibs.append( (diff, bib) )
+			elif manualEntry:
+				#accept at any time between T1 and T2
+				try:
+					t1 = self.sprints[-1][0]
+					t2 = t1 + self.sprints[-1][1]["sprintTime"]
+					if t < (t2 + datetime.timedelta(seonds=self.rfidTagAssociateSeconds)) or t > (t1 - datetime.timedelta(seonds=self.rfidTagAssociateSeconds)):
+						Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was manually entered.')
+						possibleDiffBibs.append( (diff, bib) )
+				except:
+					pass
+			
 		possibleDiffBibs.sort()
-		print('possible bibs: ' + str(possibleDiffBibs))
+		Utils.writeLog('Possible bibs: ' + str(possibleDiffBibs))
 		# Add the best bib to the sprintDict if we have one (or more)
 		if len(possibleDiffBibs) == 1:
 			diffBib = possibleDiffBibs[0]
@@ -1550,8 +1561,10 @@ class Race:
 		
 	def addSprintBib( self, num, t = None, doSetChanged = True ):
 		# This is a seperate list of tag reads to identify sprint riders, we don't use the normal lap times stuff
+		manualEntry = False
 		if t is None:
-			# fixme this has likely come from keyboard entry, accept at any time between T1 and T2?
+			# this has likely come from keyboard entry
+			manualEntry = True
 			t = datetime.datetime.now()
 		self.sprintBibs.append( (t, num) )
 		
@@ -1559,6 +1572,9 @@ class Race:
 		diff = abs((self.sprints[-1][0] - t).total_seconds())
 		if diff <= self.rfidTagAssociateSeconds:
 			if self.findBibsForSprint():
+				Utils.refresh()
+		elif manualEntry:
+			if self.findBibsForSprint(manualEntry = True):
 				Utils.refresh()
 			
 		if doSetChanged:

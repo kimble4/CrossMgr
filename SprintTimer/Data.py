@@ -28,11 +28,8 @@ class BibEntry( wx.Panel ):
 		
 		fontPixels = 36
 		font = wx.Font((0,fontPixels), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
-		dc = wx.WindowDC( self )
-		dc.SetFont( font )
-		wNum, hNum = dc.GetTextExtent( '999' )
-		wNum += 8
-		hNum += 8
+		#dc = wx.WindowDC( self )
+		#dc.SetFont( font )
 		
 		outsideBorder = 4
 
@@ -118,7 +115,17 @@ class Data( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Time', 'Bib', 'Name', 'Machine', 'Team', 'Sprint Time', 'Speed', 'Unit']
+		self.colnames = ['Count', 'Time', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Unit', 'System µs', 'Satellites', 'Distance', 'Lat', 'Long', 'Ele']
+		
+		self.whiteColour = wx.Colour( 255, 255, 255 )
+		self.blackColour = wx.Colour( 0, 0, 0 )
+		self.yellowColour = wx.Colour( 255, 255, 0 )
+		self.orangeColour = wx.Colour( 255, 165, 0 )
+		self.greyColour = wx.Colour( 150, 150, 150 )
+		self.lightGreyColour = wx.Colour ( 211, 211, 211 )
+		self.greenColour = wx.Colour( 127, 210, 0 )
+		self.lightBlueColour = wx.Colour( 153, 205, 255 )
+		self.redColour = wx.Colour( 255, 0, 0 )
 	
 		self.SetBackgroundColour( wx.WHITE )
 		
@@ -139,23 +146,19 @@ class Data( wx.Panel ):
 		self.raceTime.SetFont( font )
 		self.raceTime.SetDoubleBuffered( True )
 				
-		self.clockSync = wx.StaticText( self, label = 'δt=?')
+		self.clockSync = wx.StaticText( self, label = 'Not connected')
 		self.showTagReads = wx.CheckBox( self, label='Show RFID reads' )
 		
 		self.showTagReads.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
-		hs.Add( self.bibEntry, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4 )
+		
+		hs.Add( self.bibEntry, flag=wx.ALIGN_CENTRE_VERTICAL|wx.RIGHT|wx.ALL, border = 4 )
 		hs.Add( self.raceTime, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4  )
-		hs.Add( self.clockSync, flag=wx.ALIGN_BOTTOM|wx.ALL, border = 4  )
-		hs.Add( self.showTagReads, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border = 4  )
+		hs.Add( self.clockSync, flag=wx.ALIGN_BOTTOM|wx.RIGHT|wx.ALL, border = 4  )
+		
 		vs.Add( hs, flag=wx.EXPAND|wx.ALL, border = 2 )
-		#self.raceHUD = RaceHUD( splitter, wx.ID_ANY, style=wx.BORDER_SUNKEN, lapInfoFunc=getLapInfo, leftClickFunc=self.doLeftClickHUD )
-		
-		#splitter.SetMinimumPaneSize( 20 )
-		#splitter.SplitHorizontally( panel, self.raceHUD, -100 )
-		#verticalMainSizer.Add( splitter, 1, flag=wx.EXPAND )
-		
+
 		self.dataGrid = wx.grid.Grid( self )
 		self.dataGrid.CreateGrid(0, len(self.colnames))
 		i = 0
@@ -164,17 +167,13 @@ class Data( wx.Panel ):
 			i+=1
 		self.dataGrid.HideRowLabels()
 		self.dataGrid.AutoSize()
+		self.dataGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
 		
-		# fixme make bib colum editable
-		
-		#self.dataGrid.SetRowLabelSize( 0 )
-		#self.dataGrid.SetMargins( 0, 0 )
-		#self.dataGrid.SetRightAlign( True )
-		#self.dataGrid.AutoSizeColumns( True )
-		#self.dataGrid.DisableDragColSize()
-		#self.dataGrid.DisableDragRowSize()
+		# fixme make bib column editable
 		
 		vs.Add( self.dataGrid, 1, wx.EXPAND|wx.ALL)
+		
+		vs.Add( self.showTagReads, flag=wx.ALIGN_RIGHT|wx.ALL, border = 4  )
 		
 		self.SetSizer( vs )
 		self.isEnabled = True
@@ -207,15 +206,16 @@ class Data( wx.Panel ):
 				if tStr.startswith('0'):
 					tStr = tStr[1:]
 				tStr = 'Timing: ' + tStr
+				self.raceTime.SetForegroundColour(self.redColour)
 			elif race.isRunning():
 				tStr = 'Waiting...'
-				self.raceTime.SetForegroundColour(wx.Colour(255,0,0))
+				self.raceTime.SetForegroundColour(self.redColour)
 			else:
 				tStr = 'Not recording'
-				self.raceTime.SetForegroundColour(wx.Colour(0,0,0))
+				self.raceTime.SetForegroundColour(self.blackColour)
 		else:
-			tStr = 'No race'
-			self.raceTime.SetForegroundColour(wx.Colour(0,0,0))
+			tStr = 'No race loaded'
+			self.raceTime.SetForegroundColour(self.blackColour)
 		self.raceTime.SetLabel( tStr )
 		
 		
@@ -231,9 +231,9 @@ class Data( wx.Panel ):
 				
 	def updateClockDelta( self, d ):
 		if d is not None:
-			self.clockSync.SetLabel( 'δt=' + '{:.3f}'.format(d.total_seconds()) )
+			self.clockSync.SetLabel( 'Δt=' + '{:.3f}'.format(d.total_seconds()) )
 		else:
-			self.clockSync.SetLabel( '' )
+			self.clockSync.SetLabel( 'Not Connected' )
 	
 	def refreshLaps( self ):
 		wx.CallAfter( self.refreshRaceHUD )
@@ -246,6 +246,31 @@ class Data( wx.Panel ):
 	def commit( self ):
 		pass
 			
+	def OnCellChanged( self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		old = event.GetString()
+		value = self.dataGrid.GetCellValue(row, col)
+		print('cell ' + str(row) + ', ' + str(col) + ' changed to: ' + str(value) + ' from: ' + str(old))
+		if col == 2:
+			try:
+				newBib = int(value)
+				iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
+			except:
+				# restore the old value
+				self.dataGrid.SetCellValue(row, col, old)
+				return
+			race = Model.race
+			race.sprints[iSprint][1]["sprintBib"] = newBib
+			race.sprints[iSprint][1]["sprintBibEdited"] = True
+			race.setChanged()
+			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+			wx.CallAfter(self.refresh)
+		else:
+			# restore the old value
+			self.dataGrid.SetCellValue(row, col, old)
+
+	
 	def refresh( self, event=None ):
 		#self.clock.Start()
 
@@ -282,18 +307,29 @@ class Data( wx.Panel ):
 			team = ''
 			sortTime = sprint[0]
 			sprintDict = sprint[1]
+			try:
+				index = race.sprints.index(sprint) + 1
+			except ValueError:
+				index = ''
+			ppsBad = False
+			if "ppsGood" in sprintDict:
+				if sprintDict["ppsGood"] == False:
+					ppsBad = True
 			self.dataGrid.AppendRows(1)
 			row = self.dataGrid.GetNumberRows() -1
 			# Shade tag reads light grey
 			if "isRFID" in sprintDict and sprintDict["isRFID"]:
 				for c in range(len(self.colnames)):
-					self.dataGrid.SetCellBackgroundColour(row, c, wx.Colour ( 211, 211, 211 ))
+					self.dataGrid.SetCellBackgroundColour(row, c, self.lightGreyColour)
 			else:
 				for c in range(len(self.colnames)):
-					self.dataGrid.SetCellBackgroundColour(row, c, wx.Colour ( 255, 255, 255 ))
+					self.dataGrid.SetCellBackgroundColour(row, c, self.whiteColour)
 			
 			col = 0
-			self.dataGrid.SetCellValue(row, col, str(sortTime)[:-3])
+			self.dataGrid.SetCellValue(row, col, str(index))
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_CENTER, wx.ALIGN_CENTER)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, sortTime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
@@ -302,13 +338,14 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			if ',' in bibstring:
 				name = '[Multiple Bibs]'
-				self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 0 ))
+				self.dataGrid.SetCellBackgroundColour(row, col, self.lightBlueColour)
 			else:
-				#self.dataGrid.SetCellBackgroundColour(row, col, wx.Colour( 255, 255, 255 ))
 				try:
 					bib = int(bibstring)
 				except:
 					pass
+				if "sprintBibEdited" in sprintDict and sprintDict["sprintBibEdited"] == True:
+					self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			col += 1
 			#name
 			if bib and excelLink is not None and excelLink.hasField('FirstName'):
@@ -338,16 +375,39 @@ class Data( wx.Panel ):
 				except:
 					pass
 			col += 1
-			self.dataGrid.SetCellValue(row, col, '{:.3f}'.format(sprintDict["sprintTime"]) if "sprintTime" in sprintDict else '')
-			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			if "sprintTime" in sprintDict:
+				self.dataGrid.SetCellValue(row, col, '{:.3f}'.format(sprintDict["sprintTime"]))
+				self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+				if ppsBad:
+					self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
 			col += 1
-			self.dataGrid.SetCellValue(row, col, '{:.2f}'.format(sprintDict["sprintSpeed"]) if "sprintSpeed" in sprintDict else '')
-			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			if "sprintSpeed" in sprintDict:
+				self.dataGrid.SetCellValue(row, col, '{:.2f}'.format(sprintDict["sprintSpeed"]))
+				self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+				if ppsBad:
+					self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
 			col += 1
 			self.dataGrid.SetCellValue(row, col, str(sprintDict["speedUnit"]) if "speedUnit" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
-			
+			self.dataGrid.SetCellValue(row, col, str(sprintDict["sprintTimeSystemMicros"]) if "sprintTimeSystemMicros" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, str(sprintDict["satellites"]) if "satellites" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, '{:.1f}'.format(sprintDict["sprintDistance"]) if "sprintDistance" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1			
+			self.dataGrid.SetCellValue(row, col, '{:.5f}'.format(sprintDict["latitude"]) if "latitude" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, '{:.5f}'.format(sprintDict["longitude"]) if "longitude" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, '{:.1f}'.format(sprintDict["elevation"]) if "elevation" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
 				
 		
 		row = self.dataGrid.GetNumberRows() -1

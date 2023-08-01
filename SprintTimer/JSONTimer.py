@@ -290,7 +290,9 @@ class JSONTimer:
 					break
 				
 				self.processSendQ()
-				
+			#lost connection
+			self.sendReaderEvent(False, None, None, None)
+		
 		# Final cleanup.
 		try:
 			self.socket.shutdown( socket.SHUT_RDWR )

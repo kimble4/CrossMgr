@@ -186,8 +186,8 @@ class MainWin( wx.Frame ):
 
 		Utils.setMainWin( self )
 		
-		#self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
-		#self.numTimes = []
+		self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
+		self.numTimes = []
 		
 		self.sprintTimer = JSONTimer()
 		self.sprintTimerClockDelta = float("NAN")
@@ -841,7 +841,7 @@ class MainWin( wx.Frame ):
 				continue
 			
 			requests.append( (num, (dt - race.startTime).total_seconds()) )
-			
+		
 		success, error = SendPhotoRequests( requests )
 		if success:
 			race.photoCount += len(requests) * 2
@@ -894,11 +894,10 @@ class MainWin( wx.Frame ):
 		else:
 			return
 		
-		num = None
+		num = 0  # default to 0 because CrossMgrVideo will choke on None
 		if "sprintBib" in event.sprintDict:
 			num = event.sprintDict["sprintBib"]
 		requests = [(num, (dt - race.startTime).total_seconds())]
-		
 		success, error = SendPhotoRequests( requests )
 		if success:
 			race.photoCount += len(requests) * 2
@@ -4146,19 +4145,22 @@ class MainWin( wx.Frame ):
 		race = Model.race
 		
 		for num, t in self.numTimes:
-			race.addTime( num, t, doSetChanged=False )
+			print('RFID got bib:' + str(num))
+			# add them to the sprintbibs list, don't process as lap times
+			race.addSprintBib( num, t, doSetChanged = False )
+			#race.addTime( num, t, doSetChanged=False )
 		race.setChanged()
 		
-		OutputStreamer.writeNumTimes( self.numTimes )
+		#OutputStreamer.writeNumTimes( self.numTimes )
 		
-		if race.enableUSBCamera:
-			photoRequests = [(num, t) for num, t in self.numTimes if okTakePhoto(num, t)]
-			if photoRequests:
-				success, error = SendPhotoRequests( photoRequests )
-				if success:
-					race.photoCount += len(photoRequests)
-				else:
-					Utils.writeLog( 'USB Camera Error: {}'.format(error) )
+		#if race.enableUSBCamera:
+			#photoRequests = [(num, t) for num, t in self.numTimes if okTakePhoto(num, t)]
+			#if photoRequests:
+				#success, error = SendPhotoRequests( photoRequests )
+				#if success:
+					#race.photoCount += len(photoRequests)
+				#else:
+					#Utils.writeLog( 'USB Camera Error: {}'.format(error) )
 		
 		del self.numTimes[:]
 		return True
@@ -4213,11 +4215,6 @@ class MainWin( wx.Frame ):
 				
 			#Only process times after the start of the race.
 			if race.isRunning() and race.startTime <= dt:
-				print('RFID got bib:' + str(num))
-				# add them to the sprintbibs list, don't process as lapt times
-				race.addSprintBib( num, dt, doSetChanged = False )
-					
-		race.setChanged()
 		
 				#Always process times for mass start races and when timeTrialNoRFIDStart unset.
 				#if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
@@ -4227,34 +4224,35 @@ class MainWin( wx.Frame ):
 					#rider = race.getRider( num )
 					#if rider.firstTime is not None:
 						#self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+					self.numTimes.append( (num, dt) )
 		
 		#Ensure that we don't update too often if riders arrive in a bunch.
-		#if not self.callLaterProcessRfidRefresh:
-			#class ProcessRfidRefresh( wx.Timer ):
-				#def __init__( self, *args, **kwargs ):
-					#self.mainWin = kwargs.pop('mainWin')
-					#super().__init__(*args, **kwargs)
-				#def Notify( self ):
-					#self.mainWin.processRfidRefresh()
-			#self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
+		if not self.callLaterProcessRfidRefresh:
+			class ProcessRfidRefresh( wx.Timer ):
+				def __init__( self, *args, **kwargs ):
+					self.mainWin = kwargs.pop('mainWin')
+					super().__init__(*args, **kwargs)
+				def Notify( self ):
+					self.mainWin.processRfidRefresh()
+			self.callLaterProcessRfidRefresh = ProcessRfidRefresh( mainWin=self )
 		
-		#delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
-		#delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
-		#if not self.callLaterProcessRfidRefresh.IsRunning():
+		delayIntervals = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)
+		delayIntervals = (0.1, 0.25, 0.5, 0.75, 1.0)
+		if not self.callLaterProcessRfidRefresh.IsRunning():
 			#Start the timer for the first interval.
-			#self.clprIndex = 0
-			#self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
-			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
-				#self.processRfidRefresh()
-		#elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
-					#self.clprIndex < len(delayIntervals)-1 ):
+			self.clprIndex = 0
+			self.clprTime = now() + datetime.timedelta( seconds=delayIntervals[0] )
+			if refreshNow or not self.callLaterProcessRfidRefresh.Start( int(delayIntervals[0]*1000.0), True ):
+				self.processRfidRefresh()
+		elif (		(self.clprTime - now()).total_seconds() > delayIntervals[self.clprIndex] * 0.75 and
+					self.clprIndex < len(delayIntervals)-1 ):
 			#If we get another read within the last 25% of the interval, increase the update to the next interval.
-			#self.callLaterProcessRfidRefresh.Stop()
-			#self.clprIndex += 1
-			#self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
-			#delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
-			#if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
-				#self.processRfidRefresh()
+			self.callLaterProcessRfidRefresh.Stop()
+			self.clprIndex += 1
+			self.clprTime += datetime.timedelta( seconds = delayIntervals[self.clprIndex] - delayIntervals[self.clprIndex-1] )
+			delayToGo = max( 10, int((self.clprTime - now()).total_seconds() * 1000.0) )
+			if refreshNow or not self.callLaterProcessRfidRefresh.Start( delayToGo, True ):
+				self.processRfidRefresh()
 		return False	# Never signal for an update.
 	
 	def processSprintTimer( self, refreshNow=False ):
@@ -4280,16 +4278,21 @@ class MainWin( wx.Frame ):
 			
 			sortTime = receivedTime;
 			
-			if "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds()) < 1.0:
+			ppsGood = False
+			if "ppsGood" in sprintDict:
+				if sprintDict["ppsGood"] == True:
+					ppsGood = True
+			
+			if ppsGood and "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds()) < 1.0:
 				#if the clocks are less than a second out, use the timer's time for the sprint
 				sortTime = datetime.datetime.fromtimestamp(sprintDict["sprintStart"])
 				if "sprintStartMillis" in sprintDict:
 					sortTime += datetime.timedelta(milliseconds=sprintDict["sprintStartMillis"])
-				print('Using timer\'s clock.')
+				Utils.writeLog('Trusting timer\'s clock for sprint start time: ' + str(sortTime))
 			else:
 				if "sprintTime" in sprintDict:
 					sortTime -= datetime.timedelta(seconds=sprintDict["sprintTime"])
-				print('using receivedTime')
+				Utils.writeLog('Using received time minus sprint duration for sprint start time: ' + str(sortTime))
 			
 			#print('race start: ' + str(race.startTime) + ' sortTime: ' + str(sortTime)) 
 			if race.isRunning() and race.startTime <= sortTime:
@@ -4316,7 +4319,6 @@ class MainWin( wx.Frame ):
 			unit = JSONTimer.SPEED_KPH
 		elif race.distanceUnit == Model.Race.UnitMiles:
 			unit = JSONTimer.SPEED_MPH
-		print('setting speed unit to ' + str(unit))
 		self.sprintTimer.setSpeedUnit( unit )
 		if self.sprintTimer.IsListening():
 			# Only write now if the timer is connected, otherwise settings will be written automatically on reconnect
