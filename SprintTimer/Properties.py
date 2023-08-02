@@ -441,12 +441,17 @@ class SprintTimerProperties( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
+		
+		mainWin = Utils.getMainWin()
+		
+		if self.ipaddr.GetValue() != getattr(race, 'sprintTimerAddress', '127.0.0.1') or self.port.GetValue() != getattr(race, 'sprintTimerPort', 10123):
+			race.sprintTimerAddress = self.ipaddr.GetValue()
+			race.sprintTimerPort	= self.port.GetValue()
+			# force reconnect the timer if the network settings have changed
+			mainWin.disconnectSprintTimer()
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
-		race.sprintTimerAddress = self.ipaddr.GetValue()
-		race.sprintTimerPort	= self.port.GetValue()
 		race.sprintDistance		= self.distance.GetValue()
 		race.distanceUnit = self.distanceUnit.GetSelection()
-		mainWin = Utils.getMainWin()
 		mainWin.updateSprintTimerSettings()
 	
 #------------------------------------------------------------------------------------------------

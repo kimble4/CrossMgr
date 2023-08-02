@@ -4305,6 +4305,18 @@ class MainWin( wx.Frame ):
 				
 		return False	# don't signal for an update.
 	
+	def disconnectSprintTimer( self ):
+		race = Model.race
+		if not race:
+			return
+		
+		if not self.sprintTimer:
+			return
+		
+		if self.sprintTimer.IsListening():
+			self.sprintTimer.StopListener()
+			
+	
 	def updateSprintTimerSettings( self ):
 		race = Model.race
 		if not race:

@@ -587,23 +587,23 @@ class LockRace:
 	#def __repr__( self ):
 		#return 'Entry(num={}, lap={}, interp={}, t={})'.format(self.num, self.lap, self.interp, self.t)
 
-#class Rider:
+class Rider:
 	#Rider Status.
-	#Finisher  = 0
-	#DNF       = 1
-	#Pulled    = 2
-	#DNS       = 3
-	#DQ 		  = 4
-	#OTL		  = 5
-	#NP		  = 6
-	#statusNames = ['Finisher', 'DNF', 'PUL', 'DNS', 'DQ', 'OTL', 'NP']
-	#statusSortSeq = { 'Finisher':1,	Finisher:1,
-					  #'PUL':2,		Pulled:2,
-					  #'OTL':6,		OTL:6,
-					  #'DNF':3,		DNF:3,
-					  #'DQ':4,		DQ:4,
-					  #'DNS':5,		DNS:5,
-					  #'NP':7,		NP:7 }
+	Finisher  = 0
+	DNF       = 1
+	Pulled    = 2
+	DNS       = 3
+	DQ 		  = 4
+	OTL		  = 5
+	NP		  = 6
+	statusNames = ['Finisher', 'DNF', 'PUL', 'DNS', 'DQ', 'OTL', 'NP']
+	statusSortSeq = { 'Finisher':1,	Finisher:1,
+					  'PUL':2,		Pulled:2,
+					  'OTL':6,		OTL:6,
+					  'DNF':3,		DNF:3,
+					  'DQ':4,		DQ:4,
+					  'DNS':5,		DNS:5,
+					  'NP':7,		NP:7 }
 
 	#Factors for range of acceptable lap times.
 	#pMin, pMax = 0.85, 1.20
@@ -1480,47 +1480,69 @@ class Race:
 		self.sprints.append( (sortTime, sprintDict) )
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
 		
-	def findBibsForSprint( self, index=-1, manualEntry = False ):
-		try:
-			sprint = self.sprints[index]
-			if sprint is None:
+	def findBibsForSprint( self, index=None ):
+		sortTime = None
+		if index is None:
+			if self.inProgressSprintStart:
+				# a sprint is in progress 
+				sortTime = self.inProgressSprintStart
+				sprintDict = {}
+				sprint = None
+			else:
+				index = -1
+				
+		if index:
+			try:
+				sprint = self.sprints[index]
+				if sprint is None:
+					return False
+				sortTime = sprint[0]
+				sprintDict = sprint[1]
+			except ValueError:
+				Utils.writeLog(str(index) + ' is not a valid sprint index')
 				return False
-		except ValueError:
-			Utils.writeLog(str(index) + ' is not a valid sprint index')
-			return False
-		sortTime = sprint[0]
+		
 		Utils.writeLog('Looking up bibs for sprint at ' + str(sortTime))
-		sprintDict = sprint[1]
 		# See if we've had any bibs entered near that time
 		possibleDiffBibs = []
-		for timeBib in self.sprintBibs:
-			rfidTime = timeBib[0]
-			bib = timeBib[1]
+		for timeBibManual in self.sprintBibs:
+			rfidTime = timeBibManual[0]
+			bib = timeBibManual[1]
+			manualEntry = timeBibManual[2]
 			compareToRifdTime = sortTime
 			if self.rfidAtT2 and "sprintTime" in sprintDict:
 				# add the sprint time so we're comparing with the T2 time
 				compareToRifdTime += datetime.timedelta(seconds=sprintDict["sprintTime"])
-			diff = (compareToRifdTime - rfidTime).total_seconds()
+			diff = (rfidTime - compareToRifdTime).total_seconds()
 			if abs(diff) < self.rfidTagAssociateSeconds:
-				possibleDiffBibs.append( (diff, bib) )
+				Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was within ' + str(self.rfidTagAssociateSeconds) + 's of sprint trigger.')
+				possibleDiffBibs.append( (abs(diff), bib) )
 			elif manualEntry:
-				#accept at any time between T1 and T2
-				try:
-					t1 = self.sprints[-1][0]
-					t2 = t1 + self.sprints[-1][1]["sprintTime"]
-					if t < (t2 + datetime.timedelta(seonds=self.rfidTagAssociateSeconds)) or t > (t1 - datetime.timedelta(seonds=self.rfidTagAssociateSeconds)):
-						Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was manually entered.')
-						possibleDiffBibs.append( (diff, bib) )
-				except:
-					pass
+				if index is None:
+					# in progress sprint - accept any time after start
+					if rfidTime >= (self.inProgressSprintStart - datetime.timedelta(seconds=self.rfidTagAssociateSeconds)):
+						Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was manually entered during the sprint.')
+						possibleDiffBibs.append( (abs(diff), bib) )
+				else:
+					#accept at any time between T1 and T2
+					try:
+						t1 = self.sprints[index][0]
+						t2 = t1 + datetime.timedelta(seconds = self.sprints[index][1]["sprintTime"])
+						if rfidTime < (t2 + datetime.timedelta(seconds=self.rfidTagAssociateSeconds)) and rfidTime > (t1 - datetime.timedelta(seconds=self.rfidTagAssociateSeconds)):
+							Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was manually entered during the sprint.')
+							possibleDiffBibs.append( (abs(diff), bib) )
+					except:
+						Utils.writeLog('Something went wrong considering #' + str(bib) + '.')
 			
 		possibleDiffBibs.sort()
 		Utils.writeLog('Possible bibs: ' + str(possibleDiffBibs))
 		# Add the best bib to the sprintDict if we have one (or more)
 		if len(possibleDiffBibs) == 1:
 			diffBib = possibleDiffBibs[0]
-			sprint[1]["sprintBib"] = diffBib[1]  # update the bib in place
-			self.setChanged()
+			if sprint:
+				# update the bib in place
+				sprint[1]["sprintBib"] = diffBib[1]  
+				self.setChanged()
 			#feed the bib back to the sprint timer
 			mainWin = Utils.getMainWin()
 			if mainWin:
@@ -1532,7 +1554,9 @@ class Race:
 				bibstring += str(diffBib[1])
 				bibstring += ','
 			bibstring = bibstring[:-1]
-			sprint[1]["sprintBib"] = bibstring  # update the bib in place
+			if sprint:
+				# update the bib in place
+				sprint[1]["sprintBib"] = bibstring  
 			#feed the best bib back to the sprint timer
 			mainWin = Utils.getMainWin()
 			if mainWin:
@@ -1553,6 +1577,8 @@ class Race:
 			self.inProgressSprintStart = None
 		else:
 			self.inProgressSprintStart = t
+			if self.findBibsForSprint():
+				Utils.refresh()
 			
 	def getInProgressSprintTime( self ):
 		if self.inProgressSprintStart:
@@ -1566,15 +1592,15 @@ class Race:
 			# this has likely come from keyboard entry
 			manualEntry = True
 			t = datetime.datetime.now()
-		self.sprintBibs.append( (t, num) )
+		self.sprintBibs.append( (t, num, manualEntry) )
 		
-		#if we're within rfidTagAssociateSeconds of a sprint, recalculate bibs
+		#if bib was manually entered, or we're within rfidTagAssociateSeconds of a sprint, recalculate bibs
 		diff = abs((self.sprints[-1][0] - t).total_seconds())
 		if diff <= self.rfidTagAssociateSeconds:
 			if self.findBibsForSprint():
 				Utils.refresh()
 		elif manualEntry:
-			if self.findBibsForSprint(manualEntry = True):
+			if self.findBibsForSprint():
 				Utils.refresh()
 			
 		if doSetChanged:

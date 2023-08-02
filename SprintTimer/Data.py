@@ -147,7 +147,7 @@ class Data( wx.Panel ):
 		self.raceTime.SetDoubleBuffered( True )
 				
 		self.clockSync = wx.StaticText( self, label = 'Not connected')
-		self.showTagReads = wx.CheckBox( self, label='Show RFID reads' )
+		self.showTagReads = wx.CheckBox( self, label='Show bib entry / RFID read times' )
 		
 		self.showTagReads.Bind( wx.EVT_CHECKBOX, self.refresh )
 		
@@ -251,6 +251,12 @@ class Data( wx.Panel ):
 		col = event.GetCol()
 		old = event.GetString()
 		value = self.dataGrid.GetCellValue(row, col)
+		if col <2: # count, sortTime
+			# restore the old value
+			self.dataGrid.SetCellValue(row, col, old)
+			return
+		
+		race = Model.race
 		iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
 		if col == 2: # bib
 			if value != '':
@@ -262,8 +268,10 @@ class Data( wx.Panel ):
 					return
 			else:
 				newBib = ''
-			race = Model.race
-			race.sprints[iSprint][1]["sprintBib"] = newBib
+			if newBib == '':
+				del race.sprints[iSprint][1]["sprintBib"]
+			else:
+				race.sprints[iSprint][1]["sprintBib"] = newBib
 			race.sprints[iSprint][1]["sprintBibEdited"] = True
 			race.setChanged()
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
@@ -271,8 +279,8 @@ class Data( wx.Panel ):
 		elif col > 2 and col < 6: #name, machine, team
 			race = Model.race
 			excelLink = getattr(race, 'excelLink', None)
-			if excelLink:
-				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\'.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
+			if "sprintBib" in race.sprints[iSprint][1] and excelLink:
+				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\' ' +  _('field for sprints with a bib number') + '.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
 				# restore the old value
 				self.dataGrid.SetCellValue(row, col, old)
 			else:
@@ -367,7 +375,7 @@ class Data( wx.Panel ):
 					self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			col += 1
 			#name
-			if bib and excelLink is not None and (excelLink.hasField('FirstName') or excelLink.hasField('LastName')):
+			if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
 				try:
 					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
 				except:

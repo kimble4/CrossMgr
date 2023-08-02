@@ -81,6 +81,8 @@ class JSONTimer:
 			self.processSendQ()
 				
 	def processSendQ( self ):
+		if self.socket is None:
+			return
 		while self.sendQ:
 			try:
 				message = self.sendQ.get_nowait()
@@ -92,6 +94,8 @@ class JSONTimer:
 				return
 				
 	def socketSend( self, s, message ):
+		if s is None:
+			return
 		sLen = 0
 		while sLen < len(message):
 			sLen += s.send( message[sLen:] )
@@ -251,20 +255,20 @@ class JSONTimer:
 									ms = sprintDict["wallMillis"] / 1000.0
 								readerTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
 								readerComputerTimeDiff = receivedTime - readerTime
-								self.qLog( 'time', '{}: {}'.format(_('Our clock is ahead by'), readerComputerTimeDiff.total_seconds() ) )
+								self.qLog( 'timing', '{}: {}'.format(_('Our clock is ahead by'), readerComputerTimeDiff.total_seconds() ) )
 							
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
-								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff)
+								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								lastT2 = sprintDict["T2micros"]
 							else:
 								#just update the time difference
 								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
-								#self.qLog( 'data', '{}: {}'.format(_('Sprint has started'), str(sprintDict) ) )
+								self.qLog( 'timing', '{}'.format(_('Sprint has started...') ) )
 								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff)
 								lastT1 = sprintDict["T1micros"]
 							else:
