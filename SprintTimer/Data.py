@@ -251,7 +251,8 @@ class Data( wx.Panel ):
 		col = event.GetCol()
 		old = event.GetString()
 		value = self.dataGrid.GetCellValue(row, col)
-		if col == 2:
+		iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
+		if col == 2: # bib
 			if value != '':
 				try:
 					newBib = int(value)
@@ -261,13 +262,29 @@ class Data( wx.Panel ):
 					return
 			else:
 				newBib = ''
-			iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
 			race = Model.race
 			race.sprints[iSprint][1]["sprintBib"] = newBib
 			race.sprints[iSprint][1]["sprintBibEdited"] = True
 			race.setChanged()
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
+		elif col > 2 and col < 6: #name, machine, team
+			race = Model.race
+			excelLink = getattr(race, 'excelLink', None)
+			if excelLink:
+				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\'.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
+				# restore the old value
+				self.dataGrid.SetCellValue(row, col, old)
+			else:
+				if col == 3:
+					race.sprints[iSprint][1]["sprintNameEdited"] = value
+				elif col == 4:
+					race.sprints[iSprint][1]["sprintMachineEdited"] = value
+				elif col == 5:
+					race.sprints[iSprint][1]["sprintTeamEdited"] = value
+				race.setChanged()
+				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+				wx.CallAfter(self.refresh)
 		else:
 			# restore the old value
 			self.dataGrid.SetCellValue(row, col, old)
@@ -350,12 +367,14 @@ class Data( wx.Panel ):
 					self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			col += 1
 			#name
-			if bib and excelLink is not None and excelLink.hasField('FirstName'):
+			if bib and excelLink is not None and (excelLink.hasField('FirstName') or excelLink.hasField('LastName')):
 				try:
 					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
 				except:
 					pass
-			# Do this outside the try, because name may have been written above
+			elif "sprintNameEdited" in sprintDict:
+					name = sprintDict["sprintNameEdited"]
+					self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellValue(row, col, name)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
@@ -363,19 +382,26 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('Machine'):
 				try:
 					machine = externalInfo[bib]['Machine']
-					self.dataGrid.SetCellValue(row, col, machine)
-					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+					
 				except:
 					pass
+			elif "sprintMachineEdited" in sprintDict:
+				machine = sprintDict["sprintMachineEdited"]
+				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+			self.dataGrid.SetCellValue(row, col, machine)
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			#team
 			if bib and excelLink is not None and excelLink.hasField('Team'):
 				try:
-					machine = externalInfo[bib]['Team']
-					self.dataGrid.SetCellValue(row, col, team)
-					self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+					team = externalInfo[bib]['Team']
 				except:
 					pass
+			elif "sprintTeamEdited" in sprintDict:
+				team = sprintDict["sprintTeamEdited"]
+				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+			self.dataGrid.SetCellValue(row, col, team)
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			if "sprintTime" in sprintDict:
 				self.dataGrid.SetCellValue(row, col, '{:.3f}'.format(sprintDict["sprintTime"]))
