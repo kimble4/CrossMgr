@@ -188,9 +188,9 @@ class GeneralInfoProperties( wx.Panel ):
 
 #------------------------------------------------------------------------------------------------
 
-#class RaceOptionsProperties( wx.Panel ):
-	#def __init__( self, parent, id = wx.ID_ANY ):
-		#super().__init__( parent, id )
+class RaceOptionsProperties( wx.Panel ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id )
 		
 		#self.criteriumMode = wx.CheckBox( self, label=_('Criterium') )
 		#self.criteriumMode.Bind(wx.EVT_CHECKBOX, self.onChangeCriterium )
@@ -235,16 +235,16 @@ class GeneralInfoProperties( wx.Panel ):
 		#self.distanceUnitSizer.Add( self.distanceUnit )
 		#self.distanceUnitSizer.AddStretchSpacer()
 		
-		#self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes, Edits and Projected Times in HTML Output") )
-		#self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
-		#self.showCourseAnimationInHtml.SetValue( True )
+		self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes, Edits and Projected Times in HTML Output") )
+		self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
+		self.showCourseAnimationInHtml.SetValue( True )
 
-		#self.minPossibleLapTimeLabel = wx.StaticText( self, label=_('Min. Possible Lap Time: ') )
-		#self.minPossibleLapTime = HighPrecisionTimeEdit( self, seconds = 0.0 )
-		#self.minPossibleLapTimeUnit = wx.StaticText( self, label=_('hh:mm:ss.ddd') )
-		#mplths = wx.BoxSizer( wx.HORIZONTAL )
-		#mplths.Add( self.minPossibleLapTime )		
-		#mplths.Add( self.minPossibleLapTimeUnit, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
+		self.minPossibleLapTimeLabel = wx.StaticText( self, label=_('Min. Possible Lap Time: ') )
+		self.minPossibleLapTime = HighPrecisionTimeEdit( self, seconds = 0.0 )
+		self.minPossibleLapTimeUnit = wx.StaticText( self, label=_('hh:mm:ss.ddd') )
+		mplths = wx.BoxSizer( wx.HORIZONTAL )
+		mplths.Add( self.minPossibleLapTime )		
+		mplths.Add( self.minPossibleLapTimeUnit, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
 		
 		#self.leaderArrivalWarningSecondsLabel = wx.StaticText( self, label=_('Play reminder sound: ') )
 		#self.leaderArrivalWarningSeconds = intctrl.IntCtrl( self, min=0, max=3600, allow_none=True, value=10, size=(64,-1), style=wx.ALIGN_RIGHT )
@@ -261,18 +261,18 @@ class GeneralInfoProperties( wx.Panel ):
 		#self.winAndOut.Bind(wx.EVT_CHECKBOX, self.onChangeWinAndOut )
 
 		#-------------------------------------------------------------------------------
-		#ms = wx.BoxSizer( wx.HORIZONTAL )
-		#self.SetSizer( ms )
+		ms = wx.BoxSizer( wx.HORIZONTAL )
+		self.SetSizer( ms )
 		
-		#fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=7, hgap=3 )
-		#fgs.AddGrowableCol( 1 )
+		fgs = wx.FlexGridSizer( rows=0, cols=2, vgap=7, hgap=3 )
+		fgs.AddGrowableCol( 1 )
 
-		#labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
-		#fieldAlign = wx.EXPAND
+		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
+		fieldAlign = wx.EXPAND
 		
-		#blank = lambda : wx.StaticText( self, label='' )
+		blank = lambda : wx.StaticText( self, label='' )
 		
-		#labelFieldBatchPublish = [
+		labelFieldBatchPublish = [
 			#(blank(),				0, labelAlign),		(self.criteriumMode,			1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.timeTrial,				1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.bestNLaps,				1, fieldAlign),
@@ -285,16 +285,16 @@ class GeneralInfoProperties( wx.Panel ):
 			#(blank(),				0, labelAlign),		(self.setNoDataDNS,				1, fieldAlign),
 			#(self.rule80MinLapCountLabel, 0, labelAlign),(self.rule80MinLapCountSizer,	1, fieldAlign),
 			#(self.distanceUnitLabel,0, labelAlign),		(self.distanceUnitSizer,		1, fieldAlign),
-			#(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
-			#(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
-			#(self.minPossibleLapTimeLabel,0, labelAlign),(mplths,						0, 0),
+			(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
+			(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
+			(self.minPossibleLapTimeLabel,0, labelAlign),(mplths,						0, 0),
 			#(self.leaderArrivalWarningSecondsLabel, 0, labelAlign), (lawshs,				0, 0),
 			#(self.licenseLinkTemplateLabel,0, labelAlign),(self.licenseLinkTemplate,	1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.winAndOut,				1, fieldAlign),
-		#]
-		#addToFGS( fgs, labelFieldBatchPublish )
+		]
+		addToFGS( fgs, labelFieldBatchPublish )
 		
-		#ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
+		ms.Add( fgs, 1, flag=wx.EXPAND|wx.ALL, border=16 )
 
 	#def onChangeTimeTrial( self, event=None ):
 		#if self.timeTrial.GetValue():
@@ -328,7 +328,8 @@ class GeneralInfoProperties( wx.Panel ):
 		#if event:
 			#event.Skip()
      
-	#def refresh( self ):
+	def refresh( self ):
+		pass
 		#race = Model.race
 		#self.criteriumMode.SetValue( getattr(race, 'isCriterium', False) )
 		#self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
@@ -359,7 +360,8 @@ class GeneralInfoProperties( wx.Panel ):
 	#def distanceUnitValue( self ):
 		#return self.distanceUnit.GetSelection()
 	
-	#def commit( self ):
+	def commit( self ):
+		pass
 		#race = Model.race
 		#race.isCriterium = self.criteriumMode.IsChecked()
 		#race.isTimeTrial = self.timeTrial.IsChecked()
@@ -1397,7 +1399,7 @@ class Properties( wx.Panel ):
 
 		self.propClassName = [
 			('generalInfoProperties',	GeneralInfoProperties,		_('General Info') ),
-			#('raceOptionsProperties',	RaceOptionsProperties,		_('Race Options') ),
+			('raceOptionsProperties',	RaceOptionsProperties,		_('Race Options') ),
 			('sprintTimerProperties',	SprintTimerProperties,		_('Sprint Timer') ),
 			('rfidProperties',			RfidProperties,				_('RFID') ),
 			#('webProperties',			WebProperties,				_('Web') ),
@@ -1588,7 +1590,7 @@ class Properties( wx.Panel ):
 		try:
 			gi = self.generalInfoProperties
 			fi = self.filesProperties
-		except ValueError:
+		except AttributeError:
 			return ''
 	
 		fname = Utils.GetFileName(
@@ -1691,14 +1693,14 @@ class PropertiesDialog( wx.Dialog ):
 			btn.Bind( wx.EVT_BUTTON, self.onBrowseFolder )
 			fgs.Add( btn, wx.ALIGN_CENTER_VERTICAL )
 			
-			fgs.Add( wx.StaticText(self, label=_('Categories Import File (*.brc):')), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
-			self.categoriesFile = wx.TextCtrl( self, size=(400,-1) )
-			self.categoriesFile.SetValue( Utils.getDocumentsDir() )
-			fgs.Add( self.categoriesFile, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
+			#fgs.Add( wx.StaticText(self, label=_('Categories Import File (*.brc):')), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+			#self.categoriesFile = wx.TextCtrl( self, size=(400,-1) )
+			#self.categoriesFile.SetValue( Utils.getDocumentsDir() )
+			#fgs.Add( self.categoriesFile, flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
 
-			btn = wx.Button( self, label='{}...'.format(_('Browse')) )
-			btn.Bind( wx.EVT_BUTTON, self.onBrowseCategories )
-			fgs.Add( btn, flag=wx.ALIGN_CENTER_VERTICAL )
+			#btn = wx.Button( self, label='{}...'.format(_('Browse')) )
+			#btn.Bind( wx.EVT_BUTTON, self.onBrowseCategories )
+			#fgs.Add( btn, flag=wx.ALIGN_CENTER_VERTICAL )
 			
 			vsizer.Add( fgs, flag=wx.EXPAND|wx.ALL, border=5)
 			
@@ -1731,7 +1733,7 @@ class PropertiesDialog( wx.Dialog ):
 	
 	def onOK( self, event ):
 		Utils.refresh()
-		Utils.refreshForecastHistory()
+		#Utils.refreshForecastHistory()
 		self.EndModal( wx.ID_OK )
 	
 	def onBrowseFolder( self, event ):
@@ -1744,32 +1746,32 @@ class PropertiesDialog( wx.Dialog ):
 			if dlg.ShowModal() == wx.ID_OK:
 				self.folder.SetValue( dlg.GetPath() )
 	
-	def onBrowseCategories( self, event ):
-		defaultFile = self.categoriesFile.GetValue()
-		if defaultFile.endswith('.brc'):
-			dirName = os.path.dirname( defaultFile )
-			fileName = os.path.basename( defaultFile )
-		else:
-			dirName = defaultFile
-			fileName = ''
-			if not dirName:
-				dirName = self.folder.GetValue()
+	#def onBrowseCategories( self, event ):
+		#defaultFile = self.categoriesFile.GetValue()
+		#if defaultFile.endswith('.brc'):
+			#dirName = os.path.dirname( defaultFile )
+			#fileName = os.path.basename( defaultFile )
+		#else:
+			#dirName = defaultFile
+			#fileName = ''
+			#if not dirName:
+				#dirName = self.folder.GetValue()
 		
-		with wx.FileDialog( self, message=_("Choose Race Categories File"),
-							defaultDir=dirName, 
-							defaultFile=fileName,
-							wildcard=_("Bicycle Race Categories (*.brc)|*.brc"),
-							style=wx.FD_OPEN ) as dlg:
-			if dlg.ShowModal() == wx.ID_OK:
-				self.categoriesFile.SetValue( dlg.GetPath() )
+		#with wx.FileDialog( self, message=_("Choose Race Categories File"),
+							#defaultDir=dirName, 
+							#defaultFile=fileName,
+							#wildcard=_("Bicycle Race Categories (*.brc)|*.brc"),
+							#style=wx.FD_OPEN ) as dlg:
+			#if dlg.ShowModal() == wx.ID_OK:
+				#self.categoriesFile.SetValue( dlg.GetPath() )
 		
 	def GetPath( self ):
 		self.properties.updateFileName()
 		return os.path.join( self.folder.GetValue(), self.properties.getFileName() )
 		
-	def GetCategoriesFile( self ):
-		categoriesFile = self.categoriesFile.GetValue()
-		return categoriesFile if categoriesFile.endswith( '.brc' ) else None
+	#def GetCategoriesFile( self ):
+		#categoriesFile = self.categoriesFile.GetValue()
+		#return categoriesFile if categoriesFile.endswith( '.brc' ) else None
 
 def SetNewFilename( parent, properties ):
 	mainWin = Utils.getMainWin()
@@ -1826,7 +1828,7 @@ def ChangeProperties( parent ):
 			Model.resetCache()
 			mainWin.writeRace()
 			Utils.refresh()
-			wx.CallAfter( Utils.refreshForecastHistory )
+			#wx.CallAfter( Utils.refreshForecastHistory )
 				
 		except (NameError, AttributeError, TypeError):
 			pass

@@ -115,7 +115,7 @@ class Data( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Count', 'Time of day', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Unit', 'System µs', 'Satellites', 'Distance', 'Lat', 'Long', 'Ele']
+		self.colnames = ['Count', 'Time of day', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
 		
 		self.whiteColour = wx.Colour( 255, 255, 255 )
 		self.blackColour = wx.Colour( 0, 0, 0 )
@@ -277,7 +277,6 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
 		elif col > 2 and col < 6: #name, machine, team
-			race = Model.race
 			excelLink = getattr(race, 'excelLink', None)
 			if "sprintBib" in race.sprints[iSprint][1] and excelLink:
 				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\' ' +  _('field for sprints with a bib number') + '.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
@@ -293,6 +292,10 @@ class Data( wx.Panel ):
 				race.setChanged()
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 				wx.CallAfter(self.refresh)
+		elif col == 9: #note
+			race.sprints[iSprint][1]["sprintNote"] = value
+			race.setChanged()
+			wx.CallAfter(self.refresh)
 		else:
 			# restore the old value
 			self.dataGrid.SetCellValue(row, col, old)
@@ -426,15 +429,18 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellValue(row, col, str(sprintDict["speedUnit"]) if "speedUnit" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
+			self.dataGrid.SetCellValue(row, col, str(sprintDict["sprintNote"]) if "sprintNote" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_LEFT)
+			col += 1
+			self.dataGrid.SetCellValue(row, col, '{:.1f}'.format(sprintDict["sprintDistance"]) if "sprintDistance" in sprintDict else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+			col += 1
 			self.dataGrid.SetCellValue(row, col, str(sprintDict["sprintTimeSystemMicros"]) if "sprintTimeSystemMicros" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			col += 1
 			self.dataGrid.SetCellValue(row, col, str(sprintDict["satellites"]) if "satellites" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			col += 1
-			self.dataGrid.SetCellValue(row, col, '{:.1f}'.format(sprintDict["sprintDistance"]) if "sprintDistance" in sprintDict else '')
-			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
-			col += 1			
 			self.dataGrid.SetCellValue(row, col, '{:.5f}'.format(sprintDict["latitude"]) if "latitude" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			col += 1

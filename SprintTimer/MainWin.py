@@ -173,12 +173,12 @@ def AppendMenuItemBitmap( menu, id, name, help, bitmap ):
 	menu.Append( mi )
 	return mi
 
-class ForecastHistory:
-	def __init__( self ):
-		pass
+#class ForecastHistory:  # Dummy class to satisfy Utils imported from CrossMgr
+	#def __init__( self ):
+		#pass
 	
-	def refresh( self ):
-		pass
+	#def refresh( self ):
+		#pass
 
 class MainWin( wx.Frame ):
 	def __init__( self, parent, id = wx.ID_ANY, title='', size=(200,200) ):
@@ -536,7 +536,7 @@ class MainWin( wx.Frame ):
 
 		#Configure the field of the display.
 		
-		self.forecastHistory = ForecastHistory()  #dummy to satisfy Utils
+		#self.forecastHistory = ForecastHistory()  #dummy to satisfy Utils
 
 		bookStyle = (
 			  flatnotebook.FNB_NO_X_BUTTON
@@ -2736,19 +2736,19 @@ class MainWin( wx.Frame ):
 	def menuNew( self, event ):
 		#self.showPage(self.iActionsPage)
 		#self.closeFindDialog()
-		#self.writeRace()
+		self.writeRace()
 		
-		#race = Model.race
-		#if race:
+		race = Model.race
+		if race:
 			#geoTrack, geoTrackFName = getattr(race, 'geoTrack', None), getattr(race, 'geoTrackFName', None)
-			#excelLink = getattr(race, 'excelLink', None)
-		#else:
-			#excelLink = None
+			excelLink = getattr(race, 'excelLink', None)
+		else:
+			excelLink = None
 			
 			
 		#geoTrack, geoTrackFName = None, None		# Do not retain the GPX file after a full new.
 		
-		#raceSave = Model.race
+		raceSave = Model.race
 		
 		Model.setRace( Model.Race() )
 		race = Model.race
@@ -2762,49 +2762,49 @@ class MainWin( wx.Frame ):
 				#for c in race.categories.values():
 					#c.distance = distance
 			#race.showOval = False
-		#if excelLink:
-			#race.excelLink = excelLink
+		if excelLink:
+			race.excelLink = excelLink
 			
-		#dlg = PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE )
+		dlg = PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE )
 		#ApplyDefaultTemplate( race )
-		#dlg.properties.refresh()
-		#ret = dlg.ShowModal()
-		#fileName = dlg.GetPath()
+		dlg.properties.refresh()
+		ret = dlg.ShowModal()
+		fileName = dlg.GetPath()
 		#categoriesFile = dlg.GetCategoriesFile()
-		#properties = dlg.properties	
+		properties = dlg.properties	
 
-		#if ret != wx.ID_OK:
-			#Model.race = raceSave
-			#return
+		if ret != wx.ID_OK:
+			Model.race = raceSave
+			return
 			
 		#Check for existing file.
-		#if os.path.exists(fileName) and \
-		   #not Utils.MessageOKCancel(
-				#self,
-				#'{}.\n\n    "{}"\n\n{}?'.format(
-					#_('File already exists'), fileName, _('Overwrite')
-				#)
-			#):
-			#Model.race = raceSave
-			#return
+		if os.path.exists(fileName) and \
+		   not Utils.MessageOKCancel(
+				self,
+				'{}.\n\n    "{}"\n\n{}?'.format(
+					_('File already exists'), fileName, _('Overwrite')
+				)
+			):
+			Model.race = raceSave
+			return
 
 		#Try to open the file.
-		#try:
-			#with open(fileName, 'w') as fp:
-				#pass
-		#except IOError:
-			#Utils.MessageOK( self, '{}\n\n    "{}"'.format(_('Cannot Open File'),fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
-			#Model.race = raceSave
-			#return
+		try:
+			with open(fileName, 'w') as fp:
+				pass
+		except IOError:
+			Utils.MessageOK( self, '{}\n\n    "{}"'.format(_('Cannot Open File'),fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
+			Model.race = raceSave
+			return
 
-		#race.resetAllCaches()
+		race.resetAllCaches()
 		
 		#Create a new race and initialize it with the properties.
-		#self.fileName = fileName
+		self.fileName = fileName
 		#WebServer.SetFileName( self.fileName )
-		#Model.resetCache()
-		#ResetExcelLinkCache()
-		#properties.commit()
+		Model.resetCache()
+		ResetExcelLinkCache()
+		properties.commit()
 		
 		#self.updateRecentFiles()
 
@@ -2827,10 +2827,10 @@ class MainWin( wx.Frame ):
 		#else:
 			#race.categoriesImportFile = categoriesFile
 			
-		#self.setNumSelect( None )
-		#self.writeRace()
-		#self.showPage(self.iActionsPage)
-		#self.refreshAll()
+		self.setNumSelect( None )
+		self.writeRace()
+		self.showPage(self.iDataPage)
+		self.refreshAll()
 	
 	#@logCall
 	#def menuNewNext( self, event ):
@@ -3077,10 +3077,10 @@ class MainWin( wx.Frame ):
 			print('no filename, not opening race')
 			return
 		#self.showResultsPage()
-		#self.refresh()
-		#Model.resetCache()
-		#ResetExcelLinkCache()
-		#self.writeRace()
+		self.refresh()
+		Model.resetCache()
+		ResetExcelLinkCache()
+		self.writeRace()
 		#Model.writeModelUpdate()
 		#self.closeFindDialog()
 		
@@ -3175,7 +3175,7 @@ class MainWin( wx.Frame ):
 		dlg = wx.FileDialog( self, message=_("Choose a Race file"),
 							defaultFile = '',
 							defaultDir = Utils.getFileDir(),
-							wildcard = _('CrossMgr files (*.cmn)|*.cmn'),
+							wildcard = _('SprintTimer files (*.spr)|*.spr'),
 							style=wx.FD_OPEN | wx.FD_CHANGE_DIR )
 		if dlg.ShowModal() == wx.ID_OK:
 			busy = wx.BusyCursor()

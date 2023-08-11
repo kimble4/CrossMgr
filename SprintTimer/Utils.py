@@ -243,7 +243,7 @@ def removeDiacritic( s ):
 		return s
 	
 def GetFileName( rDate, rName, rNum, rMemo ):
-	return '{}-{}-r{}-{}.cmn'.format(*[RemoveDisallowedFilenameChars(v) for v in (rDate, rName, rNum, rMemo)])
+	return '{}-{}-r{}-{}.spr'.format(*[RemoveDisallowedFilenameChars(v) for v in (rDate, rName, rNum, rMemo)])
 		
 # Attempt at portable sound player.
 if sys.platform.startswith('win'):
@@ -631,9 +631,8 @@ def refresh():
 	if mainWin is not None:
 		mainWin.refresh()
 
-def refreshForecastHistory():
-	if mainWin is not None:
-		mainWin.forecastHistory.refresh()
+#def refreshForecastHistory():
+	#pass
 
 def updateUndoStatus():
 	if mainWin is not None:
