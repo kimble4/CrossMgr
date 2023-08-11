@@ -15,7 +15,6 @@ import FitSheetWrapper
 import ReadSignOnSheet
 import HelpIndex
 import HelpSearch
-import MatchingCategory
 import ModuleUnpickler
 import BatchPublishAttrs
 import ReadCategoriesFromExcel

@@ -117,28 +117,28 @@ class LockRace:
 		return False
 	
 #----------------------------------------------------------------------
-#def SetToIntervals( s ):
-	#if not s:
-		#return []
+def SetToIntervals( s ):
+	if not s:
+		return []
 	
-	#all_nums = sorted( s )
-	#nBegin = nLast = all_nums.pop( 0 )
+	all_nums = sorted( s )
+	nBegin = nLast = all_nums.pop( 0 )
 	
-	#intervals = []
-	#for n in all_nums:
-		#if n != nLast + 1:
-			#intervals.append( (nBegin, nLast) )
-			#nBegin = n
-		#nLast = n
+	intervals = []
+	for n in all_nums:
+		if n != nLast + 1:
+			intervals.append( (nBegin, nLast) )
+			nBegin = n
+		nLast = n
 
-	#intervals.append( (nBegin, nLast) )		
-	#return intervals
+	intervals.append( (nBegin, nLast) )		
+	return intervals
 	
-#def IntervalsToSet( intervals ):
-	#return set.union( *[set(range(i[0], i[1]+1)) for i in intervals] ) if intervals else set()
+def IntervalsToSet( intervals ):
+	return set.union( *[set(range(i[0], i[1]+1)) for i in intervals] ) if intervals else set()
 
 #----------------------------------------------------------------------
-#class Category:
+class Category:
 
 	#DistanceByLap = 0
 	#DistanceByRace = 1
@@ -146,9 +146,9 @@ class LockRace:
 	#badRangeCharsRE = re.compile( '[^0-9,\-]' )
 	
 	#active = True
-	#CatWave = 0
-	#CatComponent = 1
-	#CatCustom = 2
+	CatWave = 0
+	CatComponent = 1
+	CatCustom = 2
 	
 	#catType = 0
 	#publishFlag = True
@@ -164,7 +164,7 @@ class LockRace:
 	
 	#prizes = []
 	
-	#MaxBib = 999999
+	MaxBib = 999999
 	
 	#Attributes to be merged from existing catgories in category import or when reading categories from the Excel sheet.
 	#MergeAttributes = (
@@ -258,23 +258,25 @@ class LockRace:
 						#distance = None, distanceType = None, firstLapDistance = None,
 						#gender = 'Open', lappedRidersMustContinue = False,
 						#catType = CatWave, publishFlag = True, uploadFlag = True, seriesFlag = True ):
+	
+	def __init__( self, name = 'Category 100-199', catStr = '100-199', sequence = 0, gender = 'Open', catType = CatWave ):
 		
-		#self.name = '{}'.format(name).strip()
-		#self.catStr = '{}'.format(catStr).strip()
+		self.name = '{}'.format(name).strip()
+		self.catStr = '{}'.format(catStr).strip()
 		#self.startOffset = startOffset if startOffset else '00:00:00.000'
 		
-		#self.catType = self.CatWave
-		#catType = '{}'.format(catType).strip().lower()
-		#try:
-			#self.catType = int(catType)
-		#except ValueError:
-			#try:
-				#if catType.startswith('component'):
-					#self.catType = self.CatComponent
-				#elif catType.startswith('custom'):
-					#self.catType = self.CatCustom
-			#except Exception:
-				#pass
+		self.catType = self.CatWave
+		catType = '{}'.format(catType).strip().lower()
+		try:
+			self.catType = int(catType)
+		except ValueError:
+			try:
+				if catType.startswith('component'):
+					self.catType = self.CatComponent
+				elif catType.startswith('custom'):
+					self.catType = self.CatCustom
+			except Exception:
+				pass
 		
 		#def toBool( v ):
 			#return '{}'.format(v).strip()[:1] in 'TtYy1'
@@ -303,10 +305,10 @@ class LockRace:
 		#except (ValueError, TypeError):
 			#self.raceMinutes = None
 		
-		#try:
-			#self.sequence = int(sequence)
-		#except (ValueError, TypeError):
-			#self.sequence = 0
+		try:
+			self.sequence = int(sequence)
+		except (ValueError, TypeError):
+			self.sequence = 0
 		
 		#try:
 			#self.distance = Utils.floatLocale( distance )
@@ -330,26 +332,26 @@ class LockRace:
 		#if self.firstLapDistance is not None and self.firstLapDistance <= 0.0:
 			#self.firstLapDistance = None
 			
-		#self.gender = 'Open'
-		#try:
-			#genderFirstChar = '{}'.format(gender or 'Open').strip()[:1].lower()
-			#if genderFirstChar in 'muh':
-				#self.gender = 'Men'
-			#elif genderFirstChar in 'wfld':
-				#self.gender = 'Women'
-		#except Exception:
-			#pass
+		self.gender = 'Open'
+		try:
+			genderFirstChar = '{}'.format(gender or 'Open').strip()[:1].lower()
+			if genderFirstChar in 'muh':
+				self.gender = 'Men'
+			elif genderFirstChar in 'wfld':
+				self.gender = 'Women'
+		except Exception:
+			pass
 			
 		#self.lappedRidersMustContinue = False
 		#lappedRidersMustContinue = '{}'.format(lappedRidersMustContinue).strip()
 		#if lappedRidersMustContinue[:1] in 'TtYy1':
 			#self.lappedRidersMustContinue = True
 
-	#def __setstate( self, d ):
-		#self.__dict__.update(d)
-		#i = getattr( self, 'intervals', None )
-		#if i:
-			#i.sort()
+	def __setstate( self, d ):
+		self.__dict__.update(d)
+		i = getattr( self, 'intervals', None )
+		if i:
+			i.sort()
 	
 	#def getLapDistance( self, lap ):
 		#if lap is None or self.distanceType != Category.DistanceByLap:
@@ -368,14 +370,14 @@ class LockRace:
 			#return 0
 		#return (self.firstLapDistance or self.distance or 0.0) + (self.distance or 0.0) * (lap-1)
 	
-	#@staticmethod
-	#def getFullName( name, gender ):
-		#GetTranslation = _
-		#return '{} ({})'.format(name, GetTranslation(gender))
+	@staticmethod
+	def getFullName( name, gender ):
+		GetTranslation = _
+		return '{} ({})'.format(name, GetTranslation(gender))
 	
-	#@property
-	#def fullname( self ):
-		#return Category.getFullName( self.name.strip(), getattr(self, 'gender', 'Open') )
+	@property
+	def fullname( self ):
+		return Category.getFullName( self.name.strip(), getattr(self, 'gender', 'Open') )
 	
 	#@property
 	#def firstLapRatio( self ):
@@ -444,17 +446,15 @@ class LockRace:
 				#return False
 		#return False if num in self.exclude else InSortedIntervalList( self.intervals, num )
 		
-	#def getMatchSet( self ):
-		#matchSet = IntervalsToSet( self.intervals )
-		#matchSet.difference_update( self.exclude )
-		#return matchSet
+	def getMatchSet( self ):
+		matchSet = IntervalsToSet( self.intervals )
+		matchSet.difference_update( self.exclude )
+		return matchSet
 
-	#key_attr = ['sequence', 'name', 'active', 'startOffset', '_numLaps', '_bestLaps', 'raceMinutes', 'catStr',
-				#'distance', 'distanceType', 'firstLapDistance',
-				#'gender', 'lappedRidersMustContinue', 'catType', 'publishFlag', 'uploadFlag', 'seriesFlag']
+	key_attr = ['sequence', 'name', 'catStr', 'gender', 'catType']
 	
-	#def key( self ):
-		#return tuple( getattr(self, attr, None) for attr in self.key_attr )
+	def key( self ):
+		return tuple( getattr(self, attr, None) for attr in self.key_attr )
 		
 	#def copy( self, c ):
 		#for attr in self.key_attr:
@@ -481,40 +481,35 @@ class LockRace:
 		#self.intervals.append( (num, num) )
 		#self.intervals.sort()
 
-	#def resetNums( self ):
-		#self.intervals = []
-		#self.exclude = set()
-		#self.catStr = ''
+	def resetNums( self ):
+		self.intervals = []
+		self.exclude = set()
+		self.catStr = ''
 		
-	#def normalize( self ):
+	def normalize( self ):
 		#Combine any consecutive or overlapping intervals.
-		#all_nums = IntervalsToSet( self.intervals )
+		all_nums = IntervalsToSet( self.intervals )
 		
 		#Remove unnecessary excludes.
-		#needlessExcludes = []
-		#for num in self.exclude:
-			#if num not in all_nums:
-				#needlessExcludes.append( num )
-		#self.exclude.difference_update( needlessExcludes )
+		needlessExcludes = []
+		for num in self.exclude:
+			if num not in all_nums:
+				needlessExcludes.append( num )
+		self.exclude.difference_update( needlessExcludes )
 
-		#self.intervals = SetToIntervals( all_nums )
+		self.intervals = SetToIntervals( all_nums )
+		
+		#print(self)
+		#print(self.getMatchSet())
 	
-	#def __repr__( self ):
-		#return 'Category(active={}, name="{}", catStr="{}", startOffset="{}", numLaps={}, bestLaps={}, raceMinutes={}, sequence={}, distance={}, distanceType={}, gender="{}", lappedRidersMustContinue="{}", catType="{}")'.format(
-				#self.active,
-				#self.name,
-				#self.catStr,
-				#self.startOffset,
-				#self._numLaps,
-				#self._bestLaps,
-				#self.raceMinutes,
-				#self.sequence,
-				#getattr(self,'distance',None),
-				#getattr(self,'distanceType', Category.DistanceByLap),
-				#getattr(self,'gender',''),
-				#getattr(self,'lappedRidersMustContinue',False),
-				#['Wave', 'Component', 'Custom'][self.catType],
-			#)
+	def __repr__( self ):
+		return 'Category( name="{}", catStr="{}", sequence={}, gender="{}", catType="{}")'.format(
+				self.name,
+				self.catStr,
+				self.sequence,
+				getattr(self,'gender',''),
+				['Wave', 'Component', 'Custom'][self.catType],
+			)
 
 	#def getStartOffsetSecs( self ):
 		#return Utils.StrToSeconds( self.startOffset )
@@ -2122,7 +2117,9 @@ class Race:
 	#def numPulledRiders( self ):
 		#return sum( (1 for r in self.riders.values() if r.status == Rider.Pulled) )
 
-	#def getCategories( self, startWaveOnly=True, publishOnly=False, uploadOnly=False, excludeCustom=False, excludeCombined=False ):
+	def getCategories( self, startWaveOnly=True, publishOnly=False, uploadOnly=False, excludeCustom=False, excludeCombined=False ):
+		activeCategories = [c for c in self.categories.values() ]
+		
 		#if startWaveOnly:
 			#CatWave = Category.CatWave
 			#activeCategories = [c for c in self.categories.values() if c.active and c.catType == CatWave]
@@ -2154,7 +2151,7 @@ class Race:
 						#break
 			#activeCategories = [c for c in activeCategories if c not in toExclude]
 		
-		#return activeCategories
+		return activeCategories
 	
 	#def getComponentCategories( self, category ):
 		#if category.catType != Category.CatWave:
@@ -2594,12 +2591,12 @@ class Race:
 		#for c in self.categories.values():
 			#c.distance = distance
 	
-	#def resetCategoryCache( self ):
-		#self.categoryCache = None
+	def resetCategoryCache( self ):
+		self.categoryCache = None
 		#self.startOffsetCache = None
 		
 	def resetAllCaches( self ):
-		#self.resetCategoryCache()
+		self.resetCategoryCache()
 		self.resetCache();
 		
 	#def resetRiderCaches( self ):

@@ -44,7 +44,6 @@ copyFiles = [
     "ReadSignOnSheet.py"
     "HelpIndex.py"
     "HelpSearch.py"
-    "MatchingCategory.py"
     "ModuleUnpickler.py"
     "BatchPublishAttrs.py"
     "ReadCategoriesFromExcel.py"

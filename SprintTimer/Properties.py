@@ -343,7 +343,7 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
 		#self.winAndOut.SetValue( race.winAndOut )
 		self.minPossibleLapTime.SetSeconds( race.minPossibleLapTime )
-		self.multiplePolicy.SetSelection( race.multipleAttmptsPolicy )
+		self.multiplePolicy.SetSelection( race.multipleAttemptsPolicy )
 		#self.leaderArrivalWarningSeconds.SetValue( getattr(race, 'leaderArrivalWarningSeconds', 10) )
 		#self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( getattr(race, 'allCategoriesFinishAfterFastestRidersLastLap', False) )
 		#self.autocorrectLapsDefault.SetValue( getattr(race, 'autocorrectLapsDefault', True) )
