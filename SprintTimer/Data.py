@@ -257,7 +257,13 @@ class Data( wx.Panel ):
 			return
 		
 		race = Model.race
-		iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
+		try:
+			iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
+		except ValueError:
+			# We tried to edit a bib entry / RFID read row
+			self.dataGrid.SetCellValue(row, col, old)
+			return
+		
 		if col == 2: # bib
 			if value != '':
 				try:
@@ -316,13 +322,19 @@ class Data( wx.Panel ):
 			
 		sprints = race.getSprints()
 		if self.showTagReads.IsChecked():
-			timeBibs = race.getSprintBibs()
-			for timeBib in timeBibs:
-				t = timeBib[0]
-				bib = timeBib[1]
+			timeBibManuals = race.getSprintBibs()
+			for timeBibManual in timeBibManuals:
+				t = timeBibManual[0]
+				bib = timeBibManual[1]
+				manual = timeBibManual[2]
 				sprintDict = {}
 				sprintDict["sprintBib"] = bib
-				sprintDict["isRFID"] = True
+				sprintDict["isRFID"] = not manual
+				sprintDict["isManualBib"] = manual
+				if manual:
+					sprintDict["sprintNote"] = 'Manual bib entry'
+				else:
+					sprintDict["sprintNote"] = 'RFID tag read'
 				sprints.append( (t, sprintDict) )
 
 		sprints.sort()
@@ -351,6 +363,9 @@ class Data( wx.Panel ):
 			if "isRFID" in sprintDict and sprintDict["isRFID"]:
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, self.lightGreyColour)
+			elif "isManualBib" in sprintDict and sprintDict["isManualBib"]:
+				for c in range(len(self.colnames)):
+					self.dataGrid.SetCellBackgroundColour(row, c, self.greyColour)
 			else:
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, self.whiteColour)

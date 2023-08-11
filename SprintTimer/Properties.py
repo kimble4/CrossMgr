@@ -218,6 +218,13 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.rankBySizer.Add( self.rankBy )
 		#self.rankBySizer.AddStretchSpacer()
 		
+		self.multiplePolicyLabel = wx.StaticText( self, label=_('Handle multiple attempts by using: ') )
+		self.multiplePolicy = wx.Choice( self, choices=Model.Race.multipleAttemptsPolicyNames )
+		self.multiplePolicy.SetSelection( 0 )
+		self.multiplePolicySizer = wx.BoxSizer ( wx.HORIZONTAL )
+		self.multiplePolicySizer.Add( self.multiplePolicy )
+		self.multiplePolicySizer.AddStretchSpacer()
+		
 		#self.setNoDataDNS = wx.CheckBox( self, label=_('Consider Riders in Spreadsheet to be DNS if no race data') )
 		
 		#self.rule80MinLapCountLabel = wx.StaticText( self, label=_("Lap Time for 80% Rule: ") )
@@ -235,9 +242,9 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.distanceUnitSizer.Add( self.distanceUnit )
 		#self.distanceUnitSizer.AddStretchSpacer()
 		
-		self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes, Edits and Projected Times in HTML Output") )
-		self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
-		self.showCourseAnimationInHtml.SetValue( True )
+		self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes in HTML Output") )
+		#self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
+		#self.showCourseAnimationInHtml.SetValue( True )
 
 		self.minPossibleLapTimeLabel = wx.StaticText( self, label=_('Min. Possible Lap Time: ') )
 		self.minPossibleLapTime = HighPrecisionTimeEdit( self, seconds = 0.0 )
@@ -282,11 +289,12 @@ class RaceOptionsProperties( wx.Panel ):
 			#(blank(),				0, labelAlign),		(self.roadRaceFinishTimes,		1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.estimateLapsDownFinishTime,		1, fieldAlign),
 			#(self.rankByLabel, 0, labelAlign), 			(self.rankBySizer,					1, fieldAlign),
+			(self.multiplePolicyLabel, 0, labelAlign), 	(self.multiplePolicySizer,		1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.setNoDataDNS,				1, fieldAlign),
 			#(self.rule80MinLapCountLabel, 0, labelAlign),(self.rule80MinLapCountSizer,	1, fieldAlign),
 			#(self.distanceUnitLabel,0, labelAlign),		(self.distanceUnitSizer,		1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
-			(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
+			#(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
 			(self.minPossibleLapTimeLabel,0, labelAlign),(mplths,						0, 0),
 			#(self.leaderArrivalWarningSecondsLabel, 0, labelAlign), (lawshs,				0, 0),
 			#(self.licenseLinkTemplateLabel,0, labelAlign),(self.licenseLinkTemplate,	1, fieldAlign),
@@ -329,13 +337,13 @@ class RaceOptionsProperties( wx.Panel ):
 			#event.Skip()
      
 	def refresh( self ):
-		pass
-		#race = Model.race
+		race = Model.race
 		#self.criteriumMode.SetValue( getattr(race, 'isCriterium', False) )
 		#self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
 		#self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
 		#self.winAndOut.SetValue( race.winAndOut )
-		#self.minPossibleLapTime.SetSeconds( race.minPossibleLapTime )
+		self.minPossibleLapTime.SetSeconds( race.minPossibleLapTime )
+		self.multiplePolicy.SetSelection( race.multipleAttmptsPolicy )
 		#self.leaderArrivalWarningSeconds.SetValue( getattr(race, 'leaderArrivalWarningSeconds', 10) )
 		#self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( getattr(race, 'allCategoriesFinishAfterFastestRidersLastLap', False) )
 		#self.autocorrectLapsDefault.SetValue( getattr(race, 'autocorrectLapsDefault', True) )
@@ -349,7 +357,7 @@ class RaceOptionsProperties( wx.Panel ):
 		#else:
 			#self.rule80MinLapCount2.SetValue( True )
 		#self.distanceUnit.SetSelection( getattr(race, 'distanceUnit', 0) )
-		#self.showDetails.SetValue( not race.hideDetails )
+		self.showDetails.SetValue( not race.hideDetails )
 		#self.showCourseAnimationInHtml.SetValue( race.showCourseAnimationInHtml )
 		#self.licenseLinkTemplate.SetValue( race.licenseLinkTemplate )
 		#self.onChangeWinAndOut()
@@ -361,8 +369,7 @@ class RaceOptionsProperties( wx.Panel ):
 		#return self.distanceUnit.GetSelection()
 	
 	def commit( self ):
-		pass
-		#race = Model.race
+		race = Model.race
 		#race.isCriterium = self.criteriumMode.IsChecked()
 		#race.isTimeTrial = self.timeTrial.IsChecked()
 		#race.isBestNLaps = self.bestNLaps.IsChecked()
@@ -375,10 +382,11 @@ class RaceOptionsProperties( wx.Panel ):
 		#race.setNoDataDNS = self.setNoDataDNS.IsChecked()
 		#race.rule80MinLapCount = (1 if self.rule80MinLapCount1.GetValue() else 2)
 		#race.distanceUnit = self.distanceUnit.GetSelection()
-		#race.hideDetails = not self.showDetails.IsChecked()
+		race.hideDetails = not self.showDetails.IsChecked()
 		#race.showCourseAnimationInHtml = self.showCourseAnimationInHtml.IsChecked()
 		#race.winAndOut = self.winAndOut.IsChecked()
-		#race.minPossibleLapTime = self.minPossibleLapTime.GetSeconds()
+		race.minPossibleLapTime = self.minPossibleLapTime.GetSeconds()
+		race.multipleAttmptsPolicy = self.multiplePolicy.GetSelection()
 		#race.leaderArrivalWarningSeconds = self.leaderArrivalWarningSeconds.GetValue()
 		#race.licenseLinkTemplate = self.licenseLinkTemplate.GetValue().strip()
 	

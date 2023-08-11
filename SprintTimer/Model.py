@@ -1112,6 +1112,13 @@ class Race:
 	UnitKm = 0
 	UnitMiles = 1
 	
+	useFastest = 0
+	useSlowest = 1
+	useFirst = 2
+	useLast = 3
+	multipleAttemptsPolicyNames = ['Fastest time', 'Slowest time', 'First attempt', 'Last attempt' ]
+	multipleAttemptsPolicy = 0
+	
 	enableJChipIntegration = False
 	enableSprintTimer = False
 	
@@ -1119,6 +1126,8 @@ class Race:
 	chipReaderPort = 3601
 	chipReaderIpAddr = '127.0.0.1'
 	unmatchedTags = None
+	
+	minPossibleLapTime = 0.0
 
 	enableUSBCamera = False
 	photosAtRaceEndOnly = False
