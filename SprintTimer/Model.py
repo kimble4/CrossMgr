@@ -451,7 +451,7 @@ class Category:
 		matchSet.difference_update( self.exclude )
 		return matchSet
 
-	key_attr = ['sequence', 'name', 'catStr', 'gender', 'catType']
+	key_attr = ['sequence', 'name', 'catStr', 'gender', 'catType', 'publishFlag', 'uploadFlag', 'seriesFlag']
 	
 	def key( self ):
 		return tuple( getattr(self, attr, None) for attr in self.key_attr )
@@ -501,12 +501,15 @@ class Category:
 		
 	
 	def __repr__( self ):
-		return 'Category( name="{}", catStr="{}", sequence={}, gender="{}", catType="{}")'.format(
+		return 'Category( name="{}", catStr="{}", sequence={}, gender="{}", catType="{}", publishFlag="{}", uploadFlag="{}", seriesFlag="{}")'.format(
 				self.name,
 				self.catStr,
 				self.sequence,
 				getattr(self,'gender',''),
 				['Wave', 'Component', 'Custom'][self.catType],
+				self.publishFlag,
+				self.uploadFlag,
+				self.seriesFlag
 			)
 
 	#def getStartOffsetSecs( self ):
@@ -2331,6 +2334,7 @@ class Race:
 			args['sequence'] = i
 			#if allInactive:
 				#args['active'] = True
+				
 			category = Category( **args )
 			
 			#Check that all component categories are in a wave.
@@ -2365,6 +2369,7 @@ class Race:
 			i += 1
 		
 		if self.categories != newCategories:
+			print('copying...')
 			#Copy the new values into the existing categories.
 			#This minimizes the impact if the calling code is in a category loop.
 			for cNewName, cNew in newCategories.items():
@@ -2374,6 +2379,7 @@ class Race:
 					self.categories[cNewName] = cNew
 			
 			self.categories = { cName:cValue for cName, cValue in self.categories.items() if cName in newCategories }
+			
 			self.setChanged()
 			
 			changed = True

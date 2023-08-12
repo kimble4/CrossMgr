@@ -897,6 +897,9 @@ class Categories( wx.Panel ):
 																			if name not in self.computedFields }
 				values['catType'] = self.CategoryTypeChoices.index(values['catType'])
 				#values['distanceType'] = self.DistanceTypeChoices.index(values['distanceType'])
+				
+				print(values)
+				
 				numStrTuples.append( values )
 			race.setCategories( numStrTuples )
 			#race.adjustAllCategoryWaveNumbers()
