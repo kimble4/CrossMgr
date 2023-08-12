@@ -229,11 +229,18 @@ class Data( wx.Panel ):
 			#except Exception:
 				#pass
 				
-	def updateClockDelta( self, d ):
+	def updateClockDelta( self, d, havePPS ):
 		if d is not None:
-			self.clockSync.SetLabel( 'Δt=' + '{:.3f}'.format(d.total_seconds()) )
+			t = 'Δt=' + '{:.3f}'.format(d.total_seconds())
 		else:
-			self.clockSync.SetLabel( 'Not Connected' )
+			t = 'Not Connected'
+			
+		if havePPS:
+			t += ', PPS OK'
+		elif havePPS is not None:
+			t += ', No PPS!'
+			
+		self.clockSync.SetLabel( t )
 	
 	def refreshLaps( self ):
 		wx.CallAfter( self.refreshRaceHUD )

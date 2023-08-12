@@ -46,9 +46,9 @@ class JSONTimer:
 		self.readerEventWindow = None
 		atexit.register(self.StopListener)
 	
-	def sendReaderEvent( self, isT2, sprintDict, receivedTime, readerComputerTimeDiff ):
+	def sendReaderEvent( self, isT2, sprintDict, receivedTime, readerComputerTimeDiff, havePPS=None):
 		if json and self.readerEventWindow:
-			wx.PostEvent( self.readerEventWindow, JSONTimer.SprintTimerEvent(isT2 = isT2, sprintDict = sprintDict, receivedTime = receivedTime, readerComputerTimeDiff = readerComputerTimeDiff) )
+			wx.PostEvent( self.readerEventWindow, JSONTimer.SprintTimerEvent(isT2 = isT2, sprintDict = sprintDict, receivedTime = receivedTime, readerComputerTimeDiff = readerComputerTimeDiff, havePPS = havePPS) )
 
 	def setSprintDistance( self, distance = None ):
 		self.sprintDistance = distance
@@ -247,6 +247,10 @@ class JSONTimer:
 					readerComputerTimeDiff = None
 					if buffer:
 						sprintDict = json.loads(buffer)
+						try:
+							havePPS = sprintDict['ppsGood']
+						except:
+							havePPS = None
 						if "wallTime" in sprintDict:
 							if sprintDict["wallTime"]:  #Use the presence of wallTime as the heartbeat
 								lastHeartbeat = receivedTime
@@ -260,23 +264,23 @@ class JSONTimer:
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
-								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff)
+								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								lastT2 = sprintDict["T2micros"]
 							else:
 								#just update the time difference
-								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
+								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								self.qLog( 'timing', '{}'.format(_('Sprint has started...') ) )
-								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff)
+								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								lastT1 = sprintDict["T1micros"]
 							else:
 								#just update the time difference
-								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
+								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
 						else:
 							#just update the time difference
-							self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff)
+							self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break

@@ -2187,14 +2187,14 @@ class Race:
 		#categories = self.getCategories( startWaveOnly=True )
 		#return categories[0] if categories else None
 	
-	#def categoryStartOffset( self, category ):
+	def categoryStartOffset( self, category ):  # need this for SendPhotoRequests
 		#Get the start offset of the controlling Start Wave.
 		#if category:
 			#if category.catType == Category.CatWave:
 				#return category.getStartOffsetSecs()
 			#if category.catType == Category.CatComponent:
 				#return self.getCategoryStartWave( category ).getStartOffsetSecs()
-		#return 0.0
+		return 0.0
 
 	#def setCategoryMask( self ):
 		#self.categoryMask = ''

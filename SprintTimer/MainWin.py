@@ -852,7 +852,11 @@ class MainWin( wx.Frame ):
 			return
 		
 		self.sprintTimerClockDelta = event.readerComputerTimeDiff
-		self.data.updateClockDelta( self.sprintTimerClockDelta )
+		if event.havePPS is not None:
+			havePPS = event.havePPS
+		else:
+			havePPS = None
+		self.data.updateClockDelta( self.sprintTimerClockDelta, havePPS )
 		
 		if event.sprintDict is None:
 			#we didn't get a sprint, just the clock status
