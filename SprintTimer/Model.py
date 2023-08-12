@@ -143,17 +143,17 @@ class Category:
 	#DistanceByLap = 0
 	#DistanceByRace = 1
 
-	#badRangeCharsRE = re.compile( '[^0-9,\-]' )
+	badRangeCharsRE = re.compile( '[^0-9,\-]' )
 	
 	#active = True
 	CatWave = 0
 	CatComponent = 1
 	CatCustom = 2
 	
-	#catType = 0
-	#publishFlag = True
-	#uploadFlag = True
-	#seriesFlag = True
+	catType = 0
+	publishFlag = True
+	uploadFlag = True
+	seriesFlag = True
 	
 	#distance = None
 	#firstLapDistance = None
@@ -183,55 +183,55 @@ class Category:
 	#)
 	#PublishFlags = tuple( a for a in MergeAttributes if a.endswith('Flag') )
 
-	#def _getStr( self ):
-		#s = ['{}'.format(i[0]) if i[0] == i[1] else '{}-{}'.format(*i) for i in self.intervals]
-		#s.extend( ['-{}'.format(i[0]) if i[0] == i[1] else '-{}-{}'.format(*i) for i in SetToIntervals(self.exclude)] )
-		#return ','.join( s )
+	def _getStr( self ):
+		s = ['{}'.format(i[0]) if i[0] == i[1] else '{}-{}'.format(*i) for i in self.intervals]
+		s.extend( ['-{}'.format(i[0]) if i[0] == i[1] else '-{}-{}'.format(*i) for i in SetToIntervals(self.exclude)] )
+		return ','.join( s )
 		
-	#def _setStr( self, s ):
-		#s = self.badRangeCharsRE.sub( '', '{}'.format(s) )
-		#if not s:
-			#s = '{}-{}'.format(self.MaxBib, self.MaxBib)
-		#self.intervals = []
-		#self.exclude = set()
-		#for f in s.split(','):
-			#if not f:
-				#continue
+	def _setStr( self, s ):
+		s = self.badRangeCharsRE.sub( '', '{}'.format(s) )
+		if not s:
+			s = '{}-{}'.format(self.MaxBib, self.MaxBib)
+		self.intervals = []
+		self.exclude = set()
+		for f in s.split(','):
+			if not f:
+				continue
 			
-			#try:
-				#if f.startswith('-'):				# Check for exclusion.
-					#f = f[1:]
-					#isExclusion = True
-				#else:
-					#isExclusion = False
+			try:
+				if f.startswith('-'):				# Check for exclusion.
+					f = f[1:]
+					isExclusion = True
+				else:
+					isExclusion = False
 					
-				#bounds = [int(b) for b in f.split('-') if b]
-				#if not bounds:
-					#continue
+				bounds = [int(b) for b in f.split('-') if b]
+				if not bounds:
+					continue
 
-				#if len(bounds) > 2:					# Fix numbers not in proper x-y range format.
-					#del bounds[2:]
-				#elif len(bounds) == 1:
-					#bounds.append( bounds[0] )
+				if len(bounds) > 2:					# Fix numbers not in proper x-y range format.
+					del bounds[2:]
+				elif len(bounds) == 1:
+					bounds.append( bounds[0] )
 					
-				#bounds[0] = min(bounds[0], self.MaxBib)	# Keep the numbers in a reasonable range to avoid performance issues.
-				#bounds[1] = min(bounds[1], self.MaxBib)
+				bounds[0] = min(bounds[0], self.MaxBib)	# Keep the numbers in a reasonable range to avoid performance issues.
+				bounds[1] = min(bounds[1], self.MaxBib)
 				
-				#if bounds[0] > bounds[1]:			# Swap the range if out of order.
-					#bounds[0], bounds[1] = bounds[1], bounds[0]
+				if bounds[0] > bounds[1]:			# Swap the range if out of order.
+					bounds[0], bounds[1] = bounds[1], bounds[0]
 					
-				#if isExclusion:
-					#self.exclude.update( range(bounds[0], bounds[1]+1) )
-				#else:
-					#self.intervals.append( tuple(bounds) )
+				if isExclusion:
+					self.exclude.update( range(bounds[0], bounds[1]+1) )
+				else:
+					self.intervals.append( tuple(bounds) )
 					
-			#except Exception as e:
+			except Exception as e:
 				#Ignore any parsing errors.
-				#pass
+				pass
 				
-		#self.intervals.sort()
+		self.intervals.sort()
 
-	#catStr = property(_getStr, _setStr)
+	catStr = property(_getStr, _setStr)
 
 	#def getMask( self ):
 		#''' Return the common number prefix for all intervals (None if non-existent). '''
@@ -257,9 +257,9 @@ class Category:
 						#raceLaps = None, raceMinutes = None,
 						#distance = None, distanceType = None, firstLapDistance = None,
 						#gender = 'Open', lappedRidersMustContinue = False,
-						#catType = CatWave, publishFlag = True, uploadFlag = True, seriesFlag = True ):
+						#catType = CatWave,  ):
 	
-	def __init__( self, name = 'Category 100-199', catStr = '100-199', sequence = 0, gender = 'Open', catType = CatWave ):
+	def __init__( self, name = 'Category 100-199', catStr = '100-199', sequence = 0, gender = 'Open', catType = CatWave, publishFlag = True, uploadFlag = True, seriesFlag = True):
 		
 		self.name = '{}'.format(name).strip()
 		self.catStr = '{}'.format(catStr).strip()
@@ -278,13 +278,13 @@ class Category:
 			except Exception:
 				pass
 		
-		#def toBool( v ):
-			#return '{}'.format(v).strip()[:1] in 'TtYy1'
+		def toBool( v ):
+			return '{}'.format(v).strip()[:1] in 'TtYy1'
 		
 		#self.active = toBool( active )
-		#self.publishFlag = toBool( publishFlag )
-		#self.uploadFlag = toBool( uploadFlag )
-		#self.seriesFlag = toBool( seriesFlag )
+		self.publishFlag = toBool( publishFlag )
+		self.uploadFlag = toBool( uploadFlag )
+		self.seriesFlag = toBool( seriesFlag )
 			
 		#try:
 			#self._numLaps = int(numLaps)
@@ -456,9 +456,9 @@ class Category:
 	def key( self ):
 		return tuple( getattr(self, attr, None) for attr in self.key_attr )
 		
-	#def copy( self, c ):
-		#for attr in self.key_attr:
-			#setattr( self, attr, getattr(c, attr) )
+	def copy( self, c ):
+		for attr in self.key_attr:
+			setattr( self, attr, getattr(c, attr) )
 	
 	#def removeNum( self, num ):
 		#if not self.matches(num, True):
@@ -499,8 +499,6 @@ class Category:
 
 		self.intervals = SetToIntervals( all_nums )
 		
-		#print(self)
-		#print(self.getMatchSet())
 	
 	def __repr__( self ):
 		return 'Category( name="{}", catStr="{}", sequence={}, gender="{}", catType="{}")'.format(
@@ -2189,14 +2187,14 @@ class Race:
 		#categories = self.getCategories( startWaveOnly=True )
 		#return categories[0] if categories else None
 	
-	def categoryStartOffset( self, category ):
+	#def categoryStartOffset( self, category ):
 		#Get the start offset of the controlling Start Wave.
 		#if category:
 			#if category.catType == Category.CatWave:
 				#return category.getStartOffsetSecs()
 			#if category.catType == Category.CatComponent:
 				#return self.getCategoryStartWave( category ).getStartOffsetSecs()
-		return 0.0
+		#return 0.0
 
 	#def setCategoryMask( self ):
 		#self.categoryMask = ''
@@ -2226,8 +2224,8 @@ class Race:
 			#self.setCategoryMask()
 		#return self.categoryMask
 
-	#def getAllCategories( self ):
-		#return sorted( self.categories.values(), key=Category.key )
+	def getAllCategories( self ):
+		return sorted( self.categories.values(), key=Category.key )
 
 	#def setActiveCategories( self, active = None ):
 		#for i, c in enumerate(self.getAllCategories()):
@@ -2300,7 +2298,7 @@ class Race:
 		
 		#return nameStrTuples
 
-	#def setCategories( self, nameStrTuples ):
+	def setCategories( self, nameStrTuples ):
 		#try:
 			#distance = self.geoTrack.lengthKm if self.distanceUnit == self.UnitKm else self.geoTrack.lengthMiles
 		#except  AttributeError:
@@ -2323,32 +2321,32 @@ class Race:
 				#allInactive = False
 				#break
 		
-		#i = 0
-		#newCategories = {}
-		#waveCategory = None
-		#for t in nameStrTuples:
-			#args = dict( t )
-			#if not 'name' in args or not args['name']:
-				#continue
-			#args['sequence'] = i
+		i = 0
+		newCategories = {}
+		waveCategory = None
+		for t in nameStrTuples:
+			args = dict( t )
+			if not 'name' in args or not args['name']:
+				continue
+			args['sequence'] = i
 			#if allInactive:
 				#args['active'] = True
-			#category = Category( **args )
+			category = Category( **args )
 			
 			#Check that all component categories are in a wave.
 			#if category.active:
-				#if category.catType == Category.CatWave:
-					#Record this category if it is a CatWave.  It controls the following component categories.
-					#waveCategory = category
-				#elif category.catType == Category.CatComponent:
-					#if waveCategory is None:
-						#This component category has no start wave.
-						#Make it a start wave so that the results don't mess up.
-						#category.catType = Category.CatWave
-				#elif category.catType == Category.CatCustom:
-					#Leave custom categories as they are.
-					#They do not need leading CatWaves either.
-					#pass
+			if category.catType == Category.CatWave:
+				#Record this category if it is a CatWave.  It controls the following component categories.
+				waveCategory = category
+			elif category.catType == Category.CatComponent:
+				if waveCategory is None:
+					#This component category has no start wave.
+					#Make it a start wave so that the results don't mess up.
+					category.catType = Category.CatWave
+			elif category.catType == Category.CatCustom:
+				#Leave custom categories as they are.
+				#They do not need leading CatWaves either.
+				pass
 			
 			#if category.fullname not in self.categories:
 				#if category.distance is None:
@@ -2357,32 +2355,32 @@ class Race:
 					#category.firstLapDistance = firstLapDistance
 			
 			#Ensure we don't have any duplicate category fullnames.
-			#if category.fullname in newCategories:
-				#originalName = category.name
-				#for count in range(1, 999):
-					#category.name = '{} {}({})'.format(originalName, _('Copy'), count)
-					#if not category.fullname in newCategories:
-						#break
-			#newCategories[category.fullname] = category
-			#i += 1
+			if category.fullname in newCategories:
+				originalName = category.name
+				for count in range(1, 999):
+					category.name = '{} {}({})'.format(originalName, _('Copy'), count)
+					if not category.fullname in newCategories:
+						break
+			newCategories[category.fullname] = category
+			i += 1
 		
-		#if self.categories != newCategories:
+		if self.categories != newCategories:
 			#Copy the new values into the existing categories.
 			#This minimizes the impact if the calling code is in a category loop.
-			#for cNewName, cNew in newCategories.items():
-				#try:
-					#self.categories[cNewName].copy( cNew )
-				#except KeyError:
-					#self.categories[cNewName] = cNew
+			for cNewName, cNew in newCategories.items():
+				try:
+					self.categories[cNewName].copy( cNew )
+				except KeyError:
+					self.categories[cNewName] = cNew
 			
-			#self.categories = { cName:cValue for cName, cValue in self.categories.items() if cName in newCategories }
-			#self.setChanged()
+			self.categories = { cName:cValue for cName, cValue in self.categories.items() if cName in newCategories }
+			self.setChanged()
 			
-			#changed = True
-		#else:
-			#changed = False
+			changed = True
+		else:
+			changed = False
 			
-		#self.resetCategoryCache()
+		self.resetCategoryCache()
 		
 		#if self.categories:
 			#self.allCategoriesHaveRaceLapsDefined = True
@@ -2402,7 +2400,7 @@ class Race:
 			
 		#self.setCategoryMask()
 		
-		#return changed
+		return changed
 		
 	#def normalizeCategories( self ):
 		#for c in self.getCategories( startWaveOnly = False ):

@@ -49,7 +49,7 @@ from Data				import Data
 #from History			import History
 #from RiderDetail		import RiderDetail
 #from Results			import Results
-#from Categories			import Categories, PrintCategories
+from Categories			import Categories
 from Properties			import Properties, PropertiesDialog
 #from Recommendations	import Recommendations
 #from RaceAnimation		import RaceAnimation
@@ -567,7 +567,7 @@ class MainWin( wx.Frame ):
 			#[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			#[ 'gantt', 			Gantt,				_('Chart') ],
 			#[ 'recommendations',Recommendations,	_('Recommendations') ],
-			#[ 'categories', 	Categories,			_('Categories') ],
+			[ 'categories', 	Categories,			_('Categories') ],
 			[ 'properties',		Properties,			_('Properties') ],
 			#[ 'prizes',			Prizes,				_('Prizes') ],
 			#[ 'primes',			Primes,				_('Primes') ],
