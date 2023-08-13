@@ -10,7 +10,6 @@ import wx.lib.agw.flatnotebook as flatnotebook
 import wx.grid
 
 from collections import defaultdict
-from NonBusyCall import NonBusyCall
 
 import Utils
 import Model
@@ -112,7 +111,7 @@ class Data( wx.Panel ):
 	
 		self.SetBackgroundColour( wx.WHITE )
 		
-		self.refreshInputUpdateNonBusy = NonBusyCall( self.refreshInputUpdate, min_millis=1000, max_millis=3000 )
+		#self.refreshInputUpdateNonBusy = NonBusyCall( self.refreshInputUpdate, min_millis=1000, max_millis=3000 )
 		
 		fontPixels = 50
 		font = wx.Font((0,fontPixels), wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
@@ -167,18 +166,6 @@ class Data( wx.Panel ):
 	def doClockUpdate( self ):
 		mainWin = Utils.getMainWin()
 		return not mainWin or mainWin.isShowingPage(self)
-	
-	
-	def refreshInputUpdate( self ):
-		self.refreshLaps()
-		self.refreshRiderLapCountList()
-		self.refreshLastRiderOnCourse()
-	
-	def updateLayout( self ):
-		self.sizerLapInfo.Layout()
-		self.sizerSubVertical.Layout()
-		self.horizontalMainSizer.Layout()
-		self.Layout()
 		
 	def refreshRaceTime( self ):
 		race = Model.race
@@ -193,7 +180,7 @@ class Data( wx.Panel ):
 				tStr = 'Timing: ' + tStr
 				self.raceTime.SetForegroundColour(self.redColour)
 			elif race.isRunning():
-				tStr = 'Waiting...'
+				tStr = 'Ready...'
 				self.raceTime.SetForegroundColour(self.redColour)
 			else:
 				tStr = 'Not recording'
@@ -202,6 +189,7 @@ class Data( wx.Panel ):
 			tStr = 'No race loaded'
 			self.raceTime.SetForegroundColour(self.blackColour)
 		self.raceTime.SetLabel( tStr )
+		self.Layout()
 				
 	def updateClockDelta( self, d, havePPS ):
 		if d is not None:
