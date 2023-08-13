@@ -278,7 +278,6 @@ class Data( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
-		print('delete callback: ' + str(iSprint))
 		sprintDict = race.sprints[iSprint][1]
 		if 'sprintBib' in sprintDict:
 			sprintString = '#' + str(sprintDict['sprintBib'])
@@ -320,7 +319,6 @@ class Data( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
-		print('recauculate callback: ' + str(iSprint))
 		sprintDict = race.sprints[iSprint][1]
 		# Now recalculate the speed
 		try:
