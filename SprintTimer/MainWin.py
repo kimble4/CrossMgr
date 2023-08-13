@@ -173,12 +173,12 @@ def AppendMenuItemBitmap( menu, id, name, help, bitmap ):
 	menu.Append( mi )
 	return mi
 
-#class ForecastHistory:  # Dummy class to satisfy Utils imported from CrossMgr
-	#def __init__( self ):
-		#pass
+class ForecastHistory:  # Dummy class to satisfy Utils imported from CrossMgr
+	def __init__( self ):
+		pass
 	
-	#def refresh( self ):
-		#pass
+	def refresh( self ):
+		pass
 
 class MainWin( wx.Frame ):
 	def __init__( self, parent, id = wx.ID_ANY, title='', size=(200,200) ):
@@ -536,7 +536,7 @@ class MainWin( wx.Frame ):
 
 		#Configure the field of the display.
 		
-		#self.forecastHistory = ForecastHistory()  #dummy to satisfy Utils
+		self.forecastHistory = ForecastHistory()  #dummy to satisfy Utils
 
 		bookStyle = (
 			  flatnotebook.FNB_NO_X_BUTTON
