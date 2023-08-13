@@ -85,7 +85,7 @@ class BibEntry( wx.Panel ):
 				
 				#race.photoCount += TakePhoto(num, t) if okTakePhoto(num, t) else 0
 			
-		#self.playBlip()
+		Utils.PlaySound('blip6.wav')
 		race.setChanged()
 
 		wx.CallAfter( self.numEdit.SetValue, '' )
@@ -185,6 +185,8 @@ class Data( wx.Panel ):
 		if race is not None:
 			tRace = race.getInProgressSprintTime()
 			if tRace:
+				if tRace >= 1:
+					Utils.PlaySound('pip.wav')
 				tStr = Utils.formatTime( tRace )
 				if tStr.startswith('0'):
 					tStr = tStr[1:]
@@ -248,7 +250,6 @@ class Data( wx.Panel ):
 		race = Model.race
 		if not race:
 			return
-		print('delete callback: ' + str(iSprint))
 		sprintDict = race.sprints[iSprint][1]
 		if 'sprintBib' in sprintDict:
 			sprintString = '#' + str(sprintDict['sprintBib'])
@@ -320,7 +321,6 @@ class Data( wx.Panel ):
 		if not race:
 			return
 		sprintDict = race.sprints[iSprint][1]
-		# Now recalculate the speed
 		try:
 			speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
 			if race.distanceUnit == Model.Race.UnitKm:

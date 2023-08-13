@@ -660,14 +660,14 @@ class MainWin( wx.Frame ):
 		self.menuBar.Append( self.toolsMenu, _("&Tools") )
 		
 		#-----------------------------------------------------------------------
-		#self.optionsMenu = wx.Menu()
+		self.optionsMenu = wx.Menu()
 		#item = self.menuItemHighPrecisionTimes = self.optionsMenu.Append( wx.ID_ANY, _("&Show 100s of a second"), _("Show 100s of a second"), wx.ITEM_CHECK )
 		#self.Bind( wx.EVT_MENU, self.menuShowHighPrecisionTimes, item )
 		
-		#item = self.menuItemPlaySounds = self.optionsMenu.Append( wx.ID_ANY, _("&Play Sounds"), _("Play Sounds"), wx.ITEM_CHECK )
-		#self.playSounds = self.config.ReadBool('playSounds', True)
-		#self.menuItemPlaySounds.Check( self.playSounds )
-		#self.Bind( wx.EVT_MENU, self.menuPlaySounds, item )
+		item = self.menuItemPlaySounds = self.optionsMenu.Append( wx.ID_ANY, _("&Play Sounds"), _("Play Sounds"), wx.ITEM_CHECK )
+		self.playSounds = self.config.ReadBool('playSounds', True)
+		self.menuItemPlaySounds.Check( self.playSounds )
+		self.Bind( wx.EVT_MENU, self.menuPlaySounds, item )
 		
 		#item = self.menuItemSyncCategories = self.optionsMenu.Append( wx.ID_ANY, _("Sync &Categories between Tabs"), _("Sync Categories between Tabs"), wx.ITEM_CHECK )
 		#self.Bind( wx.EVT_MENU, self.menuSyncCategories, item )
@@ -696,7 +696,7 @@ class MainWin( wx.Frame ):
 		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set Default &Graphic..."), _("Set Default Graphic") )
 		#self.Bind(wx.EVT_MENU, self.menuSetDefaultGraphic, item )
 		
-		#self.menuBar.Append( self.optionsMenu, _("&Options") )
+		self.menuBar.Append( self.optionsMenu, _("&Options") )
 		
 
 		#------------------------------------------------------------------------------
@@ -870,8 +870,10 @@ class MainWin( wx.Frame ):
 		#record that a sprint is in progress
 		if not event.isT2:
 			race.setInProgressSprintStart( startTime )
+			Utils.PlaySound('boop.wav')
 		else:
 			race.setInProgressSprintStart( None )
+			Utils.PlaySound('peeeep.wav')
 			
 		#this triggers CrossMgrVideo
 		if not race.enableUSBCamera:
@@ -1207,9 +1209,9 @@ class MainWin( wx.Frame ):
 			#dlg.refresh()
 			#dlg.ShowModal()
 		
-	#def menuPlaySounds( self, event ):
-		#self.playSounds = self.menuItemPlaySounds.IsChecked()
-		#self.config.WriteBool( 'playSounds', self.playSounds )
+	def menuPlaySounds( self, event ):
+		self.playSounds = self.menuItemPlaySounds.IsChecked()
+		self.config.WriteBool( 'playSounds', self.playSounds )
 		
 	#def menuLaunchExcelAfterPublishingResults( self, event ):
 		#self.launchExcelAfterPublishingResults = self.menuItemLaunchExcelAfterPublishingResults.IsChecked()
