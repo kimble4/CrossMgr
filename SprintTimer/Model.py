@@ -1578,14 +1578,16 @@ class Race:
 		
 		res = defaultdict(list)
 		
-		# get all the sprints that have a valid bib number
+		# get all the sprints in this category that have a valid bib number
 		for sortTime, sprintDict in self.getSprints():
 			if "sprintBib" in sprintDict:
 				try:
 					bib = int(sprintDict['sprintBib'])
-					#print('got bib: ' + str(bib))
 					if category is None or category.matches(bib):
-						res[bib].append(sprintDict)
+						# Filter by min lap time
+						if "sprintTime" in sprintDict:
+							if float(sprintDict['sprintTime']) >= self.minPossibleLapTime:
+								res[bib].append(sprintDict)
 				except:
 					continue
 		
@@ -1620,18 +1622,19 @@ class Race:
 		
 		# return list of riders' results in preferred order
 		output = []
+		seenBibs = []
 		for bibTime in ranking:
 			bib = bibTime[0]
 			sprints = dict(bibTimes)
 			attempts = sprints[bib]
 			output.append( (bib, attempts) )
-			
+			seenBibs.append(bib)
 			
 		# add the DNS riders  #fixme if category is none?
 		if category is not None:
 			allBibs = IntervalsToSet(category.intervals)
 			for bib in allBibs:
-				if bib not in output:
+				if bib not in seenBibs:
 					output.append((bib, None))
 
 		return(output)

@@ -242,6 +242,13 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.distanceUnitSizer.Add( self.distanceUnit )
 		#self.distanceUnitSizer.AddStretchSpacer()
 		
+		self.distanceUnitLabel = wx.StaticText( self, label=_('Speed unit: ') )
+		self.distanceUnit = wx.Choice( self, choices=['Kilometres per hour', 'Miles per hour'] )
+		self.distanceUnit.SetSelection( 0 )
+		self.distanceUnitSizer = wx.BoxSizer( wx.HORIZONTAL )
+		self.distanceUnitSizer.Add( self.distanceUnit )
+		self.distanceUnitSizer.AddStretchSpacer()
+		
 		self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes in HTML Output") )
 		#self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
 		#self.showCourseAnimationInHtml.SetValue( True )
@@ -292,7 +299,7 @@ class RaceOptionsProperties( wx.Panel ):
 			(self.multiplePolicyLabel, 0, labelAlign), 	(self.multiplePolicySizer,		1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.setNoDataDNS,				1, fieldAlign),
 			#(self.rule80MinLapCountLabel, 0, labelAlign),(self.rule80MinLapCountSizer,	1, fieldAlign),
-			#(self.distanceUnitLabel,0, labelAlign),		(self.distanceUnitSizer,		1, fieldAlign),
+			(self.distanceUnitLabel,0, labelAlign),		(self.distanceUnitSizer,		1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.showCourseAnimationInHtml,1, fieldAlign),
 			(self.minPossibleLapTimeLabel,0, labelAlign),(mplths,						0, 0),
@@ -357,7 +364,7 @@ class RaceOptionsProperties( wx.Panel ):
 			#self.rule80MinLapCount1.SetValue( True )
 		#else:
 			#self.rule80MinLapCount2.SetValue( True )
-		#self.distanceUnit.SetSelection( getattr(race, 'distanceUnit', 0) )
+		self.distanceUnit.SetSelection( getattr(race, 'distanceUnit', 0) )
 		self.showDetails.SetValue( not race.hideDetails )
 		#self.showCourseAnimationInHtml.SetValue( race.showCourseAnimationInHtml )
 		#self.licenseLinkTemplate.SetValue( race.licenseLinkTemplate )
@@ -385,7 +392,7 @@ class RaceOptionsProperties( wx.Panel ):
 		#race.rankBy = self.rankBy.GetSelection()
 		#race.setNoDataDNS = self.setNoDataDNS.IsChecked()
 		#race.rule80MinLapCount = (1 if self.rule80MinLapCount1.GetValue() else 2)
-		#race.distanceUnit = self.distanceUnit.GetSelection()
+		race.distanceUnit = self.distanceUnit.GetSelection()
 		race.hideDetails = not self.showDetails.IsChecked()
 		#race.showCourseAnimationInHtml = self.showCourseAnimationInHtml.IsChecked()
 		#race.winAndOut = self.winAndOut.IsChecked()
@@ -420,12 +427,6 @@ class SprintTimerProperties( wx.Panel ):
 		self.distance = wx.TextCtrl( self, value ='0', size=(240,-1) )
 		gridBagSizer.Add( self.distance, pos=(2, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
-		self.distanceUnitLabel = wx.StaticText( self, label=_('Speed unit: ') )
-		self.distanceUnit = wx.Choice( self, choices=['Kilometres per hour', 'Miles per hour'] )
-		self.distanceUnit.SetSelection( 0 )
-		gridBagSizer.Add( self.distanceUnitLabel, pos=(3,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
-		gridBagSizer.Add( self.distanceUnit, pos=(3,1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
-		
 		
 		#self.testButton = wx.Button( self, label=_('Test Sprint Timer...') )
 		#self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
@@ -449,7 +450,6 @@ class SprintTimerProperties( wx.Panel ):
 		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', '127.0.0.1') )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
-		self.distanceUnit.SetSelection( getattr(race, 'distanceUnit', 0) )
 		
 	def commit( self ):
 		race = Model.race
@@ -465,7 +465,7 @@ class SprintTimerProperties( wx.Panel ):
 			mainWin.disconnectSprintTimer()
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
 		race.sprintDistance		= self.distance.GetValue()
-		race.distanceUnit = self.distanceUnit.GetSelection()
+		
 		mainWin.updateSprintTimerSettings()
 	
 #------------------------------------------------------------------------------------------------
