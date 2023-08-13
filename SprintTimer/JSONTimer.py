@@ -141,7 +141,6 @@ class JSONTimer:
 				self.socket.connect( (host, port) )
 			except Exception as e:
 				continue
-
 			try:
 				buffer = socketReadDelimited( s )
 			except Exception as e:

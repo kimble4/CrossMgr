@@ -631,10 +631,6 @@ def refresh():
 	if mainWin is not None:
 		mainWin.refresh()
 
-def refreshForecastHistory():
-	if mainWin is not None:
-		mainWin.forecastHistory.refresh()
-
 def updateUndoStatus():
 	if mainWin is not None:
 		mainWin.updateUndoStatus()

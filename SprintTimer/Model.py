@@ -1615,8 +1615,10 @@ class Race:
 				time = times[0]['sprintTime']
 				speed = float(distance)/float(time)
 				ranking.append((bib, speed))
-			except:
-				Utils.logException( e, 'failed to calculate speed for ranking rider ' + str(bib))
+			except KeyError:
+				Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 				continue
 		ranking.sort(key=lambda bt: bt[1], reverse=True)  # sorts in place
 		

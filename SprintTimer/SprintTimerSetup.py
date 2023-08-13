@@ -55,7 +55,6 @@ copyFiles = [
     "imagebrowser.py"
     "scramble.py"
     "getuser.py"
-    "Utils.py"
     "NonBusyCall.py"
     "FileDrop.py"
     "ChipReader.py"

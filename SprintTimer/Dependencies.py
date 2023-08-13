@@ -26,7 +26,6 @@ import SetGraphic
 import imagebrowser
 import scramble
 import getuser
-import Utils
 import NonBusyCall
 import FileDrop
 import ChipReader

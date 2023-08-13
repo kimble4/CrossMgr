@@ -739,7 +739,7 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str(len(bibSprintDict[1])))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			else:
-				#DNS rider
+				# No sprints for rider
 				name = ''
 				if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
 					try:
@@ -762,7 +762,10 @@ class Results( wx.Panel ):
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
-				self.resultsGrid.SetCellValue(row, col, str(i+1))
+				if race.isRunning():
+					self.resultsGrid.SetCellValue(row, col, 'NP')
+				else:
+					self.resultsGrid.SetCellValue(row, col, 'DNS')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(bib))
