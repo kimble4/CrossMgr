@@ -233,6 +233,8 @@ class Data( wx.Panel ):
 		except:
 			return
 		menu = wx.Menu()
+		recalc = menu.Append( wx.ID_ANY, 'Recalculate speed...', 'Recalculate the speed in the current unit...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.onRecalculateSpeed(event, iSprint), recalc )
 		delete = menu.Append( wx.ID_ANY, 'Delete sprint...', 'Delete this sprint...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.onDelete(event, iSprint), delete )
 		distance = menu.Append( wx.ID_ANY, 'Edit trap distance...', 'Change trap distance for this sprint...' )
@@ -313,6 +315,29 @@ class Data( wx.Panel ):
 					wx.CallAfter(self.refresh)
 				except:
 					return
+	
+	def onRecalculateSpeed( self, event, iSprint ):
+		race = Model.race
+		if not race:
+			return
+		print('recauculate callback: ' + str(iSprint))
+		sprintDict = race.sprints[iSprint][1]
+		# Now recalculate the speed
+		try:
+			speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
+			if race.distanceUnit == Model.Race.UnitKm:
+				sprintDict['sprintSpeed'] = speed * 3.6
+				sprintDict['speedUnit'] = 'kph'
+			elif race.distanceUnit == Model.Race.UnitMiles:
+				sprintDict['sprintSpeed'] = speed * 2.23694
+				sprintDict['speedUnit'] = 'mph'
+			else:
+				sprintDict['sprintSpeed'] = None
+				sprintDict['speedUnit'] = None
+			race.setChanged()
+			wx.CallAfter(self.refresh)
+		except:
+			return
 	
 	def OnCellChanged( self, event ):
 		row = event.GetRow()
