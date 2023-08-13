@@ -259,7 +259,7 @@ class JSONTimer:
 									ms = sprintDict["wallMillis"] / 1000.0
 								readerTime = datetime.datetime.fromtimestamp(float(sprintDict["wallTime"]) + ms)
 								readerComputerTimeDiff = receivedTime - readerTime
-								self.qLog( 'timing', '{}: {}'.format(_('Our clock is ahead by'), readerComputerTimeDiff.total_seconds() ) )
+								#self.qLog( 'timing', '{}: {}'.format(_('Our clock is ahead by'), readerComputerTimeDiff.total_seconds() ) )
 							
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:

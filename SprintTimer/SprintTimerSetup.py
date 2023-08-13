@@ -70,7 +70,8 @@ copyFiles = [
     "MyLapsServer.py"
     "JChipSetup.py"
     "SendPhotoRequests"
-	"MultiCast"
+    "MultiCast"
+    "FixCategories"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

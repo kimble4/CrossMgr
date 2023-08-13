@@ -898,8 +898,6 @@ class Categories( wx.Panel ):
 				values['catType'] = self.CategoryTypeChoices.index(values['catType'])
 				#values['distanceType'] = self.DistanceTypeChoices.index(values['distanceType'])
 				
-				print(values)
-				
 				numStrTuples.append( values )
 			race.setCategories( numStrTuples )
 			#race.adjustAllCategoryWaveNumbers()

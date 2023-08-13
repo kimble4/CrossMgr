@@ -338,6 +338,7 @@ class RaceOptionsProperties( wx.Panel ):
      
 	def refresh( self ):
 		race = Model.race
+		
 		#self.criteriumMode.SetValue( getattr(race, 'isCriterium', False) )
 		#self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
 		#self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
@@ -370,6 +371,9 @@ class RaceOptionsProperties( wx.Panel ):
 	
 	def commit( self ):
 		race = Model.race
+		if not race:
+			return
+		
 		#race.isCriterium = self.criteriumMode.IsChecked()
 		#race.isTimeTrial = self.timeTrial.IsChecked()
 		#race.isBestNLaps = self.bestNLaps.IsChecked()
@@ -386,7 +390,7 @@ class RaceOptionsProperties( wx.Panel ):
 		#race.showCourseAnimationInHtml = self.showCourseAnimationInHtml.IsChecked()
 		#race.winAndOut = self.winAndOut.IsChecked()
 		race.minPossibleLapTime = self.minPossibleLapTime.GetSeconds()
-		race.multipleAttmptsPolicy = self.multiplePolicy.GetSelection()
+		race.multipleAttemptsPolicy = self.multiplePolicy.GetSelection()
 		#race.leaderArrivalWarningSeconds = self.leaderArrivalWarningSeconds.GetValue()
 		#race.licenseLinkTemplate = self.licenseLinkTemplate.GetValue().strip()
 	

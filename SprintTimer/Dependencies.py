@@ -42,3 +42,4 @@ import MyLapsServer
 import JChipSetup
 import SendPhotoRequests
 import MultiCast
+import FixCategories

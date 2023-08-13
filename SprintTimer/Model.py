@@ -440,11 +440,11 @@ class Category:
 	#def isNumLapsLocked( self ):
 		#return getattr(self, '_numLaps', None) is not None
 
-	#def matches( self, num, ignoreActiveFlag = False ):
+	def matches( self, num ):
 		#if not ignoreActiveFlag:
 			#if not self.active:
 				#return False
-		#return False if num in self.exclude else InSortedIntervalList( self.intervals, num )
+		return False if num in self.exclude else InSortedIntervalList( self.intervals, num )
 		
 	def getMatchSet( self ):
 		matchSet = IntervalsToSet( self.intervals )
@@ -1574,6 +1574,72 @@ class Race:
 	def getSprints( self ):
 		return self.sprints.copy()
 	
+	def getSprintResults( self, category=None ):
+		
+		res = defaultdict(list)
+		
+		# get all the sprints that have a valid bib number
+		for sortTime, sprintDict in self.getSprints():
+			if "sprintBib" in sprintDict:
+				try:
+					bib = int(sprintDict['sprintBib'])
+					#print('got bib: ' + str(bib))
+					if category is None or category.matches(bib):
+						res[bib].append(sprintDict)
+				except:
+					continue
+		
+		bibTimes = []
+		
+		# get the sprints for each bib in policy order
+		for bib in res:
+			if self.multipleAttemptsPolicy == Race.useFastest:
+				attempts = sorted(res[bib], key=lambda d: d['sprintTime'])
+				bibTimes.append( (bib, attempts) )
+			elif self.multipleAttemptsPolicy == Race.useSlowest:
+				attempts = sorted(res[bib], key=lambda d: d['sprintTime'], reverse=True)
+				bibTimes.append( (bib, attempts) )
+			elif self.multipleAttemptsPolicy == Race.useFirst:
+				bibTimes.append( (bib, res[bib]) )
+			else: # use last
+				bibTimes.append( (bib, list(reversed(res[bib]))) )
+		
+		# rank the riders by the speed of the selected result
+		ranking = []
+		for bib, times in bibTimes:
+			try:
+				# recalculate the speed here in m/s because the recorded speed may not be in consistent units
+				distance = times[0]['sprintDistance']
+				time = times[0]['sprintTime']
+				speed = float(distance)/float(time)
+				ranking.append((bib, speed))
+			except:
+				Utils.logException( e, 'failed to calculate speed for ranking rider ' + str(bib))
+				continue
+		ranking.sort(key=lambda bt: bt[1], reverse=True)  # sorts in place
+		
+		# return list of riders' results in preferred order
+		output = []
+		for bibTime in ranking:
+			bib = bibTime[0]
+			sprints = dict(bibTimes)
+			attempts = sprints[bib]
+			output.append( (bib, attempts) )
+			
+			
+		# add the DNS riders  #fixme if category is none?
+		if category is not None:
+			allBibs = IntervalsToSet(category.intervals)
+			for bib in allBibs:
+				if bib not in output:
+					output.append((bib, None))
+
+		return(output)
+		
+		
+		
+		
+	
 	def getSprintBibs( self ):
 		return self.sprintBibs.copy()
 	
@@ -2369,7 +2435,6 @@ class Race:
 			i += 1
 		
 		if self.categories != newCategories:
-			print('copying...')
 			#Copy the new values into the existing categories.
 			#This minimizes the impact if the calling code is in a category loop.
 			for cNewName, cNew in newCategories.items():
@@ -2827,10 +2892,10 @@ class Race:
 			
 		#return False
 		
-	#def setCategoryChoice( self, iSelection, categoryAttribute = None ):
-		#self.modelCategory = iSelection
-		#if categoryAttribute:
-			#setattr( self, categoryAttribute, iSelection )
+	def setCategoryChoice( self, iSelection, categoryAttribute = None ):
+		self.modelCategory = iSelection
+		if categoryAttribute:
+			setattr( self, categoryAttribute, iSelection )
 	
 	def addUnmatchedTag( self, tag, t ):
 		try:
@@ -2911,12 +2976,12 @@ class Race:
 	#except AttributeError:
 		#return False
 
-#def setCategoryChoice( iSelection, categoryAttribute = None ):
-	#try:
-		#setCategoryChoice = race.setCategoryChoice
-	#except AttributeError:
-		#return
-	#setCategoryChoice( iSelection, categoryAttribute )
+def setCategoryChoice( iSelection, categoryAttribute = None ):
+	try:
+		setCategoryChoice = race.setCategoryChoice
+	except AttributeError:
+		return
+	setCategoryChoice( iSelection, categoryAttribute )
 
 #def getCurrentHtml():
 	#if not race:

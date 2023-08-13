@@ -48,7 +48,7 @@ from Data				import Data
 #from Gantt				import Gantt
 #from History			import History
 #from RiderDetail		import RiderDetail
-#from Results			import Results
+from Results			import Results
 from Categories			import Categories
 from Properties			import Properties, PropertiesDialog
 #from Recommendations	import Recommendations
@@ -546,7 +546,7 @@ class MainWin( wx.Frame ):
 		)
 		self.notebook = flatnotebook.FlatNotebook( self, 1000, agwStyle=bookStyle )
 		self.notebook.SetBackgroundColour( wx.WHITE )
-		#self.notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onPageChanging )
+		self.notebook.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.onPageChanging )
 		
 		self.fileDrop = FileDrop()	# Create a file drop target for all the main pages.
 		
@@ -561,7 +561,7 @@ class MainWin( wx.Frame ):
 			[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
 			#[ 'record',			NumKeypad,			_('Record') ],
-			#[ 'results',		Results,			_('Results') ],
+			[ 'results',		Results,			_('Results') ],
 			#[ 'pulled',			Pulled,				_('Pulled') ],
 			#[ 'history',		History,			_('Passings') ],
 			#[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
