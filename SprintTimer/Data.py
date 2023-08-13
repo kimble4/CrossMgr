@@ -177,16 +177,20 @@ class Data( wx.Panel ):
 				tStr = Utils.formatTime( tRace )
 				if tStr.startswith('0'):
 					tStr = tStr[1:]
-				tStr = 'Timing: ' + tStr
-				self.raceTime.SetForegroundColour(self.redColour)
+				tStr = 'Timing: ~' + tStr
+				self.raceTime.SetBackgroundColour(self.redColour)
+				self.raceTime.SetForegroundColour(self.whiteColour)
 			elif race.isRunning():
 				tStr = 'Ready...'
+				self.raceTime.SetBackgroundColour(self.whiteColour)
 				self.raceTime.SetForegroundColour(self.redColour)
 			else:
 				tStr = 'Not recording'
-				self.raceTime.SetForegroundColour(self.blackColour)
+				self.raceTime.SetBackgroundColour(self.whiteColour)
+				self.raceTime.SetForegroundColour(self.greyColour)
 		else:
 			tStr = 'No race loaded'
+			self.raceTime.SetBackgroundColour(self.whiteColour)
 			self.raceTime.SetForegroundColour(self.blackColour)
 		self.raceTime.SetLabel( tStr )
 		self.Layout()
