@@ -235,6 +235,8 @@ class Data( wx.Panel ):
 		menu = wx.Menu()
 		delete = menu.Append( wx.ID_ANY, 'Delete sprint...', 'Delete this sprint...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.onDelete(event, iSprint), delete )
+		distance = menu.Append( wx.ID_ANY, 'Edit trap distance...', 'Change trap distance for this sprint...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.onEditDistance(event, iSprint), distance )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -269,6 +271,48 @@ class Data( wx.Panel ):
 		del race.sprints[iSprint]
 		race.setChanged()
 		wx.CallAfter(self.refresh)
+		
+	def onEditDistance( self, event, iSprint ):
+		race = Model.race
+		if not race:
+			return
+		print('delete callback: ' + str(iSprint))
+		sprintDict = race.sprints[iSprint][1]
+		if 'sprintBib' in sprintDict:
+			sprintString = '#' + str(sprintDict['sprintBib'])
+			try:
+				bib = int(sprintDict['sprintBib'])
+				excelLink = getattr(race, 'excelLink', None)
+				if excelLink:
+					externalInfo = excelLink.read()
+					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
+					sprintString += ' ' + name
+			except:
+				pass
+		else:
+			sprintString = 'Unknown rider'
+			
+		with wx.TextEntryDialog(self, 'Enter new trap distance for sprint ' + str(iSprint+1) + '\n' + sprintString + ':', 'Edit trap distance') as dlg:
+			dlg.SetValue(str(sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else ''))
+			if dlg.ShowModal() == wx.ID_OK:
+				try:
+					distance = float(dlg.GetValue())
+					sprintDict['sprintDistance'] = distance
+					# Now recalculate the speed
+					speed = distance / sprintDict['sprintTime']
+					if race.distanceUnit == Model.Race.UnitKm:
+						sprintDict['sprintSpeed'] = speed * 3.6
+						sprintDict['speedUnit'] = 'kph'
+					elif race.distanceUnit == Model.Race.UnitMiles:
+						sprintDict['sprintSpeed'] = speed * 2.23694
+						sprintDict['speedUnit'] = 'mph'
+					else:
+						sprintDict['sprintSpeed'] = None
+						sprintDict['speedUnit'] = None
+					race.setChanged()
+					wx.CallAfter(self.refresh)
+				except:
+					return
 	
 	def OnCellChanged( self, event ):
 		row = event.GetRow()
@@ -288,6 +332,8 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellValue(row, col, old)
 			return
 		
+		sprintDict = race.sprints[iSprint][1]
+		
 		if col == 2: # bib
 			if value != '':
 				try:
@@ -299,33 +345,54 @@ class Data( wx.Panel ):
 			else:
 				newBib = ''
 			if newBib == '':
-				del race.sprints[iSprint][1]["sprintBib"]
+				del sprintDict["sprintBib"]
 			else:
-				race.sprints[iSprint][1]["sprintBib"] = newBib
-			race.sprints[iSprint][1]["sprintBibEdited"] = True
+				sprintDict["sprintBib"] = newBib
+			sprintDict["sprintBibEdited"] = True
 			race.setChanged()
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
 		elif col > 2 and col < 6: #name, machine, team
 			excelLink = getattr(race, 'excelLink', None)
-			if "sprintBib" in race.sprints[iSprint][1] and excelLink:
+			if "sprintBib" in sprintDict and excelLink:
 				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\' ' +  _('field for sprints with a bib number') + '.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
 				# restore the old value
 				self.dataGrid.SetCellValue(row, col, old)
 			else:
 				if col == 3:
-					race.sprints[iSprint][1]["sprintNameEdited"] = value
+					sprintDict["sprintNameEdited"] = value
 				elif col == 4:
-					race.sprints[iSprint][1]["sprintMachineEdited"] = value
+					sprintDict["sprintMachineEdited"] = value
 				elif col == 5:
-					race.sprints[iSprint][1]["sprintTeamEdited"] = value
+					sprintDict["sprintTeamEdited"] = value
 				race.setChanged()
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 				wx.CallAfter(self.refresh)
 		elif col == 9: #note
-			race.sprints[iSprint][1]["sprintNote"] = value
+			sprintDict["sprintNote"] = value
 			race.setChanged()
 			wx.CallAfter(self.refresh)
+		elif col == 10: #distance
+			try:
+				distance = float(value)
+				sprintDict['sprintDistance'] = distance
+				# Now recalculate the speed
+				speed = distance / sprintDict['sprintTime']
+				if race.distanceUnit == Model.Race.UnitKm:
+					sprintDict['sprintSpeed'] = speed * 3.6
+					sprintDict['speedUnit'] = 'kph'
+				elif race.distanceUnit == Model.Race.UnitMiles:
+					sprintDict['sprintSpeed'] = speed * 2.23694
+					sprintDict['speedUnit'] = 'mph'
+				else:
+					sprintDict['sprintSpeed'] = None
+					sprintDict['speedUnit'] = None
+				race.setChanged()
+				wx.CallAfter(self.refresh)
+			except:
+				# restore the old value
+				self.dataGrid.SetCellValue(row, col, old)
+				return
 		else:
 			# restore the old value
 			self.dataGrid.SetCellValue(row, col, old)
