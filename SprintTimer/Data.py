@@ -13,13 +13,7 @@ from collections import defaultdict
 from NonBusyCall import NonBusyCall
 
 import Utils
-#from GetResults import GetResults, GetLastFinisherTime, GetLeaderFinishTime, GetLastRider, RiderResult, IsRiderOnCourse
 import Model
-
-
-
-SplitterMinPos = 390
-SplitterMaxPos = 530
 
 class BibEntry( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
@@ -96,19 +90,8 @@ class BibEntry( wx.Panel ):
 
 		wx.CallAfter( self.numEdit.SetValue, '' )
 	
-	#def doAction( self, action ):
-		#race = Model.race
-		#t = race.curRaceTime() if race and race.isRunning() else None
-		#success = False
-		#for num in getRiderNumsFromText( self.numEdit.GetValue() ):
-			#if action(self, num, t):
-				#success = True
-		#if success:
-			#self.numEdit.SetValue( '' )
-			#wx.CallAfter( Utils.refreshForecastHistory )
-	
-	def Enable( self, enable ):
-		wx.Panel.Enable( self, enable )
+	#def Enable( self, enable ):
+		#wx.Panel.Enable( self, enable )
 		
 
 class Data( wx.Panel ):
@@ -146,7 +129,7 @@ class Data( wx.Panel ):
 		self.raceTime.SetFont( font )
 		self.raceTime.SetDoubleBuffered( True )
 				
-		self.clockSync = wx.StaticText( self, label = 'Not connected')
+		self.clockSync = wx.StaticText( self, label = 'Sprint timer not connected')
 		self.showTagReads = wx.CheckBox( self, label='Show bib entry / RFID read times' )
 		
 		self.showTagReads.Bind( wx.EVT_CHECKBOX, self.refresh )
@@ -167,7 +150,8 @@ class Data( wx.Panel ):
 			i+=1
 		self.dataGrid.HideRowLabels()
 		self.dataGrid.AutoSize()
-		self.dataGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged)
+		self.dataGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged )
+		self.dataGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
 		
 		# fixme make bib column editable
 		
@@ -198,7 +182,6 @@ class Data( wx.Panel ):
 		
 	def refreshRaceTime( self ):
 		race = Model.race
-		
 		if race is not None:
 			tRace = race.getInProgressSprintTime()
 			if tRace:
@@ -217,17 +200,6 @@ class Data( wx.Panel ):
 			tStr = 'No race loaded'
 			self.raceTime.SetForegroundColour(self.blackColour)
 		self.raceTime.SetLabel( tStr )
-		
-		
-		
-		#self.hbClockPhoto.Layout()
-		
-		#mainWin = Utils.mainWin
-		#if mainWin is not None:
-			#try:
-				#mainWin.refreshRaceAnimation()
-			#except Exception:
-				#pass
 				
 	def updateClockDelta( self, d, havePPS ):
 		if d is not None:
@@ -253,6 +225,51 @@ class Data( wx.Panel ):
 	def commit( self ):
 		pass
 			
+	def onRightClick( self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		try:
+			iSprint = int(self.dataGrid.GetCellValue(row, 0)) - 1
+		except:
+			return
+		menu = wx.Menu()
+		delete = menu.Append( wx.ID_ANY, 'Delete sprint...', 'Delete this sprint...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.onDelete(event, iSprint), delete )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			
+	def onDelete( self, event, iSprint ):
+		race = Model.race
+		if not race:
+			return
+		print('delete callback: ' + str(iSprint))
+		sprintDict = race.sprints[iSprint][1]
+		if 'sprintBib' in sprintDict:
+			sprintString = '#' + str(sprintDict['sprintBib'])
+			try:
+				bib = int(sprintDict['sprintBib'])
+				excelLink = getattr(race, 'excelLink', None)
+				if excelLink:
+					externalInfo = excelLink.read()
+					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
+					sprintString += ' ' + name
+			except:
+				pass
+		else:
+			sprintString = 'Unknown rider'
+		if not Utils.MessageOKCancel(self, '{}\n{}\n\n{}'.format(
+			_('Delete sprint') + ' ' + str(iSprint+1) + _(' for' + ':'),
+			sprintString,
+			_('Continue?') ),
+			_('Confirm delete'), wx.ICON_QUESTION, ):
+			return
+		print('ok')
+		del race.sprints[iSprint]
+		race.setChanged()
+		wx.CallAfter(self.refresh)
+	
 	def OnCellChanged( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
@@ -479,44 +496,5 @@ class Data( wx.Panel ):
 			
 		self.dataGrid.AutoSizeColumns()
 		
-			
-		#self.photoCount.Show( bool(race and race.enableUSBCamera) )
-		#self.photoBitmap.Show( bool(race and race.enableUSBCamera) )
-		
-		#Refresh the race start time.
-		#changed = False
-		#rst, rstSource = '', ''
-		#if race and race.startTime:
-			#st = race.startTime
-			#if race.enableJChipIntegration and race.resetStartClockOnFirstTag:
-				#if race.firstRecordedTime:
-					#rstSource = _('Chip Start')
-				#else:
-					#rstSource = _('Waiting...')
-			#else:
-				#rstSource = _('Manual Start')
-			#rst = '{:02d}:{:02d}:{:02d}.{:02d}'.format(st.hour, st.minute, st.second, int(st.microsecond / 10000.0))
-		#changed |= SetLabel( self.raceStartMessage, rstSource )
-		#changed |= SetLabel( self.raceStartTime, rst )
-
-		#self.refreshInputUpdateNonBusy()
-		
-		#if self.isKeypadInputMode():
-			#wx.CallLater( 100, self.keypad.numEdit.SetFocus )
-		#elif self.isBibTimeInputMode():
-			#wx.CallLater( 100, self.bibTimeRecord.numEdit.SetFocus )
-	
-#if __name__ == '__main__':
-	#Utils.disable_stdout_buffering()
-	#app = wx.App(False)
-	#mainWin = wx.Frame(None,title="CrossMan", size=(1000,800))
-	#Model.setRace( Model.Race() )
-	#model = Model.getRace()
-	#model._populate()
-	#model.enableUSBCamera = True
-	#numKeypad = NumKeypad(mainWin)
-	#numKeypad.refresh()
-	#mainWin.Show()
-	#app.MainLoop()
 
 

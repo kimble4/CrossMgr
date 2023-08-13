@@ -1482,6 +1482,11 @@ class Race:
 			if start == newSprintStart:
 				#Utils.writeLog('not adding duplicate item')
 				return
+		if 'sprintDistance' not in sprintDict:
+			sprintDict['sprintNote'] = 'No recorded distance!'
+		elif 'ppsGood' in sprintDict:
+			if sprintDict['ppsGood'] == False:
+				sprintDict['sprintNote'] = '(No GPS correction)'
 		self.sprints.append( (sortTime, sprintDict) )
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
 		

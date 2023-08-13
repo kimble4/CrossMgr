@@ -172,10 +172,9 @@ class Results( wx.Panel ):
 		
 		self.resultsGrid = wx.grid.Grid( self )
 		self.resultsGrid.CreateGrid(0, len(self.colnames))
-		i = 0
-		for col in self.colnames:
-			self.resultsGrid.SetColLabelValue(i, col)
-			i+=1
+		for i, name in enumerate(self.colnames):
+			self.resultsGrid.SetColLabelValue(i, name)
+
 		self.resultsGrid.HideRowLabels()
 		self.resultsGrid.AutoSize()
 		
@@ -665,7 +664,6 @@ class Results( wx.Panel ):
 		#self.closeFinishBibs = defaultdict( list )
 		self.clearGrid()
 		
-		
 		race = Model.race
 		if not race:
 			return
@@ -680,6 +678,22 @@ class Results( wx.Panel ):
 			#if si.IsWindow():
 				#si.GetWindow().Refresh()
 		self.category = category
+
+		#Fix the speed column.
+		speedUnit = None
+		iSpeedCol = None
+		try:
+			iSpeedCol = next(i for i, c in enumerate(self.colnames) if c == _('Speed'))
+		except StopIteration:
+			pass
+		if iSpeedCol is not None:
+			if race.distanceUnit == Model.Race.UnitKm:
+				speedUnit = 'kph'
+			elif race.distanceUnit == Model.Race.UnitMiles:
+				speedUnit = 'mph'
+			else:
+				speedUnit = 'm/s'
+			self.resultsGrid.SetColLabelValue(iSpeedCol, _('Speed') + ' (' + speedUnit + ')' )
 
 		res = race.getSprintResults(self.category)
 		
@@ -730,7 +744,13 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str('{:.3f}'.format(sprintDict["sprintTime"])))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
-				self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(sprintDict["sprintSpeed"])))
+				speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
+				if race.distanceUnit == Model.Race.UnitKm:
+					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed*3.6)))
+				elif race.distanceUnit == Model.Race.UnitMiles:
+					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed*2.23694)))
+				else:
+					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed)))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(sprintDict["sprintNote"]) if "sprintNote" in sprintDict else '')
