@@ -16,7 +16,6 @@ import ReadSignOnSheet
 import HelpIndex
 import HelpSearch
 import ModuleUnpickler
-import BatchPublishAttrs
 import ReadCategoriesFromExcel
 import ReadPropertiesFromExcel
 import ModuleUnpickler
@@ -42,3 +41,4 @@ import JChipSetup
 import SendPhotoRequests
 import MultiCast
 import FixCategories
+import AddExcelInfo

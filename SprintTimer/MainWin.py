@@ -35,11 +35,11 @@ import wx.lib.agw.flatnotebook as flatnotebook
 import pickle
 from argparse import ArgumentParser
 #import xlwt
-#import xlsxwriter
+import xlsxwriter
 
 import Utils
 
-#from AddExcelInfo import AddExcelInfo
+from AddExcelInfo import AddExcelInfo
 #from LogPrintStackStderr import LogPrintStackStderr
 from Data				import Data
 #from ForecastHistory	import ForecastHistory
@@ -89,7 +89,7 @@ from NonBusyCall		import NonBusyCall
 #from ReissueBibs	 	import ReissueBibsDialog
 #from GiveTimes 			import GiveTimesDialog
 #from FinishLynx			import FinishLynxDialog
-#import BatchPublishAttrs
+import BatchPublishAttrs
 import Model
 #import JChipSetup
 #import JChipImport
@@ -106,7 +106,7 @@ from JSONTimer import JSONTimer
 from Undo import undo
 #from Printing			import CrossMgrPrintout, CrossMgrPrintoutPNG, CrossMgrPrintoutPDF, CrossMgrPodiumPrintout, getRaceCategories
 #from Printing			import ChoosePrintCategoriesDialog, ChoosePrintCategoriesPodiumDialog
-#from ExportGrid			import ExportGrid
+from ExportGrid			import ExportGrid
 #import SimulationLapTimes
 import Version
 from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
@@ -156,7 +156,7 @@ def ShowSplashScreen():
 	v = Version.AppVerName.split('-',2)
 	yText = int(h * 0.44)
 	for i, v in enumerate(Version.AppVerName.split('-',2)):
-		dc.DrawText( v.replace('SprintTimerr','Version'), w // 20, yText + i*fontHeight )
+		dc.DrawText( v.replace('SprintTimer','Version'), w // 20, yText + i*fontHeight )
 		
 	dc.SelectObject( wx.NullBitmap )
 	
@@ -274,7 +274,7 @@ class MainWin( wx.Frame ):
 		self.menuBar.Append( self.fileMenu, _("&File") )
 
 		#-----------------------------------------------------------------------
-		#self.publishMenu = wx.Menu()
+		self.publishMenu = wx.Menu()
 		
 		#item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY, _("Page &Setup..."), _("Setup the print page"), Utils.GetPngBitmap('page-setup.png') )
 		#self.Bind(wx.EVT_MENU, self.menuPageSetup, item )
@@ -324,9 +324,9 @@ class MainWin( wx.Frame ):
 		
 		#self.publishMenu.AppendSeparator()
 		
-		#item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
-							#_("&Excel Publish..."), _("Publish Results as an Excel Spreadsheet (.xls)"), Utils.GetPngBitmap('excel-icon.png') )
-		#self.Bind(wx.EVT_MENU, self.menuPublishAsExcel, item )
+		item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
+							_("&Excel Publish..."), _("Publish Results as an Excel Spreadsheet (.xls)"), Utils.GetPngBitmap('excel-icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuPublishAsExcel, item )
 		
 		#self.publishMenu.AppendSeparator()
 		
@@ -382,7 +382,7 @@ class MainWin( wx.Frame ):
 		#self.Bind(wx.EVT_MENU, self.menuPublishHtmlTTStart, item )
 		#'''
 		
-		#self.menuBar.Append( self.publishMenu, _("&Publish") )
+		self.menuBar.Append( self.publishMenu, _("&Publish") )
 		
 		#-----------------------------------------------------------------------
 		self.editMenu = wx.Menu()
@@ -672,13 +672,13 @@ class MainWin( wx.Frame ):
 		#item = self.menuItemSyncCategories = self.optionsMenu.Append( wx.ID_ANY, _("Sync &Categories between Tabs"), _("Sync Categories between Tabs"), wx.ITEM_CHECK )
 		#self.Bind( wx.EVT_MENU, self.menuSyncCategories, item )
 		
-		#self.optionsMenu.AppendSeparator()
-		#item = self.menuItemLaunchExcelAfterPublishingResults = self.optionsMenu.Append( wx.ID_ANY,
-			#_("&Launch Excel after Publishing Results"),
-			#_("Launch Excel after Publishing Results"), wx.ITEM_CHECK )
-		#self.launchExcelAfterPublishingResults = self.config.ReadBool('menuLaunchExcelAfterPublishingResults', True)
-		#self.menuItemLaunchExcelAfterPublishingResults.Check( self.launchExcelAfterPublishingResults )
-		#self.Bind( wx.EVT_MENU, self.menuLaunchExcelAfterPublishingResults, item )
+		self.optionsMenu.AppendSeparator()
+		item = self.menuItemLaunchExcelAfterPublishingResults = self.optionsMenu.Append( wx.ID_ANY,
+			_("&Launch Excel after Publishing Results"),
+			_("Launch Excel after Publishing Results"), wx.ITEM_CHECK )
+		self.launchExcelAfterPublishingResults = self.config.ReadBool('menuLaunchExcelAfterPublishingResults', True)
+		self.menuItemLaunchExcelAfterPublishingResults.Check( self.launchExcelAfterPublishingResults )
+		self.Bind( wx.EVT_MENU, self.menuLaunchExcelAfterPublishingResults, item )
 		
 		#'''
 		#self.optionsMenu.AppendSeparator()
@@ -1213,9 +1213,9 @@ class MainWin( wx.Frame ):
 		self.playSounds = self.menuItemPlaySounds.IsChecked()
 		self.config.WriteBool( 'playSounds', self.playSounds )
 		
-	#def menuLaunchExcelAfterPublishingResults( self, event ):
-		#self.launchExcelAfterPublishingResults = self.menuItemLaunchExcelAfterPublishingResults.IsChecked()
-		#self.config.WriteBool( 'launchExcelAfterPublishingResults', self.launchExcelAfterPublishingResults )
+	def menuLaunchExcelAfterPublishingResults( self, event ):
+		self.launchExcelAfterPublishingResults = self.menuItemLaunchExcelAfterPublishingResults.IsChecked()
+		self.config.WriteBool( 'launchExcelAfterPublishingResults', self.launchExcelAfterPublishingResults )
 	
 	#def menuTipAtStartup( self, event ):
 		#showing = self.config.ReadBool('showTipAtStartup', True)
@@ -1652,7 +1652,7 @@ class MainWin( wx.Frame ):
 
 		#printout.Destroy()
 
-	#def getFormatFilename( self, filecode ):
+	def getFormatFilename( self, filecode ):
 		#if filecode == 'uciexcel' and not BatchPublishAttrs.formatFilename[filecode]:
 			#def getUCIFileNames( fnameBase ):
 				#xlFNames = []
@@ -1666,7 +1666,7 @@ class MainWin( wx.Frame ):
 				#return xlFNames
 			#BatchPublishAttrs.formatFilename[filecode] = getUCIFileNames
 	
-		#return BatchPublishAttrs.formatFilename[filecode]( os.path.splitext(self.fileName or '')[0] )
+		return BatchPublishAttrs.formatFilename[filecode]( os.path.splitext(self.fileName or '')[0] )
 
 	#@logCall
 	#def menuPrintPDF( self, event=None, silent=False ):
@@ -1804,58 +1804,58 @@ class MainWin( wx.Frame ):
 	
 	#--------------------------------------------------------------------------------------------
 
-	#@logCall
-	#def menuPublishAsExcel( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4:
-			#return
+	@logCall
+	def menuPublishAsExcel( self, event=None, silent=False ):
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+		
+		race = Model.race
+		if not race:
+			return
+		
+		
+		#raceCategories = [ (c.fullname, c) for c in race.getCategories(startWaveOnly=False, publishOnly=True) if race.hasCategory(c) ]
+		raceCategories = [ (c.fullname, c) for c in race.getCategories(startWaveOnly=False, publishOnly=True) ]
 
-		#xlFName = self.getFormatFilename('excel')
+		xlFName = self.getFormatFilename('excel')
 
-		#wb = xlsxwriter.Workbook( xlFName )
-		#formats = ExportGrid.getExcelFormatsXLSX( wb )
-		#with UnstartedRaceWrapper():
-			#raceCategories = getRaceCategories()
+		wb = xlsxwriter.Workbook( xlFName )
+		formats = ExportGrid.getExcelFormatsXLSX( wb )
+		
+		ues = Utils.UniqueExcelSheetName()
+		
+		for catName, category in raceCategories:
+			if catName == 'All' and len(raceCategories) > 1:
+				continue
+			sheetCur = wb.add_worksheet( ues.getSheetName(catName) )
+			export = ExportGrid()
+			export.setResultsOneList( category )
+			export.toExcelSheetXLSX( formats, sheetCur )
 			
-			#ues = Utils.UniqueExcelSheetName()
-			#for catName, category in raceCategories:
-			
-				#if catName == 'All' and len(raceCategories) > 1:
-					#continue
-								
-				#sheetCur = wb.add_worksheet( ues.getSheetName(catName) )
-				#export = ExportGrid()
-				#export.setResultsOneList( category, showLapsFrequency = 1, onlyBestLaps = True )
-				#export.toExcelSheetXLSX( formats, sheetCur )
-				
-			#race = Model.race
-			#if race and getattr(race, 'primes', None):
-				#sheetCur = wb.add_worksheet( Utils.RemoveDisallowedSheetChars('Primes') )
-				#export = ExportGrid( **GetGrid() )
-				#export.toExcelSheetXLSX( formats, sheetCur )
 
-		#AddExcelInfo( wb )
-		#if silent:
-			#try:
-				#wb.close()
-			#except Exception as e:
-				#logException( e, sys.exc_info() )
-			#return
+		AddExcelInfo( wb )
+		if silent:
+			try:
+				wb.close()
+			except Exception as e:
+				logException( e, sys.exc_info() )
+			return
 			
-		#try:
-			#wb.close()
-			#if self.launchExcelAfterPublishingResults:
-				#Utils.LaunchApplication( xlFName )
-			#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError as e:
-			#logException( e, sys.exc_info() )
-			#Utils.MessageOK(self,
-						#'{} "{}"\n\n{}\n{}'.format(
-							#_('Cannot write'), xlFName,
-							#_('Check if this spreadsheet is already open.'),
-							#_('If so, close it, and try again.')
-						#),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
+		try:
+			wb.close()
+			if self.launchExcelAfterPublishingResults:
+				Utils.LaunchApplication( xlFName )
+			Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
+		except IOError as e:
+			logException( e, sys.exc_info() )
+			Utils.MessageOK(self,
+						'{} "{}"\n\n{}\n{}'.format(
+							_('Cannot write'), xlFName,
+							_('Check if this spreadsheet is already open.'),
+							_('If so, close it, and try again.')
+						),
+						_('Excel File Error'), iconMask=wx.ICON_ERROR )
 	
 	#--------------------------------------------------------------------------------------------
 	#def getEmail( self ):
@@ -4431,7 +4431,7 @@ def MainLoop():
 	#parser.add_argument("-t", "--tt", action="store_true", dest="timetrial", default=False, help='run time trial simulation')
 	#parser.add_argument("-b", "--batchpublish", action="store_true", dest="batchpublish", default=False, help="do batch publish and exit")
 	#parser.add_argument("-p", "--page", dest="page", default=None, nargs='?', help="page to show after launching")
-	#parser.add_argument(dest="filename", default=None, nargs='?', help="CrossMgr race file, or Excel generated by RaceDB", metavar="RaceFile.cmn or .xls, .xlsx, .xlsm file")
+	parser.add_argument(dest="filename", default=None, nargs='?', help="SprintTimer race file", metavar="RaceFile.spr")
 	args = parser.parse_args()
 	
 	Utils.initTranslation()
@@ -4462,21 +4462,21 @@ def MainLoop():
 	mainWin = MainWin( None, title=Version.AppVerName, size=(1128,600) )
 	
 	#Try to open a specified filename.
-	#fileName = args.filename
+	fileName = args.filename
 	
 	#Try to load a race.
-	#raceLoaded = False
-	#if fileName:
-		#try:
-			#ext = os.path.splitext( fileName )[1]
-			#if ext == '.cmn':
-				#mainWin.openRace( fileName )
-				#raceLoaded = True
+	raceLoaded = False
+	if fileName:
+		try:
+			ext = os.path.splitext( fileName )[1]
+			if ext == '.spr':
+				mainWin.openRace( fileName )
+				raceLoaded = True
 			#elif ext in ('.xls', '.xlsx', '.xlsm') and IsValidRaceDBExcel(fileName):
 				#mainWin.openRaceDBExcel( fileName )
 				#raceLoaded = True
-		#except (IndexError, AttributeError, ValueError):
-			#pass
+		except (IndexError, AttributeError, ValueError):
+			pass
 
 	#Check for batchpublish.  If so, do the publish and exit.
 	#if args.batchpublish:

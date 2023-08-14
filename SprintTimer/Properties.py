@@ -23,7 +23,7 @@ import platform
 #from GpxImport import GetGeoTrack
 #from TemplateSubstitute import TemplateSubstitute
 #import Template
-#from BatchPublishAttrs import batchPublishAttr, batchPublishRaceAttr
+from BatchPublishAttrs import batchPublishAttr, batchPublishRaceAttr
 from HighPrecisionTimeEdit import HighPrecisionTimeEdit
 import JChipSetup
 #import WebServer
@@ -958,259 +958,259 @@ class CameraProperties( wx.Panel ):
 		#race.showNumTeamParticipants = self.showNumTeamParticipants.GetValue()
 
 #------------------------------------------------------------------------------------------------
-#class BatchPublishProperties( wx.Panel ):
-	#def __init__( self, parent, id=wx.ID_ANY, publishCallback=None, ftpCallback=None ):
-		#super().__init__( parent, id )
+class BatchPublishProperties( wx.Panel ):
+	def __init__( self, parent, id=wx.ID_ANY, publishCallback=None, ftpCallback=None ):
+		super().__init__( parent, id )
 
-		#self.publishCallback = publishCallback
-		#self.ftpCallback = ftpCallback
+		self.publishCallback = publishCallback
+		self.ftpCallback = ftpCallback
 		
-		#if ftpCallback:
-			#ftpBtn = wx.ToggleButton( self, label=_('Configure FTP') )
-			#ftpBtn.Bind( wx.EVT_TOGGLEBUTTON, ftpCallback )
-		#else:
-			#ftpBtn = None
+		if ftpCallback:
+			ftpBtn = wx.ToggleButton( self, label=_('Configure FTP') )
+			ftpBtn.Bind( wx.EVT_TOGGLEBUTTON, ftpCallback )
+		else:
+			ftpBtn = None
 			
-		#explain = [
-			#wx.StaticText(self,label=_('Choose File Formats to Publish.  Select FTP option to upload files to (S)FTP server.')),
-		#]
-		#font = explain[0].GetFont()
-		#fontUnderline = wx.FFont( font.GetPointSize(), font.GetFamily(), flags=wx.FONTFLAG_BOLD )
+		explain = [
+			wx.StaticText(self,label=_('Choose File Formats to Publish.  Select FTP option to upload files to (S)FTP server.')),
+		]
+		font = explain[0].GetFont()
+		fontUnderline = wx.FFont( font.GetPointSize(), font.GetFamily(), flags=wx.FONTFLAG_BOLD )
 		
-		#fgs = wx.FlexGridSizer( cols=4, rows=0, hgap=0, vgap=1 )
-		#self.widget = []
+		fgs = wx.FlexGridSizer( cols=4, rows=0, hgap=0, vgap=1 )
+		self.widget = []
 		
-		#headers = [_('Format'), _('FTP'), _('Note'), '']
-		#for h in headers:
-			#st = wx.StaticText(self, label=h)
-			#st.SetFont( fontUnderline )
-			#fgs.Add( st, flag=wx.ALL, border=4 )
+		headers = [_('Format'), _('FTP'), _('Note'), '']
+		for h in headers:
+			st = wx.StaticText(self, label=h)
+			st.SetFont( fontUnderline )
+			fgs.Add( st, flag=wx.ALL, border=4 )
 		
-		#for i, attr in enumerate(batchPublishAttr):
-			#for k in range(len(headers)): fgs.Add( wx.StaticLine(self, size=(1,1)), flag=wx.EXPAND )
+		for i, attr in enumerate(batchPublishAttr):
+			for k in range(len(headers)): fgs.Add( wx.StaticLine(self, size=(1,1)), flag=wx.EXPAND )
 		
-			#attrCB = wx.CheckBox(self, label=attr.uiname)
-			#attrCB.Bind( wx.EVT_CHECKBOX, lambda event, iAttr=i: self.onSelect(iAttr) )
-			#fgs.Add( attrCB, flag=wx.ALIGN_CENTRE_VERTICAL )
-			#if attr.ftp:
-				#ftpCB = wx.CheckBox(self, label='          ')
-				#fgs.Add( ftpCB, flag=wx.ALIGN_CENTER|wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
-			#else:
-				#ftpCB = None
-				#fgs.AddSpacer( 8 )
-			#if attr.note:
-				#fgs.Add( wx.StaticText(self, label=attr.note), flag=wx.ALIGN_CENTRE_VERTICAL )
-			#else:
-				#fgs.AddSpacer( 0 )
+			attrCB = wx.CheckBox(self, label=attr.uiname)
+			attrCB.Bind( wx.EVT_CHECKBOX, lambda event, iAttr=i: self.onSelect(iAttr) )
+			fgs.Add( attrCB, flag=wx.ALIGN_CENTRE_VERTICAL )
+			if attr.ftp:
+				ftpCB = wx.CheckBox(self, label='          ')
+				fgs.Add( ftpCB, flag=wx.ALIGN_CENTER|wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
+			else:
+				ftpCB = None
+				fgs.AddSpacer( 8 )
+			if attr.note:
+				fgs.Add( wx.StaticText(self, label=attr.note), flag=wx.ALIGN_CENTRE_VERTICAL )
+			else:
+				fgs.AddSpacer( 0 )
 				
-			#publishBtn = wx.Button( self, label=_('Publish') )
-			#publishBtn.Bind( wx.EVT_BUTTON, lambda event, iAttr=i: self.onPublish(iAttr) )
-			#fgs.Add( publishBtn, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=8 )
-			#self.widget.append( (attrCB, ftpCB, publishBtn) )
+			publishBtn = wx.Button( self, label=_('Publish') )
+			publishBtn.Bind( wx.EVT_BUTTON, lambda event, iAttr=i: self.onPublish(iAttr) )
+			fgs.Add( publishBtn, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=8 )
+			self.widget.append( (attrCB, ftpCB, publishBtn) )
 		
-		#self.bikeRegChoice = wx.RadioBox(
-			#self,
-			#label=_('BikeReg'),
-			#choices=[_('None'), 'CrossResults', 'RoadResults'],
-			#majorDimension=0
-		#)
+		self.bikeRegChoice = wx.RadioBox(
+			self,
+			label=_('BikeReg'),
+			choices=[_('None'), 'CrossResults', 'RoadResults'],
+			majorDimension=0
+		)
 		
-		#pps = wx.BoxSizer( wx.HORIZONTAL )
-		#pps.Add( wx.StaticText(self, label=_('Post Publish Command')), flag=wx.ALIGN_CENTRE_VERTICAL )
-		#self.postPublishCmd = wx.TextCtrl( self )
-		#pps.Add( self.postPublishCmd, 1, flag=wx.LEFT|wx.EXPAND, border=4 )
+		pps = wx.BoxSizer( wx.HORIZONTAL )
+		pps.Add( wx.StaticText(self, label=_('Post Publish Command')), flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.postPublishCmd = wx.TextCtrl( self )
+		pps.Add( self.postPublishCmd, 1, flag=wx.LEFT|wx.EXPAND, border=4 )
 		
-		#vs = wx.BoxSizer( wx.VERTICAL )
-		#if ftpBtn:
-			#for e in explain[:-1]:
-				#vs.Add( e, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=4 )
-			#h = wx.BoxSizer( wx.HORIZONTAL )
-			#h.Add( explain[-1], flag=wx.ALIGN_CENTRE_VERTICAL )
-			#h.Add( ftpBtn, flag=wx.LEFT, border=8 )
-			#vs.Add( h, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
-		#else:
-			#for e in explain:
-				#vs.Add( e, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
-		#vs.Add( fgs, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
-		#vs.Add( self.bikeRegChoice, flag=wx.ALL, border=4 )
-		#vs.Add( pps, flag=wx.ALL|wx.EXPAND, border=4 )
-		#vs.Add( wx.StaticText(self,label='\n'.join([
-				#_('Postpublish Command is run on CrossMgr generated files.  Use %* to insert the file names into the command line.'),
-				#_('You can also use Notes variables, for example: {=RaceDate}, {=Organizer} and {=City}.'),
-				#_('Scripts can be shell cmds or scripts (.bat, .py, .rb, .perl, ...).'),
-			#])),
-			#flag=wx.ALL|wx.EXPAND, border=4 )
+		vs = wx.BoxSizer( wx.VERTICAL )
+		if ftpBtn:
+			for e in explain[:-1]:
+				vs.Add( e, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=4 )
+			h = wx.BoxSizer( wx.HORIZONTAL )
+			h.Add( explain[-1], flag=wx.ALIGN_CENTRE_VERTICAL )
+			h.Add( ftpBtn, flag=wx.LEFT, border=8 )
+			vs.Add( h, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
+		else:
+			for e in explain:
+				vs.Add( e, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
+		vs.Add( fgs, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
+		vs.Add( self.bikeRegChoice, flag=wx.ALL, border=4 )
+		vs.Add( pps, flag=wx.ALL|wx.EXPAND, border=4 )
+		vs.Add( wx.StaticText(self,label='\n'.join([
+				_('Postpublish Command is run on CrossMgr generated files.  Use %* to insert the file names into the command line.'),
+				_('You can also use Notes variables, for example: {=RaceDate}, {=Organizer} and {=City}.'),
+				_('Scripts can be shell cmds or scripts (.bat, .py, .rb, .perl, ...).'),
+			])),
+			flag=wx.ALL|wx.EXPAND, border=4 )
 		
-		#self.SetSizer( vs )
+		self.SetSizer( vs )
 	
-	#def onPublish( self, iAttr ):
-		#if self.publishCallback:
-			#self.publishCallback()
+	def onPublish( self, iAttr ):
+		if self.publishCallback:
+			self.publishCallback()
 			
-		#attrCB, ftpCB, publishBtn = self.widget[iAttr]
-		#doFtp = ftpCB and ftpCB.GetValue()
-		#doBatchPublish( iAttr, silent=False )
+		attrCB, ftpCB, publishBtn = self.widget[iAttr]
+		doFtp = ftpCB and ftpCB.GetValue()
+		doBatchPublish( iAttr, silent=False )
 		
-		#race = Model.race
-		#mainWin = Utils.getMainWin()
-		#attr = batchPublishAttr[iAttr]
+		race = Model.race
+		mainWin = Utils.getMainWin()
+		attr = batchPublishAttr[iAttr]
 		
-		#if attr.filecode:
-			#fname = mainWin.getFormatFilename(attr.filecode)
-			#if doFtp and race.urlFull and race.urlFull != 'http://':
-				#webbrowser.open( race.urlFull, new = 0, autoraise = True )
-			#else:
-				#Utils.LaunchApplication( fname )
-		#else:
-			#pngFiles = os.path.join( os.path.dirname(Utils.getFileName()), 'FaceBookPNG', '*.png' )
-			#for fname in glob.glob(pngFiles):
-				#Utils.LaunchApplication( fname )
-				#return
+		if attr.filecode:
+			fname = mainWin.getFormatFilename(attr.filecode)
+			if doFtp and race.urlFull and race.urlFull != 'http://':
+				webbrowser.open( race.urlFull, new = 0, autoraise = True )
+			else:
+				Utils.LaunchApplication( fname )
+		else:
+			pngFiles = os.path.join( os.path.dirname(Utils.getFileName()), 'FaceBookPNG', '*.png' )
+			for fname in glob.glob(pngFiles):
+				Utils.LaunchApplication( fname )
+				return
 	
-	#def onSelect( self, iAttr ):
-		#attrCB, ftpCB, publishBtn = self.widget[iAttr]
-		#v = attrCB.GetValue()
-		#if ftpCB:
-			#ftpCB.Enable( v )
-			#if not v:
-				#ftpCB.SetValue( False )
-		#publishBtn.Enable( v )
+	def onSelect( self, iAttr ):
+		attrCB, ftpCB, publishBtn = self.widget[iAttr]
+		v = attrCB.GetValue()
+		if ftpCB:
+			ftpCB.Enable( v )
+			if not v:
+				ftpCB.SetValue( False )
+		publishBtn.Enable( v )
 		
-	#def refresh( self ):
-		#race = Model.race
-		#for i, attr in enumerate(batchPublishAttr):
-			#raceAttr = batchPublishRaceAttr[i]
-			#attrCB, ftpCB, publishBtn = self.widget[i]
-			#v = getattr( race, raceAttr, 0 )
-			#if v & 1:
-				#attrCB.SetValue( True )
-				#if ftpCB:
-					#ftpCB.Enable( True )
-					#ftpCB.SetValue( v & 2 != 0 )
-				#publishBtn.Enable( True )
-			#else:
-				#attrCB.SetValue( False )
-				#if ftpCB:
-					#ftpCB.SetValue( False )
-					#ftpCB.Enable( False )
-				#publishBtn.Enable( False )
-		#self.bikeRegChoice.SetSelection( getattr(race, 'publishFormatBikeReg', 0) )
-		#self.postPublishCmd.SetValue( race.postPublishCmd )
+	def refresh( self ):
+		race = Model.race
+		for i, attr in enumerate(batchPublishAttr):
+			raceAttr = batchPublishRaceAttr[i]
+			attrCB, ftpCB, publishBtn = self.widget[i]
+			v = getattr( race, raceAttr, 0 )
+			if v & 1:
+				attrCB.SetValue( True )
+				if ftpCB:
+					ftpCB.Enable( True )
+					ftpCB.SetValue( v & 2 != 0 )
+				publishBtn.Enable( True )
+			else:
+				attrCB.SetValue( False )
+				if ftpCB:
+					ftpCB.SetValue( False )
+					ftpCB.Enable( False )
+				publishBtn.Enable( False )
+		self.bikeRegChoice.SetSelection( getattr(race, 'publishFormatBikeReg', 0) )
+		self.postPublishCmd.SetValue( race.postPublishCmd )
 	
-	#def commit( self ):
-		#race = Model.race
-		#for i, attr in enumerate(batchPublishAttr):
-			#raceAttr = batchPublishRaceAttr[i]
-			#attrCB, ftpCB, publishBtn = self.widget[i]
-			#setattr( race, raceAttr, 0 if not attrCB.GetValue() else (1 + (2 if ftpCB and ftpCB.GetValue() else 0)) )
-		#race.publishFormatBikeReg = self.bikeRegChoice.GetSelection()
-		#race.postPublishCmd = self.postPublishCmd.GetValue().strip()
+	def commit( self ):
+		race = Model.race
+		for i, attr in enumerate(batchPublishAttr):
+			raceAttr = batchPublishRaceAttr[i]
+			attrCB, ftpCB, publishBtn = self.widget[i]
+			setattr( race, raceAttr, 0 if not attrCB.GetValue() else (1 + (2 if ftpCB and ftpCB.GetValue() else 0)) )
+		race.publishFormatBikeReg = self.bikeRegChoice.GetSelection()
+		race.postPublishCmd = self.postPublishCmd.GetValue().strip()
 
-#def doBatchPublish( iAttr=None, silent=True, cmdline=False ):
-	#race = Model.race
-	#mainWin = Utils.getMainWin()
-	#ftpFiles = []
-	#allFiles = []
-	#success = True
+def doBatchPublish( iAttr=None, silent=True, cmdline=False ):
+	race = Model.race
+	mainWin = Utils.getMainWin()
+	ftpFiles = []
+	allFiles = []
+	success = True
 	
-	#for i, attr in enumerate(batchPublishAttr):
-		#if iAttr is not None and i != iAttr:
-			#continue
-		#if cmdline and attr.name == 'IndexHtml':
-			#continue
-		#v = getattr( race, batchPublishRaceAttr[i], 0 )
+	for i, attr in enumerate(batchPublishAttr):
+		if iAttr is not None and i != iAttr:
+			continue
+		if cmdline and attr.name == 'IndexHtml':
+			continue
+		v = getattr( race, batchPublishRaceAttr[i], 0 )
 			
-		#if v & 1:
-			#getattr( mainWin, attr.func )( silent=silent )
-			#if attr.filecode:
-				#files = mainWin.getFormatFilename(attr.filecode)
-				#for f in (files if isinstance(files, list) else [files]):
-					#allFiles.append( f )
-					#if v & 2:
-						#ftpFiles.append( f )
+		if v & 1:
+			getattr( mainWin, attr.func )( silent=silent )
+			if attr.filecode:
+				files = mainWin.getFormatFilename(attr.filecode)
+				for f in (files if isinstance(files, list) else [files]):
+					allFiles.append( f )
+					if v & 2:
+						ftpFiles.append( f )
 	
-	#if iAttr is None:
-		#publishFormatBikeReg = getattr(race, 'publishFormatBikeReg', 0)
-		#if publishFormatBikeReg == 1:
-			#with wx.BusyCursor():
-				#mainWin.menuExportCrossResults( silent=True )
-		#elif publishFormatBikeReg == 2:
-			#with wx.BusyCursor():
-				#mainWin.menuExportRoadResults( silent=True )
+	if iAttr is None:
+		publishFormatBikeReg = getattr(race, 'publishFormatBikeReg', 0)
+		if publishFormatBikeReg == 1:
+			with wx.BusyCursor():
+				mainWin.menuExportCrossResults( silent=True )
+		elif publishFormatBikeReg == 2:
+			with wx.BusyCursor():
+				mainWin.menuExportRoadResults( silent=True )
 		
-	#e = None
-	#if ftpFiles:
-		#if not FtpIsConfigured() and (silent or Utils.MessageOKCancel(
-					#mainWin,
-					#'{}\n\n{}'.format( _('Ftp is Not Configured'), _('Configure it now?')), 
-					#('Ftp is Not Configured')
-				#)):
-			#with FtpPublishDialog( mainWin ) as dlg:
-				#ret = dlg.ShowModal()
+	e = None
+	if ftpFiles:
+		if not FtpIsConfigured() and (silent or Utils.MessageOKCancel(
+					mainWin,
+					'{}\n\n{}'.format( _('Ftp is Not Configured'), _('Configure it now?')), 
+					('Ftp is Not Configured')
+				)):
+			with FtpPublishDialog( mainWin ) as dlg:
+				ret = dlg.ShowModal()
 		
-		#if not silent:
-			#class FtpThread( threading.Thread ):
-				#def __init__(self, ftpFiles, progressDialog):
-					#super().__init__()
-					#self.ftpFiles = ftpFiles
-					#self.progressDialog = progressDialog
-					#self.e = None
+		if not silent:
+			class FtpThread( threading.Thread ):
+				def __init__(self, ftpFiles, progressDialog):
+					super().__init__()
+					self.ftpFiles = ftpFiles
+					self.progressDialog = progressDialog
+					self.e = None
 			 
-				#def run(self):
-					#wx.CallAfter( self.progressDialog.ShowModal )
-					#self.e = FtpUploadFile( self.ftpFiles, self.progressDialog.update )
-					#wx.CallAfter( self.progressDialog.EndModal, 0 )
+				def run(self):
+					wx.CallAfter( self.progressDialog.ShowModal )
+					self.e = FtpUploadFile( self.ftpFiles, self.progressDialog.update )
+					wx.CallAfter( self.progressDialog.EndModal, 0 )
 				
-			#bytesTotal = sum( os.path.getsize(f) for f in ftpFiles )
-			#uploadProgress = FtpUploadProgress( mainWin, fileTotal=len(ftpFiles), bytesTotal=bytesTotal, )
-			#uploadProgress.Centre()
-			#ftpThread = FtpThread( ftpFiles, uploadProgress )
-			#ftpThread.start()
-			#e = ftpThread.e
-		#else:
-			#e = FtpUploadFile( ftpFiles )
+			bytesTotal = sum( os.path.getsize(f) for f in ftpFiles )
+			uploadProgress = FtpUploadProgress( mainWin, fileTotal=len(ftpFiles), bytesTotal=bytesTotal, )
+			uploadProgress.Centre()
+			ftpThread = FtpThread( ftpFiles, uploadProgress )
+			ftpThread.start()
+			e = ftpThread.e
+		else:
+			e = FtpUploadFile( ftpFiles )
 		
-		#if e:
-			#message = '{}\n\n{}'.format( _('Ftp Upload Error'), e)
-			#if not silent:
-				#Utils.MessageOK( mainWin, message, _('Ftp Upload Error'), wx.ICON_ERROR )
-			#Utils.writeLog( message )
-			#success = False
+		if e:
+			message = '{}\n\n{}'.format( _('Ftp Upload Error'), e)
+			if not silent:
+				Utils.MessageOK( mainWin, message, _('Ftp Upload Error'), wx.ICON_ERROR )
+			Utils.writeLog( message )
+			success = False
 
-	#postPublishCmd = getattr(race, 'postPublishCmd', None)
-	#if postPublishCmd and allFiles:
-		#postPublishCmd = TemplateSubstitute( postPublishCmd, race.getTemplateValues() )
-		#if platform.system() == 'Windows':
-			#files = ' '.join('""{}""'.format(f) for f in allFiles)
-		#else:
-			#files = ' '.join('"{}"'.format(f) for f in allFiles)
-		#if '%*' in postPublishCmd:
-			#cmd = postPublishCmd.replace('%*', files)
-		#else:
-			#cmd = ' '.join( [postPublishCmd, files] )
+	postPublishCmd = getattr(race, 'postPublishCmd', None)
+	if postPublishCmd and allFiles:
+		postPublishCmd = TemplateSubstitute( postPublishCmd, race.getTemplateValues() )
+		if platform.system() == 'Windows':
+			files = ' '.join('""{}""'.format(f) for f in allFiles)
+		else:
+			files = ' '.join('"{}"'.format(f) for f in allFiles)
+		if '%*' in postPublishCmd:
+			cmd = postPublishCmd.replace('%*', files)
+		else:
+			cmd = ' '.join( [postPublishCmd, files] )
 
-		#Utils.writeLog( '{}:\n'.format( _('Post Publish Cmd'), cmd ) )
+		Utils.writeLog( '{}:\n'.format( _('Post Publish Cmd'), cmd ) )
 		
-		#try:
-			#subprocess.check_call( cmd, shell=True )
-		#except subprocess.CalledProcessError as e:
-			#message = '{}\n\n    {}\n{}: {}'.format(_('Post Publish Cmd Error'), e, _('return code'), e.returncode)
-			#if not silent:
-				#Utils.MessageOK( mainWin, message, _('Post Publish Cmd Error')  )
-			#Utils.writeLog( message )
-			#success = False
+		try:
+			subprocess.check_call( cmd, shell=True )
+		except subprocess.CalledProcessError as e:
+			message = '{}\n\n    {}\n{}: {}'.format(_('Post Publish Cmd Error'), e, _('return code'), e.returncode)
+			if not silent:
+				Utils.MessageOK( mainWin, message, _('Post Publish Cmd Error')  )
+			Utils.writeLog( message )
+			success = False
 
-		#except Exception as e:
-			#message = '{}\n\n    {}'.format(_('Post Publish Cmd Error'), e)
-			#if not silent:
-				#Utils.MessageOK( mainWin, message, _('Post Publish Cmd Error')  )
-			#Utils.writeLog( message )
-			#success = False
+		except Exception as e:
+			message = '{}\n\n    {}'.format(_('Post Publish Cmd Error'), e)
+			if not silent:
+				Utils.MessageOK( mainWin, message, _('Post Publish Cmd Error')  )
+			Utils.writeLog( message )
+			success = False
 	
-	#if not silent and iAttr is None:
-		#Utils.MessageOK( mainWin, _('Publish Complete'), _('Publish Complete') )
+	if not silent and iAttr is None:
+		Utils.MessageOK( mainWin, _('Publish Complete'), _('Publish Complete') )
 		
-	#return success
+	return success
 
 #class BatchPublishPropertiesDialog( wx.Dialog ):
 	#def __init__( self, parent, id=wx.ID_ANY ):
@@ -1416,7 +1416,7 @@ class Properties( wx.Panel ):
 			('rfidProperties',			RfidProperties,				_('RFID') ),
 			#('webProperties',			WebProperties,				_('Web') ),
 			#('ftpProperties',			FtpProperties,				_('(S)FTP') ),
-			#('batchPublishProperties',	BatchPublishProperties,		_('Batch Publish') ),
+			('batchPublishProperties',	BatchPublishProperties,		_('Batch Publish') ),
 			#('gpxProperties',			GPXProperties,				_('GPX') ),
 			#('notesProperties',			NotesProperties,			_('Notes') ),
 			('cameraProperties',		CameraProperties,			_('Camera') ),

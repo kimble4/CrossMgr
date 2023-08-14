@@ -697,10 +697,10 @@ class Results( wx.Panel ):
 
 		res = race.getSprintResults(self.category)
 		
-		for i, bibSprintDict in enumerate(res):
-			bib = bibSprintDict[0]
-			if bibSprintDict[1] is not None:
-				sprintDict = bibSprintDict[1][0]
+		for i, bibSprintDicts in enumerate(res):
+			bib = bibSprintDicts[0]
+			if bibSprintDicts[1] is not None:
+				sprintDict = bibSprintDicts[1][0]
 				name = ''
 				if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
 					try:
@@ -756,7 +756,7 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str(sprintDict["sprintNote"]) if "sprintNote" in sprintDict else '')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 				col += 1
-				self.resultsGrid.SetCellValue(row, col, str(len(bibSprintDict[1])))
+				self.resultsGrid.SetCellValue(row, col, str(len(bibSprintDicts[1])))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			else:
 				# No sprints for rider

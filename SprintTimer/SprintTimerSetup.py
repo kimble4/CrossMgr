@@ -45,7 +45,6 @@ copyFiles = [
     "HelpIndex.py"
     "HelpSearch.py"
     "ModuleUnpickler.py"
-    "BatchPublishAttrs.py"
     "ReadCategoriesFromExcel.py"
     "ReadPropertiesFromExcel.py"
     "ModuleUnpickler.py"
@@ -71,6 +70,7 @@ copyFiles = [
     "SendPhotoRequests"
     "MultiCast"
     "FixCategories"
+    "AddExcelInfo"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

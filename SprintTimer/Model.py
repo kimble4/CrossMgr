@@ -2538,9 +2538,9 @@ class Race:
 		#except (TypeError, AttributeError, KeyError):
 			#return set()
 
-	#def hasCategory( self, category ):
+	def hasCategory( self, category ):
 		#Check if there is at least one rider in this category.
-		#return any( self.inCategory(num, category) for num in self.riders.keys() )
+		return any( self.inCategory(num, category) for num in self.riders.keys() )
 
 	#def hasTime( self, num, t ):
 		#try:
