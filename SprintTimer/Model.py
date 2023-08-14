@@ -1258,7 +1258,7 @@ class Race:
 	#rfidRestartTime = None		# Restart time (used to ignore intervening tag reads)
 	#--------------------------------------
 	
-	#googleMapsApiKey = ''
+	googleMapsApiKey = ''
 	
 	#--------------------------------------
 	
@@ -1683,9 +1683,12 @@ class Race:
 						wallSeconds = []
 						cumulativeTime = 0
 						for sprintDict in bibSprintDicts[1]:
-							cumulativeTime += sprintDict['sprintTime']
+							time = sprintDict['sprintTime']
+							cumulativeTime += time
 							times.append(cumulativeTime)
-							speeds.append(sprintDict['sprintSpeed']) # fixme recalculate speeds
+							 # recalculate speeds in mph
+							speed = sprintDict['sprintDistance'] / time * 2.23694
+							speeds.append(speed)
 							if 'sprintStartMillis' in sprintDict:
 								millis = sprintDict['sprintStartMillis']/1000.0
 							else:
@@ -1836,17 +1839,19 @@ class Race:
 			
 			catDetails.append( info )
 			
-			waveCat = lastWaveCat
-			if waveCat:
-				if getattr(waveCat, 'distance', None):
-					if getattr(waveCat, 'distanceType', Model.Category.DistanceByLap) == Model.Category.DistanceByLap:
-						info['lapDistance'] = waveCat.distance
-						if getattr(waveCat, 'firstLapDistance', None):
-							info['firstLapDistance'] = waveCat.firstLapDistance
-						info['raceDistance'] = waveCat.getDistanceAtLap( info['laps'] )
-					else:
-						info['raceDistance'] = waveCat.distance
-			info['distanceUnit'] = race.distanceUnitStr
+			#waveCat = lastWaveCat
+			#if waveCat:
+				#if getattr(waveCat, 'distance', None):
+					#if getattr(waveCat, 'distanceType', Model.Category.DistanceByLap) == Model.Category.DistanceByLap:
+						#info['lapDistance'] = waveCat.distance
+						#if getattr(waveCat, 'firstLapDistance', None):
+							#info['firstLapDistance'] = waveCat.firstLapDistance
+						#info['raceDistance'] = waveCat.getDistanceAtLap( info['laps'] )
+					#else:
+						#info['raceDistance'] = waveCat.distance
+			info['lapDistance'] = float(race.sprintDistance)/1609.34  #this seems awfully bodgy, but the javascript seems to want miles
+			info['raceDistance'] = float(race.sprintDistance)/1609.34
+			info['distanceUnit'] = 'miles'
 		
 		# Cleanup.
 		#UnstartedRaceDataEpilog( tempNums )
@@ -1880,13 +1885,14 @@ class Race:
 		self.sprintBibs.append( (t, num, manualEntry) )
 		
 		#if bib was manually entered, or we're within rfidTagAssociateSeconds of a sprint, recalculate bibs
-		diff = abs((self.sprints[-1][0] - t).total_seconds())
-		if diff <= self.rfidTagAssociateSeconds:
-			if self.findBibsForSprint():
-				Utils.refresh()
-		elif manualEntry:
-			if self.findBibsForSprint():
-				Utils.refresh()
+		if len(self.sprints) > 0:
+			diff = abs((self.sprints[-1][0] - t).total_seconds())
+			if diff <= self.rfidTagAssociateSeconds:
+				if self.findBibsForSprint():
+					Utils.refresh()
+			elif manualEntry:
+				if self.findBibsForSprint():
+					Utils.refresh()
 			
 		if doSetChanged:
 			self.setChanged()

@@ -1936,7 +1936,7 @@ class MainWin( wx.Frame ):
 		payload['data']					= race.getAnimationData( None, True )
 		payload['catDetails']			= race.getCategoryDetails( True, publishOnly )
 		
-		print('\n\npayload: ' + str(payload))
+		#print('\n\npayload: ' + str(payload))
 		
 		return payload
 	
@@ -2012,12 +2012,12 @@ class MainWin( wx.Frame ):
 	
 		#Add the rider dashboard.
 		templateFile = os.path.join(Utils.getHtmlFolder(), 'RiderDashboard.html')
-		try:
-			with open(templateFile) as fp:
-				template = fp.read()
-			payload['riderDashboard'] = sanitize( template )
-		except Exception:
-			pass
+		#try:
+		with open(templateFile) as fp:
+			template = fp.read()
+		payload['riderDashboard'] = sanitize( template )
+		#except Exception:
+		#	pass
 	
 		#Add the travel map if the riders have locations.
 		#if race.googleMapsApiKey:

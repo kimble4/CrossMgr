@@ -67,10 +67,10 @@ copyFiles = [
     "WebReader.py"
     "MyLapsServer.py"
     "JChipSetup.py"
-    "SendPhotoRequests"
-    "MultiCast"
-    "FixCategories"
-    "AddExcelInfo"
+    "SendPhotoRequests.py"
+    "MultiCast.py"
+    "FixCategories.py"
+    "AddExcelInfo.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )
