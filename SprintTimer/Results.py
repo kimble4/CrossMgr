@@ -12,6 +12,7 @@ from FixCategories import FixCategories, SetCategory
 #from RiderDetail import ShowRiderDetailDialog
 #from EditEntry import CorrectNumber, ShiftNumber, InsertNumber, DeleteEntry, SwapEntry
 from Undo import undo
+import datetime
 #import Flags
 
 #bitmapCache = {}
@@ -82,7 +83,7 @@ class Results( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Note', 'Attempts']
+		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Time of day', 'Note', 'Attempts']
 		
 		#self.category = None
 		#self.showRiderData = True
@@ -753,6 +754,11 @@ class Results( wx.Panel ):
 					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed)))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
+				if "sprintStart" in sprintDict:
+					wallTime = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
+					self.resultsGrid.SetCellValue(row, col, wallTime.strftime('%Y-%m-%d %H:%M:%S'))
+					self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
+				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(sprintDict["sprintNote"]) if "sprintNote" in sprintDict else '')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 				col += 1
@@ -796,7 +802,7 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str(machine))
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(team))
-				col += 4
+				col += 5
 				self.resultsGrid.SetCellValue(row, col, '0')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 		

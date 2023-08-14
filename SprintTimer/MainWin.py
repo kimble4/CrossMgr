@@ -1891,7 +1891,7 @@ class MainWin( wx.Frame ):
 		payload['organizer']		= getattr(race, 'organizer', '')
 		payload['reverseDirection']	= False
 		payload['finishTop']		= False
-		payload['isTimeTrial']		= False
+		payload['isTimeTrial']		= True
 		payload['isBestNLaps']		= False
 		payload['winAndOut']		= False
 		payload['rfid']				= race.enableJChipIntegration

@@ -1145,9 +1145,9 @@ class Race:
 		
 #class Race:
 	#rankBy algorithms
-	#rankByLapsTime = 0
-	#rankByAverageSpeed = 1
-	#rankByNames = ['number of laps then finish time', 'average speed']
+	rankByLapsTime = 0
+	rankByAverageSpeed = 1
+	rankByNames = ['number of laps then finish time', 'average speed']
 	
 	#finisherStatusList = [Rider.Finisher, Rider.Pulled]
 	#finisherStatusSet = set( finisherStatusList )
@@ -1290,6 +1290,7 @@ class Race:
 		self.memo = ''
 		self.discipline = 'Sprints'
 		
+		self.rankBy = Race.rankByAverageSpeed
 		self.inProgressSprintStart = None
 		self.sprints = []
 		self.sprintBibs = []
@@ -1679,33 +1680,45 @@ class Race:
 					if bibSprintDicts[1] is not None:
 						times = []
 						speeds = []
+						wallSeconds = []
 						cumulativeTime = 0
 						for sprintDict in bibSprintDicts[1]:
 							cumulativeTime += sprintDict['sprintTime']
 							times.append(cumulativeTime)
 							speeds.append(sprintDict['sprintSpeed']) # fixme recalculate speeds
-						info['bests'] = [1] * len(times)
-						info['interp'] = [0] * len(times)
-						info['lapSpeeds'] = speeds
+							if 'sprintStartMillis' in sprintDict:
+								millis = sprintDict['sprintStartMillis']/1000.0
+							else:
+								millis = 0
+							wallTime = datetime.datetime.fromtimestamp(sprintDict['sprintStart'] + millis)
+							wallSeconds.append((wallTime - wallTime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+						info['bests'] = [1] #* len(times)
+						info['clockStartTime'] = wallSeconds[0]
+						info['finishTime'] = (wallTime - race.startTime).total_seconds() + times[0]
+						info['interp'] = [0, 0] #* (len(times) +1)
+						info['lapSpeeds'] = speeds[0]
 						info['lastInterp'] = False
-						info['lastTime'] = times[-1]
-						info['lastTimeOrig'] = times[-1]
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
-						info['raceSpeeds'] = speeds
-						info['raceTimes'] = times
+						info['lastTime'] = times[0]
+						info['lastTimeOrig'] = times[0] #times[-1]
+						info['raceCat'] = (externalInfo[bib]['EventCategory'] + ' (Open)') if externalInfo else ''  #fixme is not fullname
+						info['raceSpeeds'] = [speeds[0]]
+						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
+						info['startTime'] = (wallTime - race.startTime).total_seconds()
 						info['status'] = statusNames[Rider.Finisher]
 					else:  #DNS rider
 						info['bests'] = []
+						info['clockStartTime'] = None
 						info['interp'] = []
 						info['lapSpeeds'] = []
 						info['lastInterp'] = False
-						info['lastTime'] = 0
-						info['lastTimeOrig'] = 0
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
+						info['lastTime'] = 0.0
+						info['lastTimeOrig'] = 0.0
+						info['raceCat'] = (externalInfo[bib]['EventCategory'] + ' (Open)') if externalInfo else ''  #fixme is not fullname
 						info['raceSpeeds'] = []
 						info['raceTimes'] = []
 						info['speed'] = ''
+						info['startTime'] = None
 						info['status'] = statusNames[Rider.DNS]
 					animationData[bib] = info
 				
@@ -1792,6 +1805,16 @@ class Race:
 				lastWaveCat = cat
 				#lastWaveStartOffset = cat.getStartOffsetSecs()
 			
+			#calculate gapvalues
+			gapvalues = [0]
+			for i, bibSprintDicts in enumerate(results):
+				if bibSprintDicts is not None:
+					if bibSprintDicts[1] is not None:
+						if i < 1:
+							leaderTime = bibSprintDicts[1][0]['sprintTime']
+						else:
+							gapvalues.append(bibSprintDicts[1][0]['sprintTime'] - leaderTime)
+			
 			info = {
 				'name'			: cat.fullname,
 				'startOffset'	: 0,
@@ -1800,9 +1823,9 @@ class Race:
 				'laps'			: 1,  #fixme
 				'bestLaps'		: None,
 				'pos'			: [bibSprintDicts[0] for bibSprintDicts in results],
-				'starters'		: sum( 1 for bibSprintDicts in results),
+				'starters'		: sum( 1 for bibSprintDicts in results if bibSprintDicts[1] is not None),
 				'finishers'		: sum( 1 for bibSprintDicts in results if bibSprintDicts[1] is not None ),
-				'gapValue'		: [0] * sum( 1 for bibSprintDicts in results),
+				'gapValue'		: gapvalues,
 				'iSort'			: iSort,
 			}
 			
