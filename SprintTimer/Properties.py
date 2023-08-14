@@ -16,7 +16,7 @@ import platform
 #from RaceInputState import RaceInputState
 #import ImageIO
 #from SetGraphic			import SetGraphicDialog
-#from FtpWriteFile import FtpProperties, FtpUploadFile, FtpIsConfigured, FtpPublishDialog
+from FtpWriteFile import FtpProperties, FtpUploadFile, FtpIsConfigured, FtpPublishDialog
 #from FtpUploadProgress import FtpUploadProgress
 #from LapCounter import LapCounterProperties
 #from GeoAnimation import GeoAnimation, GeoTrack
@@ -1008,12 +1008,12 @@ class BatchPublishProperties( wx.Panel ):
 			fgs.Add( publishBtn, flag=wx.LEFT|wx.ALIGN_CENTRE_VERTICAL, border=8 )
 			self.widget.append( (attrCB, ftpCB, publishBtn) )
 		
-		self.bikeRegChoice = wx.RadioBox(
-			self,
-			label=_('BikeReg'),
-			choices=[_('None'), 'CrossResults', 'RoadResults'],
-			majorDimension=0
-		)
+		#self.bikeRegChoice = wx.RadioBox(
+			#self,
+			#label=_('BikeReg'),
+			#choices=[_('None'), 'CrossResults', 'RoadResults'],
+			#majorDimension=0
+		#)
 		
 		pps = wx.BoxSizer( wx.HORIZONTAL )
 		pps.Add( wx.StaticText(self, label=_('Post Publish Command')), flag=wx.ALIGN_CENTRE_VERTICAL )
@@ -1032,7 +1032,7 @@ class BatchPublishProperties( wx.Panel ):
 			for e in explain:
 				vs.Add( e, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
 		vs.Add( fgs, flag=wx.TOP|wx.LEFT|wx.RIGHT, border=8 )
-		vs.Add( self.bikeRegChoice, flag=wx.ALL, border=4 )
+		#vs.Add( self.bikeRegChoice, flag=wx.ALL, border=4 )
 		vs.Add( pps, flag=wx.ALL|wx.EXPAND, border=4 )
 		vs.Add( wx.StaticText(self,label='\n'.join([
 				_('Postpublish Command is run on CrossMgr generated files.  Use %* to insert the file names into the command line.'),
@@ -1094,7 +1094,7 @@ class BatchPublishProperties( wx.Panel ):
 					ftpCB.SetValue( False )
 					ftpCB.Enable( False )
 				publishBtn.Enable( False )
-		self.bikeRegChoice.SetSelection( getattr(race, 'publishFormatBikeReg', 0) )
+		#self.bikeRegChoice.SetSelection( getattr(race, 'publishFormatBikeReg', 0) )
 		self.postPublishCmd.SetValue( race.postPublishCmd )
 	
 	def commit( self ):
@@ -1103,7 +1103,7 @@ class BatchPublishProperties( wx.Panel ):
 			raceAttr = batchPublishRaceAttr[i]
 			attrCB, ftpCB, publishBtn = self.widget[i]
 			setattr( race, raceAttr, 0 if not attrCB.GetValue() else (1 + (2 if ftpCB and ftpCB.GetValue() else 0)) )
-		race.publishFormatBikeReg = self.bikeRegChoice.GetSelection()
+		#race.publishFormatBikeReg = self.bikeRegChoice.GetSelection()
 		race.postPublishCmd = self.postPublishCmd.GetValue().strip()
 
 def doBatchPublish( iAttr=None, silent=True, cmdline=False ):
@@ -1212,64 +1212,64 @@ def doBatchPublish( iAttr=None, silent=True, cmdline=False ):
 		
 	return success
 
-#class BatchPublishPropertiesDialog( wx.Dialog ):
-	#def __init__( self, parent, id=wx.ID_ANY ):
-		#super().__init__( parent, id, _("Batch Publish Results"),
-					#style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL )
+class BatchPublishPropertiesDialog( wx.Dialog ):
+	def __init__( self, parent, id=wx.ID_ANY ):
+		super().__init__( parent, id, _("Batch Publish Results"),
+					style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL )
 					
-		#self.batchPublishProperties = BatchPublishProperties(self, publishCallback=self.commit, ftpCallback=self.onToggleFtp)
-		#self.batchPublishProperties.refresh()
+		self.batchPublishProperties = BatchPublishProperties(self, publishCallback=self.commit, ftpCallback=self.onToggleFtp)
+		self.batchPublishProperties.refresh()
 		
-		#self.ftp = FtpProperties( self, uploadNowButton=False )
-		#self.ftp.refresh()
-		#self.ftp.Show( False )
+		self.ftp = FtpProperties( self, uploadNowButton=False )
+		self.ftp.refresh()
+		self.ftp.Show( False )
 		
-		#self.okBtn = wx.Button( self, label=_('Publish All') )
-		#self.okBtn.Bind( wx.EVT_BUTTON, self.onOK )
-		#self.saveBtn = wx.Button( self, label=_('Save Options and Close') )
-		#self.saveBtn.Bind( wx.EVT_BUTTON, self.onSave )
-		#self.cancelBtn = wx.Button( self, id=wx.ID_CANCEL )
-		#self.cancelBtn.Bind( wx.EVT_BUTTON, self.onCancel )
+		self.okBtn = wx.Button( self, label=_('Publish All') )
+		self.okBtn.Bind( wx.EVT_BUTTON, self.onOK )
+		self.saveBtn = wx.Button( self, label=_('Save Options and Close') )
+		self.saveBtn.Bind( wx.EVT_BUTTON, self.onSave )
+		self.cancelBtn = wx.Button( self, id=wx.ID_CANCEL )
+		self.cancelBtn.Bind( wx.EVT_BUTTON, self.onCancel )
 
-		#border = 4
-		#hb = wx.BoxSizer( wx.HORIZONTAL )
-		#hb.Add( self.okBtn )
-		#hb.Add( self.saveBtn, border = 60, flag=wx.LEFT )
-		#hb.Add( self.cancelBtn, border = 24, flag=wx.LEFT )
-		#self.okBtn.SetDefault()
+		border = 4
+		hb = wx.BoxSizer( wx.HORIZONTAL )
+		hb.Add( self.okBtn )
+		hb.Add( self.saveBtn, border = 60, flag=wx.LEFT )
+		hb.Add( self.cancelBtn, border = 24, flag=wx.LEFT )
+		self.okBtn.SetDefault()
 		
-		#vs = wx.BoxSizer( wx.VERTICAL )
-		#hsContent = wx.BoxSizer( wx.HORIZONTAL )
-		#hsContent.Add( self.batchPublishProperties )
-		#hsContent.Add( self.ftp, flag=wx.ALL, border=8 )
-		#vs.Add( hsContent )
-		#vs.Add( hb, flag=wx.ALIGN_CENTRE|wx.ALL, border=8 )
+		vs = wx.BoxSizer( wx.VERTICAL )
+		hsContent = wx.BoxSizer( wx.HORIZONTAL )
+		hsContent.Add( self.batchPublishProperties )
+		hsContent.Add( self.ftp, flag=wx.ALL, border=8 )
+		vs.Add( hsContent )
+		vs.Add( hb, flag=wx.ALIGN_CENTRE|wx.ALL, border=8 )
 		
-		#self.SetSizerAndFit( vs )
+		self.SetSizerAndFit( vs )
 	
-	#def commit( self ):
-		#self.batchPublishProperties.commit()
-		#self.ftp.commit()
+	def commit( self ):
+		self.batchPublishProperties.commit()
+		self.ftp.commit()
 	
-	#def onToggleFtp( self, event ):
-		#self.ftp.Show( not self.ftp.IsShown() )
-		#self.ftp.Layout()
-		#self.GetSizer().Layout()
-		#self.Fit()
+	def onToggleFtp( self, event ):
+		self.ftp.Show( not self.ftp.IsShown() )
+		self.ftp.Layout()
+		self.GetSizer().Layout()
+		self.Fit()
 	
-	#def onOK( self, event ):
-		#self.commit()
-		#doBatchPublish()
-		#Utils.refresh()
-		#self.EndModal( wx.ID_OK )
+	def onOK( self, event ):
+		self.commit()
+		doBatchPublish()
+		Utils.refresh()
+		self.EndModal( wx.ID_OK )
 		
-	#def onSave( self, event ):
-		#self.commit()
-		#Utils.refresh()
-		#self.EndModal( wx.ID_CANCEL )
+	def onSave( self, event ):
+		self.commit()
+		Utils.refresh()
+		self.EndModal( wx.ID_CANCEL )
 		
-	#def onCancel( self, event ):
-		#self.EndModal( wx.ID_CANCEL )
+	def onCancel( self, event ):
+		self.EndModal( wx.ID_CANCEL )
 
 #------------------------------------------------------------------------------------------------
 #class NotesProperties( wx.Panel ):
@@ -1415,7 +1415,7 @@ class Properties( wx.Panel ):
 			('sprintTimerProperties',	SprintTimerProperties,		_('Sprint Timer') ),
 			('rfidProperties',			RfidProperties,				_('RFID') ),
 			#('webProperties',			WebProperties,				_('Web') ),
-			#('ftpProperties',			FtpProperties,				_('(S)FTP') ),
+			('ftpProperties',			FtpProperties,				_('(S)FTP') ),
 			('batchPublishProperties',	BatchPublishProperties,		_('Batch Publish') ),
 			#('gpxProperties',			GPXProperties,				_('GPX') ),
 			#('notesProperties',			NotesProperties,			_('Notes') ),

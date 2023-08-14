@@ -1646,8 +1646,189 @@ class Race:
 
 		return(output)
 		
+	def getAnimationData( self, category=None, getExternalData=False ):
+		animationData = {}
+		ignoreFields = {'pos', 'num', 'gap', 'gapValue', 'laps', 'lapTimes', 'full_name', 'short_name'}
+		statusNames = Rider.statusNames
 		
+		if self.excelLink:
+			externalInfo = self.excelLink.read()
 		
+		for cat in ([category] if category else self.getCategories()):
+			results = self.getSprintResults( cat )
+			for bibSprintDicts in results:
+				if bibSprintDicts is not None:
+					bib = bibSprintDicts[0]
+					info = { 'flr': 1.0,
+							'relegated': False
+					}
+					info['CustomCategory1'] = externalInfo[bib]['CustomCategory1'] if externalInfo else ''
+					info['CustomCategory2'] = externalInfo[bib]['CustomCategory2'] if externalInfo else ''
+					info['CustomCategory3'] = externalInfo[bib]['CustomCategory3'] if externalInfo else ''
+					info['CustomCategory4'] = externalInfo[bib]['CustomCategory4'] if externalInfo else ''
+					info['CustomCategory5'] = externalInfo[bib]['CustomCategory5'] if externalInfo else ''
+					info['CustomCategory6'] = externalInfo[bib]['CustomCategory6'] if externalInfo else ''
+					info['CustomCategory7'] = externalInfo[bib]['CustomCategory7'] if externalInfo else ''
+					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo else ''
+					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo else ''
+					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo else ''
+					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo else ''
+					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo else ''
+					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo else ''
+					info['Team'] = externalInfo[bib]['Team'] if externalInfo else ''
+					if bibSprintDicts[1] is not None:
+						times = []
+						speeds = []
+						cumulativeTime = 0
+						for sprintDict in bibSprintDicts[1]:
+							cumulativeTime += sprintDict['sprintTime']
+							times.append(cumulativeTime)
+							speeds.append(sprintDict['sprintSpeed']) # fixme recalculate speeds
+						info['bests'] = [1] * len(times)
+						info['interp'] = [0] * len(times)
+						info['lapSpeeds'] = speeds
+						info['lastInterp'] = False
+						info['lastTime'] = times[-1]
+						info['lastTimeOrig'] = times[-1]
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
+						info['raceSpeeds'] = speeds
+						info['raceTimes'] = times
+						info['speed'] = '{:.3f} mph'.format(speeds[0])
+						info['status'] = statusNames[Rider.Finisher]
+					else:  #DNS rider
+						info['bests'] = []
+						info['interp'] = []
+						info['lapSpeeds'] = []
+						info['lastInterp'] = False
+						info['lastTime'] = 0
+						info['lastTimeOrig'] = 0
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
+						info['raceSpeeds'] = []
+						info['raceTimes'] = []
+						info['speed'] = ''
+						info['status'] = statusNames[Rider.DNS]
+					animationData[bib] = info
+				
+		
+		#with UnstartedRaceWrapper( getExternalData ):
+			#with Model.LockRace() as race:
+				#riders = race.riders
+				#isTimeTrial = race.isTimeTrial
+				#isBestNLaps = race.isBestNLaps
+				#for cat in ([category] if category else race.getCategories()):
+					#results = GetResults( cat )
+					
+					#for rr in results:
+						#info = {
+							#'flr': race.getCategory(rr.num).firstLapRatio,
+							#'relegated': riders[rr.num].isRelegated(),
+						#}
+						#bestLaps = race.getNumBestLaps( rr.num )
+						#for a in dir(rr):
+							#if a.startswith('_') or a in ignoreFields:
+								#continue
+							#if a == 'raceTimes':
+								#info['raceTimes'] = getattr(rr, a)
+								#if bestLaps is not None and len(info['raceTimes']) > bestLaps:
+									#info['raceTimes'] = info['raceTimes'][:bestLaps+1]
+							#elif a == 'status':
+								#info['status'] = statusNames[getattr(rr, a)]
+							#elif a == 'lastTime':
+								#if isTimeTrial and isBestNLaps:
+									#info[a] = rr.lastTime
+								#else:	
+									#try:
+										#info[a] = rr.raceTimes[-1]
+									#except IndexError:
+										#info[a] = rr.lastTime
+							#else:
+								#info[a] = getattr( rr, a )
+						
+						#if race.isTimeTrial:
+							#info['startTime'] = race.riders[rr.num].firstTime
+						#animationData[rr.num] = info
+			
+		return animationData
+	
+	def getCategoryDetails( self, ignoreEmptyCategories=True, publishOnly=False ):
+
+		#tempNums = UnstartedRaceDataProlog()
+		unstarted = self.isUnstarted()
+		
+		catDetails = []
+		
+		DNS = Rider.DNS
+		Finisher = Rider.Finisher
+		
+		# Create a custom category for all riders.
+		results = self.getSprintResults(None)
+		
+		info = {
+			'name'			: 'All',
+			'startOffset'	: 0,
+			'gender'		: 'Open',
+			'catType'		: 'Custom',
+			'laps'			: 0,
+			'bestLaps'		: 0,
+			'pos'			: [bibSprintDicts[0] for bibSprintDicts in results],
+			'gapValue'		: [0] * len(results),
+			'iSort'			: 0,
+		}
+		catDetails.append( info )
+		
+		# Add the remainder of the categories.
+		#lastWaveLaps = 0
+		#lastWaveBests = 0
+		lastWaveCat = None
+		#lastWaveStartOffset = 0
+		for iSort, cat in enumerate(race.getCategories( startWaveOnly=False, publishOnly=publishOnly ), 1):
+			results = self.getSprintResults( cat )
+			if ignoreEmptyCategories and not results:
+				continue
+			
+			if cat.catType == cat.CatWave:
+				#lastWaveLaps = race.getNumLapsFromCategory(cat)
+				#lastWaveBests = cat.bestLaps
+				lastWaveCat = cat
+				#lastWaveStartOffset = cat.getStartOffsetSecs()
+			
+			info = {
+				'name'			: cat.fullname,
+				'startOffset'	: 0,
+				'gender'		: getattr( cat, 'gender', 'Open' ),
+				'catType'		: ['Start Wave', 'Component', 'Custom'][cat.catType],
+				'laps'			: 1,  #fixme
+				'bestLaps'		: None,
+				'pos'			: [bibSprintDicts[0] for bibSprintDicts in results],
+				'starters'		: sum( 1 for bibSprintDicts in results),
+				'finishers'		: sum( 1 for bibSprintDicts in results if bibSprintDicts[1] is not None ),
+				'gapValue'		: [0] * sum( 1 for bibSprintDicts in results),
+				'iSort'			: iSort,
+			}
+			
+			#try:
+				#info['laps'] = max( info['laps'], max(len(rr.lapTimes) for rr in results if rr.status == Model.Rider.Finisher) )
+			#except ValueError:
+				#pass
+			
+			catDetails.append( info )
+			
+			waveCat = lastWaveCat
+			if waveCat:
+				if getattr(waveCat, 'distance', None):
+					if getattr(waveCat, 'distanceType', Model.Category.DistanceByLap) == Model.Category.DistanceByLap:
+						info['lapDistance'] = waveCat.distance
+						if getattr(waveCat, 'firstLapDistance', None):
+							info['firstLapDistance'] = waveCat.firstLapDistance
+						info['raceDistance'] = waveCat.getDistanceAtLap( info['laps'] )
+					else:
+						info['raceDistance'] = waveCat.distance
+			info['distanceUnit'] = race.distanceUnitStr
+		
+		# Cleanup.
+		#UnstartedRaceDataEpilog( tempNums )
+
+		return catDetails
 		
 	
 	def getSprintBibs( self ):

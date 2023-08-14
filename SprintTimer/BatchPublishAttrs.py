@@ -29,7 +29,8 @@ batchPublishAttr = (
 	#BatchAttr('Facebook', _('Facebook'),	None,			'menuPrintPNG', False, _('as .png upload files in Facebook folder'), None ),
 )
 
-batchPublishRaceAttr = ['publishFormat' + attr.name for attr in batchPublishAttr] + ['publishFormatBikeReg']
+#batchPublishRaceAttr = ['publishFormat' + attr.name for attr in batchPublishAttr] + ['publishFormatBikeReg']
+batchPublishRaceAttr = ['publishFormat' + attr.name for attr in batchPublishAttr]
 formatFilename = { attr.filecode: attr.getFName for attr in batchPublishAttr }
 
 def setDefaultRaceAttr( obj ):

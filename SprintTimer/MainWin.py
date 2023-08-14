@@ -1,5 +1,5 @@
 import os
-#import re
+import re
 #import io
 import sys
 #import time
@@ -20,17 +20,17 @@ import wx.adv as adv
 #from wx.lib.wordwrap import wordwrap
 #import wx.lib.imagebrowser as imagebrowser
 import wx.lib.agw.flatnotebook as flatnotebook
-#from html import escape
+from html import escape
 #from urllib.parse import quote
 #from collections import defaultdict
 
-#import locale
-#try:
-	#localDateFormat = locale.nl_langinfo( locale.D_FMT )
-	#localTimeFormat = locale.nl_langinfo( locale.T_FMT )
-#except Exception:
-	#localDateFormat = '%b %d, %Y'
-	#localTimeFormat = '%I:%M%p'
+import locale
+try:
+	localDateFormat = locale.nl_langinfo( locale.D_FMT )
+	localTimeFormat = locale.nl_langinfo( locale.T_FMT )
+except Exception:
+	localDateFormat = '%b %d, %Y'
+	localTimeFormat = '%I:%M%p'
 
 import pickle
 from argparse import ArgumentParser
@@ -50,7 +50,7 @@ from Data				import Data
 #from RiderDetail		import RiderDetail
 from Results			import Results
 from Categories			import Categories
-from Properties			import Properties, PropertiesDialog
+from Properties			import Properties, PropertiesDialog, BatchPublishPropertiesDialog
 #from Recommendations	import Recommendations
 #from RaceAnimation		import RaceAnimation
 #from Search				import SearchDialog
@@ -165,6 +165,8 @@ def ShowSplashScreen():
 			
 #----------------------------------------------------------------------------------
 
+def replaceJsonVar( s, varName, value ):
+	return s.replace( '{} = null'.format(varName), '{} = {}'.format(varName, Utils.ToJson(value, separators=(',',':'))), 1 )
 
 #----------------------------------------------------------------------------------
 def AppendMenuItemBitmap( menu, id, name, help, bitmap ):
@@ -298,16 +300,16 @@ class MainWin( wx.Frame ):
 
 		#self.publishMenu.AppendSeparator()
 		
-		#item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
-							#_("&Batch Publish Files..."), _("Publish Multiple Results File Formats"), Utils.GetPngBitmap('batch_process_icon.png') )
-		#self.Bind(wx.EVT_MENU, self.menuPublishBatch, item )
+		item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
+							_("&Batch Publish Files..."), _("Publish Multiple Results File Formats"), Utils.GetPngBitmap('batch_process_icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuPublishBatch, item )
 		
 		#'''
 		#self.publishMenu.AppendSeparator()
 		
-		#item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
-							#_("&HTML Publish..."), _("Publish Results as HTML (.html)"), Utils.GetPngBitmap('html-icon.png') )
-		#self.Bind(wx.EVT_MENU, self.menuPublishHtmlRaceResults, item )
+		item = AppendMenuItemBitmap( self.publishMenu, wx.ID_ANY,
+							_("&HTML Publish..."), _("Publish Results as HTML (.html)"), Utils.GetPngBitmap('html-icon.png') )
+		self.Bind(wx.EVT_MENU, self.menuPublishHtmlRaceResults, item )
 
 		#self.publishMenu.AppendSeparator()
 		
@@ -1390,18 +1392,18 @@ class MainWin( wx.Frame ):
 		
 	#--------------------------------------------------------------------------------------------
 	
-	#def menuSetContactEmail( self, event = None ):
-		#if Model.race and Model.race.email:
-			#email = Model.race.email
-		#else:
-			#email = self.config.Read( 'email', 'results_name@results_address' )
-		#with wx.TextEntryDialog( self, message=_('Results Contact Email'), caption=_('Results Contact Email'), value=email ) as dlg:
-			#if dlg.ShowModal() != wx.ID_OK:
-				#return
-			#value = dlg.GetValue()
-			#if Model.race:
-				#Model.race.email = value
-				#Model.race.setChanged()
+	def menuSetContactEmail( self, event = None ):
+		if Model.race and Model.race.email:
+			email = Model.race.email
+		else:
+			email = self.config.Read( 'email', 'results_name@results_address' )
+		with wx.TextEntryDialog( self, message=_('Results Contact Email'), caption=_('Results Contact Email'), value=email ) as dlg:
+			if dlg.ShowModal() != wx.ID_OK:
+				return
+			value = dlg.GetValue()
+			if Model.race:
+				Model.race.email = value
+				Model.race.setChanged()
 	
 	#def menuSetGraphic( self, event ):
 		#imgPath = self.getGraphicFName()
@@ -1502,31 +1504,31 @@ class MainWin( wx.Frame ):
 				#pass
 		#return defaultFName
 	
-	#def getGraphicBase64( self ):
-		#try:
-			#return Model.race.headerImage
-		#except Exception:
-			#pass
+	def getGraphicBase64( self ):
+		try:
+			return Model.race.headerImage
+		except Exception:
+			pass
 		
-		#graphicFName = self.getGraphicFName()
-		#if not graphicFName:
-			#return None
-		#fileType = os.path.splitext(graphicFName)[1].lower()
-		#if not fileType:
-			#return None
-		#fileType = fileType[1:]
-		#if fileType == 'jpg':
-			#fileType = 'jpeg'
-		#if fileType not in ['png', 'gif', 'jpeg']:
-			#return None
-		#try:
-			#b64 = ImageIO.toBufFromFile( graphicFName )
-			#if b64 and Model.race:
-				#Model.race.headerImage = b64
-			#return b64
-		#except IOError:
-			#pass
-		#return None
+		graphicFName = self.getGraphicFName()
+		if not graphicFName:
+			return None
+		fileType = os.path.splitext(graphicFName)[1].lower()
+		if not fileType:
+			return None
+		fileType = fileType[1:]
+		if fileType == 'jpg':
+			fileType = 'jpeg'
+		if fileType not in ['png', 'gif', 'jpeg']:
+			return None
+		try:
+			b64 = ImageIO.toBufFromFile( graphicFName )
+			if b64 and Model.race:
+				Model.race.headerImage = b64
+			return b64
+		except IOError:
+			pass
+		return None
 	
 	#def menuPageSetup( self, event ):
 		#psdd = wx.PageSetupDialogData(self.printData)
@@ -1858,161 +1860,164 @@ class MainWin( wx.Frame ):
 						_('Excel File Error'), iconMask=wx.ICON_ERROR )
 	
 	#--------------------------------------------------------------------------------------------
-	#def getEmail( self ):
-		#if Model.race and Model.race.email is not None:
-			#return Model.race.email
-		#return self.config.Read('email', '')
+	def getEmail( self ):
+		if Model.race and Model.race.email is not None:
+			return Model.race.email
+		return self.config.Read('email', '')
 	
-	#reLeadingWhitespace = re.compile( r'^[ \t]+', re.MULTILINE )
-	#reComments = re.compile( r'// .*$', re.MULTILINE )
-	#reBlankLines = re.compile( r'\n+' )
-	#reTestCode = re.compile( '/\*\(-\*/.*?/\*-\)\*/', re.MULTILINE )	# Use non-greedy match.
-	#reRemoveTags = re.compile( r'\<html\>|\</html\>|\<body\>|\</body\>|\<head\>|\</head\>', re.I )
-	#reFloatList = re.compile( r'([+-]?[0-9]+\.[0-9]+,\s*)+([+-]?[0-9]+\.[0-9]+)', re.MULTILINE )
-	#reBoolList = re.compile( r'((true|false),\s*)+(true|false)', re.MULTILINE )
-	#def cleanHtml( self, html ):
+	reLeadingWhitespace = re.compile( r'^[ \t]+', re.MULTILINE )
+	reComments = re.compile( r'// .*$', re.MULTILINE )
+	reBlankLines = re.compile( r'\n+' )
+	reTestCode = re.compile( '/\*\(-\*/.*?/\*-\)\*/', re.MULTILINE )	# Use non-greedy match.
+	reRemoveTags = re.compile( r'\<html\>|\</html\>|\<body\>|\</body\>|\<head\>|\</head\>', re.I )
+	reFloatList = re.compile( r'([+-]?[0-9]+\.[0-9]+,\s*)+([+-]?[0-9]+\.[0-9]+)', re.MULTILINE )
+	reBoolList = re.compile( r'((true|false),\s*)+(true|false)', re.MULTILINE )
+	def cleanHtml( self, html ):
 		#Remove leading whitespace, comments, consecutive blank lines and test code to save space.
-		#html = self.reLeadingWhitespace.sub( '', html )
-		#html = self.reComments.sub( '', html )
-		#html = self.reBlankLines.sub( '\n', html )
-		#html = self.reTestCode.sub( '', html )
-		#return html
+		html = self.reLeadingWhitespace.sub( '', html )
+		html = self.reComments.sub( '', html )
+		html = self.reBlankLines.sub( '\n', html )
+		html = self.reTestCode.sub( '', html )
+		return html
 	
-	#def getBasePayload( self, publishOnly=True ):
-		#race = Model.race
+	def getBasePayload( self, publishOnly=True ):
+		race = Model.race
 		
-		#payload = {}
-		#payload['raceName'] = os.path.basename(self.fileName or '')[:-4]
-		#iMachine = ReportFields.index('Machine')
-		#payload['infoFields'] = ReportFields[:iMachine] + ['Name'] + ReportFields[iMachine:]
+		payload = {}
+		payload['raceName'] = os.path.basename(self.fileName or '')[:-4]
+		iMachine = ReportFields.index('Machine')
+		payload['infoFields'] = ReportFields[:iMachine] + ['Name'] + ReportFields[iMachine:]
 		
-		#payload['organizer']		= getattr(race, 'organizer', '')
-		#payload['reverseDirection']	= getattr(race, 'reverseDirection', False)
-		#payload['finishTop']		= getattr(race, 'finishTop', False)
-		#payload['isTimeTrial']		= race.isTimeTrial
-		#payload['isBestNLaps']		= race.isBestNLaps
-		#payload['winAndOut']		= race.winAndOut
-		#payload['rfid']				= race.enableJChipIntegration
-		#payload['primes']			= getattr(race, 'primes', [])
-		#payload['raceNameText']		= race.name
-		#payload['raceDate']			= race.date
-		#payload['raceScheduledStart']= race.date + ' ' + race.scheduledStart
-		#payload['raceTimeZone']		= race.timezone
-		#payload['raceAddress']      = ', '.join( n for n in [race.city, race.stateProv, race.country] if n )
-		#payload['raceIsRunning']	= race.isRunning()
-		#payload['raceIsUnstarted']	= race.isUnstarted()
-		#payload['raceIsFinished']	= race.isFinished()
-		#payload['rankFinishersBy']	= Model.Race.rankByNames[getattr(race, 'rankBy', Model.Race.rankByLapsTime)] if not race.isRunning() else 'recorded lap times'
-		#payload['lapDetails']		= GetLapDetails() if not race.hideDetails else {}
-		#payload['hideDetails']		= race.hideDetails
-		#payload['showCourseAnimation'] = race.showCourseAnimationInHtml
-		#payload['licenseLinkTemplate'] = race.licenseLinkTemplate
-		#payload['roadRaceFinishTimes'] = race.roadRaceFinishTimes
-		#payload['estimateLapsDownFinishTime'] = race.estimateLapsDownFinishTime
-		#payload['email']				= self.getEmail()
-		#payload['version']				= Version.AppVerName
+		payload['organizer']		= getattr(race, 'organizer', '')
+		payload['reverseDirection']	= False
+		payload['finishTop']		= False
+		payload['isTimeTrial']		= False
+		payload['isBestNLaps']		= False
+		payload['winAndOut']		= False
+		payload['rfid']				= race.enableJChipIntegration
+		payload['primes']			= []
+		payload['raceNameText']		= race.name
+		payload['raceDate']			= race.date
+		payload['raceScheduledStart']= race.date + ' ' + race.scheduledStart
+		payload['raceTimeZone']		= race.timezone
+		payload['raceAddress']      = ', '.join( n for n in [race.city, race.stateProv, race.country] if n )
+		payload['raceIsRunning']	= race.isRunning()
+		payload['raceIsUnstarted']	= race.isUnstarted()
+		payload['raceIsFinished']	= race.isFinished()
+		payload['rankFinishersBy']	= Model.Race.rankByNames[getattr(race, 'rankBy', Model.Race.rankByLapsTime)] if not race.isRunning() else 'recorded lap times'
+		payload['lapDetails']		= {}
+		payload['hideDetails']		= False
+		payload['showCourseAnimation'] = getattr(race, 'showCourseAnimationInHtml', False)
+		payload['licenseLinkTemplate'] = ''
+		payload['roadRaceFinishTimes'] = False
+		payload['estimateLapsDownFinishTime'] = False
+		payload['email']				= self.getEmail()
+		payload['version']				= Version.AppVerName
 		
-		#notes = race.notes
-		#if notes.lstrip()[:6].lower().startswith( '<html>' ):
-			#notes = TemplateSubstitute( notes, race.getTemplateValues() )
-			#notes = self.reRemoveTags.sub( '', notes )
-			#notes = notes.replace('<', '{-{').replace( '>', '}-}' )
-			#payload['raceNotes']	= notes
+		notes = race.notes
+		if notes.lstrip()[:6].lower().startswith( '<html>' ):
+			notes = TemplateSubstitute( notes, race.getTemplateValues() )
+			notes = self.reRemoveTags.sub( '', notes )
+			notes = notes.replace('<', '{-{').replace( '>', '}-}' )
+			payload['raceNotes']	= notes
 		#else:
 			#notes = TemplateSubstitute( escape(notes), race.getTemplateValues() )
 			#notes = self.reTagTrainingSpaces.sub( '>', notes ).replace( '</table>', '</table><br/>' )
 			#notes = notes.replace('<', '{-{').replace( '>', '}-}' ).replace('\n','{-{br/}-}')
 			#payload['raceNotes']	= notes
-		#if race.startTime:
-			#raceStartTime = (race.startTime - race.startTime.replace( hour=0, minute=0, second=0 )).total_seconds()
-			#payload['raceStartTime']= raceStartTime
+		if race.startTime:
+			raceStartTime = (race.startTime - race.startTime.replace( hour=0, minute=0, second=0 )).total_seconds()
+			payload['raceStartTime']= raceStartTime
 		
-		#tLastRaceTime = race.lastRaceTime()
-		#tNow = now()
-		#payload['timestamp']			= [tNow.ctime(), tLastRaceTime]
+		tLastRaceTime = race.lastRaceTime()
+		tNow = now()
+		payload['timestamp']			= [tNow.ctime(), tLastRaceTime]
 		
-		#payload['data']					= GetAnimationData( None, True )
-		#payload['catDetails']			= GetCategoryDetails( True, publishOnly )
+		payload['data']					= race.getAnimationData( None, True )
+		payload['catDetails']			= race.getCategoryDetails( True, publishOnly )
 		
-		#return payload
+		print('\n\npayload: ' + str(payload))
+		
+		return payload
 	
 	#reTagTrainingSpaces = re.compile( '>\s+', re.MULTILINE|re.UNICODE )
-	#def addResultsToHtmlStr( self, html ):
-		#html = self.cleanHtml( html )
+	def addResultsToHtmlStr( self, html ):
+		html = self.cleanHtml( html )
 		
-		#payload = self.getBasePayload()		
-		#race = Model.race
+		payload = self.getBasePayload()		
+		race = Model.race
 		
-		#year, month, day = [int(v) for v in race.date.split('-')]
-		#timeComponents = [int(v) for v in race.scheduledStart.split(':')]
-		#if len(timeComponents) < 3:
-			#timeComponents.append( 0 )
-		#hour, minute, second = timeComponents
-		#raceTime = datetime.datetime( year, month, day, hour, minute, second )
-		
-		#------------------------------------------------------------------------
-		#title = '{} - {} {} {}'.format( race.title, _('Starting'), raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
-		#html = html.replace( 'CrossMgr Race Results by Edward Sitarski', escape(title) )
-		#if getattr(race, 'gaTrackingID', None):
-			#html = html.replace( '<!-- Google Analytics -->', gaSnippet.replace('UA-XXXX-Y', race.gaTrackingID) )
-		#if race.isRunning():
-			#html = html.replace( '<!-- Meta -->', '''
-#<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
-#<meta http-equiv="Pragma" content="no-cache"/>
-#<meta http-equiv="Expires" content="0"/>''' )
+		year, month, day = [int(v) for v in race.date.split('-')]
+		timeComponents = [int(v) for v in race.scheduledStart.split(':')]
+		if len(timeComponents) < 3:
+			timeComponents.append( 0 )
+		hour, minute, second = timeComponents
+		raceTime = datetime.datetime( year, month, day, hour, minute, second )
 		
 		#------------------------------------------------------------------------
-		#courseCoordinates, gpsPoints, gpsAltigraph, totalElevationGain, isPointToPoint, lengthKm = None, None, None, None, None, None
-		#geoTrack = getattr(race, 'geoTrack', None)
-		#if geoTrack is not None:
-			#courseCoordinates = geoTrack.asCoordinates()
-			#gpsPoints = geoTrack.asExportJson()
-			#gpsAltigraph = geoTrack.getAltigraph()
-			#totalElevationGain = geoTrack.totalElevationGainM
-			#isPointToPoint = getattr( geoTrack, 'isPointToPoint', False )
-			#lengthKm = geoTrack.lengthKm
+		title = '{} - {} {} {}'.format( race.title, _('Starting'), raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
+		html = html.replace( 'CrossMgr Race Results by Edward Sitarski', escape(title) )
+		if getattr(race, 'gaTrackingID', None):
+			html = html.replace( '<!-- Google Analytics -->', gaSnippet.replace('UA-XXXX-Y', race.gaTrackingID) )
+		if race.isRunning():
+			html = html.replace( '<!-- Meta -->', '''
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>''' )
 		
 		#------------------------------------------------------------------------
-		#codes = []
+		courseCoordinates, gpsPoints, gpsAltigraph, totalElevationGain, isPointToPoint, lengthKm = None, None, None, None, None, None
+		geoTrack = getattr(race, 'geoTrack', None)
+		if geoTrack is not None:
+			courseCoordinates = geoTrack.asCoordinates()
+			gpsPoints = geoTrack.asExportJson()
+			gpsAltigraph = geoTrack.getAltigraph()
+			totalElevationGain = geoTrack.totalElevationGainM
+			isPointToPoint = getattr( geoTrack, 'isPointToPoint', False )
+			lengthKm = geoTrack.lengthKm
+		
+		#------------------------------------------------------------------------
+		codes = []
 		#if 'UCICode' in payload['infoFields']:
 			#codes.extend( r['UCICode'] for r in payload['data'].values() if r.get('UCICode',None) )
 		#if 'NatCode' in payload['infoFields']:
 			#codes.extend( r['NatCode'] for r in payload['data'].values() if r.get('NatCode',None) )
 		#payload['flags']				= Flags.GetFlagBase64ForUCI( codes )
-		#if gpsPoints:
-			#payload['gpsPoints']		= gpsPoints
+		payload['flage'] = {}
+		if gpsPoints:
+			payload['gpsPoints']		= gpsPoints
 		
-		#def sanitize( template ):
+		def sanitize( template ):
 			#Sanitize the template into a safe json string.
-			#template = template.replace( '{{api_key}}', race.googleMapsApiKey )
-			#template = self.reLeadingWhitespace.sub( '', template )
-			#template = self.reComments.sub( '', template )
-			#template = self.reBlankLines.sub( '\n', template )
-			#template = template.replace( '<', '{-{' ).replace( '>', '}-}' )
-			#return template
+			template = template.replace( '{{api_key}}', race.googleMapsApiKey )
+			template = self.reLeadingWhitespace.sub( '', template )
+			template = self.reComments.sub( '', template )
+			template = self.reBlankLines.sub( '\n', template )
+			template = template.replace( '<', '{-{' ).replace( '>', '}-}' )
+			return template
 		
 		#If a map is defined, add the course viewers.
-		#if courseCoordinates:
-			#payload['courseCoordinates'] = courseCoordinates
+		if courseCoordinates:
+			payload['courseCoordinates'] = courseCoordinates
 			
-			#if race.googleMapsApiKey:
+			if race.googleMapsApiKey:
 				#Add the course viewer template.
-				#templateFile = os.path.join(Utils.getHtmlFolder(), 'CourseViewerTemplate.html')
-				#try:
-					#with open(templateFile) as fp:
-						#template = fp.read()
-					#payload['courseViewerTemplate'] = sanitize( template )
-				#except Exception:
-					#pass
+				templateFile = os.path.join(Utils.getHtmlFolder(), 'CourseViewerTemplate.html')
+				try:
+					with open(templateFile) as fp:
+						template = fp.read()
+					payload['courseViewerTemplate'] = sanitize( template )
+				except Exception:
+					pass
 	
 		#Add the rider dashboard.
-		#templateFile = os.path.join(Utils.getHtmlFolder(), 'RiderDashboard.html')
-		#try:
-			#with open(templateFile) as fp:
-				#template = fp.read()
-			#payload['riderDashboard'] = sanitize( template )
-		#except Exception:
-			#pass
+		templateFile = os.path.join(Utils.getHtmlFolder(), 'RiderDashboard.html')
+		try:
+			with open(templateFile) as fp:
+				template = fp.read()
+			payload['riderDashboard'] = sanitize( template )
+		except Exception:
+			pass
 	
 		#Add the travel map if the riders have locations.
 		#if race.googleMapsApiKey:
@@ -2029,52 +2034,52 @@ class MainWin( wx.Frame ):
 			#except Exception as e:
 				#pass
 		
-		#if totalElevationGain:
-			#payload['gpsTotalElevationGain'] = totalElevationGain
-		#if gpsAltigraph:
-			#payload['gpsAltigraph'] = gpsAltigraph
-		#if isPointToPoint:
-			#payload['gpsIsPointToPoint'] = isPointToPoint
-		#if lengthKm:
-			#payload['lengthKm'] = lengthKm
+		if totalElevationGain:
+			payload['gpsTotalElevationGain'] = totalElevationGain
+		if gpsAltigraph:
+			payload['gpsAltigraph'] = gpsAltigraph
+		if isPointToPoint:
+			payload['gpsIsPointToPoint'] = isPointToPoint
+		if lengthKm:
+			payload['lengthKm'] = lengthKm
 
-		#html = replaceJsonVar( html, 'payload', payload )
-		#graphicBase64 = self.getGraphicBase64()
-		#if graphicBase64:
-			#try:
-				#iStart = html.index( 'src="data:image/png' )
-				#iEnd = html.index( '"/>', iStart )
-				#html = ''.join( [html[:iStart], 'src="{}"'.format(graphicBase64), html[iEnd+1:]] )
-			#except ValueError:
-				#pass
+		html = replaceJsonVar( html, 'payload', payload )
+		graphicBase64 = self.getGraphicBase64()
+		if graphicBase64:
+			try:
+				iStart = html.index( 'src="data:image/png' )
+				iEnd = html.index( '"/>', iStart )
+				html = ''.join( [html[:iStart], 'src="{}"'.format(graphicBase64), html[iEnd+1:]] )
+			except ValueError:
+				pass
 				
 		#Clean up spurious decimal points.
-		#def fixBigFloat( f ):
-			#if len(f) > 6:
-				#try:
-					#d = f.split('.')[1]					# Get decimal part of the number.
-					#max_precision = 5
-					#if len(d) > max_precision:
-						#f = '{val:.{pr}f}'.format(pr=max_precision, val=float(f)).rstrip('0')	# Reformat with a shorter decimal and remove trailing zeros.
-						#if f.endswith('.'):
-							#f += '0'		# Ensure a zero follows the decimal point (json format spec).
-				#except IndexError:
+		def fixBigFloat( f ):
+			if len(f) > 6:
+				try:
+					d = f.split('.')[1]					# Get decimal part of the number.
+					max_precision = 5
+					if len(d) > max_precision:
+						f = '{val:.{pr}f}'.format(pr=max_precision, val=float(f)).rstrip('0')	# Reformat with a shorter decimal and remove trailing zeros.
+						if f.endswith('.'):
+							f += '0'		# Ensure a zero follows the decimal point (json format spec).
+				except IndexError:
 					#Number does not have a decimal point.
-					#pass
-			#return f
+					pass
+			return f
 			
-		#def floatListRepl( m ):
-			#return ','.join([fixBigFloat(f) for f in m.group().replace(',',' ').split()])
+		def floatListRepl( m ):
+			return ','.join([fixBigFloat(f) for f in m.group().replace(',',' ').split()])
 			
-		#html = self.reFloatList.sub( floatListRepl, html )
+		html = self.reFloatList.sub( floatListRepl, html )
 		
 		#Convert true/false lists to 0/1.
-		#def boolListRepl( m ):
-			#return ','.join(['0' if f[:1] == 'f' else '1' for f in m.group().replace(',',' ').split() ])
+		def boolListRepl( m ):
+			return ','.join(['0' if f[:1] == 'f' else '1' for f in m.group().replace(',',' ').split() ])
 			
-		#html = self.reBoolList.sub( boolListRepl, html )
+		html = self.reBoolList.sub( boolListRepl, html )
 		
-		#return html
+		return html
 	
 	#def addCourseToHtmlStr( self, html ):
 		#Remove leading whitespace, comments and consecutive blank lines to save space.
@@ -2155,62 +2160,62 @@ class MainWin( wx.Frame ):
 				#pass
 		#return html
 	
-	#@logCall
-	#def menuPublishBatch( self, event ):
-		#self.commit()
-		#race = Model.race
-		#if self.fileName is None or len(self.fileName) < 4:
-			#Utils.MessageOK(self, '{}\n\n{}.'.format(_('No Race'), _('New/Open a Race and try again.')),
-				#_('No Race'), iconMask=wx.ICON_ERROR )
-			#return
-		#if race and not race.email:
-			#if Utils.MessageOKCancel( self,
-				#_('Your Email contact is not set.\n\nConfigure it now?'),
-				#_('Set Email Contact'), wx.ICON_EXCLAMATION ):
-				#self.menuSetContactEmail()
+	@logCall
+	def menuPublishBatch( self, event ):
+		self.commit()
+		race = Model.race
+		if self.fileName is None or len(self.fileName) < 4:
+			Utils.MessageOK(self, '{}\n\n{}.'.format(_('No Race'), _('New/Open a Race and try again.')),
+				_('No Race'), iconMask=wx.ICON_ERROR )
+			return
+		if race and not race.email:
+			if Utils.MessageOKCancel( self,
+				_('Your Email contact is not set.\n\nConfigure it now?'),
+				_('Set Email Contact'), wx.ICON_EXCLAMATION ):
+				self.menuSetContactEmail()
 			
-		#with BatchPublishPropertiesDialog( self ) as dialog:
-			#ret = dialog.ShowModal()
+		with BatchPublishPropertiesDialog( self ) as dialog:
+			ret = dialog.ShowModal()
 		
-	#@logCall
-	#def menuPublishHtmlRaceResults( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4:
-			#return
+	@logCall
+	def menuPublishHtmlRaceResults( self, event=None, silent=False ):
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
 			
-		#if not silent and not self.getEmail():
-			#if Utils.MessageOKCancel( self,
-				#_('Your Email contact is not set.\n\nConfigure it now?'),
-				#_('Set Email Contact'), wx.ICON_EXCLAMATION ):
-				#self.menuSetContactEmail()
+		if not silent and not self.getEmail():
+			if Utils.MessageOKCancel( self,
+				_('Your Email contact is not set.\n\nConfigure it now?'),
+				_('Set Email Contact'), wx.ICON_EXCLAMATION ):
+				self.menuSetContactEmail()
 	
 		#Read the html template.
-		#htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
-		#try:
-			#with open(htmlFile) as fp:
-				#html = fp.read()
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
-			#if not silent:
-				#Utils.MessageOK(self, _('Cannot read HTML template file.  Check program installation.'),
-								#_('Html Template Read Error'), iconMask=wx.ICON_ERROR )
-			#return
+		htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
+		try:
+			with open(htmlFile) as fp:
+				html = fp.read()
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, _('Cannot read HTML template file.  Check program installation.'),
+								_('Html Template Read Error'), iconMask=wx.ICON_ERROR )
+			return
 			
-		#html = self.addResultsToHtmlStr( html )
+		html = self.addResultsToHtmlStr( html )
 			
 		#Write out the results.
-		#fname = self.getFormatFilename('html')
-		#try:
-			#with open(fname, 'w') as fp:
-				#fp.write( html )
-			#if not silent:
-				#Utils.LaunchApplication( fname )
-				#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Html Race Animation written to'), fname), _('Html Write'))
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
-			#if not silent:
-				#Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write HTML file'), e, fname),
-								#_('Html Write Error'), iconMask=wx.ICON_ERROR )
+		fname = self.getFormatFilename('html')
+		try:
+			with open(fname, 'w') as fp:
+				fp.write( html )
+			if not silent:
+				Utils.LaunchApplication( fname )
+				Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Html Race Animation written to'), fname), _('Html Write'))
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write HTML file'), e, fname),
+								_('Html Write Error'), iconMask=wx.ICON_ERROR )
 	
 	#@logCall
 	#def menuPublishHtmlIndex( self, event=None, silent=False ):
