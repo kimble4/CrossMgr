@@ -482,6 +482,14 @@ class Data( wx.Panel ):
 			col += 1
 			self.dataGrid.SetCellValue(row, col, sortTime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			# Shade locally generated timestamps in yellow
+			sprintStart = None
+			if 'sprintStart' in sprintDict:
+				sprintStart = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
+				if 'sprintStartMillis' in sprintDict:
+					sprintStart += datetime.timedelta(milliseconds = sprintDict['sprintStartMillis'])
+			if sprintStart is None or sortTime != sprintStart:
+				self.dataGrid.SetCellBackgroundColour(row, c, self.yellowColour)
 			col += 1
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
 			bib = None
