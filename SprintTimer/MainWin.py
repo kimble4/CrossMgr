@@ -63,7 +63,7 @@ from Properties			import Properties, PropertiesDialog, BatchPublishPropertiesDia
 #from HistogramPanel		import HistogramPanel
 #from UnmatchedTagsGantt	import UnmatchedTagsGantt
 #import FtpWriteFile
-#from FtpWriteFile		import realTimeFtpPublish
+from FtpWriteFile		import realTimeFtpPublish
 #from SetAutoCorrect		import SetAutoCorrectDialog
 #from DNSManager			import DNSManagerDialog
 #from USACExport			import USACExport
@@ -122,7 +122,7 @@ from SendPhotoRequests	import SendPhotoRequests
 #from PageDialog			import PageDialog
 import ChipReader
 #import Flags
-#import WebServer
+import WebServer
 #import ImageIO
 from ModuleUnpickler import ModuleUnpickler
 #import GpxTimesImport
@@ -1144,8 +1144,8 @@ class MainWin( wx.Frame ):
 			# For safety, clear the undo stack after 8 seconds.
 			undoResetTimer = wx.CallLater( 8000, undo.clear )
 			
-			#if race.ftpUploadDuringRace:
-				#realTimeFtpPublish.publishEntry( True )
+			if race.ftpUploadDuringRace:
+				realTimeFtpPublish.publishEntry( True )
 			
 	@logCall
 	def menuFinishRace( self, event, confirm = True ):
@@ -1171,8 +1171,8 @@ class MainWin( wx.Frame ):
 		except Exception:
 			pass
 
-		#if getattr(Model.race, 'ftpUploadDuringRace', False):
-			#realTimeFtpPublish.publishEntry( True )
+		if getattr(Model.race, 'ftpUploadDuringRace', False):
+			realTimeFtpPublish.publishEntry( True )
 				
 	#@logCall
 	#def menuChangeRaceStartTime( self, event ):
@@ -2229,18 +2229,18 @@ class MainWin( wx.Frame ):
 				Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write HTML file'), e, fname),
 								_('Html Write Error'), iconMask=wx.ICON_ERROR )
 	
-	#@logCall
-	#def menuPublishHtmlIndex( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4:
-			#return
-		#try:
-			#WebServer.WriteHtmlIndexPage()
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
-			#if not silent:
-				#Utils.MessageOK(self, '{}\n\n{}.'.format(_('HTML Index Failure'), e),
-								#_('Error'), iconMask=wx.ICON_ERROR )
+	@logCall
+	def menuPublishHtmlIndex( self, event=None, silent=False ):
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+		try:
+			WebServer.WriteHtmlIndexPage()
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, '{}\n\n{}.'.format(_('HTML Index Failure'), e),
+								_('Error'), iconMask=wx.ICON_ERROR )
 	
 	#@logCall
 	#def menuExportHtmlFtp( self, event ):
@@ -2737,7 +2737,7 @@ class MainWin( wx.Frame ):
 		with Model.LockRace() as race:
 			if race is not None:
 				with open(self.fileName, 'wb') as fp:
-					print('dumping race')
+					Utils.writeLog( 'Dumping race to: ' + str(self.fileName))
 					pickle.dump( race, fp, 2 )
 				race.setChanged( False )
 
@@ -2768,7 +2768,7 @@ class MainWin( wx.Frame ):
 		Model.setRace( Model.Race() )
 		race = Model.race
 		
-		print(race)
+		#print(race)
 		
 		#if geoTrack:
 			#race.geoTrack, race.geoTrackFName = geoTrack, geoTrackFName
@@ -2816,7 +2816,7 @@ class MainWin( wx.Frame ):
 		
 		#Create a new race and initialize it with the properties.
 		self.fileName = fileName
-		#WebServer.SetFileName( self.fileName )
+		WebServer.SetFileName( self.fileName )
 		Model.resetCache()
 		ResetExcelLinkCache()
 		properties.commit()
@@ -3089,7 +3089,7 @@ class MainWin( wx.Frame ):
 
 	def openRace( self, fileName ):
 		if not fileName:
-			print('no filename, not opening race')
+			Utils.writeLog('No filename; not opening race')
 			return
 		#self.showResultsPage()
 		self.refresh()
@@ -3111,11 +3111,11 @@ class MainWin( wx.Frame ):
 				race.resetAllCaches()
 				race.lastOpened = now()
 				Model.setRace( race )
-				print(race)
+				#print(race)
 			
 			ChipReader.chipReaderCur.reset( race.chipReaderType )
 			self.fileName = fileName
-			print(self.fileName)
+			Utils.writeLog('Opened race: ' + str(self.fileName))
 			
 			undo.clear()
 			ResetExcelLinkCache()
@@ -3155,7 +3155,7 @@ class MainWin( wx.Frame ):
 				#self.fileName = eventFileName
 			
 			#self.updateRecentFiles()
-			#WebServer.SetFileName( self.fileName )
+			WebServer.SetFileName( self.fileName )
 
 			#excelLink = getattr(race, 'excelLink', None)
 			#if excelLink is None or not excelLink.fileName:
@@ -4132,6 +4132,8 @@ class MainWin( wx.Frame ):
 			
 	def refreshResults( self ):
 		self.callPageRefresh( self.iResultsPage )
+		if Model.race.ftpUploadDuringRace:
+			wx.CallAfter( realTimeFtpPublish.publishEntry )
 	
 	def refreshAll( self ):
 		self.refresh()
@@ -4187,7 +4189,7 @@ class MainWin( wx.Frame ):
 		if self.processNumTimes():
 			self.refresh()
 			#if Model.race and Model.race.ftpUploadDuringRace:
-				#realTimeFtpPublish.publishEntry()		
+				#realTimeFtpPublish⎄.publishEntry()		
 	
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race

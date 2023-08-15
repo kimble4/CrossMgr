@@ -5549,7 +5549,7 @@ function FormatDistance( distance, inUnit, showUnits )
 {
 	if( (inUnit ? inUnit : 'km') != displayUnits )
 		distance *= (displayUnits == 'km' ? 1.609344 : 0.621371192237334);
-	var s = distance.toFixed(2);
+	var s = distance.toFixed(3);
 	if( showUnits )
 		s += ' ' + _(displayUnits);
 	return s;

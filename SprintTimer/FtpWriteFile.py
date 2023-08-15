@@ -128,6 +128,7 @@ def FtpWriteFile( host, port, user='anonymous', passwd='anonymous@', timeout=30,
 						serverPath + '/' + os.path.basename(f),
 						SftpCallback( callback, f, i ) if callback else None
 					)
+					Utils.writeLog( 'FtpWriteFile uploaded using SFTP: ' + str(serverPath + '/' + os.path.basename(f)))
 	elif protocol == 'FTPS':
 		with ftputil.FTPHost(host, user, passwd, port, timeout, session_factory=FtpsWithPort) as ftp_host:
 			ftp_host.makedirs( serverPath, exist_ok=True )
@@ -138,6 +139,7 @@ def FtpWriteFile( host, port, user='anonymous', passwd='anonymous@', timeout=30,
 						serverPath + '/' + os.path.basename(f),
 						(lambda byteStr, fname=f, i=i: callback(byteStr, fname, i)) if callback else None
 					)
+					Utils.writeLog( 'FtpWriteFile uploaded using FTPS: ' + str(serverPath + '/' + os.path.basename(f)))
 				except ftplib.all_errors as e:
 					if 'EOF occurred in violation of protocol' in str(e):
 						Utils.writeLog( 'FtpWriteFile ignored \"' + str(e) + '\" as this can be non-fatal.  Check if the file exists on the server.')
@@ -154,6 +156,7 @@ def FtpWriteFile( host, port, user='anonymous', passwd='anonymous@', timeout=30,
 					serverPath + '/' + os.path.basename(f),
 					(lambda byteStr, fname=f, i=i: callback(byteStr, fname, i)) if callback else None
 				)
+				Utils.writeLog( 'FtpWriteFile uploaded using FTP: ' + str(serverPath + '/' + os.path.basename(f)))
 			ftp_host.close()
 
 def FtpIsConfigured():

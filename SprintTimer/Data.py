@@ -243,6 +243,7 @@ class Data( wx.Panel ):
 		if not race:
 			return
 		sprintDict = race.sprints[iSprint][1]
+		mainWin = Utils.getMainWin()
 		if 'sprintBib' in sprintDict:
 			sprintString = '#' + str(sprintDict['sprintBib'])
 			try:
@@ -266,12 +267,14 @@ class Data( wx.Panel ):
 		del race.sprints[iSprint]
 		race.setChanged()
 		wx.CallAfter(self.refresh)
+		wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		
 	def onEditDistance( self, event, iSprint ):
 		race = Model.race
 		if not race:
 			return
 		sprintDict = race.sprints[iSprint][1]
+		mainWin = Utils.getMainWin()
 		if 'sprintBib' in sprintDict:
 			sprintString = '#' + str(sprintDict['sprintBib'])
 			try:
@@ -305,6 +308,7 @@ class Data( wx.Panel ):
 						sprintDict['speedUnit'] = None
 					race.setChanged()
 					wx.CallAfter(self.refresh)
+					wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 				except:
 					return
 	
@@ -313,6 +317,7 @@ class Data( wx.Panel ):
 		if not race:
 			return
 		sprintDict = race.sprints[iSprint][1]
+		mainWin = Utils.getMainWin()
 		try:
 			speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
 			if race.distanceUnit == Model.Race.UnitKm:
@@ -326,6 +331,7 @@ class Data( wx.Panel ):
 				sprintDict['speedUnit'] = None
 			race.setChanged()
 			wx.CallAfter(self.refresh)
+			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		except:
 			return
 	
@@ -348,6 +354,7 @@ class Data( wx.Panel ):
 			return
 		
 		sprintDict = race.sprints[iSprint][1]
+		mainWin = Utils.getMainWin()
 		
 		if col == 2: # bib
 			if value != '':
@@ -367,6 +374,7 @@ class Data( wx.Panel ):
 			race.setChanged()
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
+			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		elif col > 2 and col < 6: #name, machine, team
 			excelLink = getattr(race, 'excelLink', None)
 			if "sprintBib" in sprintDict and excelLink:
@@ -383,10 +391,12 @@ class Data( wx.Panel ):
 				race.setChanged()
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 				wx.CallAfter(self.refresh)
+				wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		elif col == 9: #note
 			sprintDict["sprintNote"] = value
 			race.setChanged()
 			wx.CallAfter(self.refresh)
+			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		elif col == 10: #distance
 			try:
 				distance = float(value)
@@ -404,6 +414,7 @@ class Data( wx.Panel ):
 					sprintDict['speedUnit'] = None
 				race.setChanged()
 				wx.CallAfter(self.refresh)
+				wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 			except:
 				# restore the old value
 				self.dataGrid.SetCellValue(row, col, old)

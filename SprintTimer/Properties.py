@@ -8,7 +8,7 @@ import wx.lib.intctrl as intctrl
 import wx.lib.masked.numctrl as numctrl
 import wx.lib.agw.flatnotebook as flatnotebook
 #import glob
-#import webbrowser
+import webbrowser
 import threading
 import datetime
 import subprocess
@@ -17,7 +17,7 @@ import platform
 #import ImageIO
 #from SetGraphic			import SetGraphicDialog
 from FtpWriteFile import FtpProperties, FtpUploadFile, FtpIsConfigured, FtpPublishDialog
-#from FtpUploadProgress import FtpUploadProgress
+from FtpUploadProgress import FtpUploadProgress
 #from LapCounter import LapCounterProperties
 #from GeoAnimation import GeoAnimation, GeoTrack
 #from GpxImport import GetGeoTrack

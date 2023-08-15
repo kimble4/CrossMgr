@@ -3227,17 +3227,17 @@ def setCategoryChoice( iSelection, categoryAttribute = None ):
 		return
 	setCategoryChoice( iSelection, categoryAttribute )
 
-#def getCurrentHtml():
-	#if not race:
-		#return None
-	#htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
-	#try:
-		#with io.open(htmlFile, 'r', encoding='utf-8') as fp:
-			#html = fp.read()
-		#return Utils.mainWin.addResultsToHtmlStr( html )
-	#except Exception as e:
-		#Utils.logException( e, sys.exc_info() )
-		#return None
+def getCurrentHtml():
+	if not race:
+		return None
+	htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
+	try:
+		with io.open(htmlFile, 'r', encoding='utf-8') as fp:
+			html = fp.read()
+		return Utils.mainWin.addResultsToHtmlStr( html )
+	except Exception as e:
+		Utils.logException( e, sys.exc_info() )
+		return None
 
 #def getCurrentTTCountdownHtml():
 	#if not race or not race.isTimeTrial:

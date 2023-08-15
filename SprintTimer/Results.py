@@ -872,7 +872,7 @@ class Results( wx.Panel ):
 		
 		
 		self.resultsGrid.AutoSizeColumns()
-		
+	
 		
 		
 		

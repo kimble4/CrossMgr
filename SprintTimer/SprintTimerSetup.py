@@ -71,6 +71,7 @@ copyFiles = [
     "MultiCast.py"
     "FixCategories.py"
     "AddExcelInfo.py"
+    "FtpUploadProgress.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )
