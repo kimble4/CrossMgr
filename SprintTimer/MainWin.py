@@ -4129,6 +4129,9 @@ class MainWin( wx.Frame ):
 	#def refreshRaceAnimation( self ):
 		#if self.pages[self.notebook.GetSelection()] == self.raceAnimation:
 			#self.raceAnimation.refresh()
+			
+	def refreshResults( self ):
+		self.callPageRefresh( self.iResultsPage )
 	
 	def refreshAll( self ):
 		self.refresh()
@@ -4313,12 +4316,15 @@ class MainWin( wx.Frame ):
 			if race.isRunning() and race.startTime <= sortTime:
 				try:
 					race.addSprint(sortTime, sprintDict)
+					wx.CallLater( race.rfidTagAssociateSeconds*1000, self.refreshResults )
 					return True  #signal for an update.
 					continue
 				except (TypeError, ValueError):
 					continue
 				
 		return False	# don't signal for an update.
+	
+	
 	
 	def disconnectSprintTimer( self ):
 		race = Model.race
