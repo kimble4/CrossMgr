@@ -833,6 +833,26 @@ function FormatTime( t ) {
 	return tStr;
 }
 
+function FormatClockTime( t ) {
+	var tStr = '';
+	if( t < 0 )
+	{
+		tStr = '-';
+		t = -t;
+	}
+	var secs = ~~t;
+	var h = ~~(secs / (60*60));
+	var m = (~~(secs / 60) % 60);
+	var s = ~~(secs % 60);
+	tStr += h + (m < 10 ? ':0' : ':') + m + (s < 10 ? ':0' : ':') + s;
+	if( showTimeDecimals )
+	{
+		var decimals = ~~((t - ~~t) * 1000);
+		tStr += (decimals < 100 ? '.0' : '.') + (decimals < 10 ? '0' : '') + decimals;
+	}
+	return tStr;
+}
+
 function FormatTimeGap( t )
 {
 	var tStr = '';
@@ -2625,7 +2645,7 @@ function RefreshResultsTableArrival( raceTimesLength, raceTimesCopy )
 		createTextChild( td = createTD(tr), GetAllCategoryResults(num) );
 		td.id = 'idNonNumeric';
 		createTextChild( td = createTD(tr), FormatTime(info.finishTime) );
-		createTextChild( td = createTD(tr), FormatTime(d.clockStartTime) );
+		createTextChild( td = createTD(tr), FormatClockTime(d.clockStartTime) );
 		createTextChild( td = createTD(tr), FormatTime(info.time) );
 		if( hasFactor )
 			createTextChild( td = createTD(tr), (d['factor'] ? d['factor'] : 100.0).toFixed(2) );
@@ -3181,7 +3201,7 @@ function RefreshResultsTable()
 			}
 			
 			if( isTimeTrial ) {
-				createTextChild( td = createTD(tr), d['clockStartTime'] ? FormatTime(d['clockStartTime']) : '' );  //clock start
+				createTextChild( td = createTD(tr), d['clockStartTime'] ? FormatClockTime(d['clockStartTime']) : '' );  //clock start
 				createTextChild( td = createTD(tr), d['startTime'] ? FormatTime(d['startTime']) : '' );  //sw start
 				var ttPenalty = (d['ttPenalty'] ? d['ttPenalty'] : 0.0);
 				if( isBestNLaps ) {
@@ -4667,7 +4687,7 @@ function Situation( situationCanvas, timeRange, detailDiv) {
 			(groupIndex != 0 ? bigSpace + _('Gap') + ': ' + ShortFormatTimeGap(groupInfo[0][0]) : '') +
 			bigSpace +_('Size') + ': ' + groupInfo.length + 
 			(raceTime != null ? bigSpace + _('Race Time') + ': ' + FormatTime(raceTime) : '' ) + 
-			(clockTime != null ? bigSpace + _('Clock') + ': ' + FormatTime(clockTime) : '' );
+			(clockTime != null ? bigSpace + _('Clock') + ': ' + FormatClockTime(clockTime) : '' );
 		
 		var para = createChild( this.detailDiv, 'p' );
 		para.innerHTML = title;
