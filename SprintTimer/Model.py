@@ -1469,6 +1469,12 @@ class Race:
 
 	#def __getitem__( self, num ):
 		#return self.riders[num]
+		
+	def setRiderStatus( self, bib, status ):
+		self.riders[bib] = status
+		
+	def getRiderStatus( self, bib ):
+		return self.riders[bib] if bib in self.riders else None
 
 	def curRaceTime( self ):
 		if self.startTime is None:
@@ -1586,7 +1592,6 @@ class Race:
 		return self.sprints.copy()
 	
 	def getSprintResults( self, category=None ):
-		
 		res = defaultdict(list)
 		
 		# get all the sprints in this category that have a valid bib number
@@ -1606,6 +1611,8 @@ class Race:
 		
 		# get the sprints for each bib in policy order
 		for bib in res:
+			if self.getRiderStatus(bib) is None:
+				self.setRiderStatus(bib, Rider.Finisher)
 			if self.multipleAttemptsPolicy == Race.useFastest:
 				attempts = sorted(res[bib], key=lambda d: d['sprintTime'])
 				bibTimes.append( (bib, attempts) )
@@ -1619,37 +1626,48 @@ class Race:
 		
 		# rank the riders by the speed of the selected result
 		ranking = []
+		seenBibs = []
 		for bib, times in bibTimes:
 			try:
+				seenBibs.append(bib)
+				status = race.getRiderStatus(bib)
 				# recalculate the speed here in m/s because the recorded speed may not be in consistent units
 				distance = times[0]['sprintDistance']
 				time = times[0]['sprintTime']
 				speed = float(distance)/float(time)
-				ranking.append((bib, speed))
-			except KeyError:
-				Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
+				ranking.append((status, bib, speed))
+			#except KeyError:
+				#Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 				continue
-		ranking.sort(key=lambda bt: bt[1], reverse=True)  # sorts in place
 		
-		# return list of riders' results in preferred order
-		output = []
-		seenBibs = []
-		for bibTime in ranking:
-			bib = bibTime[0]
-			sprints = dict(bibTimes)
-			attempts = sprints[bib]
-			output.append( (bib, attempts) )
-			seenBibs.append(bib)
-			
-		# add the DNS riders  #fixme if category is none?
+		# add the non-finishers and unseen riders
 		if category is not None:
 			allBibs = IntervalsToSet(category.intervals)
 			for bib in allBibs:
 				if bib not in seenBibs:
-					output.append((bib, None))
-
+					status = self.getRiderStatus(bib)
+					if status is Rider.Finisher:
+						ranking.append((Rider.NP, bib, -1))
+						self.setRiderStatus(bib, None)
+					elif status is None:
+						ranking.append((Rider.NP, bib, -1))
+					elif status is not Rider.Finisher:
+						ranking.append((status, bib, -1))
+					
+		ranking.sort(key=lambda sbt: (sbt[1]))  # sorts in place by bib
+		ranking.sort(key=lambda sbt: (-sbt[2]))  # sorts in place by speed
+		ranking.sort(key=lambda sbt: (Rider.statusSortSeq[sbt[0]]))  # sorts in place by status
+		
+		# return list of riders' results in preferred order
+		output = []
+		sprints = dict(bibTimes)
+		for statusBibTime in ranking:
+			bib = statusBibTime[1]
+			attempts = sprints[bib] if bib in sprints else None
+			output.append( (bib, attempts) )
+			
 		return(output)
 		
 	def getAnimationData( self, category=None, getExternalData=False ):
@@ -1665,6 +1683,7 @@ class Race:
 			for bibSprintDicts in results:
 				if bibSprintDicts is not None:
 					bib = bibSprintDicts[0]
+					status = self.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else (Rider.NP if race.isRunning() else Rider.DNS)
 					info = { 'flr': 1.0,
 							'relegated': False
 					}
@@ -1713,8 +1732,8 @@ class Race:
 						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
 						info['startTime'] = (wallTime - race.startTime).total_seconds()
-						info['status'] = statusNames[Rider.Finisher]
-					else:  #DNS rider
+						info['status'] = statusNames[status]
+					else:  # rider with no times
 						info['bests'] = []
 						info['clockStartTime'] = None
 						info['interp'] = []
@@ -1727,7 +1746,7 @@ class Race:
 						info['raceTimes'] = []
 						info['speed'] = ''
 						info['startTime'] = None
-						info['status'] = statusNames[Rider.DNS]
+						info['status'] = statusNames[status]
 					animationData[bib] = info
 				
 		

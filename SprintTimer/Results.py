@@ -185,6 +185,8 @@ class Results( wx.Panel ):
 		self.resultsGrid.AutoSizeColumns( True )
 		self.resultsGrid.DisableDragColSize()
 		self.resultsGrid.DisableDragRowSize()
+		self.resultsGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
+		self.resultsGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged )
 		# put a tooltip on the cells in a column
 		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
 		#
@@ -618,6 +620,65 @@ class Results( wx.Panel ):
 					#Model.setCategoryChoice( self.categoryChoice.GetSelection(), 'resultsCategory' )
 					#SetCategory( historyCategoryChoice, cat )
 			#mainWin.setNumSelect( numSelect )
+			
+	def onRightClick( self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		try:
+			bib = int(self.resultsGrid.GetCellValue(row, 1))
+		except:
+			return
+		menu = wx.Menu()
+		menu.SetTitle('Change #' + str(bib) + ' status:')
+		dns = menu.Append( wx.ID_ANY, 'Set DNS', 'Set rider DNS...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDNS(event, bib), dns )
+		dnf = menu.Append( wx.ID_ANY, 'Set DNF', 'Set rider DNF...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDNF(event, bib), dnf )
+		dq = menu.Append( wx.ID_ANY, 'Set DQ', 'Set rider DQ...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDQ(event, bib), dq )
+		fin = menu.Append( wx.ID_ANY, 'Set Finisher', 'Set rider Finisher...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderFinisher(event, bib), fin )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			
+	def OnCellChanged( self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		old = event.GetString()
+		value = self.resultsGrid.GetCellValue(row, col)
+		
+		# restore the old value
+		self.resultsGrid.SetCellValue(row, col, old)
+
+	def setRiderDNF( self, event, bib ):
+		race = Model.race
+		if not race:
+			return
+		race.setRiderStatus( bib, Model.Rider.DNF )
+		self.refresh()
+		
+	def setRiderDNS( self, event, bib ):
+		race = Model.race
+		if not race:
+			return
+		race.setRiderStatus( bib, Model.Rider.DNS )
+		self.refresh()
+		
+	def setRiderDQ( self, event, bib ):
+		race = Model.race
+		if not race:
+			return
+		race.setRiderStatus( bib, Model.Rider.DQ )
+		self.refresh()
+		
+	def setRiderFinisher( self, event, bib ):
+		race = Model.race
+		if not race:
+			return
+		race.setRiderStatus( bib, Model.Rider.Finisher )
+		self.refresh()
 				
 	def setCategoryAll( self ):
 		FixCategories( self.categoryChoice, 0 )
@@ -700,6 +761,7 @@ class Results( wx.Panel ):
 		
 		for i, bibSprintDicts in enumerate(res):
 			bib = bibSprintDicts[0]
+			status = race.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else Model.Rider.NP
 			if bibSprintDicts[1] is not None:
 				sprintDict = bibSprintDicts[1][0]
 				name = ''
@@ -730,7 +792,10 @@ class Results( wx.Panel ):
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
-				self.resultsGrid.SetCellValue(row, col, str(i+1))
+				if status == Model.Rider.Finisher:
+					self.resultsGrid.SetCellValue(row, col, str(i+1))
+				else:
+					self.resultsGrid.SetCellValue(row, col, Model.Rider.statusNames[status])
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(bib))
@@ -790,10 +855,7 @@ class Results( wx.Panel ):
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
-				if race.isRunning():
-					self.resultsGrid.SetCellValue(row, col, 'NP')
-				else:
-					self.resultsGrid.SetCellValue(row, col, 'DNS')
+				self.resultsGrid.SetCellValue(row, col, Model.Rider.statusNames[status])
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(bib))

@@ -236,7 +236,7 @@ class Data( wx.Panel ):
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
-			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			Utils.writeLog( 'Data:doRightClick: {}'.format(e) )
 			
 	def onDelete( self, event, iSprint ):
 		race = Model.race

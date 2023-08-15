@@ -816,8 +816,10 @@ class ExportGrid:
 			finishers = 0
 			for bibSprintDicts in results:
 				if bibSprintDicts is not None:
-						if bibSprintDicts[1] is not None:
-							finishers += 1
+					bib = bibSprintDicts[0]
+					status = race.getRiderStatus(bib)
+					if bibSprintDicts[1] is not None and (status is Model.Rider.Finisher or status is None):
+						finishers += 1
 			
 			self.footer = (''.join([_('Total'), ':', '   {} ', _('Finishers') ]).format( finishers ) )
 
@@ -956,17 +958,24 @@ class ExportGrid:
 			#rrFields.append( 'speed' )
 		#if showPrizes:
 			#rrFields.append( 'prize' )
-			
+		
+		pos = 1
 		for col, f in enumerate( rrFields ):
 			if f in ('pos'):
 				for row, bibSprintDicts in enumerate(results):
 					if bibSprintDicts is not None:
-						if bibSprintDicts[1] is not None:
-							data[col].append( row + 1 )
-						elif race.isRunning():
-							data[col].append( 'NP' )
+						bib = bibSprintDicts[0]
+						status = race.getRiderStatus(bib)
+						if bibSprintDicts[1] is not None and status == Model.Rider.Finisher:
+							data[col].append( pos )
+							pos += 1
+						elif status is None:
+							if race.isRunning():
+								data[col].append( 'NP' )
+							else:
+								data[col].append( 'DNS' )
 						else:
-							data[col].append( 'DNS' )
+							data[col].append( Model.Rider.statusNames[status] )
 			elif f in ('num'):
 				for row, bibSprintDicts in enumerate(results):
 					data[col].append( bibSprintDicts[0] )
