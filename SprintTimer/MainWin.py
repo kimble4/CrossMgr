@@ -635,8 +635,8 @@ class MainWin( wx.Frame ):
 		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Change Race Start Time..."), _("Change the Start Time of the Race") )
 		#self.Bind(wx.EVT_MENU, self.menuChangeRaceStartTime, item )
 		
-		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Restart Race..."), _("Restart a race after a delay.") )
-		#self.Bind(wx.EVT_MENU, self.menuRestartRace, item )
+		item = self.toolsMenu.Append( wx.ID_ANY, _("&Resume recording"), _("Restart a finished race.") )
+		self.Bind(wx.EVT_MENU, self.menuRestartRace, item )
 		
 		#self.toolsMenu.AppendSeparator()
 
@@ -1185,26 +1185,38 @@ class MainWin( wx.Frame ):
 		#with ChangeRaceStartTime.ChangeRaceStartTimeDialog(self) as dlg:
 			#dlg.ShowModal()
 	
-	#@logCall
-	#def menuRestartRace( self, event ):
-		#race = Model.race
-		#if not race:
-			#return
-		#if race.isUnstarted():
-			#Utils.MessageOK( self, _('Cannot restart an Unstarted Race.'), _('Race Not Restarted') )
-			#return
-		#if race.isRunning():
-			#if not Utils.MessageOKCancel(
-				#self,
-				#'{}\n\n\t{}\n\n\t{}'.format(
-						#_('The Race must be Finished before it can a Restarted.'),
-						#_('Finish the Race Now?'),
-						#_('Careful - there is no Undo'),
-					#),
-					#_('Race Not Restarted')
-				#):
-				#return
-			#self.actions.onFinishRace( event, False )
+	@logCall
+	def menuRestartRace( self, event ):
+		race = Model.race
+		if not race:
+			return
+		if race.isUnstarted():
+			Utils.MessageOK( self, _('Cannot restart an Unstarted Race.'), _('Race Not Restarted') )
+			return
+		if race.isRunning():
+			Utils.MessageOK( self, _('Race is already running.'), _('Race Not Restarted') )
+			return
+		
+		if not Utils.MessageOKCancel(
+				self,
+				'{}\n\n\t{}'.format(
+						_('Restart the Race Now?'),
+						_('Careful - there is no Undo'),
+					),
+					_('Race Not Restarted')
+				):
+				return
+		with Model.LockRace() as race:
+			race.resumeRaceNow()
+			Model.resetCache()
+		
+		self.writeRace()
+		self.refresh()
+		
+		# For safety, clear the undo stack after 8 seconds.
+		undoResetTimer = wx.CallLater( 8000, undo.clear )
+		
+		#self.actions.onFinishRace( event, False )
 			#self.showPage( self.iHistoryPage )			
 			
 		#with Restart(self) as dlg:

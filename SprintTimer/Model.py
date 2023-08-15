@@ -1429,6 +1429,11 @@ class Race:
 		self.finishTime = datetime.datetime.now()
 		self.tagNums = None
 		self.setChanged()
+		
+	def resumeRaceNow( self):
+		self.finishTime = None
+		self.tagNums = None
+		self.setChanged()
 
 	#def set( self, values = None ):
 		#self.reset()
