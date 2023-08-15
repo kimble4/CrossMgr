@@ -1928,15 +1928,15 @@ class MainWin( wx.Frame ):
 		
 		notes = race.notes
 		if notes.lstrip()[:6].lower().startswith( '<html>' ):
-			notes = TemplateSubstitute( notes, race.getTemplateValues() )
+			#notes = TemplateSubstitute( notes, race.getTemplateValues() )
 			notes = self.reRemoveTags.sub( '', notes )
 			notes = notes.replace('<', '{-{').replace( '>', '}-}' )
 			payload['raceNotes']	= notes
-		#else:
+		else:
 			#notes = TemplateSubstitute( escape(notes), race.getTemplateValues() )
-			#notes = self.reTagTrainingSpaces.sub( '>', notes ).replace( '</table>', '</table><br/>' )
-			#notes = notes.replace('<', '{-{').replace( '>', '}-}' ).replace('\n','{-{br/}-}')
-			#payload['raceNotes']	= notes
+			notes = self.reTagTrainingSpaces.sub( '>', notes ).replace( '</table>', '</table><br/>' )
+			notes = notes.replace('<', '{-{').replace( '>', '}-}' ).replace('\n','{-{br/}-}')
+			payload['raceNotes']	= notes
 		if race.startTime:
 			raceStartTime = (race.startTime - race.startTime.replace( hour=0, minute=0, second=0 )).total_seconds()
 			payload['raceStartTime']= raceStartTime
@@ -1952,7 +1952,7 @@ class MainWin( wx.Frame ):
 		
 		return payload
 	
-	#reTagTrainingSpaces = re.compile( '>\s+', re.MULTILINE|re.UNICODE )
+	reTagTrainingSpaces = re.compile( '>\s+', re.MULTILINE|re.UNICODE )
 	def addResultsToHtmlStr( self, html ):
 		html = self.cleanHtml( html )
 		

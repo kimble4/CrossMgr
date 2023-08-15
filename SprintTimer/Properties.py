@@ -1272,26 +1272,26 @@ class BatchPublishPropertiesDialog( wx.Dialog ):
 		self.EndModal( wx.ID_CANCEL )
 
 #------------------------------------------------------------------------------------------------
-#class NotesProperties( wx.Panel ):
-	#def __init__( self, parent, id = wx.ID_ANY ):
-		#super().__init__( parent, id )
+class NotesProperties( wx.Panel ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id )
 		
-		#ms = wx.BoxSizer( wx.VERTICAL )
-		#self.SetSizer( ms )
+		ms = wx.BoxSizer( wx.VERTICAL )
+		self.SetSizer( ms )
 		
-		#self.notesLabel = wx.StaticText( self, label='\n'.join( [
-			#_("Notes to appear on Html output:"),
-			#_("(notes containing Html must start with <html> and end with </html>)")] ) )
-		#self.notes = wx.TextCtrl( self, style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER|wx.TE_PROCESS_TAB, size=(-1,60) )
+		self.notesLabel = wx.StaticText( self, label='\n'.join( [
+			_("Notes to appear on Html output:"),
+			_("(notes containing Html must start with <html> and end with </html>)")] ) )
+		self.notes = wx.TextCtrl( self, style=wx.TE_MULTILINE|wx.TE_PROCESS_ENTER|wx.TE_PROCESS_TAB, size=(-1,60) )
 		#self.insertButton = wx.Button( self, label=_('Insert Variable...') )
 		#self.insertButton.Bind( wx.EVT_BUTTON, self.onInsertClick )
 
-		#hs = wx.BoxSizer( wx.HORIZONTAL )
-		#hs.Add( self.notesLabel )
-		#hs.AddStretchSpacer()
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		hs.Add( self.notesLabel )
+		hs.AddStretchSpacer()
 		#hs.Add( self.insertButton )
-		#ms.Add( hs, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, border=12 )
-		#ms.Add( self.notes, 1, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, border=12 )
+		ms.Add( hs, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, border=12 )
+		ms.Add( self.notes, 1, flag=wx.TOP|wx.LEFT|wx.RIGHT|wx.EXPAND, border=12 )
 		
 	#def onInsertClick( self, event ):
 		#race = Model.race
@@ -1316,13 +1316,13 @@ class BatchPublishPropertiesDialog( wx.Dialog ):
 		#self.notes.Replace( iCur, iCur, v )
 		#self.notes.SetInsertionPoint( iCur + len(v) )
 	
-	#def refresh( self ):
-		#race = Model.race
-		#self.notes.SetValue( race.notes )
+	def refresh( self ):
+		race = Model.race
+		self.notes.SetValue( race.notes )
 		
-	#def commit( self ):
-		#race = Model.race
-		#race.notes = self.notes.GetValue()
+	def commit( self ):
+		race = Model.race
+		race.notes = self.notes.GetValue()
 
 #------------------------------------------------------------------------------------------------
 class FilesProperties( wx.Panel ):
@@ -1418,7 +1418,7 @@ class Properties( wx.Panel ):
 			('ftpProperties',			FtpProperties,				_('(S)FTP') ),
 			('batchPublishProperties',	BatchPublishProperties,		_('Batch Publish') ),
 			#('gpxProperties',			GPXProperties,				_('GPX') ),
-			#('notesProperties',			NotesProperties,			_('Notes') ),
+			('notesProperties',			NotesProperties,			_('Notes') ),
 			('cameraProperties',		CameraProperties,			_('Camera') ),
 			#('lapCounterProperties',	LapCounterProperties,		_('Lap Counter') ),
 			#('animationProperties',		AnimationProperties,		_('Animation') ),
