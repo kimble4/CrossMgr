@@ -755,8 +755,10 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				if "sprintStart" in sprintDict:
-					wallTime = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
-					self.resultsGrid.SetCellValue(row, col, wallTime.strftime('%Y-%m-%d %H:%M:%S'))
+					sprintStart = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
+					if 'sprintStartMillis' in sprintDict:
+						sprintStart += datetime.timedelta(milliseconds = sprintDict['sprintStartMillis'])
+					self.resultsGrid.SetCellValue(row, col, sprintStart.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 					self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(sprintDict["sprintNote"]) if "sprintNote" in sprintDict else '')
