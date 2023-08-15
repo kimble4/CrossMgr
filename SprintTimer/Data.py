@@ -489,7 +489,7 @@ class Data( wx.Panel ):
 				if 'sprintStartMillis' in sprintDict:
 					sprintStart += datetime.timedelta(milliseconds = sprintDict['sprintStartMillis'])
 			if sprintStart is None or sortTime != sprintStart:
-				self.dataGrid.SetCellBackgroundColour(row, c, self.yellowColour)
+				self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
 			col += 1
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
 			bib = None
