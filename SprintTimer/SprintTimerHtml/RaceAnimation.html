@@ -6387,7 +6387,7 @@ Current versions of Chrome, FireFox and Opera work fine.
 <input class="noprint" type="checkbox" id="idShowTimeDecimals" onClick="ToggleTimeDecimals()" checked="True">
 <label for="idShowTimeDecimals" class="noprint" data-tr="Show milliseconds"></label>
 &nbsp;&nbsp;&nbsp;
-<select class="noprint" id="idShowLaps" onChange="SetShowLaps()">
+<select class="hidden noprint" id="idShowLaps" onChange="SetShowLaps()">
 	<option value="0" data-tr="Hide Lap Info">0</option>
 	<option value="1" selected="selected" data-tr="Show Every Lap">1</option>
 	<option value="2" data-tr="Show Every 2 Laps">2</option>
@@ -6428,7 +6428,7 @@ Current versions of Chrome, FireFox and Opera work fine.
 	</span>
 	<span id="idShowDetailsOption">
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<input type="checkbox" id="idShowDetails" onClick="RefreshRaceChart()">
+		<input type="checkbox" id="idShowDetails" checked onClick="RefreshRaceChart()">
 		<label for="idShowDetails" data-tr="Show Details"></label>
 	</span>
 </p>
