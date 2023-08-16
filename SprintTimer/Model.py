@@ -1635,6 +1635,12 @@ class Race:
 				distance = times[0]['sprintDistance']
 				time = times[0]['sprintTime']
 				speed = float(distance)/float(time)
+				if float(distance) != float(self.sprintDistance):
+					#Utils.writeLog('Sprint distance for #' + str(bib) + ' ' + str(distance) + ' != current distance ' + str(self.sprintDistance))
+					# Don't mung the data, just add an explanatory note - the ranking will use average speed
+					if 'sprintNote' not in times[0]:
+						times[0]['sprintNote'] = 'Rode ' + str(distance) + 'm not ' + str(self.sprintDistance) + 'm'
+					
 				ranking.append((status, bib, speed))
 			#except KeyError:
 				#Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
@@ -1789,6 +1795,21 @@ class Race:
 						#animationData[rr.num] = info
 			
 		return animationData
+	
+	def getLapDetails( self ):  # formatted for the HTML page
+		results = self.getSprintResults( None )
+		
+		details = {}
+		
+		for bibSprintDicts in results:
+			if bibSprintDicts is not None:
+				bib = bibSprintDicts[0]
+				if bibSprintDicts[1] is not None:
+					if 'sprintNote' in bibSprintDicts[1][0]:
+						if bibSprintDicts[1][0]['sprintNote'] is not None:
+							details[str(bib) + ',1'] = [ bibSprintDicts[1][0]['sprintNote'] ]
+		
+		return details
 	
 	def getCategoryDetails( self, ignoreEmptyCategories=True, publishOnly=False ):
 
@@ -2437,17 +2458,17 @@ class Race:
 		#else:
 			#activeCategories = [c for c in self.categories.values() if c.active]
 		
-		#if publishOnly:
-			#activeCategories = [c for c in activeCategories if c.publishFlag]
+		if publishOnly:
+			activeCategories = [c for c in activeCategories if c.publishFlag]
+
+		if uploadOnly:
+			activeCategories = [c for c in activeCategories if c.uploadFlag]
 			
-		#if uploadOnly:
-			#activeCategories = [c for c in activeCategories if c.uploadFlag]
+		if excludeCustom:
+			CatCustom = Category.CatCustom
+			activeCategories = [c for c in activeCategories if c.catType != CatCustom]
 			
-		#if excludeCustom:
-			#CatCustom = Category.CatCustom
-			#activeCategories = [c for c in activeCategories if c.catType != CatCustom]
-			
-		#activeCategories.sort( key = Category.key )
+		activeCategories.sort( key = Category.key )
 		
 		#if excludeCombined:
 			#If this is a combined category, then the following non-custom category will be a component.

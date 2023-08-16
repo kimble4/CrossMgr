@@ -1917,9 +1917,9 @@ class MainWin( wx.Frame ):
 		payload['raceIsUnstarted']	= race.isUnstarted()
 		payload['raceIsFinished']	= race.isFinished()
 		payload['rankFinishersBy']	= Model.Race.rankByNames[getattr(race, 'rankBy', Model.Race.rankByLapsTime)] if not race.isRunning() else 'recorded lap times'
-		payload['lapDetails']		= {}
+		payload['lapDetails']		= race.getLapDetails()
 		payload['hideDetails']		= False
-		payload['showCourseAnimation'] = getattr(race, 'showCourseAnimationInHtml', False)
+		payload['showCourseAnimation'] = False #getattr(race, 'showCourseAnimationInHtml', False)
 		payload['licenseLinkTemplate'] = ''
 		payload['roadRaceFinishTimes'] = False
 		payload['estimateLapsDownFinishTime'] = False
