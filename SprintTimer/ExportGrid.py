@@ -864,22 +864,24 @@ class ExportGrid:
 		
 		leaderBib = None
 		if leader is not None:
-			leaderBib = results[0][0]
-			sprintDict = results[0][1][0]
-			if 'sprintTime' in sprintDict:
-				leaderTime = sprintDict['sprintTime']
-				if 'sprintDistance' in sprintDict:
-					speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
-					if race.distanceUnit == Model.Race.UnitKm:
-						leaderSpeed =  str('{:.2f}kph'.format(speed*3.6))
-					elif race.distanceUnit == Model.Race.UnitMiles:
-						leaderSpeed = str('{:.2f}mph'.format(speed*2.23694))
+			leaderBib = leader[0]
+			if leader[1] is not None:
+				sprintDict = leader[1][0]
+				if 'sprintTime' in sprintDict:
+					leaderTime = sprintDict['sprintTime']
+					if 'sprintDistance' in sprintDict:
+						speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
+						if race.distanceUnit == Model.Race.UnitKm:
+							leaderSpeed =  str('{:.2f}kph'.format(speed*3.6))
+						elif race.distanceUnit == Model.Race.UnitMiles:
+							leaderSpeed = str('{:.2f}mph'.format(speed*2.23694))
+						else:
+							leaderSpeed = str('{:.2f}m/s'.format(speed))
+						catData.append( '{}: {:.3f}s - {}'.format(_('winner'), leaderTime, leaderSpeed) )
 					else:
-						leaderSpeed = str('{:.2f}m/s'.format(speed))
-					catData.append( '{}: {:.3f}s - {}'.format(_('winner'), leaderTime, leaderSpeed) )
-				else:
-					catData.append( '{}: {}'.format(_('winner'), leaderTime) )
-				
+						catData.append( '{}: {}'.format(_('winner'), leaderTime) )
+			else:  # Category leader is not a finisher
+				pass
 					
 		#if leader.status == Finisher:
 			#if getattr(leader, 'speed', None):
