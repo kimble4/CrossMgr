@@ -1,0 +1,157 @@
+{% whitespace oneline %}
+{% import os %}
+{% import datetime %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="author" content="Edward Sitarski">
+<meta name="copyright" content="Edward Sitarski, 2011-{{datetime.datetime.now().year}}">
+<meta name="generator" content="CrossMgr">  
+<meta name="keywords" content="CrossMgr, Cycling, Race, Results"> 
+<title id="idTitle">Results</title>
+<style type="text/css">
+body {
+	font-family: Helvetica, sans-serif;
+	font-size: 24px;
+	background-color: #FFFFFF;
+}
+
+.hidden { display: none; }
+
+.btn {
+	-moz-border-radius:8px;
+	-webkit-border-radius:8px;
+	border-radius:4px;
+	border:1px solid #D0D0D0;
+	display:inline-block;
+	cursor:pointer;
+	background-color:#7FE57F;
+	color:#333;
+	padding:4px 8px;
+	text-decoration:none;
+	margin: 8px;
+	font-size: 120%;
+}
+
+li.highlight {
+	background-color:#FFFF66;
+}
+ol {
+    counter-reset:li;
+    margin-left:0;
+    padding-left:0;
+}
+ol > li {
+    position:relative;
+    margin:0 0 6px 2em;
+    padding:4px 8px;
+    list-style:none;
+    border-top:2px solid #666;
+}
+ol > li:before {
+    content:counter(li);
+    counter-increment:li;
+    position:absolute;
+    top:-2px;
+    left:-2em;
+    -moz-box-sizing:border-box;
+    -webkit-box-sizing:border-box;
+    box-sizing:border-box;
+    width:2em;
+    margin-right:8px;
+    padding:4px;
+    border-top:2px solid #666;
+    color:#fff;
+    background:#666;
+    font-weight:bold;
+    font-family:"Helvetica Neue", Arial, sans-serif;
+    text-align:center;
+}
+li ol,
+li ul {margin-top:6px;}
+ol ol li:last-child {margin-bottom:0;}
+
+a { white-space: nowrap; }
+
+.small-font {
+	font-size: 85%;
+}
+
+.racename {
+	font-size:170%;
+	margin:8px;
+	text-decoration:none;
+}
+
+@media print { .noprint { display: none; } }
+
+</style>
+<script>
+function setIcons( icon, class_name ) {
+	var elements = document.getElementsByClassName( class_name );
+	for( var i = 0; i < elements.length; ++i ) {
+		elements[i].src = icon;
+	}
+}
+function onLoad() {
+{% if share %}
+	setIcons( "{{QRCodeIconSrc}}", 'qrcode' );
+{% end %}
+{% if any(g.isTimeTrial for g in info) %}
+	setIcons( "{{StartListIconSrc}}", 'startlist' );
+	setIcons( "{{CountdownIconSrc}}", 'countdown' );
+{% else %}
+	setIcons( "{{LapCounterIconSrc}}", 'lapcounter' );
+{% end %}
+	setIcons( "{{ResultsCurrentIconSrc}}", 'results_current' );
+	setIcons( "{{ResultsPreviousIconSrc}}", 'results_previous' );
+	setIcons( "{{AnnouncerIconSrc}}", 'announcer' );
+}
+</script>
+</head>
+
+<body onload="onLoad()">
+<img id="idImgHeader" alt="CrossMgr Logo" onclick="location.reload(true)" style="cursor: pointer;" src="{{logoSrc}}">
+{% if share %}
+	&nbsp;&nbsp;&nbsp;<a href="./CurrentResults.html"><img class="results_current" title="Current Race Results">&nbsp;Current Race Results</a>
+	&nbsp;&nbsp;&nbsp;<a href="./PreviousResults.html"><img class="results_previous" title="Previous Race Results">&nbsp;Previous Race Results</a>
+	&nbsp;&nbsp;&nbsp;<a href="./Announcer.html"><img class="announcer" title="Announcer">&nbsp;Announcer</a>
+	&nbsp;&nbsp;&nbsp;<a href="./LapCounter.html"><img class="lapcounter" title="Lap Counter">&nbsp;Lap Counter</a>
+	&nbsp;&nbsp;&nbsp;<a href="./qrcode.html"><img class="qrcode">&nbsp;Share</a>
+{% end %}
+<h1>Race Results<br/><span style="font-size: 80%">{% if organizer %}by {% end %}{{organizer}}</span></h1>
+<ol>
+{% if not info %}
+	<h2>Results will be available shortly.<br/>Wait a few minutes, then press the Image above to Refresh.</h2>
+{% end %}
+{% for i, g in enumerate(info) %}
+	<li {% if g.raceIsRunning %} class=highlight {% end %} >
+		<a href="{{g.url}}" class=racename title="Results">{{g.name}}</a>
+		{% if g.raceScheduledStart %}<span style="white-space: nowrap;">{{g.raceScheduledStart.strftime('%H:%M %a %b %d, %Y')}}</span>{% end %}
+		<script>console.log( 'raceIsRunning={{g.raceIsRunning}}, isTimeTrial={{g.isTimeTrial}}, share={{share}}' );</script>
+		{% if share %}
+			{% if g.isTimeTrial %}
+				&nbsp;&nbsp;<a href="{{g.urlTTStartList}}"><img class="startlist" title="Start List">Start List</a>
+				&nbsp;&nbsp;<a href="{{g.urlTTCountdown}}"><img class="countdown" title="Countdown Clock">Countdown Clock</a>
+			{% end %}
+		{% end %}
+		<br/>
+		{% for catName, catUrl, catStarters, catFinishers in g.categories %}
+			<a href="{{g.url}}?raceCat={{catUrl}}" class='btn'>{{catName}}
+				{% if catStarters and catFinishers %}
+					<span>(<sup>{{catFinishers}}</sup>&frasl;<sub>{{catStarters}}</sub>)</span>
+				{% elif catStarters %}
+					<span>({{catStarters}})</span>
+				{% end %}
+			</a>
+		{% end %}
+	</li>
+{% end %}
+</ol>
+<br/>
+Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC SprintTimer</a>.
+<p></p>
+<p></p>
+</body>
+</html>
