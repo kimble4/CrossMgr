@@ -983,11 +983,8 @@ class ExportGrid:
 					data[col].append( bibSprintDicts[0] )
 			elif f in ('Category'):
 				for row, bibSprintDicts in enumerate(results):
-					try:
-						cat = externalInfo[bibSprintDicts[0]]['EventCategory']
-						data[col].append( cat )
-					except KeyError:
-						pass
+					cat = race.getCategory( bibSprintDicts[0] )
+					data[col].append( cat.name )
 			elif f in ('sprintTime'):
 				for row, bibSprintDicts in enumerate(results):
 					if bibSprintDicts is not None:
@@ -1062,7 +1059,10 @@ class ExportGrid:
 						info = externalInfo[bibSprintDicts[0]][f]
 						if info:
 							data[col].append( info )
+						else:
+							data[col].append( '' )
 					except KeyError:
+						data[col].append( '' )
 						pass
 		
 		#if showLapTimes:

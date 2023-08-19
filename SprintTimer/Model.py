@@ -1739,7 +1739,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = times[0]
 						info['lastTimeOrig'] = times[0] #times[-1]
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo and externalInfoHasBib else ''  #fixme is not fullname
+						info['raceCat'] = race.getCategory( bib ).fullname  #fixme is not fullname
 						info['raceSpeeds'] = [speeds[0]]
 						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
@@ -1753,7 +1753,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = 0.0
 						info['lastTimeOrig'] = 0.0
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo and externalInfoHasBib else ''  #fixme is not fullname
+						info['raceCat'] = race.getCategory( bib ).fullname  #fixme is not fullname
 						info['raceSpeeds'] = []
 						info['raceTimes'] = []
 						info['speed'] = ''
@@ -2818,55 +2818,54 @@ class Race:
 		#c = self.getCategory( num )
 		#return c.name if c else ''
 
-	#def _buildCategoryCache( self ):
-		#if hasattr(self, 'categoryNumsCache'):
-			#delattr( self, 'categoryNumsCache' )
+	def _buildCategoryCache( self ):
+		if hasattr(self, 'categoryNumsCache'):
+			delattr( self, 'categoryNumsCache' )
 		
 		#Reset the cache for all categories by sequence number.
-		#self.categoryCache = {}			# Returns wave category by num.
+		self.categoryCache = {}			# Returns wave category by num.
 		#self.startOffsetCache = {}		# Returns start offset by num.
 		
 		#Handle wave categories only.
-		#numsSeen = set()
-		#for c in self.getCategories( startWaveOnly=True ):
-			#c.bibSet = c.getMatchSet() - numsSeen
-			#numsSeen |= c.bibSet
+		numsSeen = set()
+		for c in self.getCategories( startWaveOnly=True ):
+			c.bibSet = c.getMatchSet() - numsSeen
+			numsSeen |= c.bibSet
 			#offsetSecs = c.getStartOffsetSecs()
-			#for n in c.bibSet:
+			for n in c.bibSet:
 				#self.startOffsetCache[n] = offsetSecs
-				#self.categoryCache[n] = c
+				self.categoryCache[n] = c
 
 		#Now handle all categories.
 		#Bib exclusivity is enforced for component categories based on their wave.
 		#Custom categories have no exclusivity rules.		
-		#waveCategory = None
-		#waveNumsSeen = set()
-		#for c in self.getCategories( startWaveOnly=False ):
-			#if c.catType == Category.CatWave:
-				#waveCategory = c
-				#waveNumsSeen = set()
-			#elif c.catType == Category.CatComponent:
-				#c.bibSet = c.getMatchSet() - waveNumsSeen
-				#if waveCategory:
-					#c.bibSet &= waveCategory.bibSet
-				#waveNumsSeen |= c.bibSet
-			#else:	# c.catType == Category.CatCustom
-				#c.bibSet = c.getMatchSet()
+		waveCategory = None
+		waveNumsSeen = set()
+		for c in self.getCategories( startWaveOnly=False ):
+			if c.catType == Category.CatWave:
+				waveCategory = c
+				waveNumsSeen = set()
+			elif c.catType == Category.CatComponent:
+				c.bibSet = c.getMatchSet() - waveNumsSeen
+				if waveCategory:
+					c.bibSet &= waveCategory.bibSet
+				waveNumsSeen |= c.bibSet
+			else:	# c.catType == Category.CatCustom
+				c.bibSet = c.getMatchSet()
 
 	#def hasCategoryCache( self ):
 		#return getattr(self, 'categoryCache', None) is not None
 
 	def getCategory( self, num ):
-		pass
-		#''' Get the start wave category for this rider. '''
+		''' Get the start wave category for this rider. '''
 		#Check the cache for this rider.
-		#try:
-			#return self.categoryCache.get(num, None)
-		#except (TypeError, AttributeError):
-			#pass
+		try:
+			return self.categoryCache.get(num, None)
+		except (TypeError, AttributeError):
+			pass
 		
-		#self._buildCategoryCache()
-		#return self.categoryCache.get(num, None)
+		self._buildCategoryCache()
+		return self.categoryCache.get(num, None)
 	
 	#def inCategory( self, num, category ):
 		#if category is None:
