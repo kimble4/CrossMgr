@@ -1733,7 +1733,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = times[0]
 						info['lastTimeOrig'] = times[0] #times[-1]
-						info['raceCat'] = externalInfo[bib]['EventCategory'] #+ ' (Open)') if externalInfo else ''  #fixme is not fullname
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
 						info['raceSpeeds'] = [speeds[0]]
 						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
@@ -1747,7 +1747,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = 0.0
 						info['lastTimeOrig'] = 0.0
-						info['raceCat'] = externalInfo[bib]['EventCategory'] #+ ' (Open)') if externalInfo else ''  #fixme is not fullname
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
 						info['raceSpeeds'] = []
 						info['raceTimes'] = []
 						info['speed'] = ''
