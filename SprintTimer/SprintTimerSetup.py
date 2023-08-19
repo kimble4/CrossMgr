@@ -47,7 +47,6 @@ copyFiles = [
     "ModuleUnpickler.py"
     "ReadCategoriesFromExcel.py"
     "ReadPropertiesFromExcel.py"
-    "ModuleUnpickler.py"
     "GetMatchingExcelFile.py"
     "ReorderableGrid.py"
     "SetGraphic.py"
@@ -72,6 +71,8 @@ copyFiles = [
     "FixCategories.py"
     "AddExcelInfo.py"
     "FtpUploadProgress.py"
+    "LockLog.py"
+    "ParseHtmlPayload.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

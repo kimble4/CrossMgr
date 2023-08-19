@@ -18,7 +18,6 @@ import HelpSearch
 import ModuleUnpickler
 import ReadCategoriesFromExcel
 import ReadPropertiesFromExcel
-import ModuleUnpickler
 import GetMatchingExcelFile
 import ReorderableGrid
 import SetGraphic
