@@ -30,7 +30,7 @@ try:
 	localTimeFormat = locale.nl_langinfo( locale.T_FMT )
 except Exception:
 	localDateFormat = '%Y-%m-%d'
-	localTimeFormat = '%H:%M%'
+	localTimeFormat = '%H:%M'
 
 import pickle
 from argparse import ArgumentParser
