@@ -1689,24 +1689,30 @@ class Race:
 			for bibSprintDicts in results:
 				if bibSprintDicts is not None:
 					bib = bibSprintDicts[0]
+					externalInfoHasBib = False
+					if externalInfo:
+						if bib in externalInfo:
+							externalInfoHasBib = True
+						else:
+							Utils.writeLog('Bib #' + str(bib) + ' is not in externalInfo!')
 					status = self.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else (Rider.NP if race.isRunning() else Rider.DNS)
 					info = { 'flr': 1.0,
 							'relegated': False
 					}
-					info['CustomCategory1'] = externalInfo[bib]['CustomCategory1'] if externalInfo else ''
-					info['CustomCategory2'] = externalInfo[bib]['CustomCategory2'] if externalInfo else ''
-					info['CustomCategory3'] = externalInfo[bib]['CustomCategory3'] if externalInfo else ''
-					info['CustomCategory4'] = externalInfo[bib]['CustomCategory4'] if externalInfo else ''
-					info['CustomCategory5'] = externalInfo[bib]['CustomCategory5'] if externalInfo else ''
-					info['CustomCategory6'] = externalInfo[bib]['CustomCategory6'] if externalInfo else ''
-					info['CustomCategory7'] = externalInfo[bib]['CustomCategory7'] if externalInfo else ''
-					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo else ''
-					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo else ''
-					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo else ''
-					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo else ''
-					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo else ''
-					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo else ''
-					info['Team'] = externalInfo[bib]['Team'] if externalInfo else ''
+					info['CustomCategory1'] = externalInfo[bib]['CustomCategory1'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory2'] = externalInfo[bib]['CustomCategory2'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory3'] = externalInfo[bib]['CustomCategory3'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory4'] = externalInfo[bib]['CustomCategory4'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory5'] = externalInfo[bib]['CustomCategory5'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory6'] = externalInfo[bib]['CustomCategory6'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory7'] = externalInfo[bib]['CustomCategory7'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo and externalInfoHasBib else ''
+					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo and externalInfoHasBib else ''
+					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo and externalInfoHasBib else ''
+					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo and externalInfoHasBib else ''
+					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo and externalInfoHasBib else ''
+					info['Team'] = externalInfo[bib]['Team'] if externalInfo and externalInfoHasBib else ''
 					if bibSprintDicts[1] is not None:
 						times = []
 						speeds = []
@@ -1733,7 +1739,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = times[0]
 						info['lastTimeOrig'] = times[0] #times[-1]
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo and externalInfoHasBib else ''  #fixme is not fullname
 						info['raceSpeeds'] = [speeds[0]]
 						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
@@ -1747,7 +1753,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = 0.0
 						info['lastTimeOrig'] = 0.0
-						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo else ''  #fixme is not fullname
+						info['raceCat'] = externalInfo[bib]['EventCategory'] if externalInfo and externalInfoHasBib else ''  #fixme is not fullname
 						info['raceSpeeds'] = []
 						info['raceTimes'] = []
 						info['speed'] = ''
