@@ -1,16 +1,17 @@
 import re
 import os
 import wx
+import wx.dataview as dataview
 import requests
 import datetime
-import wx.dataview as dataview
+import platform
+import configparser
+import urllib.parse
+
 import Utils
 import Model
-import urllib.parse
 from ReadSignOnSheet	import ExcelLink
 from AddExcelInfo		import getInfo
-
-import configparser
 
 def GetRaceDBConfigFile():
 	return os.path.join( os.path.expanduser('~'), 'CrossMgrRaceDB.ini' )
@@ -37,7 +38,7 @@ def GetRaceDBConfig():
 globalRaceDBUrl = ''
 
 class RaceDBEditConfig( wx.Dialog ):
-	def __init__( self, parent, id=wx.ID_ANY, size=(800,800) ):
+	def __init__( self, parent, id=wx.ID_ANY, size=(600,600) ):
 		super().__init__(parent, id, size=size, style=wx.DEFAULT_DIALOG_STYLE|wx.RESIZE_BORDER, title=_('RaceDB Config File'))
 		self.text = wx.TextCtrl( self, size=(500,500), style=wx.TE_MULTILINE )
 		btnSizer = self.CreateButtonSizer( wx.OK|wx.CANCEL|wx.APPLY|wx.HELP )
@@ -142,7 +143,8 @@ def fixUrl( url ):
 		
 	if 'localhost' in url:
 		url = url.replace( 'https', 'http' )
-		
+		if platform.system() == 'Windows':
+			url = url.replace('www.localhost', 'localhost')
 	globalRaceDBUrl = url
 	return url
 
@@ -172,7 +174,7 @@ def GetRaceDBEvents( url = None, date=None ):
 def GetEventCrossMgr( url, eventId, eventType ):
 	url = url or RaceDBUrlDefault()
 	url = url.rstrip( '/' )
-	url +=['/EventMassStartCrossMgr','/EventTTCrossMgr'][eventType] + '/{}'.format(eventId)
+	url += ('/EventMassStartCrossMgr','/EventTTCrossMgr')[eventType] + '/{}'.format(eventId)
 	url = AddUserPassword( url + '/' )
 	req = requests.get( url )
 	content_disposition = req.headers['content-disposition'].encode('latin-1').decode()
@@ -477,8 +479,6 @@ class RaceDB( wx.Dialog ):
 		if eventClosest:
 			self.tree.Select( eventClosest )
 			self.tree.Expand( eventClosest )
-
-#----------------------------------------------------------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------------------------------------------------------
 
