@@ -638,10 +638,10 @@ class MainWin( wx.Frame ):
 		item = self.toolsMenu.Append( wx.ID_ANY, _("&Resume recording"), _("Restart a finished race.") )
 		self.Bind(wx.EVT_MENU, self.menuRestartRace, item )
 		
-		#self.toolsMenu.AppendSeparator()
+		self.toolsMenu.AppendSeparator()
 
-		#item = self.toolsMenu.Append( wx.ID_ANY, _("Copy Log File to &Clipboard..."), _("Copy Log File to Clipboard") )
-		#self.Bind(wx.EVT_MENU, self.menuCopyLogFileToClipboard, item )
+		item = self.toolsMenu.Append( wx.ID_ANY, _("Copy Log File to &Clipboard..."), _("Copy Log File to Clipboard") )
+		self.Bind(wx.EVT_MENU, self.menuCopyLogFileToClipboard, item )
 
 		#self.toolsMenu.AppendSeparator()
 		
@@ -1458,26 +1458,26 @@ class MainWin( wx.Frame ):
 	
 	#--------------------------------------------------------------------------------------------
 	
-	#def menuCopyLogFileToClipboard( self, event ):
-		#try:
-			#with open(redirectFileName) as f:
-				#logData = f.read()
-		#except IOError:
-			#Utils.MessageOK(self, _("Unable to open log file."), _("Error"), wx.ICON_ERROR )
-			#return
+	def menuCopyLogFileToClipboard( self, event ):
+		try:
+			with open(redirectFileName) as f:
+				logData = f.read()
+		except IOError:
+			Utils.MessageOK(self, _("Unable to open log file."), _("Error"), wx.ICON_ERROR )
+			return
 			
-		#logData = logData.split( '\n' )
-		#logData = logData[-1000:]
-		#logData = '\n'.join( logData )
+		logData = logData.split( '\n' )
+		logData = logData[-1000:]
+		logData = '\n'.join( logData )
 		
-		#dataObj = wx.TextDataObject()
-		#dataObj.SetText(logData)
-		#if wx.TheClipboard.Open():
-			#wx.TheClipboard.SetData( dataObj )
-			#wx.TheClipboard.Close()
-			#Utils.MessageOK(self, '\n\n'.join( [_("Log file copied to clipboard."), _("You can now paste it into an email.")] ), _("Success") )
-		#else:
-			#Utils.MessageOK(self, _("Unable to open the clipboard."), _("Error"), wx.ICON_ERROR )
+		dataObj = wx.TextDataObject()
+		dataObj.SetText(logData)
+		if wx.TheClipboard.Open():
+			wx.TheClipboard.SetData( dataObj )
+			wx.TheClipboard.Close()
+			Utils.MessageOK(self, '\n\n'.join( [_("Log file copied to clipboard."), _("You can now paste it into an email.")] ), _("Success") )
+		else:
+			Utils.MessageOK(self, _("Unable to open the clipboard."), _("Error"), wx.ICON_ERROR )
 	
 	#def menuJobs( self, event ):
 		#self.backgroundJobMgr.Show()
@@ -4452,6 +4452,7 @@ def MainLoop():
 	parser = ArgumentParser( prog="SprintTimer", description='Sprint Timing Software' )
 	parser.add_argument("-q", "--quiet", action="store_false", dest="verbose", default=True, help='hide splash screen')
 	parser.add_argument("-r", "--regular", action="store_false", dest="fullScreen", default=True, help='regular size (not full screen)')
+	parser.add_argument("-l", "--log", action="store_false", dest="logToFile", default=True, help='log to Stdio rather than file')
 	#parser.add_argument("-s", "--simulation", action="store_true", dest="simulation", default=False, help='run simulation automatically')
 	#parser.add_argument("-t", "--tt", action="store_true", dest="timetrial", default=False, help='run time trial simulation')
 	#parser.add_argument("-b", "--batchpublish", action="store_true", dest="batchpublish", default=False, help="do batch publish and exit")
@@ -4463,22 +4464,25 @@ def MainLoop():
 	
 	dataDir = Utils.getHomeDir()
 	redirectFileName = os.path.join(dataDir, 'SprintTimer.log')
+	
+	print(args.logToFile)
 			
 	# Set up the log file.  Otherwise, show errors on the screen unbuffered.
-	if __name__ == '__main__':
-		Utils.disable_stdout_buffering()
+	if not args.logToFile and __name__ == '__main__':
+		pass
 	else:
 		try:
 			logSize = os.path.getsize( redirectFileName )
+			print(logsize)
 			if logSize > 1000000:
 				os.remove( redirectFileName )
 		except Exception:
 			pass
-	
+
 		try:
-			app.RedirectStdio( redirectFileName )
-		except Exception:
-			pass
+			app.RedirectStdio( filename=redirectFileName )
+		except Exception as e:
+			print(e)
 	
 	Utils.writeLog( 'start: {}'.format(Version.AppVerName) )
 	Utils.writeLog( 'lang: "{}"'.format(Utils.lang) )
