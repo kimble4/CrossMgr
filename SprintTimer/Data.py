@@ -152,8 +152,6 @@ class Data( wx.Panel ):
 		self.dataGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged )
 		self.dataGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
 		
-		# fixme make bib column editable
-		
 		vs.Add( self.dataGrid, 1, wx.EXPAND|wx.ALL)
 		
 		vs.Add( self.showTagReads, flag=wx.ALIGN_RIGHT|wx.ALL, border = 4  )
@@ -499,7 +497,7 @@ class Data( wx.Panel ):
 				sprintStart = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
 				if 'sprintStartMillis' in sprintDict:
 					sprintStart += datetime.timedelta(milliseconds = sprintDict['sprintStartMillis'])
-			if sprintStart is None or sortTime != sprintStart:
+			if index and (sprintStart is None or sortTime != sprintStart):
 				self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
 			col += 1
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
