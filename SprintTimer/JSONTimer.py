@@ -230,7 +230,7 @@ class JSONTimer:
 			# send the settings and epoch time immediately
 			self.socketWriteLock.acquire()
 			settings = { "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit, "wallTime": int(now().timestamp()) }
-			if race.inProgressSprintStart is None:
+			if race is not None and not race.isRunning():
 				settings["reset"] = 1
 			message = json.dumps(settings) + '\n'
 			self.socketSend(self.socket, message.encode('utf-8'))

@@ -1205,11 +1205,9 @@ class MainWin( wx.Frame ):
 		
 		if not Utils.MessageOKCancel(
 				self,
-				'{}\n\n\t{}'.format(
-						_('Restart the Race Now?'),
-						_('Careful - there is no Undo'),
-					),
-					_('Race Not Restarted')
+				'{}'.format(_('Restart the Race Now?'),
+				),
+					_('Restart race')
 				):
 				return
 		with Model.LockRace() as race:
