@@ -873,8 +873,12 @@ class MainWin( wx.Frame ):
 			
 		#record that a sprint is in progress
 		if not event.isT2:
-			race.setInProgressSprintStart( startTime )
-			Utils.PlaySound('boop.wav')
+			if "T1micros" in event.sprintDict:
+				race.setInProgressSprintStart( startTime )
+				Utils.PlaySound('boop.wav')
+			else:
+				# no current sprint
+				race.setInProgressSprintStart( None )
 		else:
 			race.setInProgressSprintStart( None )
 			Utils.PlaySound('peeeep.wav')

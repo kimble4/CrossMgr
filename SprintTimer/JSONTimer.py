@@ -10,7 +10,7 @@ import re
 import wx
 import wx.lib.newevent
 import Utils
-#import Model
+import Model
 from threading import Thread as Process
 from queue import Queue, Empty
 #import JChip
@@ -162,6 +162,8 @@ class JSONTimer:
 
 	def Server( self, q, shutdownQ, sendQ, HOST, PORT ):
 		
+		race = Model.race
+		
 		if not self.readerEventWindow:
 			self.readerEventWindow = Utils.mainWin
 		
@@ -228,6 +230,8 @@ class JSONTimer:
 			# send the settings and epoch time immediately
 			self.socketWriteLock.acquire()
 			settings = { "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit, "wallTime": int(now().timestamp()) }
+			if race.inProgressSprintStart is None:
+				settings["reset"] = 1
 			message = json.dumps(settings) + '\n'
 			self.socketSend(self.socket, message.encode('utf-8'))
 			self.socketWriteLock.release()
@@ -278,8 +282,8 @@ class JSONTimer:
 								#just update the time difference
 								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
 						else:
-							#just update the time difference
-							self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
+							# no current sprint
+							self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 					else:
 						self.qLog( 'connection', '{}'.format(_('Sprint timer socket has CLOSED')) )
 						break
