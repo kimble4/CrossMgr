@@ -972,7 +972,7 @@ class ExportGrid:
 							data[col].append( pos )
 							pos += 1
 						elif status is None:
-							if race.isRunning():
+							if race.isRunning() or race.isUnstarted():
 								data[col].append( 'NP' )
 							else:
 								data[col].append( 'DNS' )

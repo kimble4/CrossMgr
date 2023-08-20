@@ -1695,7 +1695,7 @@ class Race:
 							externalInfoHasBib = True
 						else:
 							Utils.writeLog('Bib #' + str(bib) + ' is not in externalInfo!')
-					status = self.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else (Rider.NP if race.isRunning() else Rider.DNS)
+					status = self.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else (Rider.NP if race.isRunning() or race.isUnstarted() else Rider.DNS)
 					info = { 'flr': 1.0,
 							'relegated': False
 					}
