@@ -1681,8 +1681,10 @@ class Race:
 		ignoreFields = {'pos', 'num', 'gap', 'gapValue', 'laps', 'lapTimes', 'full_name', 'short_name'}
 		statusNames = Rider.statusNames
 		
-		if self.excelLink:
+		if getattr(self, 'excelLink', None) is not None:
 			externalInfo = self.excelLink.read()
+		else:
+			externalInfo = None
 		
 		for cat in ([category] if category else self.getCategories()):
 			results = self.getSprintResults( cat )
@@ -1739,7 +1741,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = times[0]
 						info['lastTimeOrig'] = times[0] #times[-1]
-						info['raceCat'] = race.getCategory( bib ).fullname  #fixme is not fullname
+						info['raceCat'] = race.getCategory( bib ).fullname if race.getCategory( bib ) else ''
 						info['raceSpeeds'] = [speeds[0]]
 						info['raceTimes'] = [0, times[0]]
 						info['speed'] = '{:.3f} mph'.format(speeds[0])
@@ -1753,7 +1755,7 @@ class Race:
 						info['lastInterp'] = False
 						info['lastTime'] = 0.0
 						info['lastTimeOrig'] = 0.0
-						info['raceCat'] = race.getCategory( bib ).fullname  #fixme is not fullname
+						info['raceCat'] = race.getCategory( bib ).fullname if race.getCategory( bib ) else ''
 						info['raceSpeeds'] = []
 						info['raceTimes'] = []
 						info['speed'] = ''

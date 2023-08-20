@@ -273,13 +273,13 @@ class Categories( wx.Panel ):
 
 		#hs.AddSpacer( 6 )
 		
-		#self.newCategoryButton = wx.Button(self, label=_('New'))
-		#self.Bind( wx.EVT_BUTTON, self.onNewCategory, self.newCategoryButton )
-		#hs.Add( self.newCategoryButton, 0, border = border, flag = flag )
+		self.newCategoryButton = wx.Button(self, label=_('New'))
+		self.Bind( wx.EVT_BUTTON, self.onNewCategory, self.newCategoryButton )
+		hs.Add( self.newCategoryButton, 0, border = border, flag = flag )
 		
-		#self.delCategoryButton = wx.Button(self, label=_('Delete'))
-		#self.Bind( wx.EVT_BUTTON, self.onDelCategory, self.delCategoryButton )
-		#hs.Add( self.delCategoryButton, 0, border = border, flag = (flag & ~wx.LEFT) )
+		self.delCategoryButton = wx.Button(self, label=_('Delete'))
+		self.Bind( wx.EVT_BUTTON, self.onDelCategory, self.delCategoryButton )
+		hs.Add( self.delCategoryButton, 0, border = border, flag = (flag & ~wx.LEFT) )
 
 		#hs.AddSpacer( 6 )
 		
@@ -787,7 +787,7 @@ class Categories( wx.Panel ):
 	
 	def onNewCategory( self, event ):
 		self.grid.AppendRows( 1 )
-		self._setRow( r=self.grid.GetNumberRows() - 1, active=True, name='<{}>     '.format(_('CategoryName')), catStr='100-199,504,-128' )
+		self._setRow( r=self.grid.GetNumberRows() - 1, name='<{}>     '.format(_('CategoryName')), catStr='100-199,504,-128' )
 		self.doAutosize()
 		
 	def onDelCategory( self, event ):
