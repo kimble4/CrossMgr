@@ -62,7 +62,7 @@ from Properties			import Properties, PropertiesDialog, BatchPublishPropertiesDia
 #from Prizes				import Prizes
 #from HistogramPanel		import HistogramPanel
 #from UnmatchedTagsGantt	import UnmatchedTagsGantt
-#import FtpWriteFile
+import FtpWriteFile
 from FtpWriteFile		import realTimeFtpPublish
 #from SetAutoCorrect		import SetAutoCorrectDialog
 #from DNSManager			import DNSManagerDialog
@@ -226,8 +226,8 @@ class MainWin( wx.Frame ):
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New..."), _("Create a new race"), Utils.GetPngBitmap('document-new.png') )
 		self.Bind(wx.EVT_MENU, self.menuNew, item )
 
-		#item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("New Nex&t..."), _("Create a new race starting from the current race"), Utils.GetPngBitmap('document-new-next.png') )
-		#self.Bind(wx.EVT_MENU, self.menuNewNext, item )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("New Nex&t..."), _("Create a new race starting from the current race"), Utils.GetPngBitmap('document-new-next.png') )
+		self.Bind(wx.EVT_MENU, self.menuNewNext, item )
 
 		#self.fileMenu.AppendSeparator()
 		
@@ -2847,73 +2847,73 @@ class MainWin( wx.Frame ):
 		self.showPage(self.iDataPage)
 		self.refreshAll()
 	
-	#@logCall
-	#def menuNewNext( self, event ):
-		#race = Model.race
-		#if race is None:
-			#self.menuNew( event )
-			#return
+	@logCall
+	def menuNewNext( self, event ):
+		race = Model.race
+		if race is None:
+			self.menuNew( event )
+			return
 
 		#self.closeFindDialog()
 		#self.showPage(self.iActionsPage)
-		#race.resetAllCaches()
-		#ResetExcelLinkCache()
-		#self.writeRace()
+		race.resetAllCaches()
+		ResetExcelLinkCache()
+		self.writeRace()
 		
 		#Save categories, gpx track and Excel link and use them in the next race.
-		#categoriesSave = race.categories
+		categoriesSave = race.categories
 		#geoTrack, geoTrackFName = getattr(race, 'geoTrack', None), getattr(race, 'geoTrackFName', None)
-		#excelLink = getattr(race, 'excelLink', None)
-		#race = None
+		excelLink = getattr(race, 'excelLink', None)
+		race = None
 		
 		#Configure the next race.
-		#with PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE ) as dlg:
-			#dlg.properties.refresh()
-			#dlg.properties.incNext()
+		with PropertiesDialog(self, title=_('Configure Race'), style=wx.DEFAULT_DIALOG_STYLE ) as dlg:
+			dlg.properties.refresh()
+			dlg.properties.incNext()
 			#dlg.properties.setEditable( True )
-			#dlg.folder.SetValue(os.path.dirname(self.fileName))
-			#dlg.properties.updateFileName()
-			#if dlg.ShowModal() != wx.ID_OK:
-				#return
+			dlg.folder.SetValue(os.path.dirname(self.fileName))
+			dlg.properties.updateFileName()
+			if dlg.ShowModal() != wx.ID_OK:
+				return
 			
-			#fileName = dlg.GetPath()
+			fileName = dlg.GetPath()
 			#categoriesFile = dlg.GetCategoriesFile()
 
 			#Check for existing file.
-			#if os.path.exists(fileName) and \
-			   #not Utils.MessageOKCancel(self, '{}\n\n    {}'.format(_('File already exists.  Overwrite?'), fileName), _('File Exists')):
-				#return
+			if os.path.exists(fileName) and \
+			   not Utils.MessageOKCancel(self, '{}\n\n    {}'.format(_('File already exists.  Overwrite?'), fileName), _('File Exists')):
+				return
 
 			#Try to open the file.
-			#try:
-				#with open(fileName, 'w') as fp:
-					#pass
-			#except IOError:
-				#Utils.MessageOK(self, '{}\n\n    "{}".'.format(_('Cannot open file.'), fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
-				#return
-			#except Exception as e:
-				#Utils.MessageOK(self, '{}\n\n    "{}".\n\n{}: {}'.format(_('Cannot open file.'), fileName, _('Error'), e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
-				#return
+			try:
+				with open(fileName, 'w') as fp:
+					pass
+			except IOError:
+				Utils.MessageOK(self, '{}\n\n    "{}".'.format(_('Cannot open file.'), fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
+				return
+			except Exception as e:
+				Utils.MessageOK(self, '{}\n\n    "{}".\n\n{}: {}'.format(_('Cannot open file.'), fileName, _('Error'), e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
+				return
 
 			#Create a new race and initialize it with the properties.
-			#self.fileName = fileName
-			#WebServer.SetFileName( self.fileName )
-			#Model.resetCache()
-			#ResetExcelLinkCache()
+			self.fileName = fileName
+			WebServer.SetFileName( self.fileName )
+			Model.resetCache()
+			ResetExcelLinkCache()
 			
 			#Save the current Ftp settings.
-			#ftpPublish = FtpWriteFile.FtpPublishDialog( self )
+			ftpPublish = FtpWriteFile.FtpPublishDialog( self )
 
-			#Model.newRace()
-			#dlg.properties.commit()		# Apply the new properties from the dlg.
-			#ftpPublish.commit()			# Apply the ftp properties
-			#ftpPublish.Destroy()
+			Model.newRace()
+			dlg.properties.commit()		# Apply the new properties from the dlg.
+			ftpPublish.commit()			# Apply the ftp properties
+			ftpPublish.Destroy()
 
 		#Done with properties.  On with initializing the rest of the race.
 		#self.updateRecentFiles()
 
 		#Restore the previous categories.
-		#race = Model.race
+		race = Model.race
 		#importedCategories = False
 		#if categoriesFile:
 			#try:
@@ -2926,7 +2926,7 @@ class MainWin( wx.Frame ):
 				#Utils.MessageOK( self, '{}:\n\n    {}\n\n{}'.format(_('Bad file format'), categoriesFile, e), _("File Read Error"), iconMask=wx.ICON_ERROR)
 
 		#if not importedCategories:
-			#race.categories = categoriesSave
+		race.categories = categoriesSave
 
 		#if geoTrack:
 			#race.geoTrack, race.geoTrackFName = geoTrack, geoTrackFName
@@ -2935,14 +2935,14 @@ class MainWin( wx.Frame ):
 				#for c in race.categories.values():
 					#c.distance = distance
 			#race.showOval = False
-		#if excelLink:
-			#race.excelLink = excelLink
+		if excelLink:
+			race.excelLink = excelLink
 		
 		#self.setActiveCategories()
 		#self.setNumSelect( None )
-		#self.writeRace()
-		#self.showPage(self.iActionsPage)
-		#self.refreshAll()
+		self.writeRace()
+		self.showPage(self.iDataPage)
+		self.refreshAll()
 
 	#@logCall
 	#def openRaceDBExcel( self, fname, overwriteExisting=True ):
@@ -3126,8 +3126,8 @@ class MainWin( wx.Frame ):
 			#self.showPage( self.iResultsPage if isFinished else self.iActionsPage )
 			self.showPage( self.iDataPage )
 			self.refreshAll()
-			#Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
-			#Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
+			Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
+			Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
 			
 			#eventFileName = os.path.join( os.path.dirname(self.fileName), race.getFileName() )
 			#if self.fileName != eventFileName:

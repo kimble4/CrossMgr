@@ -1472,7 +1472,7 @@ class Properties( wx.Panel ):
 	def onPageChanging( self, event ):
 		if Model.race:
 			notebook = event.GetEventObject()
-			#notebook.GetPage( event.GetOldSelection() ).commit()
+			notebook.GetPage( event.GetOldSelection() ).commit()
 			notebook.GetPage( event.GetSelection() ).refresh()
 			self.updateFileName()
 
@@ -1569,31 +1569,24 @@ class Properties( wx.Panel ):
 	#def setEditable( self, editable = True ):
 		#pass
 	
-	#def incNext( self ):
-		#try:
-			#gi = self.generalInfoProperties
-		#except AttributeError:
-			#return ''		
+	def incNext( self ):
+		try:
+			gi = self.generalInfoProperties
+		except AttributeError:
+			return ''		
 		
-		#gi.raceNum.SetValue( gi.raceNum.GetValue() + 1 )
-		#gi.memo.SetValue( '' )
-		#if	 gi.scheduledStart.GetValue() == '10:00' and gi.minutes.GetValue() == 40 and gi.raceNum.GetValue() == 2:
-			#gi.scheduledStart.SetValue( '11:30' )
-			#gi.minutes.SetValue( 50 )
-		#elif gi.scheduledStart.GetValue() == '11:30' and gi.minutes.GetValue() == 50 and gi.raceNum.GetValue() == 3:
-			#gi.scheduledStart.SetValue( '13:00' )
-			#gi.minutes.SetValue( 60 )
-		#else:
-			#sStr = gi.scheduledStart.GetValue()
-			#fields = sStr.split(':')
-			#if len(fields) == 2:
-				#mins = int(fields[0],10) * 60 + int(fields[1],10)
-				#mins += gi.minutes.GetValue()
-				#mins += 15	# Add time for a break.
-				#if (mins/60) >= 24:
-					#mins = 0
-				#sNew = '{:02d}:{:02d}:00'.format(int(mins/60), mins%60)
-				#gi.scheduledStart.SetValue( sNew )
+		gi.raceNum.SetValue( gi.raceNum.GetValue() + 1 )
+		gi.memo.SetValue( '' )
+		sStr = gi.scheduledStart.GetValue()
+		fields = sStr.split(':')
+		if len(fields) == 2:
+			mins = int(fields[0],10) * 60 + int(fields[1],10)
+			#mins += gi.minutes.GetValue()
+			mins += 60	# Add time for a break.
+			if (mins/60) >= 24:
+				mins = 0
+			sNew = '{:02d}:{:02d}:00'.format(int(mins/60), mins%60)
+			gi.scheduledStart.SetValue( sNew )
 	
 	def onChanged( self, event ):
 		self.updateFileName()
