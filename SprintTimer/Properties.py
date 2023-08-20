@@ -413,7 +413,7 @@ class SprintTimerProperties( wx.Panel ):
 		gridBagSizer = wx.GridBagSizer()
 		gridBagSizer.Add( wx.StaticText( self, label=_('Remote IP Address:') ),
 						pos=(0,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
-		self.ipaddr = wx.TextCtrl( self, value ='127.0.0.1', size=(240,-1) )
+		self.ipaddr = wx.TextCtrl( self, value =Utils.GetDefaultHost(), size=(240,-1) )
 		gridBagSizer.Add( self.ipaddr, pos=(0, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
 		self.port = wx.lib.intctrl.IntCtrl( self, -1, min=1, max=65535, value=10123,
@@ -447,7 +447,7 @@ class SprintTimerProperties( wx.Panel ):
 		if not race:
 			return
 		self.sprintTimer.SetValue( getattr(race, 'enableSprintTimer', True) )
-		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', '127.0.0.1') )
+		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', Utils.GetDefaultHost()) )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
 		
@@ -509,9 +509,9 @@ class RfidProperties( wx.Panel ):
 
 	def onSetup( self, event ):
 		self.commit()
-		#if Model.race.isRunning():
-			#Utils.MessageOK( self, _('Cannot perform RFID setup while race is running.'), _('Cannot Perform RFID Setup'), iconMask=wx.ICON_ERROR )
-			#return
+		if Model.race.isRunning():
+			Utils.MessageOK( self, _('Cannot perform RFID setup while race is running.'), _('Cannot Perform RFID Setup'), iconMask=wx.ICON_ERROR )
+			return
 		with JChipSetup.JChipSetupDialog(self) as dlg:
 			dlg.ShowModal()
 		self.refresh()
