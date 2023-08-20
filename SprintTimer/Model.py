@@ -1949,58 +1949,21 @@ class Race:
 			self.setChanged()
 		
 
-	#def addTime( self, num, t = None, doSetChanged = True ):
-		#if t is None:
-			#t = self.curRaceTime()
+	def addTime( self, num, t = None, doSetChanged = True ):  # for compatibility with unmatched tags handling in ReadSignOnSheet
+		if t is None:
+			return
 		
-		#if self.isTimeTrial:
-			#r = self.getRider(num)
-			#if r.firstTime is None:
-				#r.firstTime = t
-			#else:
-				#r.addTime( t - r.firstTime )
-		#else:
-			#if self.enableJChipIntegration:
-				#if self.resetStartClockOnFirstTag:
-					#if not self.firstRecordedTime:
-						#self.firstRecordedTime = self.startTime + datetime.timedelta( seconds = t )
-						#self.startTime = self.firstRecordedTime
-						#t = 0.0
-					#r = self.getRider(num)
-					#if r.firstTime is None:
-						#r.firstTime = t
-					#else:
-						#r.addTime( t )
-						
-				#elif self.skipFirstTagRead:
-					#if not self.firstRecordedTime:
-						#self.firstRecordedTime = self.startTime + datetime.timedelta( seconds = t )
-					#r = self.getRider(num)
-					#if r.firstTime is None:
-						#r.firstTime = t
-					#else:
-						#r.addTime( t )
-						
-				#else:
-					#self.getRider(num).addTime( t )
-			#else:
-				#self.getRider(num).addTime( t )
-		
-		#fixme criterium finish
-		#if self.isCriterium and self.critStatus == Race.CritBellLap:
-			#if num == self.getLeader():
-				#print('Criterium leader ' + str(num) + ' finishing at ' + str(t))
-				#self.critStatus = Race.CritFinishLap
-				#Store the original race minutes
-				#self.critMinutes = self.minutes
-				#Set race minutes to next whole minute
-				#self.minutes = int(t/60.0) + 1
-				#print('Race minutes changed to: ' + str(self.minutes) + ' (' + str(self.minutes*60) + ' seconds)')
-				#doSetChanged = True
-		
-		#if doSetChanged:
-			#self.setChanged()
-		#return t
+		if self.sprintBibs.length() == 0:
+			# if we don't have any bibs, just append
+			self.sprintBibs.append( (t, num, False) )
+		else:
+			#find the index that this should be inserted at
+			for i, timeNumManual in enumerate(self.sprintBibs):
+				if i > 1 and t < timeNumManual[0]:
+					self.sprintBibs.insert( i-1, (t, num, False) )
+					return
+			# if we get here, append to the end
+			self.sprintBibs.append( (t, num, False) )
 
 	#def importTime( self, num, t ):
 		#self.getRider(num).addTime( t )
