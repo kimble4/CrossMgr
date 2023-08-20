@@ -819,6 +819,8 @@ class MainWin( wx.Frame ):
 		race = Model.race
 		if not race or not race.isRunning() or not race.enableUSBCamera:
 			return
+		if not getattr(race, 'photosOnRifid', True):
+			return
 		if not getattr(race, 'tagNums', None):
 			GetTagNums()
 		if not race.tagNums:

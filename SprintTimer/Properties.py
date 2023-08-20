@@ -487,6 +487,8 @@ class RfidProperties( wx.Panel ):
 		self.tagAssociateSeconds = intctrl.IntCtrl( self, min=1, max=60, allow_none=True, value=5, limited=True, size=(64,-1), style=wx.ALIGN_RIGHT )
 		hs.Add( self.tagAssociateSeconds, flag=wx.LEFT, border=4 )
 		hs.Add( wx.StaticText( self, label='{}'.format(_('seconds of trap time.')) ), flag=wx.ALIGN_CENTER_VERTICAL )
+		
+		self.capturePhotos = wx.CheckBox( self, style=wx.ALIGN_LEFT, label = _('Trigger camera on RFID read') )
 
 		hs2 = wx.BoxSizer( wx.HORIZONTAL )
 		hs2.Add( wx.StaticText( self, label='{}:'.format(_('Reader Type')) ), flag=wx.ALIGN_CENTER_VERTICAL )
@@ -503,6 +505,7 @@ class RfidProperties( wx.Panel ):
 		ms.Add( self.jchip, flag=wx.ALL, border=16 )
 		ms.Add( self.radioBox, flag=wx.ALL, border=16 )
 		ms.Add( hs, flag=wx.ALL, border=4 )
+		ms.Add(self.capturePhotos, flag=wx.ALL, border=4 )
 		ms.Add( hs2, flag=wx.ALL, border=4 )
 		ms.AddSpacer( 16 )
 		ms.Add( self.setupButton, flag=wx.ALL, border=4 )
@@ -528,6 +531,7 @@ class RfidProperties( wx.Panel ):
 			self.tagAssociateSeconds.SetValue( getattr(race, 'rfidTagAssociateSeconds', 5) )
 		except ValueError:
 			self.tagAssociateSeconds.SetValue( 5 )
+		self.capturePhotos.SetValue(getattr(race, 'photosOnRfid', True) )
 		self.jchip.SetValue( getattr(race, 'enableJChipIntegration', False) )
 		self.chipReaderType.SetLabel( self.chipReaderChoices[max(getattr(race, 'chipReaderType', 0), 0)] )
 		self.GetSizer().Layout()
@@ -541,6 +545,7 @@ class RfidProperties( wx.Panel ):
 		else:
 			race.rfidAtT2 = False
 		race.rfidTagAssociateSeconds = self.tagAssociateSeconds.GetValue()
+		race.photosOnRifd = self.capturePhotos.IsChecked()
 		race.enableJChipIntegration = self.jchip.IsChecked()
 		race.timeTrialNoRFIDStart = False
 		race.resetStartClockOnFirstTag	= False
