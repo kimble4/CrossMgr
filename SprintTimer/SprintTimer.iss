@@ -14,7 +14,7 @@ ChangesAssociations=yes
 ; Automatically configure CrossMgr to launch .cmn files.
 Root: HKCR; Subkey: ".spr"; ValueType: string; ValueName: ""; ValueData: "SprintTimer"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "SprintTimer"; ValueType: string; ValueName: ""; ValueData: "SprintTimer Race File"; Flags: uninsdeletekey
-kaRoot: HKCR; Subkey: "SprintTimer\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\SprintTimer.exe,0"
+Root: HKCR; Subkey: "SprintTimer\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\SprintTimer.exe,0"
 Root: HKCR; Subkey: "SprintTimer\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\SprintTimer.exe"" ""%1"""
 
 [Tasks] 
