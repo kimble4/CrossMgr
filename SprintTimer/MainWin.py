@@ -844,7 +844,7 @@ class MainWin( wx.Frame ):
 			
 	def handleSprintTimerEvent( self, event ):  
 		race = Model.race
-		if not race or not race.isRunning():
+		if not race:
 			return
 		
 		self.sprintTimerClockDelta = event.readerComputerTimeDiff
@@ -854,7 +854,7 @@ class MainWin( wx.Frame ):
 			havePPS = None
 		self.data.updateClockDelta( self.sprintTimerClockDelta, havePPS )
 		
-		if event.sprintDict is None:
+		if event.sprintDict is None or not race.isRunning():
 			#we didn't get a sprint, just the clock status
 			return
 		
@@ -4330,7 +4330,15 @@ class MainWin( wx.Frame ):
 				
 		return False	# don't signal for an update.
 	
-	
+	def sprintTimerTestMode( self, test=False):
+		race = Model.race
+		if not race:
+			return
+		
+		if not self.sprintTimer:
+			return
+		
+		self.sprintTimer.setTestMode( test )
 	
 	def disconnectSprintTimer( self ):
 		race = Model.race

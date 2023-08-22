@@ -16,6 +16,71 @@ from queue import Queue, Empty
 #import JChip
 import json
 
+class TimerTestDialog( wx.Dialog ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id, _("Sprint Timer Input Test"),
+						style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL|wx.RESIZE_BORDER )
+		
+		border=4
+		
+		bs = wx.BoxSizer( wx.VERTICAL )
+		
+		self.text = wx.StaticText(self, label='Testing sprint timer inputs...\nTiming will not be possible until the test is finished.')
+		
+		bs.Add( self.text, 0, wx.EXPAND|wx.ALL, border )
+		
+		bs.AddSpacer( border )
+		
+		btnSizer = self.CreateStdDialogButtonSizer( wx.OK )
+		self.Bind( wx.EVT_BUTTON, self.onOK, id=wx.ID_OK )
+		if btnSizer:
+			bs.Add( btnSizer, 0, wx.EXPAND | wx.ALL, border )
+		self.startTest()
+		self.SetSizerAndFit(bs)
+		bs.Fit( self )
+		
+		self.CentreOnParent(wx.BOTH)
+		wx.CallAfter( self.SetFocus )
+		
+		
+	def onOK( self, event ):
+		self.stopTest()
+		wx.CallAfter( Utils.refresh )
+		self.EndModal( wx.ID_OK )
+		
+	def onCancel( self, event ):
+		self.stopTest()
+		wx.CallAfter( Utils.refresh )
+		self.EndModal( wx.ID_CANCEL )
+		
+	def startTest( self ):
+		race = Model.race
+		if not race:
+			self.text.SetLabel('No active race.  Cannot connect to the timer.\n"New" or "Open" a race first.')
+			return
+			
+		if not race.enableSprintTimer:
+			self.text.SetLabel('Sprint timer is not enabled.  Please enable it in the properties.')
+			return
+		
+		mainWin = Utils.getMainWin()
+		
+		if not mainWin.sprintTimer.IsListening():
+			mainWin.updateSprintTimerSettings()
+			mainWin.sprintTimer.StartListener( HOST=race.sprintTimerAddress, PORT=race.sprintTimerPort)
+	
+		mainWin.sprintTimerTestMode(True)
+	
+	def stopTest( self ):
+		race = Model.race
+		if not race:
+			return
+		
+		mainWin = Utils.getMainWin()
+		mainWin.sprintTimerTestMode(False)
+	
+		
+
 class JSONTimer:
 	EOL = b'\r\n'		# Sprint timer delimiter
 	DEFAULT_PORT = 10123
@@ -58,6 +123,17 @@ class JSONTimer:
 		self.speedUnit = unit
 		#self.writeSettings()
 		
+	def setTestMode( self, testMode = False ):
+		if self.sendQ:
+			try:
+				settings = { "testMode": 1 if testMode else 0 }
+				message = json.dumps(settings) + '\n'
+				self.sendQ.put(message)
+			except Exception as e:
+				print(e)
+				self.qLog( 'send', '{}: {}: "{}"'.format(cmd, _('Failed to write to sendQ'), e) )
+			self.processSendQ()
+		
 	def setBib( self, bib = None):
 		if self.sendQ:
 			try:
@@ -92,6 +168,10 @@ class JSONTimer:
 				self.socketWriteLock.release()
 			except Empty:
 				return
+			except BrokenPipeError:
+				self.socketWriteLock.release()
+				self.socket.close()
+				self.socket = None
 				
 	def socketSend( self, s, message ):
 		if s is None:
@@ -229,7 +309,7 @@ class JSONTimer:
 			self.qLog( 'connection', '{} {}:{}'.format(_('connect to sprint timer SUCCEEDS on'), HOST, PORT) )
 			# send the settings and epoch time immediately
 			self.socketWriteLock.acquire()
-			settings = { "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit, "wallTime": int(now().timestamp()) }
+			settings = { "testMode": 0, "sprintDistance": self.sprintDistance, "speedUnit": self.speedUnit, "wallTime": int(now().timestamp()) }
 			if race is not None and not race.isRunning():
 				settings["reset"] = 1
 			message = json.dumps(settings) + '\n'

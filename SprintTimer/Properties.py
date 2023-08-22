@@ -29,6 +29,7 @@ import JChipSetup
 #import WebServer
 import ChipReader
 #import HelpSearch
+from JSONTimer import TimerTestDialog
 
 #------------------------------------------------------------------------------------------------
 
@@ -428,8 +429,8 @@ class SprintTimerProperties( wx.Panel ):
 		gridBagSizer.Add( self.distance, pos=(2, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
 		
-		#self.testButton = wx.Button( self, label=_('Test Sprint Timer...') )
-		#self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
+		self.testButton = wx.Button( self, label=_('Timer input test...') )
+		self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
 		
 		ms = wx.BoxSizer( wx.VERTICAL )
 		self.SetSizer( ms )
@@ -437,10 +438,13 @@ class SprintTimerProperties( wx.Panel ):
 		ms.Add( self.sprintTimer, flag=wx.ALL, border=16 )
 		ms.Add( gridBagSizer, 0, wx.EXPAND|wx.ALL, 4 )
 		ms.AddSpacer( 16 )
-		#ms.Add( self.testButton, flag=wx.ALL, border=4 )
+		ms.Add( self.testButton, flag=wx.ALL, border=4 )
 		
 	def onTest(self, event ):
-		pass
+		self.commit()
+		with TimerTestDialog(self) as dlg:
+			dlg.ShowModal()
+		self.refresh()
 	
 	def refresh( self ):
 		race = Model.race
@@ -464,7 +468,7 @@ class SprintTimerProperties( wx.Panel ):
 			# force reconnect the timer if the network settings have changed
 			mainWin.disconnectSprintTimer()
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
-		race.sprintDistance		= self.distance.GetValue()
+		race.sprintDistance = self.distance.GetValue()
 		
 		mainWin.updateSprintTimerSettings()
 	
