@@ -73,6 +73,7 @@ copyFiles = [
     "FtpUploadProgress.py"
     "LockLog.py"
     "ParseHtmlPayload.py"
+    "websocket_server.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

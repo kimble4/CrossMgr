@@ -909,11 +909,11 @@ class MainWin( wx.Frame ):
 			race.photoCount += len(requests) * 2
 		
 	
-	#def updateLapCounter( self, labels=None ):
+	def updateLapCounter( self, labels=None ):
 		#labels = labels or []
 		#self.lapCounter.SetLabels( labels )
 		#self.lapCounterDialog.page.SetLabels( labels )
-		#WebServer.WsLapCounterRefresh()
+		WebServer.WsLapCounterRefresh()
 
 	#def getValidNum( self, message, mustBeInRace=True, exclude=[] ):
 		#race = Model.race
@@ -4136,8 +4136,8 @@ class MainWin( wx.Frame ):
 			
 	def refreshResults( self ):
 		self.callPageRefresh( self.iResultsPage )
-		if Model.race.ftpUploadDuringRace:
-			wx.CallAfter( realTimeFtpPublish.publishEntry )
+		#if Model.race.ftpUploadDuringRace:
+			#wx.CallAfter( realTimeFtpPublish.publishEntry )
 	
 	def refreshAll( self ):
 		self.refresh()
@@ -4193,7 +4193,7 @@ class MainWin( wx.Frame ):
 		if self.processNumTimes():
 			self.refresh()
 			#if Model.race and Model.race.ftpUploadDuringRace:
-				#realTimeFtpPublish⎄.publishEntry()		
+				#realTimeFtpPublish.publishEntry()
 	
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race
@@ -4384,7 +4384,6 @@ class MainWin( wx.Frame ):
 		
 
 	def updateRaceClock( self, event = None ):
-		#self.record.refreshAll()
 
 		doRefresh = False
 		alsoRefresh = False
@@ -4442,8 +4441,9 @@ class MainWin( wx.Frame ):
 			
 		if doRefresh or alsoRefresh:
 			self.nonBusyRefresh()
-			#if race.ftpUploadDuringRace:
-				#realTimeFtpPublish.publishEntry()		
+			self.updateLapCounter()
+			if race.ftpUploadDuringRace:
+				realTimeFtpPublish.publishEntry()
 
 # Set log file location.
 dataDir = ''

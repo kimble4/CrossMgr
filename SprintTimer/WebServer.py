@@ -74,7 +74,7 @@ icons = {
 with open(os.path.join(Utils.getHtmlFolder(), 'Index.html')) as f:
 	indexTemplate = Template( f.read() )
 
-#PORT_NUMBER = 8765
+PORT_NUMBER = 8765
 
 def gzipEncode( content ):
 	out = io.BytesIO()
@@ -608,7 +608,7 @@ qThread.start()
 #webThread.daemon = True
 #webThread.start()
 
-#from websocket_server import WebsocketServer
+from websocket_server import WebsocketServer
 #-------------------------------------------------------------------
 
 #def message_received(client, server, message):
@@ -691,77 +691,107 @@ qThread.start()
 	#wsTimer.start()
 			
 #-------------------------------------------------------------------
-#def GetLapCounterRefresh():
-	#try:
-		#return Utils.mainWin.lapCounter.GetState()
-	#except Exception:
-		#return {
-			#'cmd': 'refresh',
-			#'labels': [],
-			#'foregrounds': [],
-			#'backgrounds': [],
-			#'raceStartTime': None,
-			#'lapElapsedClock': False,
-		#}
-
-#def lap_counter_new_client(client, server):
-	#server.send_message( client, json.dumps(GetLapCounterRefresh()) )
-
-#wsLapCounterServer = None
-#def WsLapCounterServerLaunch():
-	#global wsLapCounterServer
-	#while True:
-		#try:
-			#wsLapCounterServer = WebsocketServer( port=PORT_NUMBER + 2, host='' )
-			#wsLapCounterServer.set_fn_new_client( lap_counter_new_client )
-			#wsLapCounterServer.run_forever()
-		#except Exception as e:
-			#wsLapCounterServer = None
-			#time.sleep( 5 )
-
-#def WsLapCounterQueueListener( q ):
-	#global wsLapCounterServer
-		
-	#keepGoing = True
-	#while keepGoing:
-		#message = q.get()
-		#cmd = message.get('cmd', None)
-		#if cmd == 'refresh':
-			#if wsLapCounterServer and wsLapCounterServer.hasClients():
-				#race = Model.race
-				#message['tNow'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-				#message['curRaceTime'] = race.curRaceTime() if race and race.startTime and not race.finishTime else 0.0
-				#wsLapCounterServer.send_message_to_all( Utils.ToJson(message).encode() )
-		#elif cmd == 'exit':
-			#keepGoing = False
-		#q.task_done()
+def GetLapCounterRefresh():
+	race = Model.race
+	if not race:
+		return {
+			'cmd': 'refresh',
+			'labels': [],
+			'foregrounds': [],
+			'backgrounds': [],
+			'raceStartTime': None,
+			'lapElapsedClock': False,
+		}
 	
-	#wsLapCounterServer = None	
+	sprints = race.getSprints()
+	sprintDict = sprints[-1][1]
+	message = { 'cmd': 'refresh',
+			'labels': [],
+			'foregrounds': ['rgb(255, 255, 255)'],
+			'backgrounds': ['rgb(16, 16, 16)'],
+			'raceStartTime': None,
+			'lapElapsedClock': False,
+			'sprintDistance': sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else None,
+			'speedUnit': sprintDict['speedUnit'] if 'speedUnit' in sprintDict else None,
+			}
+	if race.getInProgressSprintTime() is None:
+		if 'sprintBib' in sprintDict:
+			try:
+				bib = int(sprintDict['sprintBib'])
+				message['sprintBib'] = bib
+			except:
+				# Do not send multiple bibs here to avoid confusion
+				pass
+		if 'sprintStart' in sprintDict:
+			message['sprintStart'] = sprintDict['sprintStart'] 
+		if 'sprintTime' in sprintDict:
+			message['sprintTime'] = sprintDict['sprintTime']
+		if 'sprintSpeed' in sprintDict:
+			message['sprintSpeed'] = sprintDict['sprintSpeed']
+	else:
+		message['curRaceTime'] = race.getInProgressSprintTime()
 
-#wsLapCounterQ = Queue()
-#wsLapCounterQThread = threading.Thread( target=WsLapCounterQueueListener, name='WsLapCounterQueueListener', args=(wsLapCounterQ,) )
-#wsLapCounterQThread.daemon = True
-#wsLapCounterQThread.start()
+	return message
 
-#wsLapCounterThread = threading.Thread( target=WsLapCounterServerLaunch, name='WsLapCounterServer' )
-#wsLapCounterThread.daemon = True
-#wsLapCounterThread.start()
+def lap_counter_new_client(client, server):
+	server.send_message( client, json.dumps(GetLapCounterRefresh()) )
 
-#lastRaceName, lastMessage = None, None
-#def WsLapCounterRefresh():
-	#global lastRaceName, lastMessage
-	#race = Model.race
-	#if not race:
-		#return
-	#if not (wsLapCounterServer and wsLapCounterServer.hasClients()):
-		#return
-	#message, raceName = GetLapCounterRefresh(), GetRaceName()
-	#if race.isFinished():  # If the race has finished, clear the lap counters and zero the start time
-		#message['labels'] = [('',False,None) for category in race.getCategories(startWaveOnly=True)]
-		#message['raceStartTime'] = None
-	#if lastMessage != message or lastRaceName != raceName:
-		#wsLapCounterQ.put( message )
-		#lastMessage, lastRaceName = message, raceName
+wsLapCounterServer = None
+def WsLapCounterServerLaunch():
+	global wsLapCounterServer
+	while True:
+		try:
+			wsLapCounterServer = WebsocketServer( port=PORT_NUMBER + 2, host='' )
+			wsLapCounterServer.set_fn_new_client( lap_counter_new_client )
+			wsLapCounterServer.run_forever()
+		except Exception as e:
+			wsLapCounterServer = None
+			time.sleep( 5 )
+
+def WsLapCounterQueueListener( q ):
+	global wsLapCounterServer
+		
+	keepGoing = True
+	while keepGoing:
+		message = q.get()
+		cmd = message.get('cmd', None)
+		if cmd == 'refresh':
+			if wsLapCounterServer and wsLapCounterServer.hasClients():
+				race = Model.race
+				message['tNow'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+				#message['curRaceTime'] = race.curRaceTime() if race and race.startTime and not race.finishTime else 0.0
+				#message['curRaceTime'] = race.getInProgressSprintTime() if race and race.startTime and not race.finishTime and race.getInProgressSprintTime() else 0.0
+				wsLapCounterServer.send_message_to_all( Utils.ToJson(message).encode() )
+		elif cmd == 'exit':
+			keepGoing = False
+		q.task_done()
+	
+	wsLapCounterServer = None	
+
+wsLapCounterQ = Queue()
+wsLapCounterQThread = threading.Thread( target=WsLapCounterQueueListener, name='WsLapCounterQueueListener', args=(wsLapCounterQ,) )
+wsLapCounterQThread.daemon = True
+wsLapCounterQThread.start()
+
+wsLapCounterThread = threading.Thread( target=WsLapCounterServerLaunch, name='WsLapCounterServer' )
+wsLapCounterThread.daemon = True
+wsLapCounterThread.start()
+
+lastMessage = None
+def WsLapCounterRefresh():
+	global lastMessage
+	race = Model.race
+	if not race:
+		return
+	if not (wsLapCounterServer and wsLapCounterServer.hasClients()):
+		return
+	message = GetLapCounterRefresh()
+	if race.isFinished():  # If the race has finished, clear the lap counters and zero the start time
+		message['labels'] = [('',False,None) for category in race.getCategories(startWaveOnly=True)]
+		message['raceStartTime'] = None
+	if lastMessage != message:
+		wsLapCounterQ.put( message )
+		lastMessage = message
 			
 #if __name__ == '__main__':
 	#SetFileName( os.path.join('Gemma', '2015-11-10-A Men-r4-.html') )

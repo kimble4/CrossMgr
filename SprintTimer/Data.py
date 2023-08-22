@@ -178,6 +178,8 @@ class Data( wx.Panel ):
 				tStr = 'Timing: ~' + tStr
 				self.raceTime.SetBackgroundColour(self.redColour)
 				self.raceTime.SetForegroundColour(self.whiteColour)
+				if Utils.mainWin:
+					Utils.mainWin.updateLapCounter()
 			elif race.isRunning():
 				tStr = 'Ready...'
 				self.raceTime.SetBackgroundColour(self.whiteColour)
