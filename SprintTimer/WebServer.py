@@ -15,14 +15,14 @@ import traceback
 import threading
 from urllib.parse import quote
 
-#from urllib.request import url2pathname
+from urllib.request import url2pathname
 from queue import Queue, Empty
 #from socketserver import ThreadingMixIn
 
 #from qrcode import QRCode
 from tornado.template import Template
 from ParseHtmlPayload import ParseHtmlPayload
-#from http.server import BaseHTTPRequestHandler, HTTPServer, HTTPStatus
+from http.server import BaseHTTPRequestHandler, HTTPServer, HTTPStatus
 #from io import StringIO
 import Utils
 import Model
@@ -37,9 +37,9 @@ import LockLog
 Lock, RLock = LockLog.Lock, LockLog.RLock
 Lock, RLock = threading.Lock, threading.RLock
 
-#from ThreadPoolMixIn import ThreadPoolMixIn
-#class CrossMgrServer(ThreadPoolMixIn, HTTPServer):
-	#pass
+from ThreadPoolMixIn import ThreadPoolMixIn
+class CrossMgrServer(ThreadPoolMixIn, HTTPServer):
+	pass
     
 def epochMilliseconds():
 	return time.time_ns() / 1000000.0		# milliseconds since epoch.
@@ -229,12 +229,12 @@ class ContentBuffer:
 				cache = self._updateFile( fname, True )
 		return cache
 	
-	#def getContent( self, fname, checkForUpdate=True ):
-		#with self.lock:
-			#cache = self._getCache( fname, checkForUpdate )
-			#if cache:
-				#return cache.get('content', ''), cache.get('gzip_content', None)
-			#return '', None
+	def getContent( self, fname, checkForUpdate=True ):
+		with self.lock:
+			cache = self._getCache( fname, checkForUpdate )
+			if cache:
+				return cache.get('content', ''), cache.get('gzip_content', None)
+			return '', None
 		
 	def getIndexInfo( self ):
 		race = Model.race
@@ -385,9 +385,9 @@ def WriteHtmlIndexPage():
 			f.write( getIndexPage(share=False) )
 	return fname
 
-#class CrossMgrHandler( BaseHTTPRequestHandler ):
-	#html_content = 'text/html; charset=utf-8'
-	#json_content = 'application/json'
+class CrossMgrHandler( BaseHTTPRequestHandler ):
+	html_content = 'text/html; charset=utf-8'
+	json_content = 'application/json'
 	#reLapCounterHtml = re.compile( r'^\/LapCounter[0-9A-Z-]*\.html$' )
 	
 	#def do_POST( self ):
@@ -468,10 +468,10 @@ def WriteHtmlIndexPage():
 			#self.send_error(501,'Error: {} {}\n{}'.format(self.path, e, traceback.format_exc()))
 			#return
 	
-	#def do_GET(self):
-		#up = urllib.parse.urlparse( self.path )
-		#content, gzip_content = None,  None
-		#try:
+	def do_GET(self):
+		up = urllib.parse.urlparse( self.path )
+		content, gzip_content = None,  None
+		try:
 			#if up.path=='/':
 				#content = getIndexPage()
 				#content_type = self.html_content
@@ -516,38 +516,38 @@ def WriteHtmlIndexPage():
 				#).encode()
 				#content_type = self.json_content
 			#else:
-				#file = None
+				file = None
 				
-				#if up.path == '/CurrentResults.html':
-					#try:
-						#file = os.path.splitext(Model.race.getFileName())[0] + '.html'
-					#except Exception:
-						#pass
+				if up.path == '/':
+					try:
+						file = os.path.splitext(Model.race.getFileName())[0] + '.html'
+					except Exception:
+						pass
 				
 				#elif up.path == '/PreviousResults.html':
 					#file = GetPreviousFileName()
 				
-				#if file is None: 
-					#file = url2pathname(os.path.basename(up.path))
-				#content, gzip_content = contentBuffer.getContent( file )
-				#content_type = self.html_content
-				#assert isinstance( content, bytes )
-		#except Exception as e:
-			#self.send_error(404,'Error: {} {}\n{}'.format(self.path, e, traceback.format_exc()))
-			#return
+				if file is None: 
+					file = url2pathname(os.path.basename(up.path))
+				content, gzip_content = contentBuffer.getContent( file )
+				content_type = self.html_content
+				assert isinstance( content, bytes )
+		except Exception as e:
+			self.send_error(404,'Error: {} {}\n{}'.format(self.path, e, traceback.format_exc()))
+			return
 		
-		#self.send_response( 200 )
-		#self.send_header('Content-Type',content_type)
-		#if content_type == self.html_content:
-			#if gzip_content and 'Accept-Encoding' in self.headers and 'gzip' in self.headers['Accept-Encoding']:
-				#content = gzip_content
-				#self.send_header( 'Content-Encoding', 'gzip' )
-			#self.send_header( 'Cache-Control', 'no-cache, no-store, must-revalidate' )
-			#self.send_header( 'Pragma', 'no-cache' )
-			#self.send_header( 'Expires', '0' )
-		#self.send_header( 'Content-Length', len(content) )
-		#self.end_headers()
-		#self.wfile.write( content )
+		self.send_response( 200 )
+		self.send_header('Content-Type',content_type)
+		if content_type == self.html_content:
+			if gzip_content and 'Accept-Encoding' in self.headers and 'gzip' in self.headers['Accept-Encoding']:
+				content = gzip_content
+				self.send_header( 'Content-Encoding', 'gzip' )
+			self.send_header( 'Cache-Control', 'no-cache, no-store, must-revalidate' )
+			self.send_header( 'Pragma', 'no-cache' )
+			self.send_header( 'Expires', '0' )
+		self.send_header( 'Content-Length', len(content) )
+		self.end_headers()
+		self.wfile.write( content )
 	
 	#def log_message(self, format, *args):
 		#return
@@ -568,17 +568,17 @@ def WriteHtmlIndexPage():
 			#hostname = DEFAULT_HOST
 	#return 'http://{}:{}'.format(hostname, PORT_NUMBER)
 
-#server = None
-#def WebServer():
-	#global server
-	#while True:
-		#try:
-			#server = CrossMgrServer(('', PORT_NUMBER), CrossMgrHandler)
-			#server.init_thread_pool()
-			#server.serve_forever( poll_interval = 2 )
-		#except Exception as e:
-			#server = None
-			#time.sleep( 5 )
+server = None
+def WebServer():
+	global server
+	while True:
+		try:
+			server = CrossMgrServer(('', PORT_NUMBER), CrossMgrHandler)
+			server.init_thread_pool()
+			server.serve_forever( poll_interval = 2 )
+		except Exception as e:
+			server = None
+			time.sleep( 5 )
 
 def queueListener( q ):
 	#global DEFAULT_HOST, server
@@ -595,18 +595,18 @@ def queueListener( q ):
 			keepGoing = False
 		q.task_done()
 	
-	#if server:
-		#server.shutdown()
-		#server = None
+	if server:
+		server.shutdown()
+		server = None
 
 q = Queue()
 qThread = threading.Thread( target=queueListener, name='queueListener', args=(q,) )
 qThread.daemon = True
 qThread.start()
 
-#webThread = threading.Thread( target=WebServer, name='WebServer' )
-#webThread.daemon = True
-#webThread.start()
+webThread = threading.Thread( target=WebServer, name='WebServer' )
+webThread.daemon = True
+webThread.start()
 
 from websocket_server import WebsocketServer
 #-------------------------------------------------------------------
@@ -706,11 +706,11 @@ def GetLapCounterRefresh():
 	sprints = race.getSprints()
 	sprintDict = sprints[-1][1]
 	message = { 'cmd': 'refresh',
-			'labels': [],
-			'foregrounds': ['rgb(255, 255, 255)'],
-			'backgrounds': ['rgb(16, 16, 16)'],
-			'raceStartTime': None,
-			'lapElapsedClock': False,
+			#'labels': [],
+			#'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
+			#'backgrounds': ['rgb(16, 16, 16)'],
+			#'raceStartTime': None,
+			#'lapElapsedClock': False,
 			'sprintDistance': sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else None,
 			'speedUnit': sprintDict['speedUnit'] if 'speedUnit' in sprintDict else None,
 			}
@@ -759,8 +759,6 @@ def WsLapCounterQueueListener( q ):
 			if wsLapCounterServer and wsLapCounterServer.hasClients():
 				race = Model.race
 				message['tNow'] = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-				#message['curRaceTime'] = race.curRaceTime() if race and race.startTime and not race.finishTime else 0.0
-				#message['curRaceTime'] = race.getInProgressSprintTime() if race and race.startTime and not race.finishTime and race.getInProgressSprintTime() else 0.0
 				wsLapCounterServer.send_message_to_all( Utils.ToJson(message).encode() )
 		elif cmd == 'exit':
 			keepGoing = False
