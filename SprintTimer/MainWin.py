@@ -41,7 +41,7 @@ import Utils
 
 from AddExcelInfo import AddExcelInfo
 #from LogPrintStackStderr import LogPrintStackStderr
-from Data				import Data
+from Data				import Data, ManualEntryDialog
 #from ForecastHistory	import ForecastHistory
 #from NumKeypad			import NumKeypad
 #from Actions			import Actions
@@ -525,6 +525,9 @@ class MainWin( wx.Frame ):
 		
 		#item = self.dataMgmtMenu.Append( wx.ID_ANY, _("FinishLynx Integration..."), _("Export/Import with FinishLynx") )
 		#self.Bind(wx.EVT_MENU, self.menuFinishLynx, item )
+		
+		item  = self.dataMgmtMenu.Append( wx.ID_ANY, _("Add sprint manually"), _("Add sprint manuallyx") )
+		self.Bind(wx.EVT_MENU, self.menuAddManualSprint, item )
 		
 		self.menuBar.Append( self.dataMgmtMenu, _("&DataMgmt") )
 
@@ -2695,6 +2698,18 @@ class MainWin( wx.Frame ):
 	#def menuFinishLynx( self, event ):
 		#with FinishLynxDialog( self ) as fld:
 			#fld.ShowModal()
+			
+	@logCall
+	def menuAddManualSprint( self, event ):
+		race = Model.race
+		if race is None:
+			return
+		
+		with ManualEntryDialog(self) as dlg:
+			dlg.ShowModal()
+		self.refresh()
+		
+		
 		
 	#--------------------------------------------------------------------------------------------
 	def doCleanup( self ):

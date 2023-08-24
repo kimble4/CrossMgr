@@ -1501,6 +1501,7 @@ class Race:
 				sprintDict['sprintNote'] = '(No GPS correction)'
 		self.sprints.append( (sortTime, sprintDict) )
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
+		self.setChanged()
 		
 	def findBibsForSprint( self, index=None ):
 		sortTime = None

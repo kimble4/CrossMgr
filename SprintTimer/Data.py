@@ -10,6 +10,7 @@ import wx.lib.agw.flatnotebook as flatnotebook
 import wx.grid
 
 from collections import defaultdict
+from HighPrecisionTimeEdit import HighPrecisionTimeEdit
 
 import Utils
 import Model
@@ -91,6 +92,131 @@ class BibEntry( wx.Panel ):
 	
 	#def Enable( self, enable ):
 		#wx.Panel.Enable( self, enable )
+
+
+class ManualEntryDialog( wx.Dialog ):
+	def __init__( self, parent, id = wx.ID_ANY ):
+		super().__init__( parent, id, _("Manual sprint entry"),
+						style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL|wx.RESIZE_BORDER )
+		
+		border=4
+		
+		
+		
+		bs = wx.BoxSizer( wx.VERTICAL )
+		bs.Add( wx.StaticText(self, label='Enter sprint data:') )
+		bs.AddSpacer( border )
+		
+		gridBagSizer = wx.GridBagSizer()
+		
+		now = datetime.datetime.now()
+		seconds_since_midnight = (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
+		self.sprintStart = HighPrecisionTimeEdit( self, display_seconds=True, allow_none=True, seconds=seconds_since_midnight, size=(200,-1) )
+		gridBagSizer.Add( wx.StaticText( self, label=_('Time of day:') ),
+						pos=(0,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		gridBagSizer.Add( self.sprintStart,
+						pos=(0,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
+		
+
+		gridBagSizer.Add( wx.StaticText( self, label=_('Rider bib#:') ),
+						pos=(1,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+
+		self.bibEntry = wx.lib.intctrl.IntCtrl(self, allow_none=True, value=None)
+		gridBagSizer.Add( self.bibEntry,
+						pos=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
+		
+		gridBagSizer.Add( wx.StaticText( self, label=_('Sprint duration:') ),
+						pos=(2,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+
+		self.secondsEntry = HighPrecisionTimeEdit( self, display_seconds=True, display_milliseconds=True, allow_none=True, value=None, size=(200,-1) )
+		gridBagSizer.Add( self.secondsEntry,
+						pos=(2,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
+		
+		gridBagSizer.Add( wx.StaticText( self, label=_('Trap distance (metres):') ),
+						pos=(3,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.distanceEntry = wx.TextCtrl(self, value='')
+		gridBagSizer.Add( self.distanceEntry,
+						pos=(3,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
+		
+		gridBagSizer.Add( wx.StaticText( self, label=_('Note:') ),
+						pos=(4,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.noteEntry = wx.TextCtrl(self, value='', size=(300, -1))
+		gridBagSizer.Add( self.noteEntry,
+						pos=(4,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
+		
+		
+		bs.Add( gridBagSizer )
+		bs.AddSpacer( border )
+		
+		btnSizer = self.CreateStdDialogButtonSizer( wx.OK|wx.CANCEL)
+		self.Bind( wx.EVT_BUTTON, self.onOK, id=wx.ID_OK )
+		self.Bind( wx.EVT_BUTTON, self.onCancel, id=wx.ID_CANCEL )
+		if btnSizer:
+			bs.Add( btnSizer, 0, wx.EXPAND | wx.ALL, border )
+
+		race = Model.race
+		if race is not None:
+			distance = str(getattr(race, "sprintDistance", ''))
+			self.distanceEntry.SetValue(distance)
+
+		self.SetSizerAndFit(bs)
+		bs.Fit( self )
+		
+		self.CentreOnParent(wx.BOTH)
+		wx.CallAfter( self.SetFocus )
+		
+		
+	def onOK( self, event ):
+		now = datetime.datetime.now()
+		
+		race = Model.race
+		if race is None:
+			return
+		
+		sprintTime = self.secondsEntry.GetSeconds()
+		if sprintTime:
+		
+			sprintDict = {}
+			
+			startSeconds = self.sprintStart.GetSeconds()
+			if startSeconds is not None:
+				midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+				t = midnight + datetime.timedelta(seconds=startSeconds)
+			else:
+				t = now
+	
+			sprintDict['sprintStart'] = int(t.timestamp())
+			sprintDict['sprintStartMillis'] = (t.timestamp() - int(t.timestamp())) * 1000.0
+			
+			sprintDict['sprintBib'] = self.bibEntry.GetValue()
+			
+			sprintDict['sprintTime'] = sprintTime
+			
+			try:
+				distance = float(self.distanceEntry.GetValue())
+				sprintDict['sprintDistance'] = distance
+				sprintDict
+			except:
+				pass
+			
+			note = self.noteEntry.GetValue()
+			if note:
+				sprintDict['sprintNote'] = note
+			else:
+				sprintDict['sprintNote'] = 'Manual entry'
+			
+			sprintDict['manualEntry'] = True
+			
+			with Model.LockRace() as race:
+				race.addSprint( t, sprintDict )
+			
+			wx.CallAfter( Data.onRecalculateSpeed, None, None )
+		else:
+			Utils.MessageOK( self, '{}'.format( _("Sprint duration cannot be zero!")), _("Error") )
+		self.EndModal( wx.ID_OK )
+		
+	def onCancel( self, event ):
+		self.EndModal( wx.ID_CANCEL )
 		
 
 class Data( wx.Panel ):
@@ -312,10 +438,12 @@ class Data( wx.Panel ):
 				except:
 					return
 	
-	def onRecalculateSpeed( self, event, iSprint ):
+	def onRecalculateSpeed( self, event=None, iSprint=None ):
 		race = Model.race
 		if not race:
 			return
+		if iSprint is None:
+			iSprint = len(race.sprints) - 1
 		sprintDict = race.sprints[iSprint][1]
 		mainWin = Utils.getMainWin()
 		try:
@@ -330,7 +458,7 @@ class Data( wx.Panel ):
 				sprintDict['sprintSpeed'] = None
 				sprintDict['speedUnit'] = None
 			race.setChanged()
-			wx.CallAfter(self.refresh)
+			wx.CallAfter(Utils.refresh)
 			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		except:
 			return
@@ -483,6 +611,9 @@ class Data( wx.Panel ):
 			elif "isManualBib" in sprintDict and sprintDict["isManualBib"]:
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, self.greyColour)
+			elif 'manualEntry' in sprintDict and sprintDict['manualEntry']:
+				for c in range(len(self.colnames)):
+					self.dataGrid.SetCellBackgroundColour(row, c, self.orangeColour)
 			else:
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, self.whiteColour)
