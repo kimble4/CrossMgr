@@ -4366,7 +4366,10 @@ class MainWin( wx.Frame ):
 		if not self.sprintTimer:
 			return
 		
-		self.sprintTimer.sendReset( True )
+		if Utils.MessageOKCancel( self, '{}\n{}'.format(_('Reset sprint timer?'), _('In-progress sprint will be lost.')),
+									title = _('Reset sprint timer'), iconMask = wx.ICON_QUESTION ):
+			self.sprintTimer.sendReset( True )
+		
 	
 	def disconnectSprintTimer( self ):
 		race = Model.race
