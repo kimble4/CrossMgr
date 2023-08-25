@@ -490,7 +490,7 @@ $0 [ -hcitywVqserCtaep: ]
  -s        - Build SprintMgr
  -e        - Build CallupSeedingMgr
  -g        - Build StageRaceGC
- -r        - Build SprintTimer
+ -n        - Build SprintTimer
  -a        - Build all programs
 
  -d		   - Download AppImage builder
@@ -547,7 +547,7 @@ do
 		;;
 		s) PROGRAMS="$PROGRAMS SprintMgr"
 		;;
-		r) PROGRAMS="$PROGRAMS SprintTimer"
+		n) PROGRAMS="$PROGRAMS SprintTimer"
 		;;
 		V) PROGRAMS="$PROGRAMS CrossMgrVideo"
 		;;
