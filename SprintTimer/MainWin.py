@@ -646,7 +646,10 @@ class MainWin( wx.Frame ):
 		item = self.toolsMenu.Append( wx.ID_ANY, _("Copy Log File to &Clipboard..."), _("Copy Log File to Clipboard") )
 		self.Bind(wx.EVT_MENU, self.menuCopyLogFileToClipboard, item )
 
-		#self.toolsMenu.AppendSeparator()
+		self.toolsMenu.AppendSeparator()
+		
+		item = self.toolsMenu.Append( wx.ID_ANY, _("Reset sprint timer"), _("Reset sprint timer") )
+		self.Bind(wx.EVT_MENU, self.resetSprintTimer, item )
 		
 		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Simulate Race..."), _("Simulate a race") )
 		#self.Bind(wx.EVT_MENU, self.menuSimulate, item )
@@ -4354,6 +4357,16 @@ class MainWin( wx.Frame ):
 			return
 		
 		self.sprintTimer.setTestMode( test )
+		
+	def resetSprintTimer( self, event = None ):
+		race = Model.race
+		if not race:
+			return
+		
+		if not self.sprintTimer:
+			return
+		
+		self.sprintTimer.sendReset( True )
 	
 	def disconnectSprintTimer( self ):
 		race = Model.race

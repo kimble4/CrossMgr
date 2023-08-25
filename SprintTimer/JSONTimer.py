@@ -123,6 +123,18 @@ class JSONTimer:
 		self.speedUnit = unit
 		#self.writeSettings()
 		
+	def sendReset( self, reset=False):
+		if reset:
+			if self.sendQ:
+				try:
+					settings = { "reset": 1 }
+					message = json.dumps(settings) + '\n'
+					self.sendQ.put(message)
+				except Exception as e:
+					print(e)
+					self.qLog( 'send', '{}: {}: "{}"'.format(cmd, _('Failed to write to sendQ'), e) )
+				self.processSendQ()
+		
 	def setTestMode( self, testMode = False ):
 		if self.sendQ:
 			try:
