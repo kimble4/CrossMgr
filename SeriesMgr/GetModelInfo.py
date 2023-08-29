@@ -176,11 +176,14 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 		hasPointsInput, defaultPointsInput = False, None
 		fm = None
 		categoryNameSheet = sheetName.strip()
+		url = None
+		date = None
 		for row in excel.iter_list(sheetName):
+			#print(row)
 			if fm:
 				f = fm.finder( row )
 				info = {
-					'raceDate':		None,
+					'raceDate':		date,
 					'raceFileName':	raceInSeries.getFileName(),
 					'raceName':		raceName,
 					'raceOrganizer': '',
@@ -199,6 +202,7 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 				}
 				
 				info['rank'] = str(info['rank']).strip()
+			
 				if not info['rank']:	# If missing rank, assume end of input.
 					break
 				
@@ -265,6 +269,8 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 						info['tFinish'] = float( info['tFinish'] ) * 24.0 * 60.0 * 60.0	# Convert Excel day number to seconds.
 					except Exception as e:
 						info['tFinish'] = 0.0
+						
+				info['raceURL'] = url
 				
 				raceResults.append( RaceResult(**info) )
 				
@@ -279,6 +285,16 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 				# Check if this is a team-only sheet.
 				raceInSeries.pureTeam = ('team' in fm and not any(n in fm for n in ('name', 'last_name', 'first_name', 'license')))
 				raceInSeries.resultsType = SeriesModel.Race.TeamResultsOnly if raceInSeries.pureTeam else SeriesModel.Race.IndividualAndTeamResults
+			elif row is not None:
+				if row[0] and 'http' in row[0]:
+					url = row[0]
+				else:
+					try:
+						date = datetime.datetime.strptime(row[0], '%B %d, %Y')
+						print(date)
+					except:
+						pass
+				
 	ret['raceResults'] = raceResults
 	return ret
 
