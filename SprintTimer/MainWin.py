@@ -204,9 +204,9 @@ class MainWin( wx.Frame ):
 		#self.numSelect = None
 		
 		#Setup the objects for the race clock.
-		self.timer = wx.Timer( self, id=wx.ID_ANY )
+		#self.timer = wx.Timer( self, id=wx.ID_ANY )
 		self.secondCount = 0
-		self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
+		#self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
 
 		#self.simulateTimer = None
 		#self.simulateSeen = set()
@@ -4423,7 +4423,7 @@ class MainWin( wx.Frame ):
 		if race is None:
 			self.SetTitle( Version.AppVerName )
 			ChipReader.chipReaderCur.StopListener()
-			self.timer.Stop()
+			#self.timer.Stop()
 			return
 		
 		self.data.refreshRaceTime()
@@ -4451,7 +4451,7 @@ class MainWin( wx.Frame ):
 							race.name, race.raceNum,
 							status,
 							Version.AppVerName ) )
-			self.timer.Stop()
+			#self.timer.Stop()
 			return
 
 		self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
@@ -4463,8 +4463,14 @@ class MainWin( wx.Frame ):
 						' <{}>'.format(_('Photos')) if race.enableUSBCamera else '',
 		) )
 
-		if not self.timer.IsRunning():
-			wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
+		#if not self.timer.IsRunning():
+			#wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
+			
+		# Recalculate time to next call rather than using timer to stay in sync with current sprint
+		if race.getInProgressSprintTime():
+			wx.CallLater( 1000 - (now() - race.inProgressSprintStart).microseconds // 1000, self.updateRaceClock )
+		else:
+			wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.updateRaceClock )
 
 		self.secondCount += 1
 		if self.secondCount % 45 == 0 and race.isChanged():
