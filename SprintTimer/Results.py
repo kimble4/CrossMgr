@@ -812,11 +812,11 @@ class Results( wx.Panel ):
 				col += 1
 				speed = float(sprintDict['sprintDistance']) / float(sprintDict['sprintTime'])
 				if race.distanceUnit == Model.Race.UnitKm:
-					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed*3.6)))
+					self.resultsGrid.SetCellValue(row, col, str('{:.3f}'.format(speed*3.6)))
 				elif race.distanceUnit == Model.Race.UnitMiles:
-					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed*2.23694)))
+					self.resultsGrid.SetCellValue(row, col, str('{:.3f}'.format(speed*2.23694)))
 				else:
-					self.resultsGrid.SetCellValue(row, col, str('{:.2f}'.format(speed)))
+					self.resultsGrid.SetCellValue(row, col, str('{:.3f}'.format(speed)))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
 				if "sprintStart" in sprintDict:

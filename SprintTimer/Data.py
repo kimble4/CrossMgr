@@ -692,7 +692,7 @@ class Data( wx.Panel ):
 					self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
 			col += 1
 			if "sprintSpeed" in sprintDict:
-				self.dataGrid.SetCellValue(row, col, '{:.2f}'.format(sprintDict["sprintSpeed"]))
+				self.dataGrid.SetCellValue(row, col, '{:.3f}'.format(sprintDict["sprintSpeed"]))
 				self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				if ppsBad:
 					self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
