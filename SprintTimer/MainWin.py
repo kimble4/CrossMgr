@@ -256,11 +256,11 @@ class MainWin( wx.Frame ):
 
 		#self.fileMenu.AppendSeparator()
 		
-		#recent = wx.Menu()
-		#menu = self.fileMenu.AppendSubMenu( recent, _("Recent Fil&es") )
-		#menu.SetBitmap( Utils.GetPngBitmap('document-open-recent.png') )
-		#self.filehistory.UseMenu( recent )
-		#self.filehistory.AddFilesToMenu()
+		recent = wx.Menu()
+		menu = self.fileMenu.AppendSubMenu( recent, _("Recent Fil&es") )
+		menu.SetBitmap( Utils.GetPngBitmap('document-open-recent.png') )
+		self.filehistory.UseMenu( recent )
+		self.filehistory.AddFilesToMenu()
 		
 		#self.fileMenu.AppendSeparator()
 		
@@ -271,7 +271,7 @@ class MainWin( wx.Frame ):
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit"), _("Exit SprintTimer"), Utils.GetPngBitmap('exit.png') )
 		self.Bind(wx.EVT_MENU, self.menuExit, item )
 		
-		#self.Bind(wx.EVT_MENU_RANGE, self.menuFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
+		self.Bind(wx.EVT_MENU_RANGE, self.menuFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
 		
 		self.menuBar.Append( self.fileMenu, _("&File") )
 
@@ -2843,7 +2843,7 @@ class MainWin( wx.Frame ):
 		ResetExcelLinkCache()
 		properties.commit()
 		
-		#self.updateRecentFiles()
+		self.updateRecentFiles()
 
 		#importedCategories = False
 		#if categoriesFile:
@@ -2932,7 +2932,7 @@ class MainWin( wx.Frame ):
 			ftpPublish.Destroy()
 
 		#Done with properties.  On with initializing the rest of the race.
-		#self.updateRecentFiles()
+		self.updateRecentFiles()
 
 		#Restore the previous categories.
 		race = Model.race
@@ -3176,7 +3176,7 @@ class MainWin( wx.Frame ):
 				#Utils.writeLog( 'openRace: changed FileName to "{}".'.format(eventFileName) )
 				#self.fileName = eventFileName
 			
-			#self.updateRecentFiles()
+			self.updateRecentFiles()
 			WebServer.SetFileName( self.fileName )
 
 			#excelLink = getattr(race, 'excelLink', None)
@@ -3218,11 +3218,11 @@ class MainWin( wx.Frame ):
 			busy = wx.BusyCursor()
 			self.openRace( dlg.GetPath() )
 
-	#def menuFileHistory( self, event ):
-		#fileNum = event.GetId() - wx.ID_FILE1
-		#fileName = self.filehistory.GetHistoryFile(fileNum)
-		#self.filehistory.AddFileToHistory(fileName)  # move up the list
-		#self.openRace( fileName )
+	def menuFileHistory( self, event ):
+		fileNum = event.GetId() - wx.ID_FILE1
+		fileName = self.filehistory.GetHistoryFile(fileNum)
+		self.filehistory.AddFileToHistory(fileName)  # move up the list
+		self.openRace( fileName )
 		
 	#@logCall
 	#def menuOpenNext( self, event ):
