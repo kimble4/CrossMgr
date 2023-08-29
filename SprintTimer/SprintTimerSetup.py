@@ -75,6 +75,7 @@ copyFiles = [
     "ParseHtmlPayload.py"
     "websocket_server.py"
     "ThreadPoolMixIn.py"
+    "ImageIO.py"
 ]
 for f in copyFiles:
 	shutil.copy( os.path.join( '..', f), f )

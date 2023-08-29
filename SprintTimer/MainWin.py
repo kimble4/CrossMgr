@@ -110,7 +110,7 @@ from ExportGrid			import ExportGrid
 #import SimulationLapTimes
 import Version
 from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
-#from SetGraphic			import SetGraphicDialog
+from SetGraphic			import SetGraphicDialog
 #from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM
 #from PhotoFinish		import DeletePhotos, okTakePhoto
 from SendPhotoRequests	import SendPhotoRequests
@@ -123,7 +123,7 @@ from SendPhotoRequests	import SendPhotoRequests
 import ChipReader
 #import Flags
 import WebServer
-#import ImageIO
+import ImageIO
 from ModuleUnpickler import ModuleUnpickler
 #import GpxTimesImport
 
@@ -690,11 +690,11 @@ class MainWin( wx.Frame ):
 		
 		#'''
 		#self.optionsMenu.AppendSeparator()
-		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set Contact &Email..."), _("Set Contact Email for HTML Output") )
-		#self.Bind(wx.EVT_MENU, self.menuSetContactEmail, item )
+		item = self.optionsMenu.Append( wx.ID_ANY, _("Set Contact &Email..."), _("Set Contact Email for HTML Output") )
+		self.Bind(wx.EVT_MENU, self.menuSetContactEmail, item )
 		
-		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set &Graphic..."), _("Set Graphic") )
-		#self.Bind(wx.EVT_MENU, self.menuSetGraphic, item )
+		item = self.optionsMenu.Append( wx.ID_ANY, _("Set &Graphic..."), _("Set Graphic") )
+		self.Bind(wx.EVT_MENU, self.menuSetGraphic, item )
 		#'''
 		
 		#self.optionsMenu.AppendSeparator()
@@ -1427,19 +1427,19 @@ class MainWin( wx.Frame ):
 				Model.race.email = value
 				Model.race.setChanged()
 	
-	#def menuSetGraphic( self, event ):
-		#imgPath = self.getGraphicFName()
-		#with SetGraphicDialog( self, graphic = imgPath ) as dlg:
-			#if dlg.ShowModal() != wx.ID_OK:
-				#return
-			#imgPath = dlg.GetValue()
-			#self.config.Write( 'graphic', imgPath )
-			#self.config.Flush()
-			#if Model.race:
-				#try:
-					#Model.race.headerImage = ImageIO.toBufFromFile( imgPath )
-				#except Exception as e:
-					#pass
+	def menuSetGraphic( self, event ):
+		imgPath = self.getGraphicFName()
+		with SetGraphicDialog( self, graphic = imgPath ) as dlg:
+			if dlg.ShowModal() != wx.ID_OK:
+				return
+			imgPath = dlg.GetValue()
+			self.config.Write( 'graphic', imgPath )
+			self.config.Flush()
+			if Model.race:
+				try:
+					Model.race.headerImage = ImageIO.toBufFromFile( imgPath )
+				except Exception as e:
+					print(e)
 	
 	#def menuSetDefaultContactEmail( self, event = None ):
 		#email = self.config.Read( 'email', 'my_name@my_address' )
@@ -1515,16 +1515,16 @@ class MainWin( wx.Frame ):
 			#pass
 		#self.refresh()
 	
-	#def getGraphicFName( self ):
-		#defaultFName = os.path.join(Utils.getImageFolder(), 'CrossMgrHeader.png')
-		#graphicFName = self.config.Read( 'graphic', defaultFName )
-		#if graphicFName != defaultFName:
-			#try:
-				#with open(graphicFName) as f:
-					#return graphicFName
-			#except IOError:
-				#pass
-		#return defaultFName
+	def getGraphicFName( self ):
+		defaultFName = os.path.join(Utils.getImageFolder(), 'CrossMgrHeader.png')
+		graphicFName = self.config.Read( 'graphic', defaultFName )
+		if graphicFName != defaultFName:
+			try:
+				with open(graphicFName) as f:
+					return graphicFName
+			except IOError:
+				pass
+		return defaultFName
 	
 	def getGraphicBase64( self ):
 		try:

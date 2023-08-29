@@ -46,3 +46,4 @@ import LockLog
 import ParseHtmlPayload
 import websocket_server
 import ThreadPoolMixIn
+import ImageIO
