@@ -204,9 +204,9 @@ class MainWin( wx.Frame ):
 		#self.numSelect = None
 		
 		#Setup the objects for the race clock.
-		#self.timer = wx.Timer( self, id=wx.ID_ANY )
+		self.timer = wx.Timer( self, id=wx.ID_ANY )
 		self.secondCount = 0
-		#self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
+		self.Bind( wx.EVT_TIMER, self.updateRaceClock, self.timer )
 
 		#self.simulateTimer = None
 		#self.simulateSeen = set()
@@ -880,7 +880,11 @@ class MainWin( wx.Frame ):
 		#record that a sprint is in progress
 		if not event.isT2:
 			if "T1micros" in event.sprintDict:
-				race.setInProgressSprintStart( startTime )
+				#race.setInProgressSprintStart( startTime )
+				t = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
+				if "sprintStartMillis" in event.sprintDict:
+					t += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+				race.setInProgressSprintStart( t )
 				Utils.PlaySound('boop.wav')
 			else:
 				# no current sprint
@@ -2727,12 +2731,12 @@ class MainWin( wx.Frame ):
 			except Exception as e:
 				Utils.writeLog( 'call: doCleanup: (1) "{}"'.format(e) )
 
-		#try:
-			#self.timer.Stop()
-		#except AttributeError:
-			#pass
-		#except Exception as e:
-			#Utils.writeLog( 'call: doCleanup: (2) "{}"'.format(e) )
+		try:
+			self.timer.Stop()
+		except AttributeError:
+			pass
+		except Exception as e:
+			Utils.writeLog( 'call: doCleanup: (2) "{}"'.format(e) )
 
 		#try:
 			#self.simulateTimer.Stop()
@@ -4423,7 +4427,7 @@ class MainWin( wx.Frame ):
 		if race is None:
 			self.SetTitle( Version.AppVerName )
 			ChipReader.chipReaderCur.StopListener()
-			#self.timer.Stop()
+			self.timer.Stop()
 			return
 		
 		self.data.refreshRaceTime()
@@ -4451,7 +4455,7 @@ class MainWin( wx.Frame ):
 							race.name, race.raceNum,
 							status,
 							Version.AppVerName ) )
-			#self.timer.Stop()
+			self.timer.Stop()
 			return
 
 		self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
@@ -4463,14 +4467,8 @@ class MainWin( wx.Frame ):
 						' <{}>'.format(_('Photos')) if race.enableUSBCamera else '',
 		) )
 
-		#if not self.timer.IsRunning():
-			#wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
+		
 			
-		# Recalculate time to next call rather than using timer to stay in sync with current sprint
-		if race.getInProgressSprintTime():
-			wx.CallLater( 1000 - (now() - race.inProgressSprintStart).microseconds // 1000, self.updateRaceClock )
-		else:
-			wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.updateRaceClock )
 
 		self.secondCount += 1
 		if self.secondCount % 45 == 0 and race.isChanged():
@@ -4481,6 +4479,13 @@ class MainWin( wx.Frame ):
 			self.updateLapCounter()
 			if race.ftpUploadDuringRace:
 				realTimeFtpPublish.publishEntry()
+				
+		if not self.timer.IsRunning():
+			# Recalculate time to next call, in order to stay in sync with current sprint
+			if race.getInProgressSprintTime():
+				self.timer.Start( 1000 - (now() - race.inProgressSprintStart).microseconds // 1000, oneShot=wx.TIMER_ONE_SHOT )
+			else:
+				self.timer.Start( 1000 - (now() - race.startTime).microseconds // 1000, oneShot=wx.TIMER_ONE_SHOT )
 
 # Set log file location.
 dataDir = ''
