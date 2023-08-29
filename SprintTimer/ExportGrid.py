@@ -604,6 +604,17 @@ class ExportGrid:
 			for line in self.footer.split('\n'):
 				sheet.write( rowMax, 0, line.strip(), styleAlignLeft )
 				rowMax += 1
+				
+		# Get the race URL (if defined).
+		with Model.LockRace() as race:
+			url = getattr( race, 'urlFull', None )
+		if url and url.startswith( 'http://' ):
+			url = quote( url[7:] )
+		if url:
+			url = url.replace( '%20', ' ' )
+			sheet.write( rowMax, 0, url.strip(), styleAlignLeft )
+			rowMax += 1
+		
 		
 		# Add branding at the bottom of the sheet.
 		sheet.write( rowMax + 2, 0, self.brandText, styleAlignLeft )
@@ -769,6 +780,14 @@ class ExportGrid:
 			for line in self.footer.split('\n'):
 				sheet.write( rowMax, 0, line.strip(), styleAlignLeft )
 				rowMax += 1
+				
+		# Get the race URL (if defined).
+		with Model.LockRace() as race:
+			url = getattr( race, 'urlFull', None )
+		if url:
+			url = url.replace( '%20', ' ' )
+			sheet.write( rowMax, 0, url.strip(), styleAlignLeft )
+			rowMax += 1
 		
 		# Add branding at the bottom of the sheet.
 		sheet.write( rowMax + 2, 0, self.brandText, styleAlignLeft )
