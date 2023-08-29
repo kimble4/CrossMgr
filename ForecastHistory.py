@@ -536,7 +536,7 @@ class ForecastHistory( wx.Panel ):
 			elif race.isCriterium and race.critStatus == Model.Race.CritFinishLap:
 				tRace = "Finish"
 			else:
-				tRace = Utils.formatTime(race.curRaceTime())
+				tRace = Utils.formatTime(race.curRaceTime(), extraPrecision=False)
 		self.raceClock.SetLabel(tRace)
 	
 	def addGaps( self, recorded ):

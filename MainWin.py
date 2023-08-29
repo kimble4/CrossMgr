@@ -4106,7 +4106,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 		self.menuItemHighPrecisionTimes.Check( bool(race and race.highPrecisionTimes) )
 		self.menuItemSyncCategories.Check( bool(race and race.syncCategories) )
 		
-		self.updateRaceClock()
+		self.updateRaceClock(refresh=True)
 
 	def refreshTTStart( self ):
 		if self.notebook.GetSelection() in (self.iHistoryPage, self.iRecordPage):
@@ -4266,7 +4266,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 				self.processRfidRefresh()
 		return False	# Never signal for an update.
 
-	def updateRaceClock( self, event = None ):
+	def updateRaceClock( self, event = None, refresh=False ):
 		self.record.refreshAll()
 
 		doRefresh = False
@@ -4278,7 +4278,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			self.timer.Stop()
 			return
 		
-		self.forecastHistory.updateRaceClock()
+		if not refresh: # Only update the race clock when called by the timer
+			self.forecastHistory.updateRaceClock()
 		
 		if race.isUnstarted():
 			status = _('Unstarted')
@@ -4301,7 +4302,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			self.timer.Stop()
 			return
 
-		self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
+		if not refresh:
+			self.SetTitle( '{} {}-r{} - {} - {}{}{}{}'.format(
 						Utils.formatTime(race.curRaceTime()),
 						race.name, race.raceNum,
 						status, Version.AppVerName,
@@ -4309,9 +4311,10 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 						' <{}>'.format(_('TimeTrial')) if race.isTimeTrial else '',
 						' <{}>'.format(_('Photos')) if race.enableUSBCamera else '',
 		) )
-
+			
 		if not self.timer.IsRunning():
-			wx.CallLater( 1000 - (now() - race.startTime).microseconds // 1000, self.timer.Start, 1000 )
+			#Recalculate time to next call - prevents drift
+			self.timer.Start( 1000 - (now() - race.startTime).microseconds // 1000, oneShot=wx.TIMER_ONE_SHOT )
 
 		self.secondCount += 1
 		if self.secondCount % 45 == 0 and race.isChanged():
