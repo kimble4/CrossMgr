@@ -59,10 +59,11 @@ class FieldMap:
 				self.name_to_col[name] = i
 			else:
 				self.unmapped.add( h )
+		
 	
 	def get_value( self, name, fields, default=None ):
 		try:
-			return fields[self.name_to_col[name]]
+			return fields[self.name_to_col[name]] if fields[self.name_to_col[name]] is not None else default
 		except (KeyError, IndexError):
 			return default
 		
