@@ -1427,6 +1427,7 @@ class Race:
 
 	def finishRaceNow( self ):
 		self.finishTime = datetime.datetime.now()
+		self.inProgressSprintStart = None
 		self.tagNums = None
 		self.setChanged()
 		

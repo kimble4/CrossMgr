@@ -294,22 +294,23 @@ class Data( wx.Panel ):
 	def refreshRaceTime( self ):
 		race = Model.race
 		if race is not None:
-			tRace = race.getInProgressSprintTime()
-			if tRace:
-				if tRace >= 1:
-					Utils.PlaySound('pip.wav')
-				tStr = Utils.formatTime( tRace )
-				if tStr.startswith('0'):
-					tStr = tStr[1:]
-				tStr = 'Timing: ~' + tStr
-				self.raceTime.SetBackgroundColour(self.redColour)
-				self.raceTime.SetForegroundColour(self.whiteColour)
-				if Utils.mainWin:
-					Utils.mainWin.updateLapCounter()
-			elif race.isRunning():
-				tStr = 'Ready...'
-				self.raceTime.SetBackgroundColour(self.whiteColour)
-				self.raceTime.SetForegroundColour(self.redColour)
+			if race.isRunning():
+				tRace = race.getInProgressSprintTime()
+				if tRace:
+					if tRace >= 1:
+						Utils.PlaySound('pip.wav')
+					tStr = Utils.formatTime( tRace )
+					if tStr.startswith('0'):
+						tStr = tStr[1:]
+					tStr = 'Timing: ~' + tStr
+					self.raceTime.SetBackgroundColour(self.redColour)
+					self.raceTime.SetForegroundColour(self.whiteColour)
+					if Utils.mainWin:
+						Utils.mainWin.updateLapCounter()
+				else:
+					tStr = 'Ready...'
+					self.raceTime.SetBackgroundColour(self.whiteColour)
+					self.raceTime.SetForegroundColour(self.redColour)
 			else:
 				tStr = 'Not recording'
 				self.raceTime.SetBackgroundColour(self.whiteColour)
