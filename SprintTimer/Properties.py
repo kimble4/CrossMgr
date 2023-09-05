@@ -250,7 +250,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.distanceUnitSizer.Add( self.distanceUnit )
 		self.distanceUnitSizer.AddStretchSpacer()
 		
-		self.showDetails = wx.CheckBox( self, label=_("Show Lap Notes in HTML Output") )
+		self.showDetails = wx.CheckBox( self, label=_('Show Lap Notes in HTML Output') )
 		#self.showCourseAnimationInHtml = wx.CheckBox( self, label=_("Show Course Animation in Html") )
 		#self.showCourseAnimationInHtml.SetValue( True )
 
@@ -260,6 +260,11 @@ class RaceOptionsProperties( wx.Panel ):
 		mplths = wx.BoxSizer( wx.HORIZONTAL )
 		mplths.Add( self.minPossibleLapTime )		
 		mplths.Add( self.minPossibleLapTimeUnit, flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=4 )
+		
+		self.useSequentialBibs = wx.CheckBox( self, label = _('Allocate sequential bib numbers') )
+		self.useSequentialBibs.Bind(wx.EVT_CHECKBOX, self.onChangeUseSequentialBibs )
+		self.sequentialBibsLabel = wx.StaticText( self, label=_('Starting from #') )
+		self.sequentialBibStart = intctrl.IntCtrl( self, min=1, max=999999, allow_none=False, value=1, style=wx.ALIGN_LEFT )
 		
 		#self.leaderArrivalWarningSecondsLabel = wx.StaticText( self, label=_('Play reminder sound: ') )
 		#self.leaderArrivalWarningSeconds = intctrl.IntCtrl( self, min=0, max=3600, allow_none=True, value=10, size=(64,-1), style=wx.ALIGN_RIGHT )
@@ -307,6 +312,8 @@ class RaceOptionsProperties( wx.Panel ):
 			#(self.leaderArrivalWarningSecondsLabel, 0, labelAlign), (lawshs,				0, 0),
 			#(self.licenseLinkTemplateLabel,0, labelAlign),(self.licenseLinkTemplate,	1, fieldAlign),
 			#(blank(),				0, labelAlign),		(self.winAndOut,				1, fieldAlign),
+			(blank(),				0, labelAlign),		(self.useSequentialBibs,		1, fieldAlign),
+			(self.sequentialBibsLabel, 0, labelAlign),	(self.sequentialBibStart,		1, fieldAlign),
 		]
 		addToFGS( fgs, labelFieldBatchPublish )
 		
@@ -343,7 +350,12 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.winAndOut.SetBackgroundColour( wx.Colour(255, 204, 153) if self.winAndOut.GetValue() else wx.WHITE )
 		#if event:
 			#event.Skip()
-     
+			
+	def onChangeUseSequentialBibs( self, event=None ):
+		self.sequentialBibStart.Enable(self.useSequentialBibs.GetValue())
+		if event:
+			event.Skip()
+			
 	def refresh( self ):
 		race = Model.race
 		
@@ -372,6 +384,9 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.onChangeWinAndOut()
 		#self.onChangeTimeTrial()
 		#self.onChangeCriterium()
+		self.useSequentialBibs.SetValue( getattr(race, 'useSequentialBibs', False) )
+		self.sequentialBibStart.Enable( getattr(race, 'useSequentialBibs', False) )
+		self.sequentialBibStart.SetValue( getattr(race, 'nextSequentialBib', 1) )
 		
 	#@property
 	#def distanceUnitValue( self ):
@@ -401,6 +416,10 @@ class RaceOptionsProperties( wx.Panel ):
 		race.multipleAttemptsPolicy = self.multiplePolicy.GetSelection()
 		#race.leaderArrivalWarningSeconds = self.leaderArrivalWarningSeconds.GetValue()
 		#race.licenseLinkTemplate = self.licenseLinkTemplate.GetValue().strip()
+		race.useSequentialBibs = self.useSequentialBibs.GetValue()
+		race.nextSequentialBib = self.sequentialBibStart.GetValue()
+		
+		self.refresh()
 	
 #------------------------------------------------------------------------------------------------
 
