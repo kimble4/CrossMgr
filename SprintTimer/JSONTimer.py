@@ -21,6 +21,7 @@ class TimerTestDialog( wx.Dialog ):
 		super().__init__( parent, id, _("Sprint Timer Input Test"),
 						style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL|wx.RESIZE_BORDER )
 		
+		self.timer = None
 		self.t1time = None
 		self.t2time = None
 		self.lastT1Sound = datetime.datetime.now()
@@ -105,7 +106,9 @@ class TimerTestDialog( wx.Dialog ):
 		race = Model.race
 		if not race:
 			return
-		self.timer.Stop()
+		
+		if self.timer:
+			self.timer.Stop()
 		mainWin = Utils.getMainWin()
 		mainWin.sprintTimerTestMode(False)
 		
@@ -342,6 +345,8 @@ class JSONTimer:
 		readerTime = None
 		readerComputerTimeDiff = None
 		
+		
+		
 		def keepGoing():
 			try:
 				self.shutdownQ.get_nowait()
@@ -419,6 +424,8 @@ class JSONTimer:
 					readerComputerTimeDiff = None
 					if buffer:
 						sprintDict = json.loads(buffer)
+						if getattr(race, 'sprintTimerDebugging', False):
+							self.qLog( 'received', '{}'.format(sprintDict) )
 						try:
 							havePPS = sprintDict['ppsGood']
 						except:
@@ -436,6 +443,14 @@ class JSONTimer:
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
+								if 'sprintBib' in sprintDict:
+									print('have bib at T2: '+ str(sprintDict["sprintBib"]))
+								if getattr(race, 'useSequentialBibs', False):
+									bib = getattr(race, 'nextSequentialBib', None)
+									if bib and not "sprintBib" in sprintDict:
+										sprintDict["sprintBib"] = str(bib)
+										sprintDict["sprintBibSeqeuential"] = True
+										race.nextSequentialBib = bib + 1
 								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								lastT2 = sprintDict["T2micros"]
@@ -445,6 +460,15 @@ class JSONTimer:
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								self.qLog( 'timing', '{}'.format(_('Sprint has started...') ) )
+								if 'sprintBib' in sprintDict:
+									print('have bib at T1: '+ str(sprintDict["sprintBib"]))
+								if getattr(race, 'useSequentialBibs', False):
+									bib = getattr(race, 'nextSequentialBib', None)
+									if bib and not "sprintBib" in sprintDict:
+										sprintDict["sprintBib"] = str(bib)
+										sprintDict["sprintBibSeqeuential"] = True
+										race.nextSequentialBib = bib + 1
+										self.setBib( bib )
 								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								lastT1 = sprintDict["T1micros"]
 							else:

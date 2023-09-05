@@ -302,7 +302,10 @@ class Data( wx.Panel ):
 					tStr = Utils.formatTime( tRace )
 					if tStr.startswith('0'):
 						tStr = tStr[1:]
-					tStr = 'Timing: ~' + tStr
+					if getattr(race, 'inProgressSprintBib', None) is not None:
+						tStr = '#' + str(race.inProgressSprintBib) + ' Timing: ~' + tStr
+					else:
+						tStr = 'Timing: ~' + tStr
 					self.raceTime.SetBackgroundColour(self.redColour)
 					self.raceTime.SetForegroundColour(self.whiteColour)
 					if Utils.mainWin:

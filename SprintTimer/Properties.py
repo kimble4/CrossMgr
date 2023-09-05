@@ -430,6 +430,8 @@ class SprintTimerProperties( wx.Panel ):
 		
 		self.sprintTimer = wx.CheckBox( self, style=wx.ALIGN_LEFT, label = _('Use sprint timer to obtain precise times') )
 		
+		self.sprintTimerDebugging = wx.CheckBox( self, style=wx.ALIGN_LEFT, label = _('Save extended debugging info to log') )
+		
 		gridBagSizer = wx.GridBagSizer()
 		gridBagSizer.Add( wx.StaticText( self, label=_('Remote IP Address:') ),
 						pos=(0,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
@@ -458,6 +460,9 @@ class SprintTimerProperties( wx.Panel ):
 		ms.Add( gridBagSizer, 0, wx.EXPAND|wx.ALL, 4 )
 		ms.AddSpacer( 16 )
 		ms.Add( self.testButton, flag=wx.ALL, border=4 )
+		ms.AddSpacer( 16 )
+		ms.Add( self.sprintTimerDebugging, flag=wx.ALL, border=16 )
+		
 		
 	def onTest(self, event ):
 		self.commit()
@@ -470,6 +475,7 @@ class SprintTimerProperties( wx.Panel ):
 		if not race:
 			return
 		self.sprintTimer.SetValue( getattr(race, 'enableSprintTimer', True) )
+		self.sprintTimerDebugging.SetValue( getattr(race, 'sprintTimerDebugging', False) )
 		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', Utils.GetDefaultHost()) )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
@@ -487,6 +493,7 @@ class SprintTimerProperties( wx.Panel ):
 			# force reconnect the timer if the network settings have changed
 			mainWin.disconnectSprintTimer()
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
+		race.sprintTimerDebugging = self.sprintTimerDebugging.IsChecked()
 		race.sprintDistance = self.distance.GetValue()
 		
 		mainWin.updateSprintTimerSettings()

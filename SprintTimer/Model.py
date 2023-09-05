@@ -1511,6 +1511,8 @@ class Race:
 				# a sprint is in progress 
 				sortTime = self.inProgressSprintStart
 				sprintDict = {}
+				if self.inProgressSprintBib:
+					sprintDict['sprintBib'] = self.inProgressSprintBib
 				sprint = None
 			else:
 				index = -1
@@ -1527,8 +1529,18 @@ class Race:
 				return False
 		
 		Utils.writeLog('Looking up bibs for sprint at ' + str(sortTime))
-		# See if we've had any bibs entered near that time
 		possibleDiffBibs = []
+		
+		# Check if sprint already has a bib (likely from sequential bibs)
+		if 'sprintBib' in sprintDict:
+			if sprintDict['sprintBib']:
+				if index is not None:
+					Utils.writeLog('Sprint ' + str(index + 1) + ' already has a bib: ' + str(sprintDict['sprintBib']))
+				else:
+					Utils.writeLog('In-progress sprint already has a bib: ' + str(sprintDict['sprintBib']))
+				possibleDiffBibs.append( (0.0, sprintDict['sprintBib']) )
+		
+		# See if we've had any bibs entered near that time
 		for timeBibManual in self.sprintBibs:
 			rfidTime = timeBibManual[0]
 			bib = timeBibManual[1]
@@ -1567,21 +1579,30 @@ class Race:
 				# update the bib in place
 				sprint[1]["sprintBib"] = diffBib[1]  
 				self.setChanged()
-			#feed the bib back to the sprint timer
+			# set the in progress bib
+			if self.inProgressSprintBib is None:
+				self.inProgressSprintBib = diffBib[1]
+			# feed the bib back to the sprint timer
 			mainWin = Utils.getMainWin()
 			if mainWin:
 				mainWin.sendBibToSprintTimer( diffBib[1] )
 			return True
 		elif len(possibleDiffBibs) > 1:
 			bibstring = ''
+			seen = []
 			for diffBib in possibleDiffBibs:
-				bibstring += str(diffBib[1])
-				bibstring += ','
+				if diffBib[1] not in seen:
+					bibstring += str(diffBib[1])
+					bibstring += ','
+					seen.append(diffBib[1])
 			bibstring = bibstring[:-1]
 			if sprint:
 				# update the bib in place
-				sprint[1]["sprintBib"] = bibstring  
-			#feed the best bib back to the sprint timer
+				sprint[1]["sprintBib"] = bibstring
+			# set the in progress bib
+			if self.inProgressSprintBib is None:
+				self.inProgressSprintBib = possibleDiffBibs[0][1]
+			# feed the best bib back to the sprint timer
 			mainWin = Utils.getMainWin()
 			if mainWin:
 				mainWin.sendBibToSprintTimer( possibleDiffBibs[0][1] )
@@ -1644,8 +1665,9 @@ class Race:
 						times[0]['sprintNote'] = 'Rode ' + str(distance) + 'm not ' + str(self.sprintDistance) + 'm'
 					
 				ranking.append((status, bib, speed))
-			#except KeyError:
+			except KeyError:
 				#Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
+				continue
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 				continue
@@ -1918,6 +1940,7 @@ class Race:
 		return self.sprintBibs.copy()
 	
 	def setInProgressSprintStart( self, t = None ):
+		self.inProgressSprintBib = None
 		if t is None or t > datetime.datetime.now():
 			self.inProgressSprintStart = None
 		else:
@@ -1929,6 +1952,9 @@ class Race:
 		if self.inProgressSprintStart:
 			t = datetime.datetime.now() - self.inProgressSprintStart
 			return t.total_seconds()
+		
+	def setInProgressSprintBib( self, bib ):
+		self.inProgressSprintBib = bib
 		
 	def addSprintBib( self, num, t = None, doSetChanged = True ):
 		# This is a seperate list of tag reads to identify sprint riders, we don't use the normal lap times stuff

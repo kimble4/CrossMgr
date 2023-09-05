@@ -880,7 +880,6 @@ class MainWin( wx.Frame ):
 		#record that a sprint is in progress
 		if not event.isT2:
 			if "T1micros" in event.sprintDict:
-				#race.setInProgressSprintStart( startTime )
 				t = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
 				if "sprintStartMillis" in event.sprintDict:
 					t += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
@@ -913,6 +912,7 @@ class MainWin( wx.Frame ):
 		num = 0  # default to 0 because CrossMgrVideo will choke on None
 		if "sprintBib" in event.sprintDict:
 			num = event.sprintDict["sprintBib"]
+			race.setInProgressSprintBib( num )
 		requests = [(num, (dt - race.startTime).total_seconds())]
 		success, error = SendPhotoRequests( requests )
 		if success:
@@ -4347,7 +4347,8 @@ class MainWin( wx.Frame ):
 					wx.CallLater( race.rfidTagAssociateSeconds*1000, self.refreshResults )
 					return True  #signal for an update.
 					continue
-				except (TypeError, ValueError):
+				except (TypeError, ValueError) as e:
+					#print(e)
 					continue
 				
 		return False	# don't signal for an update.
