@@ -119,7 +119,6 @@ def FtpWriteFile( host, port, user='anonymous', passwd='anonymous@', timeout=30,
 			ssh.set_missing_host_key_policy( paramiko.AutoAddPolicy() )
 			ssh.load_system_host_keys()                  
 			ssh.connect( host, port, user, passwd )
-
 			with CallCloseOnExit(ssh.open_sftp()) as sftp:
 				sftp_mkdir_p( sftp, serverPath )
 				for i, f in enumerate(fname):
