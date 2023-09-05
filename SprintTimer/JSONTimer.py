@@ -270,7 +270,10 @@ class JSONTimer:
 			return
 		sLen = 0
 		while sLen < len(message):
-			sLen += s.send( message[sLen:] )
+			try:
+				sLen += s.send( message[sLen:] )
+			except OSError:
+				return
 			
 	def socketReadDelimited( self, s, delimiter=EOL ):
 		len_EOL = len(delimiter)
@@ -478,7 +481,8 @@ class JSONTimer:
 							if sprintDict["testMode"]:
 								t1_test = sprintDict["t1_test"] if "t1_test" in sprintDict else None
 								t2_test = sprintDict["t2_test"] if "t2_test" in sprintDict else None
-								self.ttd.update(t1_test, t2_test)
+								if self.ttd:
+									self.ttd.update(t1_test, t2_test)
 						else:
 							# no current sprint
 							self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
@@ -495,7 +499,7 @@ class JSONTimer:
 						break
 					continue
 				except Exception as e:
-					self.qLog( 'connection', '{}: "{}"'.format(_('Connection failed'), e) )
+					self.qLog( 'connection', '{}: "{}"'.format(_('Connection error'), e) )
 					break
 				
 				self.processSendQ()
