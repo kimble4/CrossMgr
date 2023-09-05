@@ -4352,7 +4352,7 @@ class MainWin( wx.Frame ):
 				
 		return False	# don't signal for an update.
 	
-	def sprintTimerTestMode( self, test=False):
+	def sprintTimerTestMode( self, timerTestDialog=None, test=False):
 		race = Model.race
 		if not race:
 			return
@@ -4360,7 +4360,7 @@ class MainWin( wx.Frame ):
 		if not self.sprintTimer:
 			return
 		
-		self.sprintTimer.setTestMode( test )
+		self.sprintTimer.setTestMode( test, timerTestDialog=timerTestDialog)
 		
 	def resetSprintTimer( self, event = None ):
 		race = Model.race

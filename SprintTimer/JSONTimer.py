@@ -21,16 +21,45 @@ class TimerTestDialog( wx.Dialog ):
 		super().__init__( parent, id, _("Sprint Timer Input Test"),
 						style=wx.DEFAULT_DIALOG_STYLE|wx.TAB_TRAVERSAL|wx.RESIZE_BORDER )
 		
+		self.t1time = None
+		self.t2time = None
+		self.lastT1Sound = datetime.datetime.now()
+		self.lastT2Sound = datetime.datetime.now()
+		
+		self.whiteColour = wx.Colour( 255, 255, 255 )
+		self.blackColour = wx.Colour( 0, 0, 0 )
+		self.yellowColour = wx.Colour( 255, 255, 0 )
+		self.orangeColour = wx.Colour( 255, 165, 0 )
+		self.greyColour = wx.Colour( 150, 150, 150 )
+		self.lightGreyColour = wx.Colour ( 211, 211, 211 )
+		self.greenColour = wx.Colour( 127, 210, 0 )
+		self.lightBlueColour = wx.Colour( 153, 205, 255 )
+		self.redColour = wx.Colour( 255, 0, 0 )
+		
 		border=4
 		
 		bs = wx.BoxSizer( wx.VERTICAL )
 		
 		self.text = wx.StaticText(self, label='Testing sprint timer inputs...\nTiming will not be possible until the test is finished.')
-		
 		bs.Add( self.text, 0, wx.EXPAND|wx.ALL, border )
 		
 		bs.AddSpacer( border )
 		
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		self.t1status = wx.StaticText(self, label=' T1 ')
+		hs.Add( self.t1status, 0, wx.EXPAND|wx.ALL, border )
+		hs.AddSpacer( border )
+		self.t2status = wx.StaticText(self, label=' T2 ')
+		hs.Add( self.t2status, 0, wx.EXPAND|wx.ALL, border )
+		hs.AddSpacer( border )
+		self.sounds = wx.CheckBox( self, label = 'play sounds' )
+		self.sounds.SetValue(True)
+		hs.Add(self.sounds)
+		
+		bs.Add( hs )
+	
+		bs.AddSpacer( border )
+	
 		btnSizer = self.CreateStdDialogButtonSizer( wx.OK )
 		self.Bind( wx.EVT_BUTTON, self.onOK, id=wx.ID_OK )
 		if btnSizer:
@@ -69,16 +98,62 @@ class TimerTestDialog( wx.Dialog ):
 			mainWin.updateSprintTimerSettings()
 			mainWin.sprintTimer.StartListener( HOST=race.sprintTimerAddress, PORT=race.sprintTimerPort)
 	
-		mainWin.sprintTimerTestMode(True)
+		mainWin.sprintTimerTestMode(self, True)
+		self.timer = wx.CallLater( 1000, self.onTimerCallback )
 	
 	def stopTest( self ):
 		race = Model.race
 		if not race:
 			return
-		
+		self.timer.Stop()
 		mainWin = Utils.getMainWin()
 		mainWin.sprintTimerTestMode(False)
-	
+		
+	def update( self, t1time, t2time ):
+		if t1time is not None:
+			self.t1time = datetime.datetime.now() - datetime.timedelta(microseconds = t1time)
+		if t2time is not None:
+			self.t2time = datetime.datetime.now() - datetime.timedelta(microseconds = t2time)
+		wx.CallAfter( self.refresh )
+		
+	def refresh( self, sound = False ):
+		t1 = (datetime.datetime.now() - self.t1time).total_seconds() if self.t1time is not None else 99999
+		t2 = (datetime.datetime.now() - self.t2time).total_seconds() if self.t2time is not None else 99999
+		if t1 < 1:
+			if self.sounds.IsChecked() and datetime.datetime.now() - self.lastT1Sound > datetime.timedelta(seconds = 1):
+				Utils.PlaySound('pip.wav')
+				self.lastT1Sound = datetime.datetime.now()
+			self.t1status.SetBackgroundColour(self.redColour)
+			self.t1status.SetForegroundColour(self.whiteColour)
+		elif t1 < 2:
+			self.t1status.SetBackgroundColour(self.orangeColour)
+			self.t1status.SetForegroundColour(self.whiteColour)
+		elif t1 < 5:
+			self.t1status.SetBackgroundColour(self.yellowColour)
+			self.t1status.SetForegroundColour(self.blackColour)
+		else:
+			self.t1status.SetBackgroundColour(self.lightGreyColour)
+			self.t1status.SetForegroundColour(self.blackColour)
+
+		if t2 < 1:
+			if self.sounds.IsChecked() and datetime.datetime.now() - self.lastT2Sound > datetime.timedelta(seconds = 1):
+				Utils.PlaySound('boop.wav')
+				self.lastT2Sound = datetime.datetime.now()
+			self.t2status.SetBackgroundColour(self.redColour)
+			self.t2status.SetForegroundColour(self.whiteColour)
+		elif t2 < 2:
+			self.t2status.SetBackgroundColour(self.orangeColour)
+			self.t2status.SetForegroundColour(self.whiteColour)
+		elif t2 < 5:
+			self.t2status.SetBackgroundColour(self.yellowColour)
+			self.t2status.SetForegroundColour(self.blackColour)
+		else:
+			self.t2status.SetBackgroundColour(self.lightGreyColour)
+			self.t2status.SetForegroundColour(self.blackColour)
+		
+	def onTimerCallback( self ):
+		self.refresh()
+		self.timer.Restart( 500 )
 		
 
 class JSONTimer:
@@ -104,6 +179,7 @@ class JSONTimer:
 		SprintTimerEvent, EVT_SPRINT_TIMER = wx.lib.newevent.NewEvent()
 		self.socket = None
 		self.socketLock = None
+		self.ttd = None
 		
 		self.sprintDistance = None
 		self.speedUnit = None
@@ -135,7 +211,8 @@ class JSONTimer:
 					self.qLog( 'send', '{}: {}: "{}"'.format(cmd, _('Failed to write to sendQ'), e) )
 				self.processSendQ()
 		
-	def setTestMode( self, testMode = False ):
+	def setTestMode( self, testMode = False, timerTestDialog = None ):
+		self.ttd = timerTestDialog
 		if self.sendQ:
 			try:
 				settings = { "testMode": 1 if testMode else 0 }
@@ -373,6 +450,11 @@ class JSONTimer:
 							else:
 								#just update the time difference
 								self.sendReaderEvent(False, None, receivedTime, readerComputerTimeDiff, havePPS)
+						elif "testMode" in sprintDict and self.ttd is not None:
+							if sprintDict["testMode"]:
+								t1_test = sprintDict["t1_test"] if "t1_test" in sprintDict else None
+								t2_test = sprintDict["t2_test"] if "t2_test" in sprintDict else None
+								self.ttd.update(t1_test, t2_test)
 						else:
 							# no current sprint
 							self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
