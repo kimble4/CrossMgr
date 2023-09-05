@@ -98,6 +98,9 @@ class Results( wx.Panel ):
 		self.iRow, self.iCol = None, None
 		self.iLastLap = 0
 		self.fastestLapRC = None
+		
+		self.doubleClickTimer = wx.Timer(self)
+		self.doubleClickDelay = 300
 
 		self.hbs = wx.BoxSizer(wx.HORIZONTAL)
 		self.categoryLabel = wx.StaticText( self, label = _('Category:') )
@@ -194,7 +197,8 @@ class Results( wx.Panel ):
 		self.labelGrid.Bind(wx.EVT_SCROLLWIN, self.onScroll)
 		self.lapGrid.Bind(wx.EVT_SCROLLWIN, self.onScroll)
 		
-		self.Bind( wx.grid.EVT_GRID_SELECT_CELL, self.doNumSelect )
+		#self.Bind( wx.grid.EVT_GRID_SELECT_CELL, self.doNumSelect )
+		self.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.doLeftClick )
 		self.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.doNumDrilldown )
 		self.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.doRightClick )
 		self.lapGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
@@ -564,20 +568,35 @@ class Results( wx.Panel ):
 		self.lapGrid.Set( textColour=textColourLap, backgroundColour=backgroundColourLap )
 		self.labelGrid.Reset()
 		self.lapGrid.Reset()
+		
+	def doLeftClick( self, event ):
+		# Set a timer to call doNumSelect() if we don't get a double-click in the interim
+		self.doubleClickRow, self.doubleClickCol = event.GetRow(), event.GetCol()
+		self.doubleClickTimer.Start(self.doubleClickDelay)
+		self.Bind( wx.EVT_TIMER, self.doNumSelect)
 			
 	def doNumDrilldown( self, event ):
-		self.doNumSelect( event )
+		# We got a double-click: Stop the timer
+		self.doubleClickTimer.Stop()
+		self.doNumSelect( event, staySelected=True )
 		mainWin = Utils.getMainWin()
 		if self.numSelect is not None and mainWin:
 			ShowRiderDetailDialog( self, self.numSelect )
 	
-	def doNumSelect( self, event ):
+	def doNumSelect( self, event, staySelected=False ):
+		self.doubleClickTimer.Stop()
 		grid = event.GetEventObject()
 		self.iLap = None
 		
 		if self.isEmpty:
 			return
-		row, col = event.GetRow(), event.GetCol()
+		#row, col = event.GetRow(), event.GetCol()
+		row, col = self.doubleClickRow, self.doubleClickCol
+		self.doubleClickRow, self.doubleClickCol = None, None
+		
+		if row is None or col is None: # This can happen if clicked again too quickly
+			return
+		
 		self.iRow, self.iCol = row, col
 		if row >= self.labelGrid.GetNumberRows():
 			return
@@ -594,7 +613,7 @@ class Results( wx.Panel ):
 		if self.numSelect != numSelect:
 			self.numSelect = numSelect
 			self.showNumSelect()
-		else: # De-select when clicking on selected row
+		elif not staySelected: # De-select when single-clicking on selected row
 			self.numSelect = None
 			self.showNumSelect()
 		mainWin = Utils.getMainWin()
