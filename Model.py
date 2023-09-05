@@ -4,7 +4,6 @@ import re
 import sys
 import math
 import time
-import copy
 import bisect
 import socket
 import random
@@ -2430,7 +2429,7 @@ class Race:
 		
 	def resetAllCaches( self ):
 		self.resetCategoryCache()
-		self.resetCache();
+		self.resetCache()
 		
 	def resetRiderCaches( self ):
 		for rider in self.riders.values():
