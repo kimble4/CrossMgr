@@ -221,7 +221,8 @@ class MainWin( wx.Frame ):
 			return
 		try:
 			page.refresh()
-		except AttributeError:
+		except Exception as e:
+			traceback.print_exc()
 			pass
 
 	def setTitle( self ):
@@ -538,18 +539,17 @@ hr { clear: both; }
 		self.commit()
 		self.refresh()
 		race = Model.race
-		if race.isChanged():
-			if not self.fileName:
-				ret = Utils.MessageYesNoCancel(self, 'Close:\n\nUnsaved changes!\nSave to a file?', 'Missing filename')
-				if ret == wx.ID_YES:
-					if not self.menuSaveAs():
-						event.StopPropagation()
-						return
-				elif ret == wx.ID_CANCEL:
+		if not self.fileName:
+			ret = Utils.MessageYesNoCancel(self, 'Unsaved changes!\n\nSave to a file?', 'Missing filename')
+			if ret == wx.ID_YES:
+				if not self.menuSaveAs():
 					event.StopPropagation()
 					return
-			else:
-				ret = Utils.MessageYesNoCancel(self, 'Close:\n\nUnsaved changes!\nSave changes before Exit?', 'Unsaved Changes')
+			elif ret == wx.ID_CANCEL:
+				event.StopPropagation()
+				return
+		elif race.isChanged():
+				ret = Utils.MessageYesNoCancel(self, 'Unsaved changes!\n\nSave changes before Exit?', 'Unsaved Changes')
 				if ret == wx.ID_YES:
 					self.writeRace()
 				elif ret == wx.ID_CANCEL:
@@ -885,7 +885,8 @@ def MainLoop():
 	if fileName:
 		try:
 			mainWin.openRace( fileName )
-		except (IndexError, AttributeError, ValueError):
+		except (IndexError, AttributeError, ValueError) as e:
+			print( e )
 			pass
 
 	# Start processing events.

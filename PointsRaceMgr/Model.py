@@ -1,6 +1,7 @@
 import re
 import random
 import operator
+import itertools
 import datetime
 import sys
 from collections import namedtuple
@@ -31,15 +32,16 @@ def fixBibsNML( bibs, bibsNML, isFinish=False ):
 	
 #------------------------------------------------------------------------------------------------------------------
 class Rider:
-	Finisher, DNF, PUL, DNS, DSQ = tuple( range(5) )
-	statusNames = ('Finisher', 'DNF', 'PUL', 'DNS', 'DSQ')
-	statusSortSeq = { 'Finisher':1,	Finisher:1,
-					  'PUL':2,		PUL:2,
-					  'DNF':3,		DNF:3,
-					  'DNS':4,		DNS:4,
-					  'DSQ':5,		DSQ:5,
+	Finisher, DNF, DNS, DSQ, PUL = tuple( range(5) )
+	statusNames = ('Finisher', 'DNF', 'DNS', 'DSQ')
+	statusSortSeq = {
+		'Finisher':1,	Finisher:1,
+	  'DNF':2,		DNF:2,
+	  'DNS':3,		DNS:3,
+	  'DSQ':4,		DSQ:4,
+	  'PUL':5,		PUL:5,
 	}
-	pullSequence = 0
+	pullSequence = 0	# Sequence that this rider was pulled.
 	
 	def __init__( self, num ):
 		self.num = num
@@ -84,14 +86,18 @@ class Rider:
 		
 	def getKey( self ):
 		if   race.rankBy == race.RankByPoints:
-			return (Rider.statusSortSeq[self.status], -self.pullSequence, -self.pointsTotal, self.finishOrder, self.num)
+			return (Rider.statusSortSeq[self.status], -self.pointsTotal, self.finishOrder, -self.pullSequence, self.num)
 		elif race.rankBy == race.RankByLapsPoints:
-			return (Rider.statusSortSeq[self.status], -self.pullSequence, -self.updown, -self.pointsTotal, self.finishOrder, self.num)
+			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, self.finishOrder, -self.pullSequence, self.num)
 		else:	# race.RankByLapsPointsNumWins
-			return (Rider.statusSortSeq[self.status], -self.pullSequence, -self.updown, -self.pointsTotal, -self.numWins, self.finishOrder, self.num)
+			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, -self.numWins, self.finishOrder, -self.pullSequence, self.num)
 
 	def tiedWith( s, r ):
 		return s.getKey()[:-1] == r.getKey()[:-1]
+	
+	@property
+	def pulled( self ):
+		return self.pullSequence != 0
 	
 	def __repr__( self ):
 		return "Rider( {}, {}, {}, {}, {} )".format(
@@ -324,6 +330,8 @@ class Race:
 		return sum( 1 for e in self.events if e.eventType == Sprint )
 	
 	def isDoublePoints( self, sprint ):
+		if not hasattr(self, 'doublePointsOnSprint'):
+			self.doublePointsOnSprint = set()
 		return sprint in self.doublePointsOnSprint or (self.doublePointsForLastSprint and sprint == self.getNumSprints())
 	
 	def getSprintLabel( self, sprint ):
@@ -383,6 +391,7 @@ class Race:
 		self.sprintCount = 0
 		pullSequenceCur = 0
 		for iEvent, e in enumerate(self.events):
+			
 			# Ensure the eventType matches the number of sprints.
 			if e.eventType == RaceEvent.Finish and self.sprintCount != numSprints-1:
 				e.eventType = RaceEvent.Sprint
@@ -393,21 +402,34 @@ class Race:
 				self.sprintCount += 1
 				for place, b in enumerate(e.bibs, 1):
 					self.getRider(b).addSprintResult(self.sprintCount, place, e.bibs)
-			elif e.eventType == RaceEvent.LapUp:
-				for b in e.bibs:
-					self.getRider(b).addUpDown(1)
-			elif e.eventType == RaceEvent.LapDown:
-				for b in e.bibs:
-					self.getRider(b).addUpDown(-1)
+			
 			elif e.eventType == RaceEvent.Finish:
 				self.sprintCount += 1
 				if iEvent != len(self.events)-1 and self.events[iEvent+1].eventType == RaceEvent.NML:
 					bibs = fixBibsNML( e.bibs, self.events[iEvent+1].bibs, True )
 				else:
 					bibs = e.bibs
+				
 				for place, b in enumerate(bibs, 1):
-					# addSprintResult also updates the finishOrder.
+					# addSprintResult also updates the finishOrder and processes ties.
 					self.getRider(b).addSprintResult(self.sprintCount, place, bibs)
+
+				# Place all the pulled riders in reverse pull order after the finish order.
+				pulled = sorted( (r for r in self.riders.values() if r.pulled), key=operator.attrgetter('pullSequence'), reverse=True )
+				finishOrderMax = max( (r.finishOrder for r in self.riders.values() if 0 < r.finishOrder < 1000), default=0 )
+				for place, r in enumerate(pulled, finishOrderMax+1):
+					r.finishOrder = place
+				for rPrev, rNext in itertools.pairwise(pulled):
+					if rNext.pullSequence == rPrev.pullSequence:
+						rNext.finishOrder = rPrev.finishOrder						
+
+			elif e.eventType == RaceEvent.LapUp:
+				for b in e.bibs:
+					self.getRider(b).addUpDown(1)
+			elif e.eventType == RaceEvent.LapDown:
+				for b in e.bibs:
+					self.getRider(b).addUpDown(-1)
+
 			elif e.eventType == RaceEvent.DNF:
 				for b in e.bibs:
 					self.getRider(b).status = Rider.DNF
@@ -415,9 +437,8 @@ class Race:
 				for b in e.bibs:
 					self.getRider(b).status = Rider.DNS
 			elif e.eventType == RaceEvent.PUL:
+				pullSequenceCur += 1
 				for b in e.bibs:
-					self.getRider(b).status = Rider.PUL
-					pullSequenceCur += 1
 					self.getRider(b).pullSequence = pullSequenceCur
 			elif e.eventType == RaceEvent.DSQ:
 				for b in e.bibs:
@@ -435,17 +456,11 @@ class Race:
 		return sorted( self.riders.values(), key=operator.methodcaller('getKey') )
 		
 	def setRiderInfo( self, riderInfo ):
-		self.isChangedFlag = (
-			len(self.riderInfo) != len(riderInfo) or
-			any(a != b for a, b in zip(self.riderInfo, riderInfo))
-		)
+		self.isChangedFlag |= (self.riderInfo != riderInfo)
 		self.riderInfo = riderInfo
 
 	def setEvents( self, events ):
-		self.isChangedFlag = (
-			len(self.events) != len(events) or
-			any(e1 != e2 for e1, e2 in zip(self.events, events))
-		)
+		self.isChangedFlag |= (self.events != events)
 		self.events = events
 		
 	def _populate( self ):
