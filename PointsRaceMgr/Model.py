@@ -86,14 +86,14 @@ class Rider:
 		
 	def getKey( self ):
 		if   race.rankBy == race.RankByPoints:
-			return (Rider.statusSortSeq[self.status], -self.pointsTotal, self.finishOrder, -self.pullSequence, self.num)
+			return (Rider.statusSortSeq[self.status], -self.pointsTotal, self.finishOrder, self.num)
 		elif race.rankBy == race.RankByLapsPoints:
-			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, self.finishOrder, -self.pullSequence, self.num)
+			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, self.finishOrder, self.num)
 		else:	# race.RankByLapsPointsNumWins
-			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, -self.numWins, self.finishOrder, -self.pullSequence, self.num)
+			return (Rider.statusSortSeq[self.status], -self.updown, -self.pointsTotal, -self.numWins, self.finishOrder, self.num)
 
 	def tiedWith( s, r ):
-		return s.getKey()[:-1] == r.getKey()[:-1]
+		return s.getKey()[:-1] == r.getKey()[:-1]	# Use all scoring criteria except bib number.
 	
 	@property
 	def pulled( self ):
@@ -380,6 +380,8 @@ class Race:
 		return points, place, tie
 	
 	def processEvents( self ):
+		Finisher = Rider.Finisher
+
 		self.riders = {}
 		
 		for info in self.riderInfo:
@@ -414,15 +416,6 @@ class Race:
 					# addSprintResult also updates the finishOrder and processes ties.
 					self.getRider(b).addSprintResult(self.sprintCount, place, bibs)
 
-				# Place all the pulled riders in reverse pull order after the finish order.
-				pulled = sorted( (r for r in self.riders.values() if r.pulled), key=operator.attrgetter('pullSequence'), reverse=True )
-				finishOrderMax = max( (r.finishOrder for r in self.riders.values() if 0 < r.finishOrder < 1000), default=0 )
-				for place, r in enumerate(pulled, finishOrderMax+1):
-					r.finishOrder = place
-				for rPrev, rNext in itertools.pairwise(pulled):
-					if rNext.pullSequence == rPrev.pullSequence:
-						rNext.finishOrder = rPrev.finishOrder						
-
 			elif e.eventType == RaceEvent.LapUp:
 				for b in e.bibs:
 					self.getRider(b).addUpDown(1)
@@ -443,7 +436,33 @@ class Race:
 			elif e.eventType == RaceEvent.DSQ:
 				for b in e.bibs:
 					self.getRider(b).status = Rider.DSQ
+
+		# Post-process pulled riders.  Put them in reverse pull order in the finish order.
+		# Of course, points, +/- laps, etc. will be taken into account before finish order.
+		pulled = []
+		non_pulled_finishers = []
+		for r in self.riders.values():
+			if r.status == Finisher:
+				if r.pulled:
+					pulled.append( r )
+				else:
+					non_pulled_finishers.append( r )
+		
+		finishOrderMax = len(non_pulled_finishers)
+		if pulled:
+			# Fix up the existing finish order.
+			for r in non_pulled_finishers:
+				if r.finishOrder >= 1000:
+					r.finishOrder = finishOrderMax
 			
+			pulled.sort( key=operator.attrgetter('pullSequence'), reverse=True )
+			for place, r in enumerate(pulled, finishOrderMax+1):
+				r.finishOrder = place
+			# Adjust the pull order for ties.
+			for rPrev, rNext in itertools.pairwise(pulled):
+				if rNext.pullSequence == rPrev.pullSequence:
+					rNext.finishOrder = rPrev.finishOrder
+		
 	def isChanged( self ):
 		return self.isChangedFlag
 
