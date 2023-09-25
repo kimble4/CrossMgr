@@ -889,14 +889,21 @@ and remove them from other categories.'''),
 			if race is None:
 				return
 			numStrTuples = []
+			distanceUnsetWarning = []
 			for r in range(self.grid.GetNumberRows()):
 				values = { name:self.grid.GetCellValue(r, c) for name, c in self.iCol.items()
 																			if name not in self.computedFields }
 				values['catType'] = self.CategoryTypeChoices.index(values['catType'])
 				values['distanceType'] = self.DistanceTypeChoices.index(values['distanceType'])
 				numStrTuples.append( values )
+				# Nag if the distance is not set for a start wave
+				if  values['catType'] == 0:
+					if not values['distance']:
+						distanceUnsetWarning.append('Category \'' + str(values['name']) + '\' ' + self.DistanceTypeChoices[values['distanceType']] + ' distance is not set!')
 			race.setCategories( numStrTuples )
 			race.adjustAllCategoryWaveNumbers()
+		if len(distanceUnsetWarning):
+			Utils.MessageOK( self, '\n'.join(distanceUnsetWarning), _('Distance not set') )
 		wx.CallAfter( Utils.refreshForecastHistory )
 	
 if __name__ == '__main__':
