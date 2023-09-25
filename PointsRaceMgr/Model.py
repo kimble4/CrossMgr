@@ -306,9 +306,14 @@ class Race:
 	def getDistanceStr( self ):
 		d = self.courseLength * self.laps
 		if d - int(d) < 0.001:
-			return '{:,}'.format(int(d)) + ['m','km'][self.courseLengthUnit]
+			text = '{:,}'.format(int(d)) + ['m','km'][self.courseLengthUnit]
 		else:
-			return '{:,.2f}'.format(d) + ['m','km'][self.courseLengthUnit]
+			text = '{:,.2f}'.format(d) + ['m','km'][self.courseLengthUnit]
+		if text.endswith( ',000m' ):
+			text = text[:-5] + 'km'
+		elif text.endswith( ',500m' ):
+			text = text[:-5] + '.5km'
+		return text
 	
 	def setattr( self, attr, v ):
 		if getattr(self, attr, None) != v:
@@ -359,7 +364,7 @@ class Race:
 		while place > 1:
 			try:
 				bib = bibs[place-1]
-			except:
+			except IndexException:
 				break
 			if bib < 0:		# If the bib number is negative, tie with the previous position.
 				place -= 1
@@ -379,10 +384,18 @@ class Race:
 			points *= 2
 		return points, place, tie
 	
+	def cleanNonFinishers( self, bibs ):
+		# Remove any non-finishers from this sprint (mistakes).
+		bibs = [b for b in bibs if self.getRider(b).status == Rider.Finisher]
+		if bibs:	# Ensure that the first bib is not a "tie".
+			bibs[0] = abs(bibs[0])
+		return bibs
+	
 	def processEvents( self ):
 		Finisher = Rider.Finisher
 
 		self.riders = {}
+		self.isFinished = False
 		
 		for info in self.riderInfo:
 			r = self.getRider(info.bib)
@@ -402,25 +415,27 @@ class Race:
 				
 			if e.eventType == RaceEvent.Sprint:
 				self.sprintCount += 1
-				for place, b in enumerate(e.bibs, 1):
-					self.getRider(b).addSprintResult(self.sprintCount, place, e.bibs)
+				bibs = self.cleanNonFinishers( e.bibs )
+				for place, b in enumerate(bibs, 1):
+					self.getRider(b).addSprintResult( self.sprintCount, place, bibs )
 			
 			elif e.eventType == RaceEvent.Finish:
+				self.isFinished = True
 				self.sprintCount += 1
 				if iEvent != len(self.events)-1 and self.events[iEvent+1].eventType == RaceEvent.NML:
-					bibs = fixBibsNML( e.bibs, self.events[iEvent+1].bibs, True )
+					bibs = fixBibsNML( self.cleanNonFinishers(e.bibs), self.cleanNonFinishers(self.events[iEvent+1].bibs), True )
 				else:
-					bibs = e.bibs
+					bibs = self.cleanNonFinishers( e.bibs )
 				
 				for place, b in enumerate(bibs, 1):
 					# addSprintResult also updates the finishOrder and processes ties.
-					self.getRider(b).addSprintResult(self.sprintCount, place, bibs)
-
+					self.getRider(b).addSprintResult( self.sprintCount, place, bibs )
+				
 			elif e.eventType == RaceEvent.LapUp:
-				for b in e.bibs:
+				for b in self.cleanNonFinishers(e.bibs):
 					self.getRider(b).addUpDown(1)
 			elif e.eventType == RaceEvent.LapDown:
-				for b in e.bibs:
+				for b in self.cleanNonFinishers(e.bibs):
 					self.getRider(b).addUpDown(-1)
 
 			elif e.eventType == RaceEvent.DNF:
