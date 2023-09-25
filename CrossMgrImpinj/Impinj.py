@@ -25,6 +25,7 @@ HOME_DIR = os.path.expanduser("~")
 ConnectionTimeoutSecondsDefault	= 3		# Interval for connection timeout
 KeepaliveSecondsDefault			= 2		# Interval to request a Keepalive message
 RepeatSecondsDefault			= 3		# Interval in which a tag is considered a repeat read.
+PollOffsetSecondsDefault		= 0		# Interval to check the readers's clock offset
 ProcessingMethodDefault 		= QuadraticRegressionMethod
 AntennaChoiceDefault			= MostReadsChoice
 RemoveOutliersDefault           = True
@@ -32,6 +33,7 @@ RemoveOutliersDefault           = True
 ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
+PollOffsetSeconds			= PollOffsetSecondsDefault
 
 ReconnectDelaySeconds		= 2		# Interval to wait before reattempting a connection
 ReaderUpdateMessageSeconds	= 5		# Interval to print we are waiting for input.
@@ -51,6 +53,9 @@ RemoveOutliers   = RemoveOutliersDefault
 
 tAntennaConnectedLast = getTimeNow() - datetime.timedelta( days=200 )
 tAntennaConnectedLastLock = threading.Lock()
+
+tSecondSocketLast = getTimeNow()
+tSecondSocketLastLock = threading.Lock()
 
 def ResetAntennaConnectionsCheck():
 	global tAntennaConnectedLast, tAntennaConnectedLastLock
@@ -243,7 +248,7 @@ class Impinj:
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 		self.timeCorrection = getTimeNow() - readerTime
 		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-		self.messageQ.put( ('Impinj', '\nReader time is {} seconds different from computer time\n'.format(self.timeCorrection.total_seconds())) )
+		self.messageQ.put( ('Impinj', '\nReader time is {} seconds ahead of computer time\n'.format(-self.timeCorrection.total_seconds())) )
 		
 		# Reset to factory defaults.
 		success, response = self.sendCommand( SET_READER_CONFIG_Message(ResetToFactoryDefault = True) )
@@ -450,7 +455,7 @@ class Impinj:
 			time.sleep( 0.1 )
 	
 	def runServer( self ):
-		global tAntennaConnectedLast, tAntennaConnectedLastLock
+		global tAntennaConnectedLast, tAntennaConnectedLastLock, tSecondSocketLast, tSecondSocketLastLock
 		
 		self.messageQ.put( ('BackupFile', self.fname) )
 		
@@ -547,6 +552,16 @@ class Impinj:
 					
 					
 				#------------------------------------------------------------
+				# Massive bodge: Prod the reader on another socket, so it reveals its UTCTimestamp_Parameter 
+				#
+				if PollOffsetSeconds > 0 and (t - tSecondSocketLast).total_seconds() >= PollOffsetSeconds:
+					self.messageQ.put( ('Impinj', 'Checking clock offset...') )
+					secondSocketThread = threading.Thread( target=self.attemptSecondConnection )
+					secondSocketThread.start()
+					with tSecondSocketLastLock:
+						tSecondSocketLast = t
+					
+				#------------------------------------------------------------
 				# Messages from the reader.
 				# Handle connection/timeout errors here.
 				#
@@ -587,7 +602,7 @@ class Impinj:
 					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 					self.timeCorrection = getTimeNow() - readerTime
 					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					self.messageQ.put( ('Impinj', '\nReader time is {} seconds different from computer time\n'.format(self.timeCorrection.total_seconds())) )
+					self.messageQ.put( ('Impinj', 'Reader time is {} seconds ahead of computer time'.format(-self.timeCorrection.total_seconds())) )
 				
 				#------------------------------------------------------------
 				# Keepalive.
@@ -720,6 +735,28 @@ class Impinj:
 				d = self.dataQ.get( False )
 			except Empty:
 				break
+	
+	def attemptSecondConnection( self ):
+		self.secondSocket = None	# Voodoo to ensure that the socket is reset properly.
+		
+		#------------------------------------------------------------
+		# Connect Mode.
+		#
+		# Create a socket to connect to the reader.
+		self.secondSocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+		self.secondSocket.settimeout( ConnectionTimeoutSeconds )
+		
+		try:
+			self.secondSocket.connect( (self.impinjHost, self.impinjPort) )
+		except Exception as e:
+			self.messageQ.put( ('Impinj', 'Second Connection Failed: {}'.format(e) ) )
+			self.secondSocket.close()
+			
+		self.secondSocket.close()
+		self.secondSocket = None
+		return
+
+
 
 impinj = None
 def ImpinjServer( dataQ, messageQ, strayQ, shutdownQ, impinjHost, impinjPort, antennaStr, statusCB=None ):
