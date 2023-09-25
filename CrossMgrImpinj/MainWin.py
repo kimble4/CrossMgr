@@ -466,8 +466,13 @@ class MainWin( wx.Frame ):
 		hb = wx.BoxSizer()
 		hb.Add( gs )
 		self.methodName = wx.StaticText( self )
+		self.clockOffset = wx.StaticText( self )
 		self.refreshMethodName()
-		hb.Add( self.methodName, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=20 )
+		
+		vs = wx.BoxSizer(wx.VERTICAL)
+		vs.Add( self.methodName, flag=wx.ALIGN_LEFT, border=20 )
+		vs.Add( self.clockOffset, flag=wx.ALIGN_LEFT, border=20 )
+		hb.Add(vs)
 				
 		gbs.Add( hb, pos=(iRow,0), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL )
 		
@@ -668,6 +673,11 @@ class MainWin( wx.Frame ):
 		else:
 			s = MethodNames[Impinj.ProcessingMethod]
 		self.methodName.SetLabel( s )
+		
+	def updateClockOffset( self, offset ):
+		if offset is not None:
+			s = -offset.total_seconds()
+			self.clockOffset.SetLabel( 'Reader offset: {:.3f}'.format(s) + 's' )
 
 	def refreshStrays( self, strays ):
 		if self.strays.GetItemCount() != len(strays):
@@ -989,7 +999,7 @@ class MainWin( wx.Frame ):
 				antennaReadCount = None
 			
 			message = ' '.join( '{}'.format(x) for x in d[1:] )
-			if   d[0] == 'Impinj':
+			if d[0] == 'Impinj':
 				if 'state' in d:
 					self.impinjMessages.messageList.SetForegroundColour( wx.BLACK if d[2] else wx.BLACK )
 					self.impinjMessages.messageList.SetBackgroundColour( self.LightGreen if d[2] else self.LightRed )
@@ -998,6 +1008,8 @@ class MainWin( wx.Frame ):
 					elif not d[2] and not self.readerDisconnectedWarning:
 						wx.CallAfter( self.readerDisconnectionWarning )
 						self.readerDisconnectedWarning = True
+				elif 'offset' in d:
+					self.updateClockOffset( d[2] )
 				else:
 					self.impinjMessages.write( message )
 					if antennaReadCount is not None:

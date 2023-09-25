@@ -242,7 +242,7 @@ class Impinj:
 		readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 		self.timeCorrection = getTimeNow() - readerTime
-		
+		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 		self.messageQ.put( ('Impinj', '\nReader time is {} seconds different from computer time\n'.format(self.timeCorrection.total_seconds())) )
 		
 		# Reset to factory defaults.
@@ -369,9 +369,8 @@ class Impinj:
 	
 	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, quadReg=False ):
 		lrt = self.lastReadTime.get(tagID, tOld)
-		if discoveryTime > lrt:
-			self.lastReadTime[tagID] = discoveryTime
 		
+		# Only skip repeats if RepeatSeconds is >0
 		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
 			self.messageQ.put( (
 				'Impinj',
@@ -381,6 +380,10 @@ class Impinj:
 				)
 			)
 			return False
+		
+		# Do this here so that tags do get repeated once every RepeatSeconds
+		if discoveryTime > lrt:
+			self.lastReadTime[tagID] = discoveryTime
 			
 		self.dataQ.put( (tagID, discoveryTime) )
 		
@@ -583,6 +586,7 @@ class Impinj:
 					readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 					self.timeCorrection = getTimeNow() - readerTime
+					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 					self.messageQ.put( ('Impinj', '\nReader time is {} seconds different from computer time\n'.format(self.timeCorrection.total_seconds())) )
 				
 				#------------------------------------------------------------
@@ -627,7 +631,7 @@ class Impinj:
 						
 					if gpiState:
 						self.gpiState = gpiState
-						self.messageQ.put( ('Impinj', 'GPI state: {}'.format(','.join(str(self.gpiState[key]) for key in sorted(self.gpiState.keys())) ) ) )
+						self.messageQ.put( ('Impinj', 'GPI status: {}'.format(','.join(str(self.gpiState[key]) for key in sorted(self.gpiState.keys())) ) ) )
 						self.statusCB(
 							gpiState = self.gpiState,
 							timeCorrection = self.timeCorrection,
