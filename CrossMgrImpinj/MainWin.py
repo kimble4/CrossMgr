@@ -165,10 +165,12 @@ class AdvancedSetup( wx.Dialog ):
 		bs.Add( wx.StaticText(self, label='\n'.join([
 			'**Quad Regression**: return an estimated time when the tag is closest to an antenna by combining',
 			'multiple reads and signal strength (high accuracy, high processing).',
-			'The Antenna Choice option controls which antenna is selected for the regression.'
+			'The Antenna Choice option controls which antenna is selected for the regression.',
 			'Recommended for high-speed finishes (cycling).',
+			'',
 			'**Strongest Read**: return the time of the strongest read signal (lower accuracy, low processing).',
 			'Recommended for slow finishes with highly variable tag alignment reads (running).',
+			'',
 			'**First Read Time**:  return the first time the tag is read by any antenna (lowest accuracy, lowest processing).',
 			'Recommended for extremely large fields (Gran Fondo).',			
 			])), pos=(row, 1), span=(1,2), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
@@ -222,7 +224,7 @@ class AdvancedSetup( wx.Dialog ):
 		self.RepeatSeconds = intctrl.IntCtrl( self, min=0, max=120, limited = True, allow_none=False,
 			value = Impinj.RepeatSeconds, size=(100,-1), style=wx.TE_RIGHT )
 		bs.Add( self.RepeatSeconds, pos=(row, 1), span=(1,1), border = border, flag=wx.TOP )
-		bs.Add( wx.StaticText(self, label='Interval in which multiple tag reads are considered "repeats" and not reported.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		bs.Add( wx.StaticText(self, label='Interval in which multiple tag reads are considered "repeats" and not reported.  Zero to report every read.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
 
 		self.fields = [
 			'ConnectionTimeoutSeconds', 'KeepaliveSeconds', 'RepeatSeconds',

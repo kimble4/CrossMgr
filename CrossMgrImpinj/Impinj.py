@@ -237,6 +237,7 @@ class Impinj:
 		response = UnpackMessageFromSocket( self.readerSocket )
 		self.messageQ.put( ('Impinj', '\nReceived Response:\n{}\n'.format(response)) )
 		
+		
 		# Compute a correction between the reader's time and the computer's time.
 		readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
@@ -371,7 +372,7 @@ class Impinj:
 		if discoveryTime > lrt:
 			self.lastReadTime[tagID] = discoveryTime
 		
-		if (discoveryTime - lrt).total_seconds() < RepeatSeconds:
+		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
 			self.messageQ.put( (
 				'Impinj',
 				'Received {}.  tag={} Skipped (<{} secs ago).  {}'.format(self.tagCount, tagID, RepeatSeconds,
@@ -541,7 +542,7 @@ class Impinj:
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
-				
+					
 				#------------------------------------------------------------
 				# Messages from the reader.
 				# Handle connection/timeout errors here.
@@ -573,6 +574,17 @@ class Impinj:
 						tUpdateLast = t
 					continue
 				
+				
+				#------------------------------------------------------------
+				# Reader event
+				#
+				if isinstance(response, READER_EVENT_NOTIFICATION_Message):
+					# re-compute correction between the reader's time and the computer's time.
+					readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
+					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
+					self.timeCorrection = getTimeNow() - readerTime
+					self.messageQ.put( ('Impinj', '\nReader time is {} seconds different from computer time\n'.format(self.timeCorrection.total_seconds())) )
+				
 				#------------------------------------------------------------
 				# Keepalive.
 				#
@@ -590,7 +602,7 @@ class Impinj:
 					continue
 					
 				#------------------------------------------------------------
-				# Reader config (to get antenna connection status).
+				# Reader config (to get antenna connection and GPI status).
 				#
 				if isinstance(response, GET_READER_CONFIG_RESPONSE_Message):
 					gotAntennaData = False
@@ -629,6 +641,7 @@ class Impinj:
 				if not isinstance(response, RO_ACCESS_REPORT_Message):
 					if not isinstance(response, READER_EVENT_NOTIFICATION_Message):
 						self.messageQ.put( ('Impinj', 'Skipping: {}'.format(response.__class__.__name__)) )
+					
 					continue
 				
 				#------------------------------------------------------------
