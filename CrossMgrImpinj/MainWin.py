@@ -473,7 +473,9 @@ class MainWin( wx.Frame ):
 		hb = wx.BoxSizer()
 		hb.Add( gs )
 		self.methodName = wx.StaticText( self )
+		self.methodName.SetToolTip( wx.ToolTip('Report method') )
 		self.clockOffset = wx.StaticText( self )
+		self.clockOffset.SetToolTip( wx.ToolTip('Tag reader\'s UTC clock is this many seconds behind computer\'s clock.') )
 		self.refreshMethodName()
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
@@ -684,7 +686,7 @@ class MainWin( wx.Frame ):
 		
 	def updateClockOffset( self, offset ):
 		if offset is not None:
-			s = -offset.total_seconds()
+			s = offset.total_seconds()
 			self.clockOffset.SetLabel( 'Reader offset: {:.3f}'.format(s) + 's' )
 
 	def refreshStrays( self, strays ):

@@ -248,7 +248,7 @@ class Impinj:
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 		self.timeCorrection = getTimeNow() - readerTime
 		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-		self.messageQ.put( ('Impinj', '\nReader time is {} seconds ahead of computer time\n'.format(-self.timeCorrection.total_seconds())) )
+		self.messageQ.put( ('Impinj', '\nReader UTC time is {} seconds behind computer time\n'.format(self.timeCorrection.total_seconds())) )
 		
 		# Reset to factory defaults.
 		success, response = self.sendCommand( SET_READER_CONFIG_Message(ResetToFactoryDefault = True) )
@@ -613,7 +613,7 @@ class Impinj:
 					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 					self.timeCorrection = getTimeNow() - readerTime
 					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					self.messageQ.put( ('Impinj', 'Reader time is {} seconds ahead of computer time'.format(-self.timeCorrection.total_seconds())) )
+					self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time'.format(self.timeCorrection.total_seconds())) )
 				
 				#------------------------------------------------------------
 				# Keepalive.
