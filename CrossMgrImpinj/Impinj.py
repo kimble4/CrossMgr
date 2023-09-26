@@ -715,6 +715,13 @@ class Impinj:
 		# Cleanup.
 		if self.readerSocket:
 			try:
+				# Disable all rospecs in the reader.
+				success, response = self.sendCommand( DISABLE_ROSPEC_Message(ROSpecID = 0) )
+				
+				# Delete our old rospec.
+				success, response = self.sendCommand( DELETE_ROSPEC_Message(ROSpecID = self.rospecID) )
+				
+				# Close connection.
 				response = self.sendCommand( CLOSE_CONNECTION_Message() )
 			except socket.timeout:
 				pass
