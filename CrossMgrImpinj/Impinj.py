@@ -372,7 +372,7 @@ class Impinj:
 					self.gpiState[p.GPIPortNum] = p.State
 		return success
 	
-	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, quadReg=False ):
+	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, method=FirstReadMethod ):
 		# fixme if discoveryTime is far in the past (due to clock slew), reset reader?
 		
 		lrt = self.lastReadTime.get(tagID, tOld)
@@ -381,12 +381,12 @@ class Impinj:
 		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
 			self.messageQ.put( (
 				'Impinj',
-				'Received {}.  tag={} Skipped (<{} secs ago).  {}'.format(self.tagCount, tagID, RepeatSeconds,
+				'{} Skipped: tag={} (<{} secs ago) @{}'.format(self.tagCount, tagID, RepeatSeconds,
 				discoveryTime.strftime('%H:%M:%S.%f')),
 				self.antennaReadCount,
 				)
 			)
-			#log the repeats too, in case the skip behaviour is incorrect
+			#log the repeats too, so we can recover the data if the skip behaviour is incorrect
 			self.logQ.put( (
 					'log',
 					'{},{}'.format(
@@ -414,9 +414,9 @@ class Impinj:
 		
 		self.messageQ.put( (
 			'Impinj',
-			'{} {}. {} - {}{}{}'.format(
-					'QuadReg' if quadReg else 'FirstRead',
+			'{} {}: tag={} @{}{}{}'.format(
 					self.tagCount,
+					'QuadReg' if method==QuadraticRegressionMethod else 'StrongestRead' if method==StrongestReadMethod else 'FirstRead',
 					tagID,
 					discoveryTime.strftime('%H:%M:%S.%f'),
 					' samples={}'.format(sampleSize) if sampleSize > 1 else '',
@@ -433,7 +433,7 @@ class Impinj:
 			return
 		reads, strays = self.tagGroup.getReadsStrays( method=ProcessingMethod, antennaChoice=AntennaChoice )
 		for tagID, discoveryTime, sampleSize, antennaID in reads:
-			self.reportTag( tagID, discoveryTime, sampleSize, antennaID, True )
+			self.reportTag( tagID, discoveryTime, sampleSize, antennaID, ProcessingMethod )
 			
 		self.strayQ.put( ('strays', strays) )
 		self.tagGroupTimer = threading.Timer( 1.0, self.handleTagGroup )
@@ -727,10 +727,10 @@ class Impinj:
 		if self.readerSocket:
 			try:
 				# Disable all rospecs in the reader.
-				success, response = self.sendCommand( DISABLE_ROSPEC_Message(ROSpecID = 0) )
+				response = self.sendCommand( DISABLE_ROSPEC_Message(ROSpecID = 0) )
 				
 				# Delete our old rospec.
-				success, response = self.sendCommand( DELETE_ROSPEC_Message(ROSpecID = self.rospecID) )
+				response = self.sendCommand( DELETE_ROSPEC_Message(ROSpecID = self.rospecID) )
 				
 				# Close connection.
 				response = self.sendCommand( CLOSE_CONNECTION_Message() )
