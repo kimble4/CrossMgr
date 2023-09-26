@@ -373,15 +373,26 @@ class Impinj:
 		return success
 	
 	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, quadReg=False ):
+		# fixme if discoveryTime is far in the past (due to clock slew), reset reader?
+		
 		lrt = self.lastReadTime.get(tagID, tOld)
 		
-		# Only skip repeats if RepeatSeconds is >0
+		# Only skip repeats if RepeatSeconds is > 0
 		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
 			self.messageQ.put( (
 				'Impinj',
 				'Received {}.  tag={} Skipped (<{} secs ago).  {}'.format(self.tagCount, tagID, RepeatSeconds,
 				discoveryTime.strftime('%H:%M:%S.%f')),
 				self.antennaReadCount,
+				)
+			)
+			#log the repeats too, in case the skip behaviour is incorrect
+			self.logQ.put( (
+					'log',
+					'{},{}'.format(
+						tagID,
+						discoveryTime.strftime('%a %b %d %H:%M:%S.%f %Z %Y-%m-%d'),
+					)
 				)
 			)
 			return False
