@@ -54,9 +54,6 @@ RemoveOutliers   = RemoveOutliersDefault
 tAntennaConnectedLast = getTimeNow() - datetime.timedelta( days=200 )
 tAntennaConnectedLastLock = threading.Lock()
 
-tSecondSocketLast = getTimeNow()
-tSecondSocketLastLock = threading.Lock()
-
 def ResetAntennaConnectionsCheck():
 	global tAntennaConnectedLast, tAntennaConnectedLastLock
 	with tAntennaConnectedLastLock:
@@ -168,6 +165,7 @@ class Impinj:
 		self.strayQ = strayQ		# Queue to write stray reads.
 		self.messageQ = messageQ	# Queue to write operational messages.
 		self.shutdownQ = shutdownQ	# Queue to listen for shutdown.
+		self.secondSocketShutdownQ  = Queue() # Queue to shutdown the second socket
 		self.logQ = Queue()
 		self.rospecID = 123
 		self.readerSocket = None
@@ -381,7 +379,7 @@ class Impinj:
 		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
 			self.messageQ.put( (
 				'Impinj',
-				'{} Skipped: tag={} (<{} secs ago) @{}'.format(self.tagCount, tagID, RepeatSeconds,
+				'{} Skipped: tag={} (<{} secs ago) time={}'.format(self.tagCount, tagID, RepeatSeconds,
 				discoveryTime.strftime('%H:%M:%S.%f')),
 				self.antennaReadCount,
 				)
@@ -414,7 +412,7 @@ class Impinj:
 		
 		self.messageQ.put( (
 			'Impinj',
-			'{} {}: tag={} @{}{}{}'.format(
+			'{} {}: tag={} time={}{}{}'.format(
 					self.tagCount,
 					'QuadReg' if method==QuadraticRegressionMethod else 'StrongestRead' if method==StrongestReadMethod else 'FirstRead',
 					tagID,
@@ -466,7 +464,9 @@ class Impinj:
 			time.sleep( 0.1 )
 	
 	def runServer( self ):
-		global tAntennaConnectedLast, tAntennaConnectedLastLock, tSecondSocketLast, tSecondSocketLastLock
+		global tAntennaConnectedLast, tAntennaConnectedLastLock
+		
+		self.secondSocketThread = None
 		
 		self.messageQ.put( ('BackupFile', self.fname) )
 		
@@ -478,6 +478,7 @@ class Impinj:
 		utcfromtimestamp = datetime.datetime.utcfromtimestamp
 		
 		while self.checkKeepGoing():
+			
 			self.readerSocket = None	# Voodoo to ensure that the socket is reset properly.
 			
 			#------------------------------------------------------------
@@ -497,6 +498,7 @@ class Impinj:
 			except Exception as e:
 				self.messageQ.put( ('Impinj', 'Reader Connection Failed: {}'.format(e) ) )
 				self.readerSocket.close()
+				self.readerSocket = None
 				self.messageQ.put( ('Impinj', 'Attempting Reconnect in {} seconds...'.format(ReconnectDelaySeconds)) )
 				self.reconnectDelay()
 				continue
@@ -517,6 +519,7 @@ class Impinj:
 				self.messageQ.put( ('Impinj', 'Disconnecting Reader.' ) )
 				self.messageQ.put( ('Impinj', 'state', False) )
 				self.readerSocket.close()
+				self.readerSocket = None
 				self.messageQ.put( ('Impinj', 'Attempting Reconnect in {} seconds...'.format(ReconnectDelaySeconds)) )
 				self.reconnectDelay()
 				self.statusCB()
@@ -526,6 +529,11 @@ class Impinj:
 				connectedAntennas = self.connectedAntennas,
 				timeCorrection = self.timeCorrection,
 			)
+		
+			# Start a thread to get the reader's time at intervals
+			if PollOffsetSeconds > 0:
+				self.secondSocketThread = threading.Thread( target=self.attemptSecondConnection )
+				self.secondSocketThread.start()
 			
 			self.tagGroup = TagGroup()
 			self.handleTagGroup()
@@ -537,6 +545,7 @@ class Impinj:
 			
 			self.tagCount = 0
 			lastDiscoveryTime = None
+			
 			while self.checkKeepGoing():
 			
 				#------------------------------------------------------------
@@ -558,19 +567,10 @@ class Impinj:
 					except Exception as e:
 						self.messageQ.put( ('Impinj', 'GET_READER_CONFIG send fails: {}'.format(e)) )
 						self.readerSocket.close()
+						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
-					
-				#------------------------------------------------------------
-				# Massive bodge: Prod the reader on another socket, so it reveals its UTCTimestamp_Parameter 
-				#
-				if PollOffsetSeconds > 0 and (t - tSecondSocketLast).total_seconds() >= PollOffsetSeconds:
-					self.messageQ.put( ('Impinj', 'Checking clock offset...') )
-					secondSocketThread = threading.Thread( target=self.attemptSecondConnection )
-					secondSocketThread.start()
-					with tSecondSocketLastLock:
-						tSecondSocketLast = t
 					
 				#------------------------------------------------------------
 				# Messages from the reader.
@@ -583,6 +583,7 @@ class Impinj:
 					if (t - tKeepaliveLast).total_seconds() > KeepaliveSeconds * 2:
 						self.messageQ.put( ('Impinj', 'Reader Connection Lost (missing Keepalive).') )
 						self.readerSocket.close()
+						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
@@ -595,6 +596,7 @@ class Impinj:
 					if (t - tKeepaliveLast).total_seconds() > KeepaliveSeconds * 2:
 						self.messageQ.put( ('Impinj', 'Reader Connection Lost (Check your network adapter).') )
 						self.readerSocket.close()
+						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
@@ -613,7 +615,7 @@ class Impinj:
 					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 					self.timeCorrection = getTimeNow() - readerTime
 					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time'.format(self.timeCorrection.total_seconds())) )
+					self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 				
 				#------------------------------------------------------------
 				# Keepalive.
@@ -693,24 +695,24 @@ class Impinj:
 					try:
 						self.antennaReadCount[antennaID] += 1
 					except Exception as e:
-						self.messageQ.put( ('Impinj', 'Received {}.  Missing AntennaID.'.format(self.tagCount)) )
+						self.messageQ.put( ('Impinj', '{} Received: Missing AntennaID.'.format(self.tagCount)) )
 					
 					try:
 						tagID = tag['EPC']
 					except Exception as e:
-						self.messageQ.put( ('Impinj', 'Received {}.  Skipping: missing tagID.'.format(self.tagCount)) )
+						self.messageQ.put( ('Impinj', '{} Skipping: Missing tagID.'.format(self.tagCount)) )
 						continue
 						
 					try:
 						tagID = HexFormatToStr( tagID )
 					except Exception as e:
-						self.messageQ.put( ('Impinj', 'Received {}.  Skipping: HexFormatToStr fails.  Error={}'.format(self.tagCount, e)) )
+						self.messageQ.put( ('Impinj', '{} Skipping: HexFormatToStr fails.  Error={}'.format(self.tagCount, e)) )
 						continue
 					
 					try:
 						discoveryTime = tag['Timestamp']		# In microseconds since Jan 1, 1970
 					except Exception as e:
-						self.messageQ.put( ('Impinj', 'Received {}.  Skipping: Missing Timestamp'.format(self.tagCount)) )
+						self.messageQ.put( ('Impinj', '{} Skipping: Missing Timestamp'.format(self.tagCount)) )
 						continue
 					
 					peakRSSI = tag.get('PeakRSSI', None)		# -127..127 in db.
@@ -739,6 +741,8 @@ class Impinj:
 			self.readerSocket.close()
 			self.readerSocket = None
 		
+		self.secondSocketShutdownQ.put( ('shutdown',) )
+		
 		self.logQ.put( ('shutdown',) )
 		self.logFileThread.join()
 
@@ -755,24 +759,39 @@ class Impinj:
 				break
 	
 	def attemptSecondConnection( self ):
-		self.secondSocket = None	# Voodoo to ensure that the socket is reset properly.
+		# Nasty hack to obtain the reader's UTC time once connected:
+		# Attempt to connect again on another socket.  The reader will immediately reject the connection,
+		# causing a reader event containing the current timestamp to be reported on the existing socket.
 		
-		#------------------------------------------------------------
-		# Connect Mode.
-		#
-		# Create a socket to connect to the reader.
-		self.secondSocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-		self.secondSocket.settimeout( ConnectionTimeoutSeconds )
+		secondSocket = None	# Voodoo to ensure that the socket is reset properly.
 		
-		try:
-			self.secondSocket.connect( (self.impinjHost, self.impinjPort) )
-		except Exception as e:
-			self.messageQ.put( ('Impinj', 'Second Connection Failed: {}'.format(e) ) )
-			self.secondSocket.close()
+		self.messageQ.put( ('Impinj', 'Clock offet poll thread {} started...'.format(threading.get_ident()) ) )
+		
+		while self.readerSocket is not None and PollOffsetSeconds > 0:
+			time.sleep(PollOffsetSeconds)
 			
-		self.secondSocket.close()
-		self.secondSocket = None
-		return
+			try:
+				# Check the shutdown queue for a message.  If there is one, shutdown.
+				d = self.secondSocketShutdownQ.get( False )
+				self.messageQ.put( ('Impinj', 'Clock offset poll thread {} got shutdown request.'.format(threading.get_ident()) ) )
+				break
+			except Empty:
+				pass
+			
+			# Create a socket to connect to the reader.
+			secondSocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
+			secondSocket.settimeout( ConnectionTimeoutSeconds )
+			
+			try:
+				secondSocket.connect( (self.impinjHost, self.impinjPort) )
+			except Exception as e:
+				self.messageQ.put( ('Impinj', 'Second Connection Failed: {}'.format(e) ) )
+				
+			# Immediately close the socket, its work here is done
+			secondSocket.close()
+			secondSocket = None
+			
+		self.messageQ.put( ('Impinj', 'Clock offset poll thread {} terminated.'.format(threading.get_ident()) ) )
 
 
 
