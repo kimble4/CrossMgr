@@ -942,7 +942,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'ConnectionTimeoutSeconds', '{}'.format(Impinj.ConnectionTimeoutSeconds) )
 		self.config.Write( 'KeepaliveSeconds', '{}'.format(Impinj.KeepaliveSeconds) )
 		self.config.Write( 'RepeatSeconds', '{}'.format(Impinj.RepeatSeconds) )
-		self.config.Write( 'RecalculateOffset', '{}'.format('True' if Impinj.RemoveOutliers else 'False') )
+		self.config.Write( 'RecalculateOffset', '{}'.format('True' if Impinj.RecalculateOffset else 'False') )
 		self.config.Write( 'PlaySounds', '{}'.format(Utils.playBell) )
 		
 		self.config.Write( 'ReceiverSensitivity', '{}'.format(Impinj.ReceiverSensitivity or 0) )
