@@ -25,7 +25,7 @@ HOME_DIR = os.path.expanduser("~")
 ConnectionTimeoutSecondsDefault	= 3		# Interval for connection timeout
 KeepaliveSecondsDefault			= 2		# Interval to request a Keepalive message
 RepeatSecondsDefault			= 3		# Interval in which a tag is considered a repeat read.
-PollOffsetSecondsDefault		= 0		# Interval to check the readers's clock offset
+RecalculateOffsetDefault		= True	# Do we recalculate the time offset on each reported read
 ProcessingMethodDefault 		= QuadraticRegressionMethod
 AntennaChoiceDefault			= MostReadsChoice
 RemoveOutliersDefault           = True
@@ -33,7 +33,7 @@ RemoveOutliersDefault           = True
 ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
-PollOffsetSeconds			= PollOffsetSecondsDefault
+RecalculteOffset			= RecalculateOffsetDefault
 
 ReconnectDelaySeconds		= 2		# Interval to wait before reattempting a connection
 ReaderUpdateMessageSeconds	= 5		# Interval to print we are waiting for input.
@@ -165,7 +165,6 @@ class Impinj:
 		self.strayQ = strayQ		# Queue to write stray reads.
 		self.messageQ = messageQ	# Queue to write operational messages.
 		self.shutdownQ = shutdownQ	# Queue to listen for shutdown.
-		self.secondSocketShutdownQ  = Queue() # Queue to shutdown the second socket
 		self.logQ = Queue()
 		self.rospecID = 123
 		self.readerSocket = None
@@ -466,8 +465,6 @@ class Impinj:
 	def runServer( self ):
 		global tAntennaConnectedLast, tAntennaConnectedLastLock
 		
-		self.secondSocketThread = None
-		
 		self.messageQ.put( ('BackupFile', self.fname) )
 		
 		self.messageQ.put( ('Impinj', '*****************************************' ) )
@@ -529,11 +526,6 @@ class Impinj:
 				connectedAntennas = self.connectedAntennas,
 				timeCorrection = self.timeCorrection,
 			)
-		
-			# Start a thread to get the reader's time at intervals
-			if PollOffsetSeconds > 0:
-				self.secondSocketThread = threading.Thread( target=self.attemptSecondConnection )
-				self.secondSocketThread.start()
 			
 			self.tagGroup = TagGroup()
 			self.handleTagGroup()
@@ -567,9 +559,11 @@ class Impinj:
 					except Exception as e:
 						self.messageQ.put( ('Impinj', 'GET_READER_CONFIG send fails: {}'.format(e)) )
 						self.readerSocket.close()
-						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
+					
+					# Report the current time correction here, so we don't do it too frequently
+					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 					
 					
 				#------------------------------------------------------------
@@ -578,12 +572,12 @@ class Impinj:
 				#
 				try:
 					response = UnpackMessageFromSocket( self.readerSocket )
+					lastSocketData = datetime.datetime.now()
 				
 				except socket.timeout:
 					if (t - tKeepaliveLast).total_seconds() > KeepaliveSeconds * 2:
 						self.messageQ.put( ('Impinj', 'Reader Connection Lost (missing Keepalive).') )
 						self.readerSocket.close()
-						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
@@ -596,7 +590,6 @@ class Impinj:
 					if (t - tKeepaliveLast).total_seconds() > KeepaliveSeconds * 2:
 						self.messageQ.put( ('Impinj', 'Reader Connection Lost (Check your network adapter).') )
 						self.readerSocket.close()
-						self.secondSocketShutdownQ.put( ('shutdown',) )
 						self.messageQ.put( ('Impinj', 'Attempting Reconnect...') )
 						break
 					
@@ -609,13 +602,13 @@ class Impinj:
 				#------------------------------------------------------------
 				# Reader event
 				#
-				if isinstance(response, READER_EVENT_NOTIFICATION_Message):
-					# re-compute correction between the reader's time and the computer's time.
-					readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
-					readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-					self.timeCorrection = getTimeNow() - readerTime
-					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+				#if isinstance(response, READER_EVENT_NOTIFICATION_Message):
+					#recalculate correction between the reader's time and the computer's time.
+					#readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
+					#readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
+					#self.timeCorrection = getTimeNow() - readerTime
+					#self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
+					#self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 				
 				#------------------------------------------------------------
 				# Keepalive.
@@ -687,6 +680,8 @@ class Impinj:
 				except Exception:
 					pass
 				
+				lastTagTime = None
+				
 				for tag in response.getTagData():
 					self.tagCount += 1
 					
@@ -711,6 +706,7 @@ class Impinj:
 					
 					try:
 						discoveryTime = tag['Timestamp']		# In microseconds since Jan 1, 1970
+						lastTagTime = discoveryTime
 					except Exception as e:
 						self.messageQ.put( ('Impinj', '{} Skipping: Missing Timestamp'.format(self.tagCount)) )
 						continue
@@ -724,6 +720,16 @@ class Impinj:
 						self.tagGroup.add( antennaID, tagID, discoveryTime, peakRSSI )
 					else:
 						self.reportTag( tagID, discoveryTime, antennaID=antennaID )
+						
+				# Recalculate the reader time difference:
+				# Assume that the last reported tag read occured at the time the message finished arriving
+				# This seems consistent to a few hundredths of a second
+				if RecalculateOffset and lastTagTime:
+					oldTimeCorrection = self.timeCorrection
+					self.timeCorrection = lastSocketData - utcfromtimestamp( lastTagTime / 1000000.0 )
+					if abs( (oldTimeCorrection - self.timeCorrection).total_seconds() ) > 1:
+						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+					#print( self.timeCorrection.total_seconds() )
 		
 		# Cleanup.
 		if self.readerSocket:
@@ -740,8 +746,7 @@ class Impinj:
 				pass
 			self.readerSocket.close()
 			self.readerSocket = None
-		
-		self.secondSocketShutdownQ.put( ('shutdown',) )
+	
 		
 		self.logQ.put( ('shutdown',) )
 		self.logFileThread.join()
@@ -757,41 +762,6 @@ class Impinj:
 				d = self.dataQ.get( False )
 			except Empty:
 				break
-	
-	def attemptSecondConnection( self ):
-		# Nasty hack to obtain the reader's UTC time once connected:
-		# Attempt to connect again on another socket.  The reader will immediately reject the connection,
-		# causing a reader event containing the current timestamp to be reported on the existing socket.
-		
-		secondSocket = None	# Voodoo to ensure that the socket is reset properly.
-		
-		self.messageQ.put( ('Impinj', 'Clock offet poll thread {} started...'.format(threading.get_ident()) ) )
-		
-		while self.readerSocket is not None and PollOffsetSeconds > 0:
-			time.sleep(PollOffsetSeconds)
-			
-			try:
-				# Check the shutdown queue for a message.  If there is one, shutdown.
-				d = self.secondSocketShutdownQ.get( False )
-				self.messageQ.put( ('Impinj', 'Clock offset poll thread {} got shutdown request.'.format(threading.get_ident()) ) )
-				break
-			except Empty:
-				pass
-			
-			# Create a socket to connect to the reader.
-			secondSocket = socket.socket( socket.AF_INET, socket.SOCK_STREAM )
-			secondSocket.settimeout( ConnectionTimeoutSeconds )
-			
-			try:
-				secondSocket.connect( (self.impinjHost, self.impinjPort) )
-			except Exception as e:
-				self.messageQ.put( ('Impinj', 'Second Connection Failed: {}'.format(e) ) )
-				
-			# Immediately close the socket, its work here is done
-			secondSocket.close()
-			secondSocket = None
-			
-		self.messageQ.put( ('Impinj', 'Clock offset poll thread {} terminated.'.format(threading.get_ident()) ) )
 
 
 

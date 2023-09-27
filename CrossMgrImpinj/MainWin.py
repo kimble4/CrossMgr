@@ -227,14 +227,12 @@ class AdvancedSetup( wx.Dialog ):
 		bs.Add( wx.StaticText(self, label='Interval in which multiple tag reads are considered "repeats" and not reported.  Leave blank to report every read.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
 		
 		row += 1
-		bs.Add( wx.StaticText(self, label='Poll Clock Offset Seconds'), pos=(row, 0), span=(1,1), border = border, flag=wx.LEFT|wx.TOP|wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
-		self.PollOffsetSeconds = intctrl.IntCtrl( self, min=0, max=120, limited = True, allow_none=False,
-			value = Impinj.PollOffsetSeconds, size=(100,-1), style=wx.TE_RIGHT )
-		bs.Add( self.PollOffsetSeconds, pos=(row, 1), span=(1,1), border = border, flag=wx.TOP )
-		bs.Add( wx.StaticText(self, label='Interval in which to check the offset to the reader\'s clock.  Leave blank to disable polling.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.RecalculateOffset = wx.CheckBox( self, label='Recalculate clock offset as tag reads are reported')
+		self.RecalculateOffset.SetValue(Impinj.RecalculateOffset)
+		bs.Add( self.RecalculateOffset, pos=(row, 1), span=(1,3), border = border, flag=wx.TOP )
 
 		self.fields = [
-			'ConnectionTimeoutSeconds', 'KeepaliveSeconds', 'RepeatSeconds', 'PollOffsetSeconds',
+			'ConnectionTimeoutSeconds', 'KeepaliveSeconds', 'RepeatSeconds', 'RecalculateOffset',
 			'TagPopulation', 'TransmitPower', 'ReceiverSensitivity', 'RemoveOutliers',
 		]
 		
@@ -944,7 +942,7 @@ class MainWin( wx.Frame ):
 		self.config.Write( 'ConnectionTimeoutSeconds', '{}'.format(Impinj.ConnectionTimeoutSeconds) )
 		self.config.Write( 'KeepaliveSeconds', '{}'.format(Impinj.KeepaliveSeconds) )
 		self.config.Write( 'RepeatSeconds', '{}'.format(Impinj.RepeatSeconds) )
-		self.config.Write( 'PollOffsetSeconds', '{}'.format(Impinj.PollOffsetSeconds) )
+		self.config.Write( 'RecalculateOffset', '{}'.format('True' if Impinj.RemoveOutliers else 'False') )
 		self.config.Write( 'PlaySounds', '{}'.format(Utils.playBell) )
 		
 		self.config.Write( 'ReceiverSensitivity', '{}'.format(Impinj.ReceiverSensitivity or 0) )
@@ -974,8 +972,7 @@ class MainWin( wx.Frame ):
 												'{}'.format(Impinj.KeepaliveSeconds)))
 		Impinj.RepeatSeconds = int(self.config.Read( 'RepeatSeconds',
 												'{}'.format(Impinj.RepeatSeconds)))
-		Impinj.PollOffsetSeconds = int(self.config.Read( 'PollOffsetSeconds',
-												'{}'.format(Impinj.PollOffsetSeconds)))
+		Impinj.RecalculateOffset = (self.config.Read('RecalculateOffset', 'True').upper()[:1] == 'T')
 												
 		Impinj.ReceiverSensitivity = int(self.config.Read('ReceiverSensitivity', '0')) or None
 		Impinj.TransmitPower = int(self.config.Read('TransmitPower', '0')) or None
