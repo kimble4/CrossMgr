@@ -7,7 +7,7 @@ import threading
 import datetime
 import random
 import traceback
-from collections import defaultdict
+from collections import defaultdict, deque
 from queue import Queue, Empty
 from Utils import timeoutSecs, Beep
 
@@ -34,6 +34,8 @@ ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
 RecalculteOffset			= RecalculateOffsetDefault
+OffsetsToAverageFirstRead	= 64
+OffsetsToAverageQuadReg		= 512 # Quadreg is more jittery, but also returns data more freqently
 
 ReconnectDelaySeconds		= 2		# Interval to wait before reattempting a connection
 ReaderUpdateMessageSeconds	= 5		# Interval to print we are waiting for input.
@@ -537,6 +539,10 @@ class Impinj:
 			
 			self.tagCount = 0
 			lastDiscoveryTime = None
+			offsetsBuffer = None
+			offsetsToAverage = OffsetsToAverageFirstRead if ProcessingMethod == FirstReadMethod else OffsetsToAverageQuadReg
+			
+			lastRecalculatedOffset = tOld
 			
 			while self.checkKeepGoing():
 			
@@ -572,7 +578,7 @@ class Impinj:
 				#
 				try:
 					response = UnpackMessageFromSocket( self.readerSocket )
-					lastSocketData = datetime.datetime.now()
+					lastSocketData = getTimeNow()
 				
 				except socket.timeout:
 					if (t - tKeepaliveLast).total_seconds() > KeepaliveSeconds * 2:
@@ -680,7 +686,7 @@ class Impinj:
 				except Exception:
 					pass
 				
-				lastTagTime = None
+				lastTagTime = 0
 				
 				for tag in response.getTagData():
 					self.tagCount += 1
@@ -706,7 +712,8 @@ class Impinj:
 					
 					try:
 						discoveryTime = tag['Timestamp']		# In microseconds since Jan 1, 1970
-						lastTagTime = discoveryTime
+						if discoveryTime > lastTagTime:
+							lastTagTime = discoveryTime
 					except Exception as e:
 						self.messageQ.put( ('Impinj', '{} Skipping: Missing Timestamp'.format(self.tagCount)) )
 						continue
@@ -723,13 +730,27 @@ class Impinj:
 						
 				# Recalculate the reader time difference:
 				# Assume that the last reported tag read occured at the time the message finished arriving
-				# This seems consistent to a few hundredths of a second
-				if RecalculateOffset and lastTagTime:
+				# With rate-limited moving averaging this seems consistent to a few hundredths of a second
+				if RecalculateOffset and lastTagTime > 0 and lastSocketData - lastRecalculatedOffset > datetime.timedelta(seconds = 0.1):
+					lastRecalculatedOffset = lastSocketData
+					
 					oldTimeCorrection = self.timeCorrection
-					self.timeCorrection = lastSocketData - utcfromtimestamp( lastTagTime / 1000000.0 )
-					if abs( (oldTimeCorrection - self.timeCorrection).total_seconds() ) > 1:
-						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
-					#print( self.timeCorrection.total_seconds() )
+					tc = lastSocketData - utcfromtimestamp( lastTagTime / 1000000.0 )
+					
+					if offsetsBuffer is None:  # Init buffer
+						offsetsBuffer = deque([tc.total_seconds()] * (offsetsToAverage-1), offsetsToAverage)
+					
+					offsetsBuffer.append( tc.total_seconds() )
+					
+					if abs( (oldTimeCorrection - tc).total_seconds() ) > 1:  # Jumped by more than 1 second
+						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(tc.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+						# Update GUI
+						self.messageQ.put( ('Impinj', 'offset', tc) )
+						# Fill buffer with new offset
+						offsetsBuffer.extend([tc.total_seconds()] * (offsetsToAverage-1))
+						
+					self.timeCorrection = datetime.timedelta(seconds = sum(offsetsBuffer)/offsetsToAverage)
+					#print( str(self.timeCorrection.total_seconds()) + ', ' + str(tc.total_seconds()) + ', '+ str(offsetsToAverage) )
 		
 		# Cleanup.
 		if self.readerSocket:
