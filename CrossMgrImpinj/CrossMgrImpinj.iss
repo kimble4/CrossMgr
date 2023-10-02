@@ -18,7 +18,7 @@ Root: HKCR; Subkey: "CrossMgrImpinj\shell\open\command"; ValueType: string; Valu
 Name: "desktopicon"; Description: "Create a &desktop icon"; 
 	
 [Files]
-Source: "*.*"; DestDir: "{app}\_internal"; Flags: recursesubdirs
+Source: "*.*"; DestDir: "{app}"; Flags: recursesubdirs
 
 [Icons]
 Name: "{group}\CrossMgrImpinj"; Filename: "{app}\CrossMgrImpinj.exe"
