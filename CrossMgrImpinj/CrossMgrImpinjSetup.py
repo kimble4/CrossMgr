@@ -9,7 +9,7 @@ import subprocess
 if os.path.exists('build'):
 	shutil.rmtree( 'build' )
 
-distDir = r'dist\CrossMgrImpinj\_internal'
+distDir = r'dist\CrossMgrImpinj'
 distDirParent = os.path.dirname(distDir)
 if os.path.exists(distDirParent):
 	shutil.rmtree( distDirParent )
