@@ -57,7 +57,7 @@ except Exception:
 # Add images to the distribution folder.
 
 def copyDir( d ):
-	destD = os.path.join(distDir, os.path.join('_internal', d))
+	destD = os.path.join(distDir, d + '_internal')
 	if os.path.exists( destD ):
 		shutil.rmtree( destD )
 	os.mkdir( destD )
