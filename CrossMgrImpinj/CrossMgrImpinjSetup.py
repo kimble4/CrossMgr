@@ -34,6 +34,7 @@ subprocess.call( [
 	'--clean',
 	'--windowed',
 	'--noconfirm',
+	'--add-data "CrossMgrImpinjImages:."'
 	
 	'--hidden-import=numpy',
 	
@@ -56,16 +57,16 @@ except Exception:
 
 # Add images to the distribution folder.
 
-def copyDir( d ):
-	destD = os.path.join(distDir, os.path.join('_internal', d))
-	if os.path.exists( destD ):
-		shutil.rmtree( destD )
-	os.mkdir( destD )
-	for i in os.listdir( d ):
-		if i[-3:] != '.db':	# Ignore .db files.
-			shutil.copy( os.path.join(d, i), os.path.join(destD,i) )
+#def copyDir( d ):
+	#destD = os.path.join(distDir, d)
+	#if os.path.exists( destD ):
+		#shutil.rmtree( destD )
+	#os.mkdir( destD )
+	#for i in os.listdir( d ):
+		#if i[-3:] != '.db':	# Ignore .db files.
+			#shutil.copy( os.path.join(d, i), os.path.join(destD,i) )
 			
-copyDir( 'CrossMgrImpinjImages' )
+#copyDir( 'CrossMgrImpinjImages' )
 
 # Create the installer
 inno = r'\Program Files (x86)\Inno Setup 5\ISCC.exe'
