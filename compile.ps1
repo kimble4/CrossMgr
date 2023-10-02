@@ -237,7 +237,7 @@ function BuildHelp($program)
 function CopyAssets($program)
 {
 	$builddir = GetBuildDir($program)
-	$resourcedir = "dist/$program"
+	$resourcedir = "dist/$program/_internal"
 	if (!(Test-Path -Path $resourcedir))
 	{
 		New-Item -ItemType Directory -Force $resourcedir
