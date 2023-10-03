@@ -36,6 +36,7 @@ RepeatSeconds				= RepeatSecondsDefault
 RecalculteOffset			= RecalculateOffsetDefault
 OffsetsToAverageFirstRead	= 64
 OffsetsToAverageQuadReg		= 512 # Quadreg is more jittery, but also returns data more freqently
+TagReadInFutureSeconds		= 3		# If a tag read is this many seconds in the future (after applying offset), distrust reader's reported time
 
 ReconnectDelaySeconds		= 2		# Interval to wait before reattempting a connection
 ReaderUpdateMessageSeconds	= 5		# Interval to print we are waiting for input.
@@ -372,15 +373,20 @@ class Impinj:
 		return success
 	
 	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, method=FirstReadMethod ):
-		# fixme if discoveryTime is far in the past (due to clock slew), reset reader?
-		
 		lrt = self.lastReadTime.get(tagID, tOld)
+		secondsAgo = (discoveryTime - lrt).total_seconds()
 		
-		# Only skip repeats if RepeatSeconds is > 0
-		if RepeatSeconds > 0 and (discoveryTime - lrt).total_seconds() < RepeatSeconds:
+		if secondsAgo < -TagReadInFutureSeconds: # discoveryTime is signficantly in the future, one of the clocks must have stepped
+			# Fudge it by using the current time; better than missing the tag read
+			discoveryTime = getTimeNow()
+			self.messageQ.put( ('Impinj', 'Using computer time as tag reader returned a time {:.1f} seconds in the future...'.format(abs(secondsAgo)) ) )
+			# Recalculate this
+			secondsAgo = (discoveryTime - lrt).total_seconds()
+			
+		if RepeatSeconds > 0 and secondsAgo < RepeatSeconds: # Only skip repeats if RepeatSeconds is > 0
 			self.messageQ.put( (
 				'Impinj',
-				'{} Skipped: tag={} (<{} secs ago) time={}'.format(self.tagCount, tagID, RepeatSeconds,
+				'{} Skipped: tag={} ({:.1f}<{} secs ago) time={}'.format(self.tagCount, tagID, secondsAgo, RepeatSeconds,
 				discoveryTime.strftime('%H:%M:%S.%f')),
 				self.antennaReadCount,
 				)
@@ -744,6 +750,8 @@ class Impinj:
 					
 					if abs( (oldTimeCorrection - tc).total_seconds() ) > 1:  # Jumped by more than 1 second
 						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(tc.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+						# Clear last read times
+						self.lastReadTime.clear()
 						# Update GUI
 						self.messageQ.put( ('Impinj', 'offset', tc) )
 						# Fill buffer with new offset
