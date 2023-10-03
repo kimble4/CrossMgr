@@ -86,7 +86,7 @@ b"     .......... "
 ]
 
 class MessageManager:
-	MessagesMax = 400	# Maximum number of messages before we start throwing some away.
+	MessagesMax = 1000	# Maximum number of messages before we start throwing some away.
 
 	def __init__( self, messageList ):
 		self.messageList = messageList
