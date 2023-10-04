@@ -800,8 +800,10 @@ def WsLapCounterSendTagTest( num = None ):
 		return
 	if num is None:
 		return
-	message = GetLapCounterRefresh()
-	message['sprintBib'] = num  # Sprint bib number with no timing data will be displayed by the clock for a minute before timing out
+	message = GetLapCounterRefresh()# Tell clock to display bib number for 5 seconds before timing out
+	message['sprintTimeout'] = 5
+	message['sprintBib'] = num 
+	message['sprintStart'] = int(datetime.datetime.now().timestamp())
 	wsLapCounterQ.put( message )
 			
 #if __name__ == '__main__':
