@@ -16,6 +16,7 @@ import Ultra
 import MyLapsServer
 import HelpSearch
 from ReadSignOnSheet import GetTagNums
+import WebServer
 
 HOST, PORT = JChip.DEFAULT_HOST, JChip.DEFAULT_PORT
  
@@ -62,6 +63,12 @@ class JChipSetupDialog( wx.Dialog ):
 			self.enableJChipCheckBox.SetValue( getattr(Model.race, 'enableJChipIntegration', False) )
 		else:
 			self.enableJChipCheckBox.Enable( False )
+			
+		self.sendTestBibsToLapCounterCheckBox = wx.CheckBox( self, label = _('Send bib numbers to race clock during test') )
+		if Model.race:
+			self.sendTestBibsToLapCounterCheckBox.SetValue( getattr(Model.race, 'sendTestBibsToLapCounter', True) )
+		else:
+			self.sendTestBibsToLapCounterCheckBox.Enable( False )
 		
 		self.testJChip = wx.ToggleButton( self, label = _('Start RFID Test') )
 		self.testJChip.SetFont( wx.Font( (0,24), wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL ) )
@@ -136,6 +143,7 @@ class JChipSetupDialog( wx.Dialog ):
 		#-------------------------------------------------------------------
 
 		bs.Add( self.testJChip, 0, wx.ALIGN_CENTER|wx.ALL, border )
+		bs.Add( self.sendTestBibsToLapCounterCheckBox, 0, wx.ALL|wx.ALIGN_LEFT, border )
 		bs.Add( wx.StaticText(self, label = _('Messages:')), 0, wx.EXPAND|wx.ALL, border=border )
 		bs.Add( self.testList, 1, wx.EXPAND|wx.ALL, border )
 		
@@ -170,6 +178,7 @@ class JChipSetupDialog( wx.Dialog ):
 			Utils.writeConfig( 'UltraHost', race.chipReaderIpAddr )
 		race.chipReaderPort = self.port.GetValue()
 		race.enableJChipIntegration = bool(self.enableJChipCheckBox.GetValue())
+		race.sendTestBibsToLapCounter = bool(self.sendTestBibsToLapCounterCheckBox.GetValue())
 		ChipReader.chipReaderCur.reset( race.chipReaderType )
 
 	def update( self ):
@@ -177,6 +186,7 @@ class JChipSetupDialog( wx.Dialog ):
 		if not race:
 			return
 		self.enableJChipCheckBox.SetValue( race.enableJChipIntegration )
+		self.sendTestBibsToLapCounterCheckBox.SetValue( getattr(Model.race, 'sendTestBibsToLapCounter', True) )
 		self.chipReaderType.SetSelection( max(0, race.chipReaderType) )
 		self.ipaddr.SetValue( race.chipReaderIpAddr )
 		self.port.SetValue( race.chipReaderPort )
@@ -351,6 +361,12 @@ class JChipSetupDialog( wx.Dialog ):
 					num = 'not found'
 				lastTag = d[1]
 				self.appendMsg( '{}: tag={}, time={}, Bib={}'.format(self.receivedCount, d[1], ts, num) )
+				if self.sendTestBibsToLapCounterCheckBox.IsChecked():
+					try:
+						bib = int(num)
+						WebServer.WsLapCounterSendTagTest(bib)
+					except:
+						WebServer.WsLapCounterSendTagTest()
 			elif d[0] == 'connected':
 				self.appendMsg( '*******************************************' )
 				self.appendMsg( '{}: {}'.format(d[0], ', '.join('{}'.format(s) for s in d[1:]) ) )

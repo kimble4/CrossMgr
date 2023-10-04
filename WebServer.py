@@ -760,6 +760,18 @@ def WsLapCounterRefresh():
 	if lastMessage != message or lastRaceName != raceName:
 		wsLapCounterQ.put( message )
 		lastMessage, lastRaceName = message, raceName
+		
+def WsLapCounterSendTagTest( num = None ):
+	race = Model.race
+	if not race:
+		return
+	if not (wsLapCounterServer and wsLapCounterServer.hasClients()):
+		return
+	if num is None:
+		return
+	message = GetLapCounterRefresh()
+	message['sprintBib'] = num  # Sprint bib number with no timing data will be displayed by the clock for a minute before timing out
+	wsLapCounterQ.put( message )
 			
 if __name__ == '__main__':
 	SetFileName( os.path.join('Gemma', '2015-11-10-A Men-r4-.html') )
