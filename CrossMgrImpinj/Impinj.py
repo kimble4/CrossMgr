@@ -26,6 +26,7 @@ ConnectionTimeoutSecondsDefault	= 3		# Interval for connection timeout
 KeepaliveSecondsDefault			= 2		# Interval to request a Keepalive message
 RepeatSecondsDefault			= 3		# Interval in which a tag is considered a repeat read.
 RecalculateOffsetDefault		= True	# Do we recalculate the time offset on each reported read
+FudgeOffsetDefault				= 0		# milliseconds to fudge offset by
 ProcessingMethodDefault 		= QuadraticRegressionMethod
 AntennaChoiceDefault			= MostReadsChoice
 RemoveOutliersDefault           = True
@@ -34,9 +35,11 @@ ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
 RecalculteOffset			= RecalculateOffsetDefault
+FudgeOffset					= FudgeOffsetDefault
 OffsetsToAverageFirstRead	= 64
-OffsetsToAverageQuadReg		= 512 # Quadreg is more jittery, but also returns data more freqently
+OffsetsToAverageQuadReg		= 512	# Quadreg is more jittery, but also returns data more freqently
 TagReadInFutureSeconds		= 3		# If a tag read is this many seconds in the future (after applying offset), distrust reader's reported time
+TagReadInPastSeconds		= 20	# If a tag read is this many seconds in the past (after applying offset), distrust reader's reported time
 
 ReconnectDelaySeconds		= 2		# Interval to wait before reattempting a connection
 ReaderUpdateMessageSeconds	= 5		# Interval to print we are waiting for input.
@@ -246,7 +249,7 @@ class Impinj:
 		# Compute a correction between the reader's time and the computer's time.
 		readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-		self.timeCorrection = getTimeNow() - readerTime
+		self.timeCorrection = getTimeNow() - readerTime + datetime.timedelta( milliseconds = FudgeOffset )
 		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 		self.messageQ.put( ('Impinj', '\nReader UTC time is {} seconds behind computer time\n'.format(self.timeCorrection.total_seconds())) )
 		
@@ -374,16 +377,20 @@ class Impinj:
 	
 	def reportTag( self, tagID, discoveryTime, sampleSize=1, antennaID=0, method=FirstReadMethod ):
 		lrt = self.lastReadTime.get(tagID, tOld)
-		secondsAgo = (discoveryTime - lrt).total_seconds()
+		tDiff = (getTimeNow() - discoveryTime).total_seconds()
 		
-		if secondsAgo < -TagReadInFutureSeconds: # discoveryTime is signficantly in the future, one of the clocks must have stepped
+		if tDiff < -TagReadInFutureSeconds: # discoveryTime is signficantly in the future, one of the clocks must have stepped
 			# Fudge it by using the current time; better than missing the tag read
 			discoveryTime = getTimeNow()
-			self.messageQ.put( ('Impinj', 'Using computer time as tag reader returned a time {:.1f} seconds in the future...'.format(abs(secondsAgo)) ) )
-			# Recalculate this
-			secondsAgo = (discoveryTime - lrt).total_seconds()
+			self.messageQ.put( ('Impinj', 'Using computer\'s time as tag reader returned a time {:.1f} seconds in the future...'.format(-tDiff) ) )
+		elif tDiff > TagReadInPastSeconds: # discoveryTime is signficantly in the past, one of the clocks must have stepped
+			# Fudge it by using the current time; better than missing the tag read
+			discoveryTime = getTimeNow()
+			self.messageQ.put( ('Impinj', 'Using computer\'s time as tag reader returned a time {:.1f} seconds in the past...'.format(tDiff) ) )
+		
+		secondsAgo = (discoveryTime - lrt).total_seconds()
 			
-		if RepeatSeconds > 0 and secondsAgo < RepeatSeconds: # Only skip repeats if RepeatSeconds is > 0
+		if RepeatSeconds > 0 and secondsAgo > 0 and secondsAgo < RepeatSeconds: # Only skip repeats if RepeatSeconds is > 0, never skip if difference is negative
 			self.messageQ.put( (
 				'Impinj',
 				'{} Skipped: tag={} ({:.1f}<{} secs ago) time={}'.format(self.tagCount, tagID, secondsAgo, RepeatSeconds,
@@ -618,7 +625,7 @@ class Impinj:
 					#recalculate correction between the reader's time and the computer's time.
 					#readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 					#readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-					#self.timeCorrection = getTimeNow() - readerTime
+					#self.timeCorrection = getTimeNow() - readerTime + datetime.timedelta( milliseconds = FudgeOffset )
 					#self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 					#self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 				
@@ -740,7 +747,7 @@ class Impinj:
 				if RecalculateOffset and lastTagTime > 0 and lastSocketData - lastRecalculatedOffset > datetime.timedelta(seconds = 0.1):
 					lastRecalculatedOffset = lastSocketData
 					
-					oldTimeCorrection = self.timeCorrection
+					oldRawTimeCorrection = self.timeCorrection - datetime.timedelta( milliseconds = FudgeOffset )
 					tc = lastSocketData - utcfromtimestamp( lastTagTime / 1000000.0 )
 					
 					if offsetsBuffer is None:  # Init buffer
@@ -748,7 +755,7 @@ class Impinj:
 					
 					offsetsBuffer.append( tc.total_seconds() )
 					
-					if abs( (oldTimeCorrection - tc).total_seconds() ) > 1:  # Jumped by more than 1 second
+					if abs( (oldRawTimeCorrection - tc).total_seconds() ) > 1:  # Jumped by more than 1 second
 						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(tc.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 						# Clear last read times
 						self.lastReadTime.clear()
@@ -757,8 +764,7 @@ class Impinj:
 						# Fill buffer with new offset
 						offsetsBuffer.extend([tc.total_seconds()] * (offsetsToAverage-1))
 						
-					self.timeCorrection = datetime.timedelta(seconds = sum(offsetsBuffer)/offsetsToAverage)
-					#print( str(self.timeCorrection.total_seconds()) + ', ' + str(tc.total_seconds()) + ', '+ str(offsetsToAverage) )
+					self.timeCorrection = datetime.timedelta(seconds = (sum(offsetsBuffer)/offsetsToAverage) + FudgeOffset/1000.0)
 		
 		# Cleanup.
 		if self.readerSocket:

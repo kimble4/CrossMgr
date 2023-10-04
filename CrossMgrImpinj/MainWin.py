@@ -230,10 +230,17 @@ class AdvancedSetup( wx.Dialog ):
 		self.RecalculateOffset = wx.CheckBox( self, label='Recalculate clock offset as tag reads are reported')
 		self.RecalculateOffset.SetValue(Impinj.RecalculateOffset)
 		bs.Add( self.RecalculateOffset, pos=(row, 1), span=(1,3), border = border, flag=wx.TOP )
+		
+		row += 1
+		bs.Add( wx.StaticText(self, label='Offset Correction Milliseconds'), pos=(row, 0), span=(1,1), border = border, flag=wx.LEFT|wx.TOP|wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.FudgeOffset = intctrl.IntCtrl( self, min=-1000, max=1000, limited = True, allow_none=False,
+			value = Impinj.FudgeOffset, size=(100,-1), style=wx.TE_RIGHT )
+		bs.Add( self.FudgeOffset, pos=(row, 1), span=(1,1), border = border, flag=wx.TOP )
+		bs.Add( wx.StaticText(self, label='Apply this fudge factor to clock offset.  Leave blank for zero.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
 
 		self.fields = [
 			'ConnectionTimeoutSeconds', 'KeepaliveSeconds', 'RepeatSeconds', 'RecalculateOffset',
-			'TagPopulation', 'TransmitPower', 'ReceiverSensitivity', 'RemoveOutliers',
+			'TagPopulation', 'TransmitPower', 'ReceiverSensitivity', 'RemoveOutliers', 'FudgeOffset'
 		]
 		
 		row += 1
