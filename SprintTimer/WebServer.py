@@ -713,7 +713,7 @@ def GetLapCounterRefresh():
 			#'lapElapsedClock': False,
 			'sprintDistance': sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else None,
 			'speedUnit': sprintDict['speedUnit'] if 'speedUnit' in sprintDict else None,
-			'sprintTimeout': 60
+			'sprintTimeout': getattr( race, 'raceClockSprintTimeout', 60 )
 			}
 	if race.getInProgressSprintTime() is None:
 		if 'sprintBib' in sprintDict:
@@ -727,7 +727,7 @@ def GetLapCounterRefresh():
 			message['sprintStart'] = sprintDict['sprintStart'] 
 		if 'sprintTime' in sprintDict:
 			message['sprintTime'] = sprintDict['sprintTime']
-		if 'sprintSpeed' in sprintDict:
+		if 'sprintSpeed' in sprintDict and getattr( race, 'raceClockShowSpeed', True ):
 			message['sprintSpeed'] = sprintDict['sprintSpeed']
 	else:
 		message['curRaceTime'] = race.getInProgressSprintTime()

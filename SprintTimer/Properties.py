@@ -843,9 +843,7 @@ class RfidProperties( wx.Panel ):
 	
 #------------------------------------------------------------------------------------------------
 
-class CameraProperties( wx.Panel ):
-	advanceMin, advanceMax = -2000, 2000
-	
+class CameraProperties( wx.Panel ):	
 	def __init__( self, parent, id=wx.ID_ANY ):
 		super().__init__( parent, id )
 		
@@ -891,6 +889,39 @@ class CameraProperties( wx.Panel ):
 			race.enableUSBCamera = True
 			race.photosAtRaceEndOnly = True
 
+class LapCounterProperties( wx.Panel ):
+	def __init__( self, parent, id=wx.ID_ANY ):
+		super().__init__( parent, id )
+		
+		ms = wx.BoxSizer( wx.VERTICAL )
+		
+		stsizer = wx.BoxSizer( wx.HORIZONTAL )
+		self.sprintTimeout = intctrl.IntCtrl( self, min=1, max=3600, allow_none=False, value=60, size=(64,-1), style=wx.ALIGN_RIGHT)
+		stsizer.Add( wx.StaticText(self, label=_('Sprint data timeout (seconds):')), flag=wx.ALIGN_CENTER_VERTICAL, border=16)
+		stsizer.Add( self.sprintTimeout, flag=wx.LEFT, border=4 )
+		ms.Add( stsizer, flag=wx.ALL, border=16 )
+		
+		
+		self.showSpeed = wx.CheckBox( self, label='Show sprint speed on race clock' )
+		ms.Add( self.showSpeed, flag=wx.ALL, border=16 )
+		
+		self.SetSizer( ms )
+		
+	def refresh( self ):
+		race = Model.race
+		if not race:
+			self.sprintTimeout.SetValue(60)
+		else:
+			self.sprintTimeout.SetValue( getattr( race, 'raceClockSprintTimeout', 60 ) )
+			self.showSpeed.SetValue( getattr( race, 'raceClockShowSpeed', True ) )
+		
+	def commit( self ):
+		race = Model.race
+		if not race:
+			return
+		race.raceClockSprintTimeout = self.sprintTimeout.GetValue()
+		race.raceClockShowSpeed = self.showSpeed.IsChecked()
+	
 
 #------------------------------------------------------------------------------------------------
 #class AnimationProperties( wx.Panel ):
@@ -1455,7 +1486,7 @@ class Properties( wx.Panel ):
 			#('gpxProperties',			GPXProperties,				_('GPX') ),
 			('notesProperties',			NotesProperties,			_('Notes') ),
 			('cameraProperties',		CameraProperties,			_('Camera') ),
-			#('lapCounterProperties',	LapCounterProperties,		_('Lap Counter') ),
+			('lapCounterProperties',	LapCounterProperties,		_('Race Clock') ),
 			#('animationProperties',		AnimationProperties,		_('Animation') ),
 			('filesProperties',			FilesProperties,			_('Files/Excel') ),
 			#('teamResultsProperties',	TeamResultsProperties,		_('Team Results') ),
