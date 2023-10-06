@@ -901,9 +901,13 @@ class LapCounterProperties( wx.Panel ):
 		stsizer.Add( self.sprintTimeout, flag=wx.LEFT, border=4 )
 		ms.Add( stsizer, flag=wx.ALL, border=16 )
 		
-		
+		self.showTime = wx.CheckBox( self, label='Show sprint time on race clock' )
+		ms.Add( self.showTime, flag=wx.ALL, border=4 )
 		self.showSpeed = wx.CheckBox( self, label='Show sprint speed on race clock' )
-		ms.Add( self.showSpeed, flag=wx.ALL, border=16 )
+		ms.Add( self.showSpeed, flag=wx.ALL, border=4 )
+		self.showBib = wx.CheckBox( self, label='Show rider bib on race clock' )
+		ms.Add( self.showBib, flag=wx.ALL, border=4 )
+		
 		
 		self.SetSizer( ms )
 		
@@ -913,14 +917,18 @@ class LapCounterProperties( wx.Panel ):
 			self.sprintTimeout.SetValue(60)
 		else:
 			self.sprintTimeout.SetValue( getattr( race, 'raceClockSprintTimeout', 60 ) )
+			self.showTime.SetValue( getattr( race, 'raceClockShowTime', True ) )
 			self.showSpeed.SetValue( getattr( race, 'raceClockShowSpeed', True ) )
+			self.showBib.SetValue( getattr( race, 'raceClockShowBib', True ) )
 		
 	def commit( self ):
 		race = Model.race
 		if not race:
 			return
 		race.raceClockSprintTimeout = self.sprintTimeout.GetValue()
+		race.raceClockShowTime = self.showTime.IsChecked()
 		race.raceClockShowSpeed = self.showSpeed.IsChecked()
+		race.raceClockShowBib = self.showBib.IsChecked()
 	
 
 #------------------------------------------------------------------------------------------------

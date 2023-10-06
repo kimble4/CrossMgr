@@ -1501,6 +1501,10 @@ class Race:
 			if sprintDict['ppsGood'] == False:
 				sprintDict['sprintNote'] = '(No GPS correction)'
 		self.sprints.append( (sortTime, sprintDict) )
+		if getattr(race, 'useSequentialBibs', False):
+			Utils.writeLog('Adding sequential bib: ' + str(race.nextSequentialBib))
+			race.addSprintBib( race.nextSequentialBib, sortTime )
+			race.nextSequentialBib += 1
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
 		self.setChanged()
 		
@@ -1530,15 +1534,6 @@ class Race:
 		
 		Utils.writeLog('Looking up bibs for sprint at ' + str(sortTime))
 		possibleDiffBibs = []
-		
-		# Check if sprint already has a bib (likely from sequential bibs)
-		if 'sprintBib' in sprintDict:
-			if sprintDict['sprintBib']:
-				if index is not None:
-					Utils.writeLog('Sprint ' + str(index + 1) + ' already has a bib: ' + str(sprintDict['sprintBib']))
-				else:
-					Utils.writeLog('In-progress sprint already has a bib: ' + str(sprintDict['sprintBib']))
-				possibleDiffBibs.append( (0.0, sprintDict['sprintBib']) )
 		
 		# See if we've had any bibs entered near that time
 		for timeBibManual in self.sprintBibs:
@@ -1595,6 +1590,7 @@ class Race:
 					bibstring += str(diffBib[1])
 					bibstring += ','
 					seen.append(diffBib[1])
+			print('seen: ' + str(seen))
 			bibstring = bibstring[:-1]
 			if sprint:
 				# update the bib in place

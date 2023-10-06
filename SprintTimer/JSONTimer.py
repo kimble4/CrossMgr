@@ -446,14 +446,6 @@ class JSONTimer:
 						if "T2micros" in sprintDict:
 							if sprintDict["T2micros"] != lastT2:
 								#self.qLog( 'data', '{}: {}'.format(_('Got new sprint'), str(sprintDict) ) )
-								if 'sprintBib' in sprintDict:
-									print('have bib at T2: '+ str(sprintDict["sprintBib"]))
-								if getattr(race, 'useSequentialBibs', False):
-									bib = getattr(race, 'nextSequentialBib', None)
-									if bib and not "sprintBib" in sprintDict:
-										sprintDict["sprintBib"] = str(bib)
-										sprintDict["sprintBibSeqeuential"] = True
-										race.nextSequentialBib = bib + 1
 								self.sendReaderEvent(True, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								q.put( ('data', sprintDict, receivedTime, readerComputerTimeDiff) )
 								lastT2 = sprintDict["T2micros"]
@@ -463,15 +455,6 @@ class JSONTimer:
 						elif "T1micros" in sprintDict:
 							if sprintDict["T1micros"] != lastT1:
 								self.qLog( 'timing', '{}'.format(_('Sprint has started...') ) )
-								if 'sprintBib' in sprintDict:
-									print('have bib at T1: '+ str(sprintDict["sprintBib"]))
-								if getattr(race, 'useSequentialBibs', False):
-									bib = getattr(race, 'nextSequentialBib', None)
-									if bib and not "sprintBib" in sprintDict:
-										sprintDict["sprintBib"] = str(bib)
-										sprintDict["sprintBibSeqeuential"] = True
-										race.nextSequentialBib = bib + 1
-										self.setBib( bib )
 								self.sendReaderEvent(False, sprintDict, receivedTime, readerComputerTimeDiff, havePPS)
 								lastT1 = sprintDict["T1micros"]
 							else:

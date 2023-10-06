@@ -704,35 +704,47 @@ def GetLapCounterRefresh():
 		}
 	
 	sprints = race.getSprints()
-	sprintDict = sprints[-1][1]
-	message = { 'cmd': 'refresh',
-			#'labels': [],
-			#'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
-			#'backgrounds': ['rgb(16, 16, 16)'],
-			#'raceStartTime': None,
-			#'lapElapsedClock': False,
-			'sprintDistance': sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else None,
-			'speedUnit': sprintDict['speedUnit'] if 'speedUnit' in sprintDict else None,
-			'sprintTimeout': getattr( race, 'raceClockSprintTimeout', 60 )
-			}
-	if race.getInProgressSprintTime() is None:
-		if 'sprintBib' in sprintDict:
-			try:
-				bib = int(sprintDict['sprintBib'])
-				message['sprintBib'] = bib
-			except:
-				# Do not send multiple bibs here to avoid confusion
-				pass
-		if 'sprintStart' in sprintDict:
-			message['sprintStart'] = sprintDict['sprintStart'] 
-		if 'sprintTime' in sprintDict:
-			message['sprintTime'] = sprintDict['sprintTime']
-		if 'sprintSpeed' in sprintDict and getattr( race, 'raceClockShowSpeed', True ):
-			message['sprintSpeed'] = sprintDict['sprintSpeed']
+	if len(sprints) < 1:
+		return {
+			'cmd': 'refresh',
+			'labels': [],
+			'foregrounds': [],
+			'backgrounds': [],
+			'raceStartTime': None,
+			'lapElapsedClock': False,
+		}
+	
 	else:
-		message['curRaceTime'] = race.getInProgressSprintTime()
-
-	return message
+		sprintDict = sprints[-1][1]
+		message = { 'cmd': 'refresh',
+				#'labels': [],
+				#'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
+				#'backgrounds': ['rgb(16, 16, 16)'],
+				#'raceStartTime': None,
+				#'lapElapsedClock': False,
+				'sprintDistance': sprintDict['sprintDistance'] if 'sprintDistance' in sprintDict else None,
+				'speedUnit': sprintDict['speedUnit'] if 'speedUnit' in sprintDict else None,
+				'sprintTimeout': getattr( race, 'raceClockSprintTimeout', 60 )
+				}
+		if race.getInProgressSprintTime() is None:
+			if 'sprintBib' in sprintDict and getattr( race, 'raceClockShowBib', True ):
+				try:
+					bib = int(sprintDict['sprintBib'])
+					message['sprintBib'] = bib
+				except:
+					# Do not send multiple bibs here to avoid confusion
+					pass
+			if 'sprintStart' in sprintDict:
+				message['sprintStart'] = sprintDict['sprintStart'] 
+			if 'sprintTime' in sprintDict and getattr( race, 'raceClockShowTime', True ):
+				message['sprintTime'] = sprintDict['sprintTime']
+			if 'sprintSpeed' in sprintDict and getattr( race, 'raceClockShowSpeed', True ):
+				message['sprintSpeed'] = sprintDict['sprintSpeed']
+		else:
+			message['curRaceTime'] = race.getInProgressSprintTime()
+		
+		return message
+		
 
 def lap_counter_new_client(client, server):
 	server.send_message( client, json.dumps(GetLapCounterRefresh()) )

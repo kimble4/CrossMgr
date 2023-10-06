@@ -586,7 +586,7 @@ class Data( wx.Panel ):
 					sprintDict["sprintNote"] = 'RFID tag read'
 				sprints.append( (t, sprintDict) )
 
-		sprints.sort()
+		sprints.sort(key=lambda item: item[0])
 			
 		if self.dataGrid.GetNumberRows():
 			self.dataGrid.DeleteRows(0, self.dataGrid.GetNumberRows())
