@@ -66,7 +66,6 @@ copyFiles = [
     "WebReader.py"
     "MyLapsServer.py"
     "JChipSetup.py"
-    "SendPhotoRequests.py"
     "MultiCast.py"
     "FixCategories.py"
     "AddExcelInfo.py"

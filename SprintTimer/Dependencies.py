@@ -37,7 +37,6 @@ import Ultra
 import WebReader
 import MyLapsServer
 import JChipSetup
-import SendPhotoRequests
 import MultiCast
 import FixCategories
 import AddExcelInfo
