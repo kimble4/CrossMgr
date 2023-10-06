@@ -393,7 +393,6 @@ class Data( wx.Panel ):
 			_('Continue?') ),
 			_('Confirm delete'), wx.ICON_QUESTION, ):
 			return
-		print('ok')
 		del race.sprints[iSprint]
 		race.setChanged()
 		wx.CallAfter(self.refresh)
@@ -578,12 +577,21 @@ class Data( wx.Panel ):
 				manual = timeBibManual[2]
 				sprintDict = {}
 				sprintDict["sprintBib"] = bib
-				sprintDict["isRFID"] = not manual
-				sprintDict["isManualBib"] = manual
-				if manual:
+				sprintDict["isRFID"] = False
+				sprintDict["isManualBib"] = False
+				if manual == Model.Race.BibManual:
+					sprintDict["isManualBib"] = True
 					sprintDict["sprintNote"] = 'Manual bib entry'
-				else:
+				elif manual == Model.Race.BibRFID:
+					sprintDict["isRFID"] = True
 					sprintDict["sprintNote"] = 'RFID tag read'
+				elif manual == Model.Race.BibSequential:
+					sprintDict["isRFID"] = True
+					sprintDict["sprintNote"] = 'Sequential bib number'
+				else:
+					sprintDict["isManualBib"] = True
+					sprintDict["sprintNote"] = '?Unknown bib source.'
+					
 				sprints.append( (t, sprintDict) )
 
 		sprints.sort(key=lambda item: item[0])

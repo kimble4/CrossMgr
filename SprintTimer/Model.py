@@ -1149,6 +1149,10 @@ class Race:
 	rankByAverageSpeed = 1
 	rankByNames = ['number of laps then finish time', 'average speed']
 	
+	BibRFID = 0
+	BibManual = 1
+	BibSequential = 2
+	
 	#finisherStatusList = [Rider.Finisher, Rider.Pulled]
 	#finisherStatusSet = set( finisherStatusList )
 	
@@ -1503,7 +1507,7 @@ class Race:
 		self.sprints.append( (sortTime, sprintDict) )
 		if getattr(race, 'useSequentialBibs', False):
 			Utils.writeLog('Adding sequential bib: ' + str(race.nextSequentialBib))
-			race.addSprintBib( race.nextSequentialBib, sortTime )
+			race.addSprintBib( race.nextSequentialBib, sortTime, sequential = True )
 			race.nextSequentialBib += 1
 		self.findBibsForSprint([s[0] for s in self.sprints].index(sortTime))
 		self.setChanged()
@@ -1548,7 +1552,7 @@ class Race:
 			if abs(diff) < self.rfidTagAssociateSeconds:
 				Utils.writeLog('Considering #' + str(bib) + ' at diff=' + str(diff) + ' as it was within ' + str(self.rfidTagAssociateSeconds) + 's of sprint trigger.')
 				possibleDiffBibs.append( (abs(diff), bib) )
-			elif manualEntry:
+			elif manualEntry == Race.BibManual:
 				if index is None:
 					# in progress sprint - accept any time after start
 					if rfidTime >= (self.inProgressSprintStart - datetime.timedelta(seconds=self.rfidTagAssociateSeconds)):
@@ -1590,7 +1594,6 @@ class Race:
 					bibstring += str(diffBib[1])
 					bibstring += ','
 					seen.append(diffBib[1])
-			print('seen: ' + str(seen))
 			bibstring = bibstring[:-1]
 			if sprint:
 				# update the bib in place
@@ -1952,13 +1955,16 @@ class Race:
 	def setInProgressSprintBib( self, bib ):
 		self.inProgressSprintBib = bib
 		
-	def addSprintBib( self, num, t = None, doSetChanged = True ):
+	def addSprintBib( self, num, t = None, doSetChanged = True, sequential = False ):
 		# This is a seperate list of tag reads to identify sprint riders, we don't use the normal lap times stuff
-		manualEntry = False
-		if t is None:
-			# this has likely come from keyboard entry
-			manualEntry = True
-			t = datetime.datetime.now()
+		if sequential:
+			manualEntry = Race.BibSequential
+		else:
+			manualEntry = Race.BibRFID
+			if t is None:
+				# this has likely come from keyboard entry
+				manualEntry = Race.BibManual
+				t = datetime.datetime.now()
 		self.sprintBibs.append( (t, num, manualEntry) )
 		
 		#if bib was manually entered, or we're within rfidTagAssociateSeconds of a sprint, recalculate bibs
@@ -1967,7 +1973,7 @@ class Race:
 			if diff <= self.rfidTagAssociateSeconds:
 				if self.findBibsForSprint():
 					Utils.refresh()
-			elif manualEntry:
+			elif manualEntry == Race.BibManual:
 				if self.findBibsForSprint():
 					Utils.refresh()
 			
@@ -1986,7 +1992,7 @@ class Race:
 			#find the index that this should be inserted at
 			for i, timeNumManual in enumerate(self.sprintBibs):
 				if i > 1 and t < timeNumManual[0]:
-					self.sprintBibs.insert( i-1, (t, num, False) )
+					self.sprintBibs.insert( i-1, (t, num, Race.BibRFID) )
 					return
 			# if we get here, append to the end
 			self.sprintBibs.append( (t, num, False) )
