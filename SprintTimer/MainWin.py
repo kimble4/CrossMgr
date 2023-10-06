@@ -866,12 +866,12 @@ class MainWin( wx.Frame ):
 		
 		#get the start time
 		startTime = event.receivedTime
-		if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict:
+		if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintStart" in event.sprintDict and "sprintStartMillis" in event.sprintDict:
+			# We have millisecond precision from the timer; use that
 			startTime = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
-			if "sprintStartMillis" in event.sprintDict:
-				startTime += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
-		elif "sprintTime" in event.sprintDict:
-			# subtract sprint time from receivedTime for a guess at T1 time
+			startTime += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+		elif event.isT2 and "sprintTime" in event.sprintDict:
+			# Subtract sprint time from receivedTime for a guess at T1 time
 			startTime -= datetime.timedelta(seconds = event.sprintDict["sprintTime"])
 		else:
 			#otherwise, we just use the receivedTime
@@ -892,7 +892,7 @@ class MainWin( wx.Frame ):
 			race.setInProgressSprintStart( None )
 			Utils.PlaySound('peeeep.wav')
 			
-		#this triggers CrossMgrVideo
+		# Below triggers CrossMgrVideo
 		if not race.enableUSBCamera:
 			return
 		
@@ -901,18 +901,22 @@ class MainWin( wx.Frame ):
 			# we want the T1 photo time, calculated above
 			dt = startTime
 		elif event.isT2 and race.photosAtRaceEndOnly:
-			# we want the T2 photo time, otherwise just use the receivedTime
-			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintFinish" in event.sprintDict:
+			# we want the T2 photo time
+			if event.readerComputerTimeDiff.total_seconds() < 1.0 and "sprintFinish" in event.sprintDict and "sprintFinishMillis" in event.sprintDict:
+				# We have millisecond precision from the timer; use that
 				dt = datetime.datetime.fromtimestamp(event.sprintDict["sprintFinish"])
-				if "sprintFinishMillis" in event.sprintDict:
-					dt += datetime.timedelta(milliseconds = event.sprintDict["sprintFinishMillis"])
+				dt += datetime.timedelta(milliseconds = event.sprintDict["sprintFinishMillis"])
+			#otherwise, we just use the receivedTime
 		else:
+			# No photos needed for this event
 			return
 		
 		num = 0  # default to 0 because CrossMgrVideo will choke on None
 		if "sprintBib" in event.sprintDict:
 			num = event.sprintDict["sprintBib"]
 			race.setInProgressSprintBib( num )
+		elif getattr(race, 'useSequentialBibs', False):
+			num = race.nextSequentialBib
 		requests = [(num, (dt - race.startTime).total_seconds())]
 		success, error = SendPhotoRequests( requests )
 		if success:
