@@ -1107,12 +1107,14 @@ class Race:
 	
 	UnitKm = 0
 	UnitMiles = 1
-	
+
 	useFastest = 0
 	useSlowest = 1
-	useFirst = 2
-	useLast = 3
-	multipleAttemptsPolicyNames = ['Fastest time', 'Slowest time', 'First attempt', 'Last attempt' ]
+	useShortest = 2
+	useLongest = 3
+	useFirst = 4
+	useLast = 5
+	multipleAttemptsPolicyNames = ['Fastest speed', 'Slowest speed', 'Shortest time', 'Longest time', 'First attempt', 'Last attempt' ]
 	multipleAttemptsPolicy = 0
 	
 	enableJChipIntegration = False
@@ -1636,9 +1638,15 @@ class Race:
 			if self.getRiderStatus(bib) is None:
 				self.setRiderStatus(bib, Rider.Finisher)
 			if self.multipleAttemptsPolicy == Race.useFastest:
-				attempts = sorted(res[bib], key=lambda d: d['sprintTime'])
+				attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'], reverse=True)
 				bibTimes.append( (bib, attempts) )
 			elif self.multipleAttemptsPolicy == Race.useSlowest:
+				attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'])
+				bibTimes.append( (bib, attempts) )
+			elif self.multipleAttemptsPolicy == Race.useShortest:
+				attempts = sorted(res[bib], key=lambda d: d['sprintTime'])
+				bibTimes.append( (bib, attempts) )
+			elif self.multipleAttemptsPolicy == Race.useLongest:
 				attempts = sorted(res[bib], key=lambda d: d['sprintTime'], reverse=True)
 				bibTimes.append( (bib, attempts) )
 			elif self.multipleAttemptsPolicy == Race.useFirst:
