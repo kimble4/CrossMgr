@@ -16,6 +16,7 @@ import traceback
 import threading
 from os.path import commonprefix
 from collections import defaultdict
+import wx
 
 import Utils
 import LapStats
@@ -1632,17 +1633,23 @@ class Race:
 					continue
 		
 		bibTimes = []
-		
+		rankErrorBibs = []
 		# get the sprints for each bib in policy order
 		for bib in res:
 			if self.getRiderStatus(bib) is None:
 				self.setRiderStatus(bib, Rider.Finisher)
 			if self.multipleAttemptsPolicy == Race.useFastest:
-				attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'], reverse=True)
-				bibTimes.append( (bib, attempts) )
+				try:
+					attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'], reverse=True)
+					bibTimes.append( (bib, attempts) )
+				except KeyError:
+					rankErrorBibs.append(bib)
 			elif self.multipleAttemptsPolicy == Race.useSlowest:
-				attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'])
-				bibTimes.append( (bib, attempts) )
+				try:
+					attempts = sorted(res[bib], key=lambda d: d['sprintSpeed'])
+					bibTimes.append( (bib, attempts) )
+				except KeyError:
+					rankErrorBibs.append(bib)
 			elif self.multipleAttemptsPolicy == Race.useShortest:
 				attempts = sorted(res[bib], key=lambda d: d['sprintTime'])
 				bibTimes.append( (bib, attempts) )
@@ -1654,30 +1661,34 @@ class Race:
 			else: # use last
 				bibTimes.append( (bib, list(reversed(res[bib]))) )
 		
-		# rank the riders by the speed of the selected result
+		if (len(rankErrorBibs) > 0):
+			wx.CallAfter( Utils.MessageOK, Utils.getMainWin(), 'Could not rank riders by speed:\n' + str(rankErrorBibs)[1:-1] + '\nDo all attempts have a trap distance?', 'Rank error', wx.ICON_ERROR )
+		
+		# rank the riders by the selected result
 		ranking = []
 		seenBibs = []
 		for bib, times in bibTimes:
-			try:
-				seenBibs.append(bib)
-				status = race.getRiderStatus(bib)
-				# recalculate the speed here in m/s because the recorded speed may not be in consistent units
-				distance = times[0]['sprintDistance']
-				time = times[0]['sprintTime']
-				speed = float(distance)/float(time)
-				if float(distance) != float(self.sprintDistance):
-					#Utils.writeLog('Sprint distance for #' + str(bib) + ' ' + str(distance) + ' != current distance ' + str(self.sprintDistance))
-					# Don't mung the data, just add an explanatory note - the ranking will use average speed
-					if 'sprintNote' not in times[0]:
-						times[0]['sprintNote'] = 'Rode ' + str(distance) + 'm not ' + str(self.sprintDistance) + 'm'
-					
-				ranking.append((status, bib, speed))
-			except KeyError:
-				#Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
-				continue
-			except Exception as e:
-				Utils.logException( e, sys.exc_info() )
-				continue
+			if bib not in rankErrorBibs:
+				try:
+					seenBibs.append(bib)
+					status = race.getRiderStatus(bib)
+					# recalculate the speed here in m/s because the recorded speed may not be in consistent units
+					distance = times[0]['sprintDistance']
+					time = times[0]['sprintTime']
+					speed = float(distance)/float(time)
+					if float(distance) != float(self.sprintDistance):
+						#Utils.writeLog('Sprint distance for #' + str(bib) + ' ' + str(distance) + ' != current distance ' + str(self.sprintDistance))
+						# Don't mung the data, just add an explanatory note - the ranking will use average speed
+						if 'sprintNote' not in times[0]:
+							times[0]['sprintNote'] = 'Rode ' + str(distance) + 'm not ' + str(self.sprintDistance) + 'm'
+						
+					ranking.append((status, bib, speed))
+				except KeyError:
+					#Utils.writeLog('No sprint distance for #' + str(bib) + ' - rider will not be ranked!')
+					continue
+				except Exception as e:
+					Utils.logException( e, sys.exc_info() )
+					continue
 		
 		# add the non-finishers and unseen riders
 		if category is not None:
