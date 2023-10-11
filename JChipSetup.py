@@ -359,6 +359,7 @@ class JChipSetupDialog( wx.Dialog ):
 			ChipReader.chipReaderCur.StartListener( test=True )
 			
 			self.appendMsg( 'listening for RFID connection...' )
+			self.updateBibList()
 			
 			# Start a timer to monitor the receiver.
 			self.receivedCount = 0
@@ -369,13 +370,25 @@ class JChipSetupDialog( wx.Dialog ):
 	def appendMsg( self, s ):
 		self.testList.AppendText( s + '\n' )
 		
-	def updateBibList( self, bib ):
+	def updateBibList( self, bib=None ):
 		if bib == 'not found':
 			return
 		if bib not in self.bibsSeen:
-			self.bibsSeen.append(bib)
+			if bib is not None:
+				self.bibsSeen.append(bib)
+			bibsNotSeen = []
+			for tag in Model.race.tagNums:
+				b = Model.race.tagNums[tag]
+				if not str(b) in self.bibsSeen:
+					bibsNotSeen.append(b)
 			self.bibList.Clear()
+			self.bibList.SetDefaultStyle(wx.TextAttr(colText='#000000'))
 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
+			if len(bibsNotSeen) > 0:
+				self.bibList.AppendText('\n')
+				self.bibList.SetDefaultStyle(wx.TextAttr(colText='#dddddd'))
+				self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
+			self.bibList.ShowPosition(0)
 			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(self.bibsSeen), len(Model.race.tagNums)))
 	
 	def onTimerCallback( self, stat ):
