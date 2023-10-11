@@ -78,7 +78,7 @@ class JChipSetupDialog( wx.Dialog ):
 		self.testList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
 		self.testList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
 		
-		self.bibList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_RIGHT, size=(100,-1) )
+		self.bibList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_RICH|wx.TE_RIGHT, size=(100,-1) )
 		self.bibList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
 		
 		
@@ -380,11 +380,11 @@ class JChipSetupDialog( wx.Dialog ):
 				if not b in self.bibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
-			self.bibList.SetForegroundColour( wx.BLACK )
+			self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
 			if len(bibsNotSeen) > 0:
 				self.bibList.AppendText('\n')
-				self.bibList.SetForegroundColour( wx.LIGHT_GREY )
+				self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
 				self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
 			self.bibList.ShowPosition(0)
 			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(self.bibsSeen), len(Model.race.tagNums)))
