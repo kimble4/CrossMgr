@@ -148,6 +148,8 @@ class GeneralInfoProperties( wx.Panel ):
 
 	def refresh( self ):
 		race = Model.race
+		if not race:
+			return
 		self.raceName.SetValue( race.name )
 		self.raceLongName.SetValue( race.longName )
 		self.raceCity.SetValue( race.city )
@@ -166,6 +168,8 @@ class GeneralInfoProperties( wx.Panel ):
 
 	def commit( self ):
 		race = Model.race
+		if not race:
+			return
 		race.name = self.raceName.GetValue().strip()
 		race.longName = self.raceLongName.GetValue().strip()
 		race.city = self.raceCity.GetValue().strip()
@@ -328,6 +332,8 @@ class RaceOptionsProperties( wx.Panel ):
      
 	def refresh( self ):
 		race = Model.race
+		if not race:
+			return
 		self.criteriumMode.SetValue( getattr(race, 'isCriterium', False) )
 		self.timeTrial.SetValue( getattr(race, 'isTimeTrial', False) )
 		self.bestNLaps.SetValue( getattr(race, 'isBestNLaps', False) )
@@ -359,6 +365,8 @@ class RaceOptionsProperties( wx.Panel ):
 	
 	def commit( self ):
 		race = Model.race
+		if not race:
+			return
 		race.isCriterium = self.criteriumMode.IsChecked()
 		race.isTimeTrial = self.timeTrial.IsChecked()
 		race.isBestNLaps = self.bestNLaps.IsChecked()
