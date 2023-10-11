@@ -57,6 +57,7 @@ class JChipSetupDialog( wx.Dialog ):
 		self.timer = None
 		self.receivedCount = 0
 		self.refTime = None
+		self.bibsSeen = []
 		
 		self.enableJChipCheckBox = wx.CheckBox( self, label = _('Use RFID Reader During Race') )
 		if Model.race:
@@ -76,6 +77,11 @@ class JChipSetupDialog( wx.Dialog ):
 		
 		self.testList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
 		self.testList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
+		
+		self.bibList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
+		self.bibList.SetSize(100, -1)
+		self.bibList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
+		
 		
 		self.Bind(EVT_CHIP_READER, self.handleChipReaderEvent)
 		
@@ -144,8 +150,24 @@ class JChipSetupDialog( wx.Dialog ):
 
 		bs.Add( self.testJChip, 0, wx.ALIGN_CENTER|wx.ALL, border )
 		bs.Add( self.sendTestBibsToLapCounterCheckBox, 0, wx.ALL|wx.ALIGN_LEFT, border )
-		bs.Add( wx.StaticText(self, label = _('Messages:')), 0, wx.EXPAND|wx.ALL, border=border )
-		bs.Add( self.testList, 1, wx.EXPAND|wx.ALL, border )
+		
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		
+		ms = wx.BoxSizer( wx.VERTICAL )
+		ms.Add( wx.StaticText(self, label = _('Messages:')), 0, wx.EXPAND|wx.ALL, border=border )
+		ms.Add( self.testList, 1, wx.EXPAND|wx.ALL, border )
+		
+		hs.Add( ms, 1, wx.EXPAND|wx.ALL, border)
+		
+		ts = wx.BoxSizer( wx.VERTICAL )
+		self.bibListHeading = wx.StaticText(self, label = _('Bibs seen:    '))
+		ts.Add( self.bibListHeading, 0, wx.EXPAND|wx.ALL, border=border )
+		ts.Add( self.bibList, 1, wx.EXPAND|wx.ALL, border )
+		
+		hs.Add( ts, 0, wx.EXPAND|wx.ALL, border)
+		
+		bs.Add( hs, 1, wx.EXPAND|wx.ALL, border)
+		
 		
 		btnSizer = self.CreateStdDialogButtonSizer( wx.OK|wx.CANCEL|wx.HELP )
 		self.Bind( wx.EVT_BUTTON, self.onOK, id=wx.ID_OK )
@@ -327,6 +349,10 @@ class JChipSetupDialog( wx.Dialog ):
 			ChipReader.chipReaderCur.readerEventWindow = self
 			
 			self.testList.Clear()
+			self.bibList.Clear()
+			self.bibsSeen.clear()
+			self.bibListHeading.SetLabel('Bibs seen:    ')
+			
 			self.testJChip.SetLabel( 'Stop RFID Test' )
 			self.testJChip.SetBackgroundColour( wx.Colour(255,128,128) )
 			self.testJChip.SetValue( True )
@@ -343,6 +369,15 @@ class JChipSetupDialog( wx.Dialog ):
 	
 	def appendMsg( self, s ):
 		self.testList.AppendText( s + '\n' )
+		
+	def updateBibList( self, bib ):
+		if bib == 'not found':
+			return
+		if bib not in self.bibsSeen:
+			self.bibsSeen.append(bib)
+			self.bibList.Clear()
+			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
+			self.bibListHeading.SetLabel('{} bibs seen:'.format(len(self.bibsSeen)))
 	
 	def onTimerCallback( self, stat ):
 		data = ChipReader.chipReaderCur.GetData()
@@ -361,6 +396,7 @@ class JChipSetupDialog( wx.Dialog ):
 					num = 'not found'
 				lastTag = d[1]
 				self.appendMsg( '{}: tag={}, time={}, Bib={}'.format(self.receivedCount, d[1], ts, num) )
+				self.updateBibList( num )
 				if self.sendTestBibsToLapCounterCheckBox.IsChecked():
 					try:
 						bib = int(num)
