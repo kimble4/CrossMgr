@@ -78,8 +78,7 @@ class JChipSetupDialog( wx.Dialog ):
 		self.testList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
 		self.testList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
 		
-		self.bibList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
-		self.bibList.SetSize(100, -1)
+		self.bibList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE|wx.TE_RIGHT, size=(100,-1) )
 		self.bibList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
 		
 		
@@ -160,7 +159,7 @@ class JChipSetupDialog( wx.Dialog ):
 		hs.Add( ms, 1, wx.EXPAND|wx.ALL, border)
 		
 		ts = wx.BoxSizer( wx.VERTICAL )
-		self.bibListHeading = wx.StaticText(self, label = _('Bibs seen:    '))
+		self.bibListHeading = wx.StaticText(self, label = _('Bibs seen:        '))
 		ts.Add( self.bibListHeading, 0, wx.EXPAND|wx.ALL, border=border )
 		ts.Add( self.bibList, 1, wx.EXPAND|wx.ALL, border )
 		
@@ -351,7 +350,7 @@ class JChipSetupDialog( wx.Dialog ):
 			self.testList.Clear()
 			self.bibList.Clear()
 			self.bibsSeen.clear()
-			self.bibListHeading.SetLabel('Bibs seen:    ')
+			self.bibListHeading.SetLabel('0/{} bibs seen:   '.format(len(Model.race.tagNums)))
 			
 			self.testJChip.SetLabel( 'Stop RFID Test' )
 			self.testJChip.SetBackgroundColour( wx.Colour(255,128,128) )
@@ -377,7 +376,7 @@ class JChipSetupDialog( wx.Dialog ):
 			self.bibsSeen.append(bib)
 			self.bibList.Clear()
 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
-			self.bibListHeading.SetLabel('{} bibs seen:'.format(len(self.bibsSeen)))
+			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(self.bibsSeen), len(Model.race.tagNums)))
 	
 	def onTimerCallback( self, stat ):
 		data = ChipReader.chipReaderCur.GetData()
