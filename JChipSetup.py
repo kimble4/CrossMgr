@@ -371,15 +371,13 @@ class JChipSetupDialog( wx.Dialog ):
 		self.testList.AppendText( s + '\n' )
 		
 	def updateBibList( self, bib=None ):
-		if bib == 'not found':
-			return
 		if bib not in self.bibsSeen:
 			if bib is not None:
 				self.bibsSeen.append(bib)
 			bibsNotSeen = []
 			for tag in Model.race.tagNums:
 				b = Model.race.tagNums[tag]
-				if not str(b) in self.bibsSeen:
+				if not b in self.bibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
 			self.bibList.SetDefaultStyle(wx.TextAttr(colText='#000000'))
@@ -404,11 +402,11 @@ class JChipSetupDialog( wx.Dialog ):
 					ts = ts[:-2]
 				try:
 					num = '{}'.format(Model.race.tagNums[d[1]])
+					self.updateBibList(Model.race.tagNums[d[1]])
 				except (AttributeError, ValueError, KeyError):
 					num = 'not found'
 				lastTag = d[1]
 				self.appendMsg( '{}: tag={}, time={}, Bib={}'.format(self.receivedCount, d[1], ts, num) )
-				self.updateBibList( num )
 				if self.sendTestBibsToLapCounterCheckBox.IsChecked():
 					try:
 						bib = int(num)
