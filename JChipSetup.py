@@ -380,11 +380,11 @@ class JChipSetupDialog( wx.Dialog ):
 				if not b in self.bibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
-			self.bibList.SetDefaultStyle(wx.TextAttr(colText='#000000'))
+			self.bibList.SetForegroundColour( wx.BLACK )
 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
 			if len(bibsNotSeen) > 0:
 				self.bibList.AppendText('\n')
-				self.bibList.SetDefaultStyle(wx.TextAttr(colText='#dddddd'))
+				self.bibList.SetForegroundColour( wx.LIGHT_GREY )
 				self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
 			self.bibList.ShowPosition(0)
 			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(self.bibsSeen), len(Model.race.tagNums)))
