@@ -76,8 +76,9 @@ reLapMatch = re.compile( '<?Lap>? ([0-9]+)' )
 class Results( wx.Panel ):
 	DisplayLapTimes = 0
 	DisplayRaceTimes = 1
-	DisplayLapSpeeds = 2
-	DisplayRaceSpeeds = 3
+	DisplayWallTimes = 2
+	DisplayLapSpeeds = 3
+	DisplayRaceSpeeds = 4
 
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -121,6 +122,11 @@ class Results( wx.Panel ):
 		self.Bind( wx.EVT_RADIOBUTTON, self.onSelectDisplayOption, self.showRaceTimesRadio )
 		self.showRaceTimesRadio.SetToolTip(wx.ToolTip(_('Useful for finding for Prime winners.\nAfter selecting, click on a lap header to sort.')))
 		
+		self.showWallTimesRadio = wx.RadioButton( self, label = _('Clock Times'), style=wx.BU_EXACTFIT )
+		self.showWallTimesRadio.SetValue( self.selectDisplay == Results.DisplayWallTimes )
+		self.Bind( wx.EVT_RADIOBUTTON, self.onSelectDisplayOption, self.showWallTimesRadio )
+		self.showWallTimesRadio.SetToolTip(wx.ToolTip(_('Useful for comparing times with CrossMgrVideo.')))
+		
 		self.showLapSpeedsRadio = wx.RadioButton( self, label = _('Lap Speeds'), style=wx.BU_EXACTFIT )
 		self.showLapSpeedsRadio.SetValue( self.selectDisplay == Results.DisplayLapSpeeds )
 		self.Bind( wx.EVT_RADIOBUTTON, self.onSelectDisplayOption, self.showLapSpeedsRadio )
@@ -153,6 +159,7 @@ class Results( wx.Panel ):
 		self.hbs.Add( self.showRiderDataToggle, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.showLapTimesRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.showRaceTimesRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
+		self.hbs.Add( self.showWallTimesRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.showLapSpeedsRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.Add( self.showRaceSpeedsRadio, flag=wx.ALL | wx.ALIGN_CENTRE_VERTICAL, border=4 )
 		self.hbs.AddStretchSpacer()
@@ -299,7 +306,7 @@ class Results( wx.Panel ):
 		wx.CallAfter( self.refresh )
 		
 	def onSelectDisplayOption( self, event ):
-		for i, r in enumerate([self.showLapTimesRadio, self.showRaceTimesRadio, self.showLapSpeedsRadio, self.showRaceSpeedsRadio]):
+		for i, r in enumerate([self.showLapTimesRadio, self.showRaceTimesRadio, self.showWallTimesRadio, self.showLapSpeedsRadio, self.showRaceSpeedsRadio]):
 			if r.GetValue():
 				self.selectDisplay = i
 				break
@@ -767,7 +774,7 @@ class Results( wx.Panel ):
 		if not hasSpeeds:
 			self.showLapSpeedsRadio.Enable( False )
 			self.showRaceSpeedsRadio.Enable( False )
-			if self.selectDisplay > Results.DisplayRaceTimes:
+			if self.selectDisplay > Results.DisplayWallTimes:
 				self.selectDisplay = Results.DisplayRaceTimes
 				self.showRaceTimesRadio.SetValue( True )
 		else:
@@ -805,16 +812,24 @@ class Results( wx.Panel ):
 		
 		# Convert to race times, lap speeds or race speeds as required.
 		'''
-			DisplayLapTimes = 0
-			DisplayRaceTimes = 1
-			DisplayLapSpeeds = 2
-			DisplayRaceSpeeds = 3
+				DisplayLapTimes = 0
+				DisplayRaceTimes = 1
+				DisplayWallTimes = 2
+				DisplayLapSpeeds = 3
+				DisplayRaceSpeeds = 4
 		'''
 		if self.selectDisplay == Results.DisplayRaceTimes:
 			for r, result in enumerate(results):
 				for i, t in enumerate(result.raceTimes[1:]):
 					try:
 						data[i+firstLapCol][r] = Utils.formatTimeCompressed(t, highPrecision)
+					except IndexError:
+						pass
+		elif self.selectDisplay == Results.DisplayWallTimes:
+			for r, result in enumerate(results):
+				for i, t in enumerate(result.raceTimes[1:]):
+					try:
+						data[i+firstLapCol][r] = Utils.formatTimeCompressed(race.raceTimeToClockTime(t), highPrecision)
 					except IndexError:
 						pass
 		elif self.selectDisplay == Results.DisplayLapSpeeds:
