@@ -324,7 +324,8 @@ class Results( wx.Panel ):
 	def doRightClick( self, event ):
 		wx.CallAfter( self.search.SetFocus )
 
-		self.doNumSelect( event )
+		self.doubleClickRow, self.doubleClickCol = event.GetRow(), event.GetCol()
+		self.doNumSelect( event, staySelected=True )
 		if self.numSelect is None:
 			return
 			
@@ -336,7 +337,7 @@ class Results( wx.Panel ):
 				(_('Passings'), 	_('Switch to Passings tab'), self.OnPopupHistory, allCases),
 				(_('RiderDetail'),	_('Show RiderDetail Dialog'), self.OnPopupRiderDetail, allCases),
 				(None, None, None, None),
-				(_('Show Photos'),	_('Show Photos'), self.OnPopupShowPhotos, allCases),
+				#(_('Show Photos'),	_('Show Photos'), self.OnPopupShowPhotos, allCases),
 				(None, None, None, None),
 				(_('Correct...'),	_('Change number or lap time...'),	self.OnPopupCorrect, interpCase),
 				(_('Shift...'),	_('Move lap time earlier/later...'),	self.OnPopupShift, interpCase),
@@ -471,7 +472,7 @@ class Results( wx.Panel ):
 	def OnPopupHistory( self, event ):
 		mainWin = Utils.getMainWin()
 		if mainWin:
-			mainWin.showPageName( mainWin.iPassingsPage )
+			mainWin.showPage( mainWin.iPassingsPage )
 			
 	def OnPopupRiderDetail( self, event ):
 		ShowRiderDetailDialog( self, self.numSelect )
