@@ -61,7 +61,7 @@ class CriteriumRecord( wx.Panel ):
 		vsizer.Add( hbs, flag=wx.EXPAND, border=4 )
 	
 		
-		inputExplain = wx.StaticText( self, label=_('Use these buttons to tell CrossMgr when the leader is on the penultimate or final lap.\nOnce this is set, the race minutes value will be adjusted automatically when the leader finishes.') )
+		inputExplain = wx.StaticText( self, label=_('Use these buttons to tell CrossMgr when the leader is on the penultimate or final lap.\n(Remember to wait until their passing has been recored by the RFID system!).\nOnce this is set, the race minutes value will be adjusted automatically when the leader finishes.') )
 		inputExplain.SetFont( self.font )
 
 		
