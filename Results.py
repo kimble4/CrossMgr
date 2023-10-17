@@ -389,8 +389,9 @@ class Results( wx.Panel ):
 		except (TypeError, IndexError, KeyError):
 			caseCode = 0
 		except StopIteration:
-			return
-	
+			#return
+			caseCode = 0  # Show a menu here too
+			
 		self.numBefore, self.numAfter = None, None
 		for iRow, attr in [(self.iRow - 1, 'numBefore'), (self.iRow + 1, 'numAfter')]:
 			if not (0 <= iRow < self.lapGrid.GetNumberRows()):
