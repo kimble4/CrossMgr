@@ -305,16 +305,16 @@ function Package($program)
 	Write-Host "Packaging $program from $sourcepath to $newinstallname in $releasepath..."
 	$setup = "AppName=$program
 SourceDir=$sourcepath
-AppPublisher=Edward Sitarski
-AppContact=Edward Sitarski
-AppCopyright=Copyright (C) 2004-$yeartoday Edward Sitarski
+AppPublisher=BHPC
+AppContact=BHPC
+AppCopyright=Copyright (C) 2022-$yeartoday BHPC
 AppVerName=$program
-AppPublisherURL=http://www.sites.google.com/site/crossmgrsoftware/
-AppUpdatesURL=http://github.com/estarski/crossmgr/
+AppPublisherURL=http://www.bhpc.org.uk
+AppUpdatesURL=https://github.com/kimble4/CrossMgr
 VersionInfoVersion=$setupversion
-VersionInfoCompany=Edward Sitarski
+VersionInfoCompany=BHPC
 VersionInfoProductName=$program
-VersionInfoCopyright=Copyright (C) 2004-$yeartoday Edward Sitarski
+VersionInfoCopyright=Copyright (C) 2022-$yeartoday BHPC
 OutputBaseFilename=$newinstallname
 OutputDir=$releasepath
 "

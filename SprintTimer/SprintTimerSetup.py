@@ -143,12 +143,12 @@ from Version import AppVerName
 def make_inno_version():
 	setup = {
 		'AppName':				AppVerName.split()[0],
-		'AppPublisher':			"Edward Sitarski",
-		'AppContact':			"Edward Sitarski",
-		'AppCopyright':			"Copyright (C) 2004-{} Edward Sitarski".format(datetime.date.today().year),
+		'AppPublisher':			"BHPC",
+		'AppContact':			"BHPC",
+		'AppCopyright':			"Copyright (C) 2022-{} BHPC".format(datetime.date.today().year),
 		'AppVerName':			AppVerName,
-		'AppPublisherURL':		"http://www.sites.google.com/site/crossmgrsoftware/",
-		'AppUpdatesURL':		"http://www.sites.google.com/site/crossmgrsoftware/downloads/",
+		'AppPublisherURL':		"http://www.bhpc.org.uk",
+		'AppUpdatesURL':		"https://github.com/kimble4/CrossMgr",
 		'VersionInfoVersion':	AppVerName.split()[1],
 	}
 	with open('inno_setup.txt', 'w') as f:
