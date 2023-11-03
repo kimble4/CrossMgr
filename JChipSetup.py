@@ -57,7 +57,6 @@ class JChipSetupDialog( wx.Dialog ):
 		self.timer = None
 		self.receivedCount = 0
 		self.refTime = None
-		self.bibsSeen = []
 		
 		self.enableJChipCheckBox = wx.CheckBox( self, label = _('Use RFID Reader During Race') )
 		if Model.race:
@@ -74,6 +73,10 @@ class JChipSetupDialog( wx.Dialog ):
 		self.testJChip = wx.ToggleButton( self, label = _('Start RFID Test') )
 		self.testJChip.SetFont( wx.Font( (0,24), wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL ) )
 		self.testJChip.Bind( wx.EVT_TOGGLEBUTTON, self.testJChipToggle )
+		
+		self.clearBibs = wx.Button( self, label = _('Clear seen bibs list') )
+		self.clearBibs.SetFont( wx.Font( (0,24), wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL ) )
+		self.clearBibs.Bind( wx.EVT_BUTTON, self.clearBibsSeen )
 		
 		self.testList = wx.TextCtrl( self, style=wx.TE_READONLY|wx.TE_MULTILINE, size=(-1,200) )
 		self.testList.Bind( wx.EVT_RIGHT_DOWN, self.skip )
@@ -146,10 +149,14 @@ class JChipSetupDialog( wx.Dialog ):
 		bs.Add( wx.StaticText( self, label = _('If using JChip, see "7  Setting of Connections" in JChip "Control Panel Soft Manual" for more details.') ),
 				border=border, flag = wx.GROW|wx.ALL )
 		#-------------------------------------------------------------------
-
-		bs.Add( self.testJChip, 0, wx.ALIGN_CENTER|wx.ALL, border )
-		bs.Add( self.sendTestBibsToLapCounterCheckBox, 0, wx.ALL|wx.ALIGN_LEFT, border )
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		hs.Add( self.testJChip, 0, wx.ALIGN_CENTER|wx.ALL, border )
+		hs.Add( self.clearBibs, 0, wx.ALIGN_CENTER|wx.ALL, border )
+		bs.Add( hs, 0, wx.ALL|wx.ALIGN_CENTER, border)
 		
+		
+		bs.Add( self.sendTestBibsToLapCounterCheckBox, 0, wx.ALL|wx.ALIGN_LEFT, border )
+				
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		
 		ms = wx.BoxSizer( wx.VERTICAL )
@@ -314,7 +321,17 @@ class JChipSetupDialog( wx.Dialog ):
 		
 		tag, dt = event.tagTimes[-1]
 		num = tagNums.get(tag, None)
-
+		
+	def clearBibsSeen( self, event ):
+		race = Model.race
+		if not race:
+			return
+		if hasattr( race, 'rfidTestBibsSeen' ):
+			race.rfidTestBibsSeen.clear()
+		else:
+			race.rfidTestBibsSeen = []
+		self.updateBibList()
+			
 	def testJChipToggle( self, event ):
 		self.commit()
 		
@@ -349,7 +366,9 @@ class JChipSetupDialog( wx.Dialog ):
 			
 			self.testList.Clear()
 			self.bibList.Clear()
-			self.bibsSeen.clear()
+			if not hasattr( Model.race, 'RfidTestBibsSeen' ):
+				Model.race.rfidTestBibsSeen = []
+				
 			self.bibListHeading.SetLabel('0/{} bibs seen:   '.format(len(Model.race.tagNums)))
 			
 			self.testJChip.SetLabel( 'Stop RFID Test' )
@@ -371,23 +390,24 @@ class JChipSetupDialog( wx.Dialog ):
 		self.testList.AppendText( s + '\n' )
 		
 	def updateBibList( self, bib=None ):
-		if bib not in self.bibsSeen:
+		race = Model.race
+		if bib not in race.rfidTestBibsSeen:
 			if bib is not None:
-				self.bibsSeen.append(bib)
+				race.rfidTestBibsSeen.append(bib)
 			bibsNotSeen = []
-			for tag in Model.race.tagNums:
-				b = Model.race.tagNums[tag]
-				if not b in self.bibsSeen:
+			for tag in race.tagNums:
+				b = race.tagNums[tag]
+				if not b in race.rfidTestBibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
 			self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
-			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(self.bibsSeen)))
+			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(race.rfidTestBibsSeen)))
 			if len(bibsNotSeen) > 0:
 				self.bibList.AppendText('\n')
 				self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
 				self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
 			self.bibList.ShowPosition(0)
-			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(self.bibsSeen), len(Model.race.tagNums)))
+			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(race.tagNums)))
 	
 	def onTimerCallback( self, stat ):
 		data = ChipReader.chipReaderCur.GetData()

@@ -435,7 +435,11 @@ class RfidProperties( wx.Panel ):
 
 	def onSetup( self, event ):
 		self.commit()
-		if Model.race.isRunning():
+		race = Model.race
+		if not race:
+			Utils.MessageOK( self, _('Cannot perform RFID setup without a race.  Open or New a race first'), _('No Valid Race'), iconMask=wx.ICON_ERROR )
+			return
+		if race.isRunning():
 			Utils.MessageOK( self, _('Cannot perform RFID setup while race is running.'), _('Cannot Perform RFID Setup'), iconMask=wx.ICON_ERROR )
 			return
 		with JChipSetup.JChipSetupDialog(self) as dlg:
