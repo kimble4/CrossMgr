@@ -330,7 +330,7 @@ class JChipSetupDialog( wx.Dialog ):
 		if hasattr( race, 'rfidTestBibsSeen' ):
 			race.rfidTestBibsSeen.clear()
 		else:
-			race.rfidTestBibsSeen = []
+			race.rfidTestBibsSeen = {}
 		self.updateBibList()
 			
 	def testJChipToggle( self, event ):
@@ -367,8 +367,6 @@ class JChipSetupDialog( wx.Dialog ):
 			
 			self.testList.Clear()
 			self.bibList.Clear()
-			if not hasattr( Model.race, 'rfidTestBibsSeen' ):
-				Model.race.rfidTestBibsSeen = []
 				
 			self.bibListHeading.SetLabel('0/{} bibs seen:   '.format(len(Model.race.tagNums)))
 			
@@ -390,23 +388,55 @@ class JChipSetupDialog( wx.Dialog ):
 	def appendMsg( self, s ):
 		self.testList.AppendText( s + '\n' )
 		
-	def updateBibList( self, bib=None ):
+	# def updateBibList( self, bib=None ):
+	# 	race = Model.race
+	# 	if bib not in race.rfidTestBibsSeen:
+	# 		if bib is not None:
+	# 			race.rfidTestBibsSeen.append(bib)
+	# 		bibsNotSeen = []
+	# 		for tag in race.tagNums:
+	# 			b = race.tagNums[tag]
+	# 			if not b in bibsNotSeen and not b in race.rfidTestBibsSeen:
+	# 				bibsNotSeen.append(b)
+	# 		self.bibList.Clear()
+	# 		self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
+	# 		self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(race.rfidTestBibsSeen)))
+	# 		if len(bibsNotSeen) > 0:
+	# 			self.bibList.AppendText('\n')
+	# 			self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
+	# 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
+	# 		self.bibList.ShowPosition(0)
+	# 		self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(race.tagNums)))
+			
+	def updateBibList( self, tag=None ):
 		race = Model.race
-		if bib not in race.rfidTestBibsSeen:
-			if bib is not None:
-				race.rfidTestBibsSeen.append(bib)
+		if not race.tagNums:
+			return
+		if not hasattr( Model.race, 'rfidTestBibsSeen' ):
+			Model.race.rfidTestBibsSeen = {}
+		seenTags = []
+		for b in race.rfidTestBibsSeen:
+			seenTags = seenTags + race.rfidTestBibsSeen[b]
+		if tag not in seenTags:
+			if tag is not None:
+				bib = Model.race.tagNums[tag]
+				if bib not in race.rfidTestBibsSeen:
+					race.rfidTestBibsSeen[bib] = [tag]
+				else:
+					race.rfidTestBibsSeen[bib].append(tag)
 			bibsNotSeen = []
-			for tag in race.tagNums:
-				b = race.tagNums[tag]
+			for t in race.tagNums:
+				b = race.tagNums[t]
 				if not b in bibsNotSeen and not b in race.rfidTestBibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
 			self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
-			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(race.rfidTestBibsSeen)))
+			self.bibList.AppendText('\n'.join('{} ({})'.format(b, len(race.rfidTestBibsSeen[b])) for b in sorted(race.rfidTestBibsSeen)))
 			if len(bibsNotSeen) > 0:
-				self.bibList.AppendText('\n')
+				if len(race.rfidTestBibsSeen) > 0:
+					self.bibList.AppendText('\n')
 				self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
-				self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
+				self.bibList.AppendText('\n'.join('{} (0)'.format(b) for b in sorted(bibsNotSeen)))
 			self.bibList.ShowPosition(0)
 			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(race.tagNums)))
 	
@@ -423,7 +453,7 @@ class JChipSetupDialog( wx.Dialog ):
 					ts = ts[:-2]
 				try:
 					num = '{}'.format(Model.race.tagNums[d[1]])
-					self.updateBibList(Model.race.tagNums[d[1]])
+					self.updateBibList(d[1])
 				except (AttributeError, ValueError, KeyError):
 					num = 'not found'
 				lastTag = d[1]
