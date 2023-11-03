@@ -114,7 +114,7 @@ Now, walk through the antenna (or across the matt) with some chips.  You should 
 
 You can see some of the nuts-and-bolts of the communication between the two systems.
 
-Meanwhile, the "Bibs seen" section will maintain a list of the riders whose tags have been reported by the reader during the test - this is useful for determining whether riders have workiing tags - just herd them through the finish line while the RFID test is in progress.  The number in brackets is the number of unique tag IDs that have been seen for that rider (useful for determining if multiple tags are reading properly).  Riders who have not been seen yet will be greyed out and appear at the bottom of the list.  Press the "Clear seen bibs list" button to reset the count.
+Meanwhile, the "Bibs seen" section will maintain a list of the riders whose tags have been reported by the reader during the test - this is useful for determining whether riders have working tags - just herd them through the finish line while the RFID test is in progress.  The number in brackets is the number of unique tag IDs that have been seen for that rider (useful for determining if multiple tags are reading properly).  Riders who have not been seen yet will be greyed out and appear at the bottom of the list.  Press the "Clear seen bibs list" button to reset the count.
 
 The "Send bib numbers to race clock during test" option causes rider numbers to be output on the lapcounter websocket as the tag reads arrive.  This uses an extension to the protocol designed for the BHPC sprint timer; it is not (currently) supported by the lap counter web page.
 

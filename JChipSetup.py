@@ -387,26 +387,6 @@ class JChipSetupDialog( wx.Dialog ):
 	
 	def appendMsg( self, s ):
 		self.testList.AppendText( s + '\n' )
-		
-	# def updateBibList( self, bib=None ):
-	# 	race = Model.race
-	# 	if bib not in race.rfidTestBibsSeen:
-	# 		if bib is not None:
-	# 			race.rfidTestBibsSeen.append(bib)
-	# 		bibsNotSeen = []
-	# 		for tag in race.tagNums:
-	# 			b = race.tagNums[tag]
-	# 			if not b in bibsNotSeen and not b in race.rfidTestBibsSeen:
-	# 				bibsNotSeen.append(b)
-	# 		self.bibList.Clear()
-	# 		self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
-	# 		self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(race.rfidTestBibsSeen)))
-	# 		if len(bibsNotSeen) > 0:
-	# 			self.bibList.AppendText('\n')
-	# 			self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
-	# 			self.bibList.AppendText('\n'.join('{}'.format(b) for b in sorted(bibsNotSeen)))
-	# 		self.bibList.ShowPosition(0)
-	# 		self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(race.tagNums)))
 			
 	def updateBibList( self, tag=None ):
 		race = Model.race
