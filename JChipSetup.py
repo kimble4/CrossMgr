@@ -398,7 +398,7 @@ class JChipSetupDialog( wx.Dialog ):
 			bibsNotSeen = []
 			for tag in race.tagNums:
 				b = race.tagNums[tag]
-				if not b in race.rfidTestBibsSeen:
+				if not b in bibsNotSeen and not b in race.rfidTestBibsSeen:
 					bibsNotSeen.append(b)
 			self.bibList.Clear()
 			self.bibList.SetDefaultStyle(wx.TextAttr((wx.BLACK)))
