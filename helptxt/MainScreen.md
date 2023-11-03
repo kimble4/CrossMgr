@@ -1,17 +1,21 @@
 [TOC]
 
 # Main Screen
-The Main Screen is divided into three major areas:
+The Main Screen is divided into four major areas:
 
+1. [Race Clock](#race-clock)
 1. [Expected](#expected)
 1. [Recorded](#recorded)
 1. [Tabbed Screens](#screens)
 
-The Expected and Recorded lists are on the left, the Tabbed Screens is the main field.  The race clock is shown above the Expected list.
+The Clock and Expected and Recorded lists are on the left, the Tabbed Screens is the main field.
 
 All the areas can be controlled my dragging the "sash" separating the windows.
 
 If you prefer the Expected and Recorded lists to be side-by-side instead of stacked, double-click on the sash between them.  Double-click to return to the original configuration.
+
+# Race Clock
+The elapsed race time is shown in a large font in the top left corner, above the Expected and Recorded lists.  This is particularly useful for Criterium events.
 
 # Expected
 Shows the numbers of riders expected to arrive.  The columns in the table are as follows:
