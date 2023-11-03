@@ -218,6 +218,7 @@ class JChipSetupDialog( wx.Dialog ):
 		self.chipReaderType.SetSelection( max(0, race.chipReaderType) )
 		self.ipaddr.SetValue( race.chipReaderIpAddr )
 		self.port.SetValue( race.chipReaderPort )
+		self.updateBibList()
 		self.changechipReaderType()
 		
 	def changechipReaderType( self, event=None ):
@@ -366,7 +367,7 @@ class JChipSetupDialog( wx.Dialog ):
 			
 			self.testList.Clear()
 			self.bibList.Clear()
-			if not hasattr( Model.race, 'RfidTestBibsSeen' ):
+			if not hasattr( Model.race, 'rfidTestBibsSeen' ):
 				Model.race.rfidTestBibsSeen = []
 				
 			self.bibListHeading.SetLabel('0/{} bibs seen:   '.format(len(Model.race.tagNums)))
