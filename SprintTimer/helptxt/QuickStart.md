@@ -1,10 +1,6 @@
 [TOC]
 
 # Quick Start
-Welcome to __SprintTimer!__
+Welcome to SprintTimer!
 
-__SprintTimer__ isn't finished yet.
-
-## Overview
-
-Blah...
+fixme!
