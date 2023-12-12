@@ -16,6 +16,8 @@
 [Categories]:		Categories.html
 [Properties]:		Properties.html
 
+[RFID]:				Properties.html#rfid
+[ChipReader]:		ChipReader.html
 [FAQ]:				FAQ.html
 
 
