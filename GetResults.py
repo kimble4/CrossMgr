@@ -11,6 +11,7 @@ from datetime import timedelta, datetime
 from collections import deque, defaultdict
 
 from ReadSignOnSheet import IgnoreFields, NumericFields, SyncExcelLink
+from SetNoDataDNS import SetNoDataDNS
 statusSortSeq = Model.Rider.statusSortSeq
 
 def TimeDifference( a, b, highPrecision = False ):
@@ -251,6 +252,8 @@ def _GetResultsCore( category ):
 	isTimeTrial = race.isTimeTrial
 	isBestNLaps = race.isBestNLaps
 	rankBy = getattr(race, 'rankBy', Model.Race.rankByLapsTime)
+	
+	SetNoDataDNS()
 	
 	roadRaceFinishTimes = race.roadRaceFinishTimes
 	estimateLapsDownFinishTime = race.estimateLapsDownFinishTime
@@ -592,12 +595,6 @@ def _GetResultsCore( category ):
 			del rr.roadRaceLastTime
 			del rr.roadRaceGap
 			del rr.roadRaceGapValue
-	
-	'''
-	for rr in riderResults:
-		rr.lastTime = rr.roadRaceLastTime
-		rr.gap = rr.roadRaceGap
-	'''
 	
 	return tuple(riderResults)
 	

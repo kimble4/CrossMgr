@@ -204,7 +204,7 @@ class RaceOptionsProperties( wx.Panel ):
 		self.bestNLaps.Disable()
 		
 		self.allCategoriesFinishAfterFastestRidersLastLap = wx.CheckBox( self, label=_("All Categories Finish After Fastest Rider's Last Lap") )
-		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( True )
+		self.allCategoriesFinishAfterFastestRidersLastLap.SetValue( False )
 		
 		self.autocorrectLapsDefault = wx.CheckBox( self, label=_('Set "Autocorrect Lap Data" option by Default') )
 		self.autocorrectLapsDefault.SetValue( True )
