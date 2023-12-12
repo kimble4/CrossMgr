@@ -10,14 +10,14 @@ import sys
 #import random
 import datetime
 #import operator
-#import webbrowser
+import webbrowser
 import platform
 #import zipfile
 #import hashlib
 
 import wx
 import wx.adv as adv
-#from wx.lib.wordwrap import wordwrap
+from wx.lib.wordwrap import wordwrap
 #import wx.lib.imagebrowser as imagebrowser
 import wx.lib.agw.flatnotebook as flatnotebook
 from html import escape
@@ -73,7 +73,7 @@ from FtpWriteFile		import realTimeFtpPublish
 #from JPResultsExport	import JPResultsExport
 #from CrossResultsExport	import CrossResultsExport
 #from WebScorerExport	import WebScorerExport
-#from HelpSearch			import HelpSearchDialog, getHelpURL
+from HelpSearch			import HelpSearchDialog, getHelpURL
 from Utils				import logCall, logException
 from FileDrop			import FileDrop
 #from RaceDB				import RaceDB, RaceDBUpload
@@ -767,13 +767,13 @@ class MainWin( wx.Frame ):
 		#self.menuBar.Append( self.webMenu, _("&Web") )
 		
 		#------------------------------------------------------------------------------
-		#self.helpMenu = wx.Menu()
+		self.helpMenu = wx.Menu()
 
 		#item = self.helpMenu.Append( wx.ID_ANY, _("Help &Search..."), _("Search Help...") )
 		#self.Bind(wx.EVT_MENU, self.menuHelpSearch, item )
 		#self.helpSearch = HelpSearchDialog( self, title=_('Help Search') )
-		#item = self.helpMenu.Append( wx.ID_HELP, _("&Help..."), _("Help about CrossMgr...") )
-		#self.Bind(wx.EVT_MENU, self.menuHelp, item )
+		item = self.helpMenu.Append( wx.ID_HELP, _("&Help..."), _("Help about CrossMgr...") )
+		self.Bind(wx.EVT_MENU, self.menuHelp, item )
 
 		#self.helpMenu.AppendSeparator()
 		#item = self.helpMenu.Append( wx.ID_ANY, _("&What's New..."), _("What's New in CrossMgr...") )
@@ -785,14 +785,14 @@ class MainWin( wx.Frame ):
 		
 		#self.helpMenu.AppendSeparator()
 
-		#item = self.helpMenu.Append( wx.ID_ABOUT , _("&About..."), _("About CrossMgr...") )
-		#self.Bind(wx.EVT_MENU, self.menuAbout, item )
+		item = self.helpMenu.Append( wx.ID_ABOUT , _("&About..."), _("About SprintTimer...") )
+		self.Bind(wx.EVT_MENU, self.menuAbout, item )
 
 		#item = self.helpMenu.Append( wx.ID_ANY, _("&Tips at Startup..."), _("Enable/Disable Tips at Startup...") )
 		#self.Bind(wx.EVT_MENU, self.menuTipAtStartup, item )
 
 
-		#self.menuBar.Append( self.helpMenu, _("&Help") )
+		self.menuBar.Append( self.helpMenu, _("&Help") )
 
 		#------------------------------------------------------------------------------
 		#------------------------------------------------------------------------------
@@ -3980,12 +3980,12 @@ class MainWin( wx.Frame ):
 	#def menuHelpSearch( self, event ):
 		#self.helpSearch.Show()
 	
-	#@logCall
-	#def menuHelp( self, event ):
-		#try:
-			#webbrowser.open( getHelpURL('Main.html') )
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
+	@logCall
+	def menuHelp( self, event ):
+		try:
+			webbrowser.open( getHelpURL('Main.html') )
+		except Exception as e:
+			logException( e, sys.exc_info() )
 	
 	#@logCall
 	#def onContextHelp( self, event ):
@@ -4012,47 +4012,46 @@ class MainWin( wx.Frame ):
 		#except Exception as e:
 			#logException( e, sys.exc_info() )
 	
-	#@logCall
-	#def menuAbout( self, event ):
+	@logCall
+	def menuAbout( self, event ):
 		#First we create and fill the info object
-		#info = wx.adv.AboutDialogInfo()
-		#info.Name = Version.AppVerName
-		#info.Version = ''
-		#info.Copyright = "(C) 2009-{}".format( now().year )
-		#info.Description = wordwrap(
-#_("""Score Cycling races quickly and easily with little preparation.
+		info = wx.adv.AboutDialogInfo()
+		info.Name = Version.AppVerName
+		info.Version = ''
+		info.Copyright = "(C) 2023-{}".format( now().year )
+		info.Description = wordwrap(
+_("""Score Cycling sprints with a high degree of automation.
 
-#Modified for use by the British Human Power Club.
+Written for use by the British Human Power Club.
 
-#"""),
-			#500, wx.ClientDC(self))
-		#info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
-		#info.Developers = [
-					#"Edward Sitarski (edward.sitarski@gmail.com)",
-					#"Mark Buckaway (mark@buckaway.ca)",
-					#"Andrew Paradowski (andrew.paradowski@gmail.com)",
-					#"Kim Wall (technical@bhpc.org.uk)"
-					#]
+"""),
+			500, wx.ClientDC(self))
+		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
+		info.Developers = ["Kim Wall (technical@bhpc.org.uk)",
+					"Edward Sitarski (edward.sitarski@gmail.com)",
+					"Mark Buckaway (mark@buckaway.ca)",
+					"Andrew Paradowski (andrew.paradowski@gmail.com)",
+					]
 
-		#licenseText = \
-#_("""User Beware!
+		licenseText = \
+_("""User Beware!
 
-#This program is experimental, under development and may have bugs.
-#Feedback is sincerely appreciated.
-#Donations are also appreciated - see website for details.
+This program is experimental, under development and may have bugs.
+Feedback is sincerely appreciated.
+Donations are also appreciated - see website for details.
 
-#CRITICALLY IMPORTANT MESSAGE!
-#This program is not warranted for any use whatsoever.
-#It may not produce correct results, it might lose your data.
-#The authors of this program assume no responsibility or liability for data loss or erroneous results produced by this program.
+CRITICALLY IMPORTANT MESSAGE!
+This program is not warranted for any use whatsoever.
+It may not produce correct results, it might lose your data.
+The authors of this program assume no responsibility or liability for data loss or erroneous results produced by this program.
 
-#Use entirely at your own risk.
-#Do not come back and tell me that this program screwed up your event!
-#Computers fail, screw-ups happen.  Always use a manual backup.
-#""")
-		#info.License = wordwrap(licenseText, 500, wx.ClientDC(self))
+Use entirely at your own risk.
+Do not come back and tell me that this program screwed up your event!
+Computers fail, screw-ups happen.  Always use a manual backup.
+""")
+		info.License = wordwrap(licenseText, 500, wx.ClientDC(self))
 
-		#wx.adv.AboutBox(info)
+		wx.adv.AboutBox(info)
 
 	#--------------------------------------------------------------------------------------
 
