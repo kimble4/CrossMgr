@@ -1493,20 +1493,52 @@ class MainWin( wx.Frame ):
 		self.backgroundJobMgr.Show()
 	
 	def menuPlayback( self, event ):
-		if not Model.race or not Model.race.isFinished():
+		if not Model.race:
 			return
+		if not Model.race.isFinished():
+			return
+		
+		self.showPage( self.iResultsPage )
+		self.refreshAll()
+		self.writeRace()
+		
 		if not Utils.MessageOKCancel(self, '{}\n\n{}?'.format(_('Playback this race in real-time.'), _('Continue')), _("Playback") ):
 			return
-		self.writeRace()
-		bibTimes = Model.race.getBibTimes()
+		
 		race = Model.race
-		self.menuNewNext( event )
-		Model.race.startRaceNow()
+		bibTimes = race.getBibTimes()	# save for later.
+		
+		# Reset the existing race so we can play it back.
+		race.name += '-Playback'
+		race.tagNums = None
+		race.finishTime = race.startTime = None
+		Finisher = Model.Rider.Finisher
+		for rider in race.riders.values():
+			rider.firstTime = None
+			rider.times.clear()
+			rider.clearCache()
+			rider.status = Finisher
+		
+		self.fileName = race.getFileName()
+		WebServer.SetFileName( self.fileName )
+		
+		ChipReader.chipReaderCur.reset( race.chipReaderType )
+
+		Model.resetCache()
+		ResetExcelLinkCache()
+		race.resetAllCaches()
+		
 		ResetVersionRAM()
+		
+		self.setNumSelect( None )
+		
+		race.startRaceNow()		
 		self.playback = Playback( bibTimes, lambda: wx.CallAfter(NonBusyCall(self.refresh)) )
 		self.playback.start()
+		self.writeRace()
+		
 		self.showPage( self.iChartPage )
-		self.refresh()
+		self.refreshAll()
 	
 	def menuReloadChecklist( self, event ):
 		try:
@@ -3324,8 +3356,10 @@ class MainWin( wx.Frame ):
 		race.raceNum = 1
 		race.organizer = 'Edward Sitarski'
 		race.memo = ''
-		race.simulation = True	# Flag this as a simulation race.
 		ApplyDefaultTemplate( race )
+		
+		race.simulation = True		# Flag this as a simulation race.
+		#race.setNoDataDNS = True	# Show all entries in the spreadsheet as NP or DNS.
 		
 		fName = os.path.join( simulationDir, race.getFileName() )
 		if userConfirm:

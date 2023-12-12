@@ -1145,7 +1145,7 @@ class Race:
 	autocorrectLapsDefault = True
 	
 	allCategoriesHaveRaceLapsDefined = False
-	allCategoriesFinishAfterFastestRidersLastLap = True
+	allCategoriesFinishAfterFastestRidersLastLap = False
 	
 	enableUSBCamera = False
 	photosAtRaceEndOnly = False
@@ -1259,7 +1259,7 @@ class Race:
 		self.numLaps = None
 		self.firstRecordedTime = None	# Used to trigger the race on the first recorded time.
 		
-		self.allCategoriesFinishAfterFastestRidersLastLap = True
+		self.allCategoriesFinishAfterFastestRidersLastLap = False
 		
 		self.autocorrectLapsDefault = True
 		self.highPrecisionTimes = False
@@ -1437,9 +1437,12 @@ class Race:
 		return self.riders[num]
 
 	def curRaceTime( self ):
+		return (self.startTime and (datetime.datetime.now() - self.startTime).total_seconds()) or 0.0
+		'''
 		if self.startTime is None:
 			return 0.0
 		return (datetime.datetime.now() - self.startTime).total_seconds()
+		'''
 
 	def lastRaceTime( self ):
 		if self.finishTime is not None:
