@@ -880,9 +880,13 @@ class MainWin( wx.Frame ):
 		#record that a sprint is in progress
 		if not event.isT2:
 			if "T1micros" in event.sprintDict:
-				t = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
-				if "sprintStartMillis" in event.sprintDict:
-					t += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+				if "sprintStart" in event.sprintDict:
+					t = datetime.datetime.fromtimestamp(event.sprintDict["sprintStart"])
+					if "sprintStartMillis" in event.sprintDict:
+						t += datetime.timedelta(milliseconds = event.sprintDict["sprintStartMillis"])
+				else:
+					Utils.writeLog('Did not get a start time from the sprint timer (RTC not set?), using current time.')
+					t = now()
 				race.setInProgressSprintStart( t )
 				Utils.PlaySound('boop.wav')
 			else:
