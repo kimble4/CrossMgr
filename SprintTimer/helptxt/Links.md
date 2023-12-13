@@ -15,12 +15,16 @@
 [Results]:			Results.html
 [Categories]:		Categories.html
 [Properties]:		Properties.html
+[SprintTimerProperties]: Properties.html#sprint-timer
 
 [RFID]:				Properties.html#rfid
 [ChipReader]:		ChipReader.html
 [FAQ]:				FAQ.html
 
 [Hardware]:			Hardware.html
+[WebInterface]:		Hardware.html#web-interface
+[InputTestMode]:	Hardware.html#input-test-mode
+[LatchLEDs]:		Hardware.html#latch-leds
 
 [External Excel]:	Menu-DataMgmt.html#link-to-external-excel-data
 [USAC Export]:		Menu-DataMgmt.html#export-Results-in-usac-excel-format

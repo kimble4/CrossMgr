@@ -21,7 +21,8 @@ Get started with SprintTimer now!
 * [Properties][]
 
 ## [Sprint Timer Unit][Hardware]
+Hardware manual
 
 ## [FAQ][]
-
+Frequently asked questions
 
