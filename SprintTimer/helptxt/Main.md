@@ -20,6 +20,8 @@ Get started with SprintTimer now!
 * [Categories][]
 * [Properties][]
 
+## Sprint Timer Unit
+* [Manual][Hardware]
 
 ## [FAQ][]
 
