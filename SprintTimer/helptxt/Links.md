@@ -15,6 +15,7 @@
 [Results]:			Results.html
 [Categories]:		Categories.html
 [Properties]:		Properties.html
+[RaceOptionsProperties]: Properties.html#race-options
 [SprintTimerProperties]: Properties.html#sprint-timer
 
 [RFID]:				Properties.html#rfid

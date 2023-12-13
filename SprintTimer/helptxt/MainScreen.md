@@ -16,12 +16,11 @@ Key|Action
 :--|:-----
 Ctrl-Z|Undo the last edit.  Multiple undos will keep undoing the last changes.
 Ctrl-Y|Redo the last undo.  Multiple redos will keep redoing the last undos.
-Ctrl-F|Opens the Find window.
 Function Key 1..10|Jumps to the screen with the same number as the function key.
 
 # Edit Ctrl Keys
 
-The following Ctrl keys work in all edit fields.  You can also cut-and-paste from external sources to/from CrossMgr.
+The following Ctrl keys work in all edit fields.  You can also cut-and-paste from external sources to/from SprintTimer.
 
 Key|Action
 :--|:-----

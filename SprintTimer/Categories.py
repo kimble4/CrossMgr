@@ -796,9 +796,9 @@ class Categories( wx.Panel ):
 			return
 		if Utils.MessageOKCancel(
 					self,
-					'{} "{} ({})"?'.format(
+					'{} "{} (cd {})"?'.format(
 						_('Delete Category'),
-						self.grid.GetCellValue(r, 3).strip(),
+						self.grid.GetCellValue(r, 2).strip(),
 						self.grid.GetCellValue(r, 4).strip(),
 					),
 					_('Delete Category') ):

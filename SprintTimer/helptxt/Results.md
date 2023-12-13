@@ -2,7 +2,7 @@
 
 ## Results
 
-This displays the final results, after filtering out invalid sprints and - in the case of riders who have had more than one attempt - sprint has been selected according to the method set in [Race Options][Properties].  The results are ranked, fastest rider first.
+This displays the final results:  Invalid sprints are filtered out, and a qualifying attempt for each rider is selected according to the method set in [Race Options][Properties].  The results are then ranked, fastest rider first.
 
 ## Category
 
@@ -12,7 +12,7 @@ Select a category to see the relevant results, or 'All' for all recorded riders.
 
 Field|Description
 :----|:----------
-Pos|The rider's position, or status if DNF, DNS or DQ.  The status can be changed by right-clicking on the relevant row.
+Pos|The rider's position, or status if NP, DNF, DNS or DQ.  The status can be changed by right-clicking on the relevant row.
 Bib|The rider's bib number.
 Name|The rider's name.
 Team|The rider's team.

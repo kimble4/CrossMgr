@@ -4,18 +4,18 @@
 
 This is where the SprintTimer is configured.  Many pages are similar or identical to those in CrossMgr.
 
-### General Options
+### General Info
 This is where you configure general info about the event.
 
 Property|Description
 :-------|:----------
 Event Name|Name of the event - also used for the event's filename (along with the Race #).  Multiple races in the day will have the same Event Name, but with different race numbers.
-Long Name|Long name of the event.  The __Long Name__ is useful if the __Event Name__ has organizers and sponsors that make the name unwieldy, or contain characers that don't work in file names.  For example "2017 National Championships p/b Trend Setter Organizer" is cumbersome to work with and contains a "slash" that can't be in a filename.  The __Long Name__ will be shown on all results, spreadsheets and web output if it is defined.  Otherwise the __Event Name__ is used.
+Long Name|Long name of the event.  The __Long Name__ is useful if the __Event Name__ has organizers and sponsors that make the name unwieldy, or contain characters that don't work in file names.  For example "2017 National Championships p/b Trend Setter Organizer" is cumbersome to work with and contains a "slash" that can't be in a filename.  The __Long Name__ will be shown on all results, spreadsheets and web output if it is defined.  Otherwise the __Event Name__ is used.
+City, State, Country|Optional fields.
 Date|Date of the race.  Used in the filename and all output.
 Race #|The number of the race in the day at the event.  Also used in the race filename.  This is automatically incremented when you do "File/New Next..."
 Scheduled Start|Scheduled start of the race.  This is used in the results output.  Of course, the race could actually start at a different time.
-Race Minutes|The __global__ number of minutes in the race for timed races (like CycloCross).  See __Notes__ below.
-Discipline|The type of race (default Sprints).  This should reflect the type of race (Road, Mountain Bike, Criterium, etc.)
+Discipline|The type of race (default "Sprints").  This should reflect the type of race (Road, Mountain Bike, Criterium, etc.)
 Organizer|Organizer of the race.  Included in the HTML results output.
 Commissaire|The name of the race official.
 Memo|Anything you wish to type in here (weather conditions, your mood, etc.).  This is saved with the race but does not appear on any output.
@@ -51,7 +51,7 @@ Property|Description
 :-------|:----------
 Use RFID reader to identify riders|Enables the RFID system
 RFID aerial position|Selects whether the RFID aerials are physically aligned with the T1 or T2 timing gate, for correlation of tag reads with sprint times.
-Associate tag reads within n seconds of trap time|Number of seconds before/after the sprint to consider early/late tag reads.
+Associate tag reads within *n* seconds of trap time|Number of seconds before/after the sprint to consider early/late tag reads.
 Trigger Camera on RFID read|Whether to send an *additional* trigger to CrossMgrVideo when the RFID tag is read.  This is useful, as the trigger from the sprint timer unit does not always contain rider identification data.
 Setup/Test Rfid Reader|Launches the [Chip Reader Setup][ChipReader] dialog.
 
@@ -68,7 +68,7 @@ Upload files to Path|The directory path on the host you wish to upload the files
 User|FTP/SFTP User name
 Password|FTP/SFTP Password
 Automatically Upload Results During Race|If checked, CrossMgr will automatically upload live results during the race.
-URL Path|URL where the results will be visible on the web server
+URL Path|URL where the results will be visible on the web server
 
 #### Test Connection
 Makes a connection to the FTP server, but does not attempt to upload anything.
@@ -171,7 +171,7 @@ Select whether the camera should be triggered by the T1 or T2 timing gate, or di
 It may additionally be triggered by RFID reads - see the [RFID][] settings.
 
 ### Race Clock
-The BHPC Race Clock uses the [CrossMgr lap couter WebSocket interface](https://github.com/kimble4/CrossMgrLapCounter), which is extended here for displaying sprint results in real time.  The clock should be configured to connect to the IP address of the SprintTimer computer.
+The BHPC Race Clock uses the [CrossMgr lap counter WebSocket interface](https://github.com/kimble4/CrossMgrLapCounter), which is extended here for displaying sprint results in real time.  The clock should be configured to connect to the IP address of the SprintTimer computer.
 
 Property|Description
 :-------|:----------
@@ -181,5 +181,5 @@ Show sprint speed on race clock|Whether to include the sprint speed, if availabl
 Show rider bib on race clock|Whether to include the rider's bib number, if available.
 
 ### Files/Excel
-Shows the current data file name, and details of the [linked Excel sheet][External Excel].  Category and Template files are not (currently) implimented.
+Shows the current data file name, and details of the [linked Excel sheet][External Excel].  Category and Template files are not (currently) implemented.
 
