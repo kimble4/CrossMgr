@@ -21,7 +21,7 @@ Column|Meaning
 Category type|Either "Start Wave", "Component" or "Custom".  There should be a single Start Wave containing all riders.  Additional categories are optional.
 Name|The name of the category.
 Gender|One of "Open", "Women" or "Men"
-Numbers|A comma-seperated list of bib numbers that make up that category.  Ranges (eg. "100-120") are allowed.
+Numbers|A comma-separated list of bib numbers that make up that category.  Ranges (eg. "100-120") are allowed.
 Publish|Whether the category will be included in published results.
 Upload|Whether the category will be included when uploading results by (S)FTP.
 Series|Whether the category will be included when imported by SeriesMgr.
