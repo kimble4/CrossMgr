@@ -7,7 +7,7 @@
 
 This brings up a dialog that allows you to publish results in many formats.  __Publish All__ will update all the output file formats simultaneously so they are synchronized.  All output files are written to the same folder as the race file.
 
-You can also generate individual output files by pressing the __Publish__button.  __Publish__ will also open the application associated with the generated file (Excel for .xlsx, your browser for .html, etc.).
+You can also generate individual output files by pressing the __Publish__ button.  __Publish__ will also open the application associated with the generated file (Excel for .xlsx, your browser for .html, etc.).
 
 Some files have the option to publish with FTP to a remote server, allowing results to be published to a web site.  You need to configure the connection details of the remote FTP server to make this work (see [Properties][]).
 

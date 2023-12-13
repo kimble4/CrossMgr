@@ -1,3 +1,5 @@
+[TOC]
+
 ## Results
 
 This displays the final results, after filtering out invalid sprints and - in the case of riders who have had more than one attempt - sprint has been selected according to the method set in [Race Options][Properties].  The results are ranked, fastest rider first.

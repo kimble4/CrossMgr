@@ -1,3 +1,5 @@
+[TOC]
+
 ## Data
 
 This displays all sprint data, in the order in which it was recorded.

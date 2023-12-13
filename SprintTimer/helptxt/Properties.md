@@ -1,3 +1,5 @@
+[TOC]
+
 ## Properties
 
 This is where the SprintTimer is configured.  Many pages are similar or identical to those in CrossMgr.
@@ -169,7 +171,7 @@ Select whether the camera should be triggered by the T1 or T2 timing gate, or di
 It may additionally be triggered by RFID reads - see the [RFID][] settings.
 
 ### Race Clock
-The BHPC Race Clock uses the [CrossMgr lap couter WebSocket interface][https://github.com/kimble4/CrossMgrLapCounter], which is extended here for displaying sprint results in real time.  The clock should be configured to connect to the IP address of the SprintTimer computer.
+The BHPC Race Clock uses the [CrossMgr lap couter WebSocket interface](https://github.com/kimble4/CrossMgrLapCounter), which is extended here for displaying sprint results in real time.  The clock should be configured to connect to the IP address of the SprintTimer computer.
 
 Property|Description
 :-------|:----------

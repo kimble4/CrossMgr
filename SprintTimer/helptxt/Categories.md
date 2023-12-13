@@ -1,3 +1,5 @@
+[TOC]
+
 ## Categories
 
 This is a simplifed version of CrossMgr's Categories page.
