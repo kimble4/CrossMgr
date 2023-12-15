@@ -3,7 +3,7 @@
 ## Sprint Timer Unit
 ### Overview
 
-The Sprint-O-Matic is a hastily cobbled-together piece of prototype-quality hardware.  (Try not to break it!)
+The Sprint-O-Matic is a hastily cobbled-together piece of prototype-quality hardware.  Try not to break it!
 
 This was designed for simplicity around the ESP32 microcontroller, using off-the-shelf modules for low cost and ease of assembly.  Apart from the two test buttons there are no controls on the unit itself; all configuration (in as little as any is needed) should be done via the connected computer.
 
@@ -13,7 +13,7 @@ This was designed for simplicity around the ESP32 microcontroller, using off-the
 A rider cycles between two timing gates (herein referred to as "T1" and "T2" respectively).  These may be some kind of mechanical switch, optical beam-break, or whatever.  When a gate is triggered it momentarily completes a circuit as the rider passes through.  Each of these triggers a high-speed [latch circuit](https://en.wikipedia.org/wiki/Flip-flop_(electronics)), which generates an [interrupt](https://en.wikipedia.org/wiki/Interrupt) in the ESP32 microcontroller.  The latches are only reset after a timing run has completed, this neatly avoids having to de-bounce the input signal (typically a HPV will trigger the timing gate more than once as it passes).
 
 #### Hardware timer
-The ESP32 contains a hardware timer that runs at a nominal 40MHz, derived from its crystal oscillator frequency of 240MHz.  When interrupts are received, the current value of this timer is stored.  This allows the time it takes for the rider to pass between gates to be measured with a high degree of precision.  This oscillator frequency is not stable with temperature, however.
+The ESP32 contains a 64-bit hardware timer that runs at a nominal 40MHz, derived from its crystal oscillator.  When interrupts are received, the current value of this timer is stored.  This allows the time it takes for the rider to pass between gates to be measured with a high degree of precision.  This oscillator frequency is not stable with temperature, however.
 
 #### GPS compensation
 The sprint timer unit incorporates a GPS receiver module.  This has two main functions:
@@ -25,7 +25,7 @@ The time signal from the GPS takes the form of an electrical *Pulse Per Second*.
 
 When a sprint begins, the hardware timer is used to measure the time between the T1 trigger and the next PPS signal.  As the speed of the timer over this second is known, the measured time is corrected to obtain a true value.  Whole seconds are then counted by counting the PPS pulses.  When the T2 signal arrives, the time between the previous PPS and T2 is measured and corrected in the same way.  This allows for high accuracy to be maintained over an arbitrarily long period, irrespective of drift of the ESP32's oscillator frequency.
 
-The limiting factor on precision is the ESP32's interrupt latency, which is of the order of tens of microseconds.  Overall precision is at least 0.1ms (that is, 1/10,000 of a second), which should be sufficient for sports timing.  (A different architecture could achieve much higher precision.)
+The limiting factor on precision is the ESP32's interrupt latency, which is of the order of tens of microseconds.  Overall precision is at least 0.1ms (that is, 1/10,000 of a second), which should be sufficient for sports timing.  (A different architecture could achieve much higher precision, but the ESP32 was chosen for familiarity and simplicity of network communications.)
 
 ##### Loss of GPS signal
 This GPS compensation only works if the PPS time signal is available for the *entire* duration of the sprint.  In the event that a PPS pulse is missed, the software will fall back to using the 40MHz hardware timer directly without compensation (this will be flagged yellow on the [Data][] screen).  Additionally, sprint times are calculated independently using the system microseconds timer.  This is less precise and is also subject to oscillator drift, but serves as reassurance that the compensation algorithm has performed correctly.
@@ -140,7 +140,7 @@ Input test mode can be enabled from the settings page of the web interface, or f
 In test mode, the input latches are continuously reset by the microcontroller, with the effect that the [Latch LED][LatchLEDs] reflect the state of the inputs in real time.  This is useful for troubleshooting wiring problems and aligning optical beam-breaks.
 
 ### NTP server
-The unit operates as a stratum 1 [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol) time server on UDP port 123.  This may be useful for synchronising the host computer's clock to GPS time.  If the PPS signal is not available, the stratum will be lowered accordingly.
+The unit operates as a stratum 1 [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol) time server on UDP port `123`.  This may be useful for synchronising the host computer's clock to GPS time.  If the PPS signal is not available, the stratum will be lowered accordingly.
 
 ### Debugging
-Debugging data is recorded to debug.txt on the SD card.  This is also available in real-time by connecting a telnet client to TCP port 23.
+Debugging data is recorded to `debug.txt` on the SD card.  This is also available in real-time by connecting a telnet client to TCP port `23`.

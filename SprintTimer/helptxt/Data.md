@@ -24,7 +24,7 @@ Name|The rider's name.  If a sign-on spreadsheet is used, this will be determine
 Machine|The rider's machine.  If a sign-on spreadsheet is used, this will be determined automatically based on their bib number (if you need to make changes to the rider's name, do so in the sign-on spreadsheet).  If not, the field can be edited retrospectively.
 Team|The rider's team.  If a sign-on spreadsheet is used, this will be determined automatically based on their bib number (if you need to make changes to the rider's name, do so in the sign-on spreadsheet).  If not, the field can be edited retrospectively.
 Seconds|Duration of the sprint, in seconds.  If the sprint timer unit does not maintain a GPS fix for the entire duration of the sprint, this time will be uncompensated and coloured yellow.  (In testing, GPS compensation is unlikely to make a difference for durations of less than a few minutes.)
-Speed|The rider's speed.
+Speed|The rider's speed.  If the sprint time was not GPS compensated, this will also be coloured yellow.
 Unit|The speed unit.  This can be reconfigured partway through the event.  To re-calculate a speed in the current unit, select "Recalculate speed..." from the context menu.
 Note|An arbitrary text field for recording information specific to the individual sprint.
 Distance|The distance (in metres) used to calculate the sprint speed.  This can be reconfigured partway through the event (see [Properties][RaceOptionsProperties]), in case the timing gates have to be moved, and may be edited, either directly or via the context menu.
