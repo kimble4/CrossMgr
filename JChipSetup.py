@@ -390,9 +390,9 @@ class JChipSetupDialog( wx.Dialog ):
 			
 	def updateBibList( self, tag=None ):
 		race = Model.race
-		if not race.tagNums:
+		if not hasattr( race, 'tagNums'):
 			return
-		if not hasattr( Model.race, 'rfidTestBibsSeen' ):
+		if not hasattr( race, 'rfidTestBibsSeen' ):
 			Model.race.rfidTestBibsSeen = {}
 		seenTags = []
 		for b in race.rfidTestBibsSeen:
