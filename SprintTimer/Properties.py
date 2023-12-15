@@ -526,7 +526,7 @@ class RfidProperties( wx.Panel ):
 		self.chipReaderType = wx.StaticText( self )
 		hs2.Add( self.chipReaderType, flag=wx.LEFT, border=4)
 		
-		self.setupButton = wx.Button( self, label=_('Setup/Test Rfid Reader...') )
+		self.setupButton = wx.Button( self, label=_('Setup/Test RFID Reader...') )
 		self.setupButton.Bind( wx.EVT_BUTTON, self.onSetup )
 		
 		ms = wx.BoxSizer( wx.VERTICAL )

@@ -1743,20 +1743,20 @@ class Race:
 					info = { 'flr': 1.0,
 							'relegated': False
 					}
-					info['CustomCategory1'] = externalInfo[bib]['CustomCategory1'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory2'] = externalInfo[bib]['CustomCategory2'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory3'] = externalInfo[bib]['CustomCategory3'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory4'] = externalInfo[bib]['CustomCategory4'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory5'] = externalInfo[bib]['CustomCategory5'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory6'] = externalInfo[bib]['CustomCategory6'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory7'] = externalInfo[bib]['CustomCategory7'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo and externalInfoHasBib else ''
-					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo and externalInfoHasBib else ''
-					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo and externalInfoHasBib else ''
-					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo and externalInfoHasBib else ''
-					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo and externalInfoHasBib else ''
-					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo and externalInfoHasBib else ''
-					info['Team'] = externalInfo[bib]['Team'] if externalInfo and externalInfoHasBib else ''
+					info['CustomCategory1'] = externalInfo[bib]['CustomCategory1'] if externalInfo and externalInfoHasBib and 'CustomCategory1' in externalInfo else ''
+					info['CustomCategory2'] = externalInfo[bib]['CustomCategory2'] if externalInfo and externalInfoHasBib and 'CustomCategory2' in externalInfo else ''
+					info['CustomCategory3'] = externalInfo[bib]['CustomCategory3'] if externalInfo and externalInfoHasBib and 'CustomCategory3' in externalInfo else ''
+					info['CustomCategory4'] = externalInfo[bib]['CustomCategory4'] if externalInfo and externalInfoHasBib and 'CustomCategory4' in externalInfo else ''
+					info['CustomCategory5'] = externalInfo[bib]['CustomCategory5'] if externalInfo and externalInfoHasBib and 'CustomCategory5' in externalInfo else ''
+					info['CustomCategory6'] = externalInfo[bib]['CustomCategory6'] if externalInfo and externalInfoHasBib and 'CustomCategory6' in externalInfo else ''
+					info['CustomCategory7'] = externalInfo[bib]['CustomCategory7'] if externalInfo and externalInfoHasBib and 'CustomCategory7' in externalInfo else ''
+					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo and externalInfoHasBib and 'CustomCategory8' in externalInfo else ''
+					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo and externalInfoHasBib and 'CustomCategory9' in externalInfo else ''
+					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo and externalInfoHasBib and 'FirstName' in externalInfo else ''
+					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo and externalInfoHasBib and 'Gender' in externalInfo else ''
+					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo and externalInfoHasBib and 'LastName' in externalInfo else ''
+					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo and externalInfoHasBib and 'Machine' in externalInfo else ''
+					info['Team'] = externalInfo[bib]['Team'] if externalInfo and externalInfoHasBib and 'Team' in externalInfo else ''
 					if bibSprintDicts[1] is not None:
 						times = []
 						speeds = []
