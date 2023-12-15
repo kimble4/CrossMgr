@@ -1944,8 +1944,8 @@ class Race:
 						#info['raceDistance'] = waveCat.getDistanceAtLap( info['laps'] )
 					#else:
 						#info['raceDistance'] = waveCat.distance
-			info['lapDistance'] = float(race.sprintDistance)/1609.34  #this seems awfully bodgy, but the javascript seems to want miles
-			info['raceDistance'] = float(race.sprintDistance)/1609.34
+			info['lapDistance'] = float(getattr(race, 'sprintDistance', 0))/1609.34  #this seems awfully bodgy, but the javascript seems to want miles
+			info['raceDistance'] = float(getattr(race, 'sprintDistance', 0))/1609.34
 			info['distanceUnit'] = 'miles'
 		
 		# Cleanup.

@@ -392,6 +392,8 @@ class JChipSetupDialog( wx.Dialog ):
 		race = Model.race
 		if not hasattr( race, 'tagNums'):
 			return
+		if race.tagNums is None:
+			return
 		if not hasattr( race, 'rfidTestBibsSeen' ):
 			Model.race.rfidTestBibsSeen = {}
 		seenTags = []
