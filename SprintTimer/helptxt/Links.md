@@ -17,6 +17,7 @@
 [Properties]:		Properties.html
 [RaceOptionsProperties]: Properties.html#race-options
 [SprintTimerProperties]: Properties.html#sprint-timer
+[SFTP]:				Properties.html#sftp
 
 [RFID]:				Properties.html#rfid
 [ChipReader]:		ChipReader.html

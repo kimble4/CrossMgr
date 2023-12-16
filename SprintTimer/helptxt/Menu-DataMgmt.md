@@ -3,8 +3,13 @@
 
 # DataMgmt
 
+## Add sprint manually
+
+Allows you to input new sprint timing data directly, eg. from a stopwatch or non-networked timing system.  Useful for correcting grevious errors.
+
 ## Link to External Excel Data...
-Link to an external Excel file containing additional rider data.  The import code is identical to that used by CrossMgr, though some data columns are not used by the SprintTimer application.
+Link to an external Excel file containing additional rider data.  The import code is identical to that used by CrossMgr, though some data columns are not used by the SprintTimer application.  The following is copied from the CrossMgr documentation:
+
 
 This option opens up a Wizard to configure a link to an Excel sheet.  The Excel sheet must have a header row with the column names.  The Wizard takes you through the following steps:
 
@@ -62,6 +67,3 @@ Alternatively, you can import a Category structure before linking to the spreads
 
 __Big Warning__:  This option tells CrossMgr that the spreadsheet is the "source of truth" for rider categories.  This means that any changes to rider categories made in CrossMgr will be over-written the next time the spreadsheet is read.  So, if you use this feature, don't make change to rider categories in CrossMgr - always do this in Excel.
 
-## Add sprint manually
-
-Allows you to input new sprint timing data directly, eg. from a stopwatch or non-networked timing system.  Useful for correcting grevious errors.
