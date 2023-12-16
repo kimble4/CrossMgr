@@ -208,7 +208,7 @@ class HeaderNamesPage(adv.WizardPageSimple):
 		# Create a map for the field names we are looking for
 		# and the headers we found in the Excel sheet.
 		#sp = scrolled.ScrolledPanel( self, size=(750, 64), style = wx.TAB_TRAVERSAL )
-		sp = scrolled.ScrolledPanel( self, size=(750, -1), style = wx.TAB_TRAVERSAL )
+		sp = scrolled.ScrolledPanel( self, size=(750, 128), style = wx.TAB_TRAVERSAL )
 		
 		boldFont = None
 		
