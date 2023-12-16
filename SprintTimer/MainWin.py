@@ -627,19 +627,22 @@ class MainWin( wx.Frame ):
 		
 		self.toolsMenu = wx.Menu()
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, _("&Start Recording"), _("Start the race") )
-		self.Bind(wx.EVT_MENU, self.menuStartRace, item )
+		self.startRaceMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Start Recording"), _("Start the race") )
+		self.Bind(wx.EVT_MENU, self.menuStartRace, self.startRaceMenuItem )
+		self.startRaceMenuItem.Enable(False)
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Recording"), _("Finish the race.") )
-		self.Bind(wx.EVT_MENU, self.menuFinishRace, item )
+		self.finishRaceMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Recording"), _("Finish the race.") )
+		self.Bind(wx.EVT_MENU, self.menuFinishRace, self.finishRaceMenuItem )
+		self.finishRaceMenuItem.Enable(False)
 		
 		#self.toolsMenu.AppendSeparator()
 		
 		#item = self.toolsMenu.Append( wx.ID_ANY, _("&Change Race Start Time..."), _("Change the Start Time of the Race") )
 		#self.Bind(wx.EVT_MENU, self.menuChangeRaceStartTime, item )
 		
-		item = self.toolsMenu.Append( wx.ID_ANY, _("&Resume recording"), _("Restart a finished race.") )
-		self.Bind(wx.EVT_MENU, self.menuRestartRace, item )
+		self.resumeRaceMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Resume recording"), _("Restart a finished race.") )
+		self.Bind(wx.EVT_MENU, self.menuRestartRace, self.resumeRaceMenuItem )
+		self.resumeRaceMenuItem.Enable(False)
 		
 		self.toolsMenu.AppendSeparator()
 
@@ -1159,6 +1162,9 @@ class MainWin( wx.Frame ):
 					return
 				Model.resetCache()
 				race.startRaceNow()
+				self.startRaceMenuItem.Enable(False)
+				self.finishRaceMenuItem.Enable(True)
+				self.resumeRaceMenuItem.Enable(False)
 				
 			#OutputStreamer.writeRaceStart()
 			
@@ -1184,6 +1190,9 @@ class MainWin( wx.Frame ):
 				#race.numLaps = race.getMaxLap()
 			#SetNoDataDNS()
 			Model.resetCache()
+			self.startRaceMenuItem.Enable(False)
+			self.finishRaceMenuItem.Enable(False)
+			self.resumeRaceMenuItem.Enable(True)
 		
 		self.writeRace()
 		self.refresh()
@@ -1231,6 +1240,10 @@ class MainWin( wx.Frame ):
 		with Model.LockRace() as race:
 			race.resumeRaceNow()
 			Model.resetCache()
+			self.startRaceMenuItem.Enable(False)
+			self.resumeRaceMenuItem.Enable(False)
+			self.finishRaceMenuItem.Enable(True)
+			
 		
 		self.writeRace()
 		self.refresh()
@@ -2875,7 +2888,10 @@ class MainWin( wx.Frame ):
 								  #'catStr':'{}-{}'.format(max(1, i*100), (i+1)*100-1)} for i in range(8)] )
 		#else:
 			#race.categoriesImportFile = categoriesFile
-			
+		
+		self.startRaceMenuItem.Enable(True)
+		self.finishRaceMenuItem.Enable(False)
+		self.resumeRaceMenuItem.Enable(False)
 		self.setNumSelect( None )
 		self.writeRace()
 		self.showPage(self.iDataPage)
@@ -2972,8 +2988,11 @@ class MainWin( wx.Frame ):
 		if excelLink:
 			race.excelLink = excelLink
 		
+		self.startRaceMenuItem.Enable(True)
+		self.finishRaceMenuItem.Enable(False)
+		self.resumeRaceMenuItem.Enable(False)
 		#self.setActiveCategories()
-		#self.setNumSelect( None )
+		self.setNumSelect( None )
 		self.writeRace()
 		self.showPage(self.iDataPage)
 		self.refreshAll()
@@ -3155,6 +3174,22 @@ class MainWin( wx.Frame ):
 			ResetExcelLinkCache()
 			Model.resetCache()
 			
+			if race.isUnstarted():
+				self.startRaceMenuItem.Enable(True)
+				self.finishRaceMenuItem.Enable(False)
+				self.resumeRaceMenuItem.Enable(False)
+			elif race.isRunning():
+				self.startRaceMenuItem.Enable(False)
+				self.finishRaceMenuItem.Enable(True)
+				self.resumeRaceMenuItem.Enable(False)
+			elif race.isFinished():
+				self.startRaceMenuItem.Enable(False)
+				self.finishRaceMenuItem.Enable(False)
+				self.resumeRaceMenuItem.Enable(True)
+			else:
+				self.startRaceMenuItem.Enable(True)
+				self.finishRaceMenuItem.Enable(True)
+				self.resumeRaceMenuItem.Enable(True)
 			self.setNumSelect( None )
 			#self.record.setTimeTrialInput( race.isTimeTrial )
 			#self.showPage( self.iResultsPage if isFinished else self.iActionsPage )
