@@ -117,7 +117,7 @@ from SendPhotoRequests	import SendPhotoRequests
 #from PhotoViewer		import PhotoViewerDialog
 #from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
 #from TemplateSubstitute import TemplateSubstitute
-#from GetMatchingExcelFile import GetMatchingExcelFile
+from GetMatchingExcelFile import GetMatchingExcelFile
 #import ChangeRaceStartTime
 #from PageDialog			import PageDialog
 import ChipReader
@@ -1835,8 +1835,9 @@ class MainWin( wx.Frame ):
 				except AttributeError:
 					pass
 			else:
-				if os.path.dirname(link.fileName) == os.path.dirname(self.fileName):
-					link.fileName = os.path.join( '.', os.path.basename(link.fileName) )
+				#This appears not to work under windows, unless the program is launched by clicking on the .spr data file?
+				#if os.path.dirname(link.fileName) == os.path.dirname(self.fileName):
+				#	link.fileName = os.path.join( '.', os.path.basename(link.fileName) )
 				Utils.writeLog( 'Excel file "{}"'.format(link.fileName) )
 				race.excelLink = link
 			race.setChanged()
