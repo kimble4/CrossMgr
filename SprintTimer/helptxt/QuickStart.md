@@ -8,11 +8,11 @@ While timing sprints requires little more than some sort of automatic stopwatch,
 
 Crucially, the RFID system is used to identify riders as they pass through one of the timing gates.  Their details are then retrieved from a pre-prepared sign-on sheet, so that minimal work is needed to ensure that the recorded times are associated with the correct riders.  Additionally, CrossMgrVideo can be triggered to record timestamped images of the riders, as a back-up means of identification.
 
-The [results table][Results] is generated automatically, and optionally uploaded to the web in real time.
+The [results table][Results] is generated automatically, and optionally uploaded to the Web in real time.
 
 
 ### Step 1: Creating a sign-on spreadsheet
-A sign-on sheet is required to identify riders using the RFID tag system.  It is also a convenient way to manage extended rider data (Names, Teams, race classes, etc.), although the SprintTimer can function without it, using bib numbers alone.
+A sign-on sheet is required to identify riders using the RFID tag system.  It is also a convenient way to manage extended rider data (names, teams, race classes, etc.), although the SprintTimer can function without it, using bib numbers alone.
 
 The sign-on sheet takes the form of a Microsoft Excel `.xlsx` file, in the same format used by CrossMgr (this allows you to use a single sign-on sheet for a mixture of CrossMgr and SprintTimer events).  The format is documented in [DataMgmt][External Excel], but for basic operation all you will need are columns entitled `bib#`, `First Name`, `Last Name`, `Tag` and `EventCategory`
 
@@ -40,7 +40,7 @@ Select **Link to External Excel Data** from the [DataMgmt][] Menu.  Browse to th
 
 Move to the [Categories][] screen.  You should see categories corresponding to those in the sign-on sheet.  If the category names or rider numbers are incorrect, make the relevant changes in the spreadsheet.  Rearrange the order of the categories by clicking and dragging the grey square at the start of each row.  Check that the category genders are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.  When you are satisfied, Click **Commit**.
 
-Now go back to the [Properties][]screen, and select the **Race Options** tab.  Set **Handle multiple attempts by using** to *Fastest speed*.  Select a speed unit.  Leave **Show Lap Notes in HTML Output** enabled, and set the **Min Possible Lap Time** to zero.  Disable **Allocate Sequential Bib Numbers**.  Again, click **Commit**
+Now go back to the [Properties][] screen, and select the **Race Options** tab.  Set **Handle multiple attempts by using** to *Fastest speed*.  Select a speed unit.  Leave **Show Lap Notes in HTML Output** enabled, and set the **Min Possible Lap Time** to zero.  Disable **Allocate Sequential Bib Numbers**.  Now click **Commit**
 
 Move to the **Sprint Timer** tab, and enable **Use sprint timer to obtain precise times**.  Set the **Remote IP Address** to that displayed on the bottom of the sprint timer unit's LCD.  Leave the port as `10123`.  Set the trap distance to an appropriate value, and ensure that **Save extended debugging info to log** is disabled.  Click **Commit**.
 
@@ -65,15 +65,15 @@ Assuming that is working correctly, you can now connect the timing gates to the 
 When you are satisfied that the timing gates are working correctly, click **OK** to exit test mode.
 
 ### Step 9: Begin event
-Check the LCD of the sprint timer to confirm that it has a GPS/PPS signal.  If not, ensure that it has a good view of the sky (the GPS aerial is in the centre of the unit's top panel) and wait a bit longer, or continue without a GPS fix.
+Check the LCD of the sprint timer to confirm that it is no longer in test mode and has a GPS/PPS signal.  If not, ensure that it has a good view of the sky (the GPS aerial is in the centre of the unit's top panel) and wait a bit longer, or continue without a GPS fix.
 
-Chase all riders (and associated bikes/helmets/etc with timing tags attached) out of RFID range, and remind them of the importance of staying away from the RFID aerials until the event is over.  Arrange for a volunteer rider (who has tags and is in the sign-on sheet, and preferably some sort of speedometer) to stay within shouting distance to test the system (this does not have to be a full race effort, but may require a few attempts to troubleshoot issues with the timing system).  Make sure that any spare written tags are in the RFID-proof bag.
+Chase all riders (and associated bikes/helmets/etc. with timing tags attached) out of RFID range, and remind them of the importance of staying well away from the RFID aerials until the event is over.  Arrange for a volunteer rider (who has tags and is in the sign-on sheet, and preferably has some sort of speedometer) to stay within shouting distance to test the system (this does not have to be a full race effort, but may require a few attempts to troubleshoot issues with the timing system).  Make sure that any spare written tags are in the RFID-proof bag.
 
 Switch to the [Data][] screen.  Enable **Show bib entry / RFID read times** at the bottom of the screen.  Select **Start Recording** from the [Tools][] menu to start the race clock.  The *Bib Entry*/status bar will display "*Ready...*".  (Don't worry if the status bar shows "*Sprint timer not connected*", at this stage - it should update when data is received from the sprint timer unit.)
 
-Test the sprint timer by triggering T1 and then T2 in sequence using the test buttons.  The LEDs should both light up and then extinguish, with the timing data appearing on the LCD and then in the Data screen after a short delay.  If sound is enabled, you should hear 'pips' (check the computer volume).  Confirm that the **Time of day** is reasonable (if not, check your computer's real-time clock).  The status bar should by now show a delta-t value and PPS status.  If the delta-t value is greater than 1 second, check your computer's real-time clock.  The test sprint will not have any rider data associated with it (unless there is a live timing tag within RFID range).
+Test the sprint timer by triggering T1 and then T2 in sequence using the test buttons.  The LEDs should both light up and then extinguish, with the timing data appearing on the LCD and then in the Data screen after a short delay.  If sound is enabled, you should hear 'pips' (check the computer volume).  Confirm that the recorded **Time of day** is reasonable (if not, check your computer's real-time clock).  The status bar should by now show a delta-t value and PPS status.  If the delta-t value is greater than 1 second, check your computer's real-time clock, and that there isn't a background application causing excessive system load.  The test sprint will not have any rider data associated with it (unless there is a live timing tag within RFID range).
 
-Now signal to your volunteer to ride through the traps.  As the timing gates are triggered you should see the LEDs on the sprint timer unit light up, and the status bar will indicate when timing is in progress.  Meanwhile the RFID system should detect their tag, and a grey line containing their details will appear on the screen.  When the sprint is over, the timing data should appear, and - hopefully - associate it with the temporally adjacent RFID read to identify the rider.  Check that the calculated speed is broadly in agreement with the rider's speedometer - if not, check that you have measured and entered the trap distance correctly.
+Now signal to your volunteer to ride through the traps.  As the timing gates are triggered you should see the LEDs on the sprint timer unit light up in sequence and then go out, and the status bar will indicate when timing is in progress.  Meanwhile the RFID system should detect their tag, and a grey line containing their details will appear on the screen.  When the sprint is over, the timing data should appear, and - hopefully - associate it with the temporally adjacent RFID read to identify the rider.  Check that the calculated speed is broadly in agreement with the rider's speedometer - if not, check that you have measured and entered the trap distance correctly.
 
 If you are using CrossMgrVideo, check that this has recorded triggers for the initial manual test, and then for the volunteer rider triggering the relevant timing gate and the RFID reader respectively.  The rider should be visible in the captured video!
 
@@ -99,4 +99,4 @@ At this point, you can switch to the [Results][] screen.  Select your EventCateg
 
 When you are satisfied, you can output the results to HTML or Excel via [Publish][].
 
-To import the results into SeriesMgr, publish them to Excel and load the Excel file.  SeriesMgr does no yet support native import of .spr files.
+To import the results into SeriesMgr, publish them to Excel and load the Excel file.  SeriesMgr does not (yet?) support native import of .spr files.
