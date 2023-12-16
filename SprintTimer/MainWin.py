@@ -1845,11 +1845,11 @@ class MainWin( wx.Frame ):
 		self.refresh()
 		
 		#wx.CallAfter( self.menuFind )
-		#try:
-			#if race.excelLink.initCategoriesFromExcel:
-				#wx.CallAfter( self.showPage, self.iCategoriesPage )
-		#except AttributeError:
-			#pass
+		try:
+			if race.excelLink.initCategoriesFromExcel:
+				wx.CallAfter( self.showPage, self.iCategoriesPage )
+		except AttributeError:
+			pass
 	
 	#--------------------------------------------------------------------------------------------
 
