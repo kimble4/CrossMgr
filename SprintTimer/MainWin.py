@@ -2870,6 +2870,9 @@ class MainWin( wx.Frame ):
 		properties.commit()
 		
 		self.updateRecentFiles()
+		
+		os.chdir(os.path.dirname(os.path.abspath(self.fileName)))
+		Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
 
 		#importedCategories = False
 		#if categoriesFile:
@@ -2889,7 +2892,6 @@ class MainWin( wx.Frame ):
 								  #'catStr':'{}-{}'.format(max(1, i*100), (i+1)*100-1)} for i in range(8)] )
 		#else:
 			#race.categoriesImportFile = categoriesFile
-		
 		self.startRaceMenuItem.Enable(True)
 		self.finishRaceMenuItem.Enable(False)
 		self.resumeRaceMenuItem.Enable(False)
@@ -2951,6 +2953,9 @@ class MainWin( wx.Frame ):
 			WebServer.SetFileName( self.fileName )
 			Model.resetCache()
 			ResetExcelLinkCache()
+			
+			os.chdir(os.path.dirname(os.path.abspath(self.fileName)))
+			Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
 			
 			#Save the current Ftp settings.
 			ftpPublish = FtpWriteFile.FtpPublishDialog( self )
@@ -3170,6 +3175,9 @@ class MainWin( wx.Frame ):
 			ChipReader.chipReaderCur.reset( race.chipReaderType )
 			self.fileName = fileName
 			Utils.writeLog('Opened race: ' + str(self.fileName))
+			
+			os.chdir(os.path.dirname(os.path.abspath(self.fileName)))
+			Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
 			
 			undo.clear()
 			ResetExcelLinkCache()
@@ -4584,6 +4592,7 @@ def MainLoop():
 	
 	Utils.writeLog( 'start: {}'.format(Version.AppVerName) )
 	Utils.writeLog( 'lang: "{}"'.format(Utils.lang) )
+	Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
 	
 	# Configure the main window.
 	mainWin = MainWin( None, title=Version.AppVerName, size=(1128,600) )
