@@ -283,7 +283,7 @@ class ContentBuffer:
 					g.urlTTStartList = urllib.request.pathname2url(os.path.splitext(fname)[0] + '_TTStartList.html')
 				else:
 					g.urlLapCounter = urllib.request.pathname2url('LapCounter.html')
-					g.urlRaceClock = urllib.request.pathname2url('RaceClock.html')
+				g.urlRaceClock = urllib.request.pathname2url('RaceClock.html')
 				info.append( g )
 		
 		result['info'] = info
