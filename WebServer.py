@@ -65,6 +65,7 @@ icons = {
 	'CountdownIconSrc': readBase64('countdown.png'),
 	'StartListIconSrc': readBase64('tt_start_list.png'),
 	'LapCounterIconSrc':  readBase64('lapcounter.png'), 
+	'RaceClockIconSrc':  readBase64('raceclock.png'), 
 	'ResultsCurrentIconSrc': readBase64('results_current.png'),
 	'ResultsPreviousIconSrc': readBase64('results_previous.png'),
 	'AnnouncerIconSrc': readBase64('announcer.png'),
@@ -100,6 +101,11 @@ with open(os.path.join(Utils.getHtmlFolder(), 'LapCounter.html')) as f:
 	lapCounterTemplate = f.read().encode()
 def getLapCounterHtml():
 	return lapCounterTemplate
+
+with open(os.path.join(Utils.getHtmlFolder(), 'RaceClock.html')) as f:
+	raceClockTemplate = f.read().encode()
+def getRaceClockHtml():
+	return raceClockTemplate
 	
 with open(os.path.join(Utils.getHtmlFolder(), 'Announcer.html')) as f:
 	announcerHTML = f.read().encode()
@@ -277,6 +283,7 @@ class ContentBuffer:
 					g.urlTTStartList = urllib.request.pathname2url(os.path.splitext(fname)[0] + '_TTStartList.html')
 				else:
 					g.urlLapCounter = urllib.request.pathname2url('LapCounter.html')
+					g.urlRaceClock = urllib.request.pathname2url('RaceClock.html')
 				info.append( g )
 		
 		result['info'] = info
@@ -480,6 +487,10 @@ class CrossMgrHandler( BaseHTTPRequestHandler ):
 				assert isinstance( content, bytes )
 			elif self.reLapCounterHtml.match( up.path ):
 				content = getLapCounterHtml()
+				content_type = self.html_content
+				assert isinstance( content, bytes )
+			elif up.path=='/RaceClock.html':
+				content = getRaceClockHtml()
 				content_type = self.html_content
 				assert isinstance( content, bytes )
 			elif up.path=='/Announcer.html':
