@@ -137,6 +137,7 @@ class TimerTestDialog( wx.Dialog ):
 		else:
 			self.t1status.SetBackgroundColour(self.lightGreyColour)
 			self.t1status.SetForegroundColour(self.blackColour)
+		self.t1status.Refresh()
 
 		if t2 < 1:
 			if self.sounds.IsChecked() and datetime.datetime.now() - self.lastT2Sound > datetime.timedelta(seconds = 1):
@@ -153,6 +154,7 @@ class TimerTestDialog( wx.Dialog ):
 		else:
 			self.t2status.SetBackgroundColour(self.lightGreyColour)
 			self.t2status.SetForegroundColour(self.blackColour)
+		self.t2status.Refresh()
 		
 	def onTimerCallback( self ):
 		self.refresh()
