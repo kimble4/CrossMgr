@@ -23,12 +23,12 @@ Connect the sprint timer unit to power and Ethernet, as described in the [hardwa
 
 If you are using an RFID tag reader, connect that to power, Ethernet and the RFID aerials, and start the *CrossMgrImpinj* or *CrossMgrAlien* application if necessary.
 
-If you will be using *CrossMgrVideo*, connect the USB camera, start *CrossMgrVideo* and ensure that the camera is aligned and the focus/exposure are correcty adjusted.
+If you will be using *CrossMgrVideo*, connect the USB camera to the computer, start *CrossMgrVideo* and ensure that the camera is aligned and the focus/exposure are correctly adjusted.
 
 ### Step 3: Create a sprint file
 Now, start the SprintTime application, and select [File/New][File]
 
-Enter an **Event Name** for your event, and select a **Race File Folder**.  Now click **OK** to the left of the window to create a race file.  Everything else can be configured later.
+Enter an **Event Name** (which will become the filename) for your event, and select a **Race File Folder**.  Now click **OK** to the left of the window to create a race file.  Everything else can be configured later.
 
 The window title will change to the name of your event, and you will be looking at an empty Data screen for an unstarted race.
 
@@ -36,20 +36,49 @@ The window title will change to the name of your event, and you will be looking 
 
 Select the [Properties][] screen.  Fill in the remaining *General Info* and click **Commit**.  Changes will be saved to disk automatically.
 
-Select **Link to External Excel Data** from the [DataMgmt][] Menu.  Browse to the location of your sign-on spreadheet, and click **Next**.  Now select the name of the sheet containing the sign-on data for this sprint event, and click **Next**.  As you have named your columns with the headings that CrossMgr expects, the only thing you need to do on this page is select the **Initialize CrossMgr Categories from Excel EventCategory/CustomCategory and Bib# columns** option.  Click **Next**.  With any luck the summary page will announce status "*Success!*" with errors "*None*".  If not, check your spreadsheet format.  Click **Finish**.  You have now linked the sign-on data.
+From the [DataMgmt][] Menu, select **Link to External Excel Data**:
+
+1. Browse to the location of your sign-on spreadsheet, and click **Next**.
+1. Now select the name of the sheet containing the sign-on data for this sprint event, and click **Next**.
+1. As you have named your columns with the headings that CrossMgr expects, the only thing you need to do on this page is select the **Initialize CrossMgr Categories from Excel EventCategory/CustomCategory and Bib# columns** option.  Click **Next**.
+
+With any luck the summary page will announce status "*Success!*" with errors "*None*".  If not, check your spreadsheet format.  Click **Finish**.  You have now linked the sign-on data.
 
 Move to the [Categories][] screen.  You should see categories corresponding to those in the sign-on sheet.  If the category names or rider numbers are incorrect, make the relevant changes in the spreadsheet.  Rearrange the order of the categories by clicking and dragging the grey square at the start of each row.  Check that the category genders are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.  When you are satisfied, Click **Commit**.
 
-Now go back to the [Properties][] screen, and select the **Race Options** tab.  Set **Handle multiple attempts by using** to *Fastest speed*.  Select a speed unit.  Leave **Show Lap Notes in HTML Output** enabled, and set the **Min Possible Lap Time** to zero.  Disable **Allocate Sequential Bib Numbers**.  Now click **Commit**
+Now go back to the [Properties][] screen, and select the **Race Options** tab:
 
-Move to the **Sprint Timer** tab, and enable **Use sprint timer to obtain precise times**.  Set the **Remote IP Address** to that displayed on the bottom of the sprint timer unit's LCD.  Leave the port as `10123`.  Set the trap distance to an appropriate value, and ensure that **Save extended debugging info to log** is disabled.  Click **Commit**.
+1. Set **Handle multiple attempts by using** to *Fastest speed*.
+1. Select a speed unit. 
+1. Leave **Show Lap Notes in HTML Output** enabled.
+1. Set the **Min Possible Lap Time** to zero.
+1. Disable **Allocate Sequential Bib Numbers**.
+
+Click **Commit**
+
+Move to the **Sprint Timer** tab:
+
+1. Enable **Use sprint timer to obtain precise times**.
+1. Set the **Remote IP Address** to that displayed on the bottom of the sprint timer unit's LCD.
+1. Leave the port as `10123`.
+1. Set the trap distance to an appropriate value.
+1. Ensure that **Save extended debugging info to log** is disabled.
+
+Click **Commit**.
 
 ### Step 5: Configure the RFID reader
-Move to the **RFID** tab.  If you will be using an RFID system, select **Use RFID reader to identify riders**.  Set **RFID aerial position** to reflect your physical setup.  **Associate tag reads within _ seconds of trap time** can be left at the default value of `5`.  Select **Trigger camera on RFID read**, then click **Commit**.
+Move to the **RFID** tab:
+
+1. If you will be using an RFID system, select **Use RFID reader to identify riders**.
+1. Set **RFID aerial position** to reflect your physical setup.
+1. **Associate tag reads within _ seconds of trap time** can be left at the default value of `5`.
+1. Select **Trigger camera on RFID read**.
+
+Click **Commit**.
 
 Click the **Setup/Test RFID Reader** button, and configure your reader.  Perform an RFID test to confirm that it is reading tags and identifying rider's bib numbers correctly.  When you are satisfied, click **OK**
 
-### Step6: Configure the camera
+### Step 6: Configure the camera
 Move to the **Camera** tab.  Select the camera position - either T1 or T2 - and click **Commit**
 
 ### Step 7: (Optional) Live results:
@@ -71,7 +100,7 @@ Chase all riders (and associated bikes/helmets/etc. with timing tags attached) o
 
 Switch to the [Data][] screen.  Enable **Show bib entry / RFID read times** at the bottom of the screen.  Select **Start Recording** from the [Tools][] menu to start the race clock.  The *Bib Entry*/status bar will display "*Ready...*".  (Don't worry if the status bar shows "*Sprint timer not connected*", at this stage - it should update when data is received from the sprint timer unit.)
 
-Test the sprint timer by triggering T1 and then T2 in sequence using the test buttons.  The LEDs should both light up and then extinguish, with the timing data appearing on the LCD and then in the Data screen after a short delay.  If sound is enabled, you should hear 'pips' (check the computer volume).  Confirm that the recorded **Time of day** is reasonable (if not, check your computer's real-time clock).  The status bar should by now show a delta-t value and PPS status.  If the delta-t value is greater than 1 second, check your computer's real-time clock, and that there isn't a background application causing excessive system load.  The test sprint will not have any rider data associated with it (unless there is a live timing tag within RFID range).
+Test the sprint timer by triggering T1 and then T2 in sequence using the test buttons.  The LEDs should both light up and then extinguish, with the timing data appearing on the LCD and then in the Data screen after a short delay.  If sound is enabled, you should hear 'pips' (check the computer volume).  Confirm that the recorded **Time of day** is reasonable (if not, check your computer's real-time clock).  The *Bib Entry*/status bar should by now show a delta-t value and PPS status.  If the delta-t value is greater than 1 second, check your computer's real-time clock, and that there isn't a background application causing excessive system load.  The test sprint will not have any rider data associated with it (unless there is a live timing tag within RFID range).
 
 Now signal to your volunteer to ride through the traps.  As the timing gates are triggered you should see the LEDs on the sprint timer unit light up in sequence and then go out, and the status bar will indicate when timing is in progress.  Meanwhile the RFID system should detect their tag, and a grey line containing their details will appear on the screen.  When the sprint is over, the timing data should appear, and - hopefully - associate it with the temporally adjacent RFID read to identify the rider.  Check that the calculated speed is broadly in agreement with the rider's speedometer - if not, check that you have measured and entered the trap distance correctly.
 
