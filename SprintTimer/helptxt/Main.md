@@ -10,6 +10,7 @@ Get started with SprintTimer now!
 * [Tools][]
 * [Options][]
 * [JumpTo][]
+* [Web][]
 * [Help][]
 
 ## Screens

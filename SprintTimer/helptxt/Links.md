@@ -5,6 +5,7 @@
 [Edit]: 			Menu-Edit.html
 [DataMgmt]:			Menu-DataMgmt.html
 [JumpTo]:			Menu-JumpTo.html
+[Web]:				Menu-Web.html
 [Tools]:			Menu-Tools.html
 [Options]:			Menu-Options.html
 [Help]:				Menu-Help.html
