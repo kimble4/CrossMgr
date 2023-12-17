@@ -759,15 +759,15 @@ class MainWin( wx.Frame ):
 		#self.menuBar.Append( self.windowMenu, _("&Windows") )
 		
 		#------------------------------------------------------------------------------
-		#self.webMenu = wx.Menu()
+		self.webMenu = wx.Menu()
 
-		#item = self.webMenu.Append( wx.ID_ANY, _("&Index Page..."), _("Index Page...") )
-		#self.Bind(wx.EVT_MENU, self.menuWebIndexPage, item )
+		item = self.webMenu.Append( wx.ID_ANY, _("&Index Page..."), _("Index Page...") )
+		self.Bind(wx.EVT_MENU, self.menuWebIndexPage, item )
 
-		#item = self.webMenu.Append( wx.ID_ANY, _("&QR Code Share Page..."), _("QR Code Share Page...") )
-		#self.Bind(wx.EVT_MENU, self.menuWebQRCodePage, item )
+		item = self.webMenu.Append( wx.ID_ANY, _("&QR Code Share Page..."), _("QR Code Share Page...") )
+		self.Bind(wx.EVT_MENU, self.menuWebQRCodePage, item )
 		
-		#self.menuBar.Append( self.webMenu, _("&Web") )
+		self.menuBar.Append( self.webMenu, _("&Web") )
 		
 		#------------------------------------------------------------------------------
 		self.helpMenu = wx.Menu()
@@ -4042,23 +4042,24 @@ class MainWin( wx.Frame ):
 		#except Exception as e:
 			#logException( e, sys.exc_info() )
 		
-	#@logCall
-	#def menuWebIndexPage( self, event ):
-		#if not Model.race:
-			#return
-		#try:
-			#webbrowser.open( WebServer.GetCrossMgrHomePage(), new = 2, autoraise = True )
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
+	@logCall
+	def menuWebIndexPage( self, event ):
+		if not Model.race:
+			return
+		try:
+			Utils.writeLog('Opening {} in browser'.format(WebServer.GetCrossMgrHomePage()) )
+			webbrowser.open( WebServer.GetCrossMgrHomePage(), new = 2, autoraise = True )
+		except Exception as e:
+			logException( e, sys.exc_info() )
 	
-	#@logCall
-	#def menuWebQRCodePage( self, event ):
-		#if not Model.race:
-			#return
-		#try:
-			#webbrowser.open( WebServer.GetCrossMgrHomePage() + '/qrcode.html' , new = 2, autoraise = True )
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
+	@logCall
+	def menuWebQRCodePage( self, event ):
+		if not Model.race:
+			return
+		try:
+			webbrowser.open( WebServer.GetCrossMgrHomePage() + '/qrcode.html' , new = 2, autoraise = True )
+		except Exception as e:
+			logException( e, sys.exc_info() )
 	
 	@logCall
 	def menuAbout( self, event ):

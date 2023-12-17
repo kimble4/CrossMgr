@@ -19,11 +19,11 @@ from urllib.request import url2pathname
 from queue import Queue, Empty
 #from socketserver import ThreadingMixIn
 
-#from qrcode import QRCode
+from qrcode import QRCode
 from tornado.template import Template
 from ParseHtmlPayload import ParseHtmlPayload
 from http.server import BaseHTTPRequestHandler, HTTPServer, HTTPStatus
-#from io import StringIO
+from io import StringIO
 import Utils
 import Model
 import Version
@@ -51,8 +51,8 @@ now = datetime.datetime.now
 reCrossMgrHtml = re.compile( r'^\d\d\d\d-\d\d-\d\d-.*\.html$' )
 futureDate = datetime.datetime( now().year+20, 1, 1 )
 
-#with open( os.path.join(Utils.getImageFolder(), 'CrossMgr.ico'), 'rb' ) as f:
-	#favicon = f.read()
+with open( os.path.join(Utils.getImageFolder(), 'CrossMgr.ico'), 'rb' ) as f:
+	favicon = f.read()
 
 def readBase64( fname ):
 	with open( os.path.join(Utils.getImageFolder(), fname), 'rb' ) as f:
@@ -88,24 +88,6 @@ def validContent( content ):
 #@syncfunc
 def getCurrentHtml():
 	return Model.getCurrentHtml()
-	
-#@syncfunc
-#def getCurrentTTCountdownHtml():
-	#return Model.getCurrentTTCountdownHtml()
-	
-#@syncfunc
-#def getCurrentTTStartListHtml():
-	#return Model.getCurrentTTStartListHtml()
-
-#with open(os.path.join(Utils.getHtmlFolder(), 'LapCounter.html')) as f:
-	#lapCounterTemplate = f.read().encode()
-#def getLapCounterHtml():
-	#return lapCounterTemplate
-	
-#with open(os.path.join(Utils.getHtmlFolder(), 'Announcer.html')) as f:
-	#announcerHTML = f.read().encode()
-#def getAnnouncerHtml():
-	#return announcerHTML
 	
 def coreName( fname ):
 	return os.path.splitext(os.path.basename(fname).split('?')[0])[0].replace('_TTCountdown','').replace('_TTStartList','').strip('-')
@@ -286,80 +268,80 @@ class ContentBuffer:
 #-----------------------------------------------------------------------
 
 contentBuffer = ContentBuffer()
-#DEFAULT_HOST = None
+DEFAULT_HOST = None
 def SetFileName( fname ):
 	if fname.endswith( '.spr' ):
 		fname = os.path.splitext(fname)[0] + '.html'
 	q.put( {'cmd':'fileName', 'fileName':fname} )
-	#contentBuffer.setFNameRace( fname )
+	contentBuffer.setFNameRace( fname )
 
-#def GetPreviousFileName():
-	#file = None
-	#try:
-		#fnameCur = os.path.splitext(Model.race.getFileName())[0] + '.html'
-	#except Exception:
-		#fnameCur = None
+def GetPreviousFileName():
+	file = None
+	try:
+		fnameCur = os.path.splitext(Model.race.getFileName())[0] + '.html'
+	except Exception:
+		fnameCur = None
 	
-	#files = contentBuffer._getFiles()
-	#try:
-		#file = files[files.index(fnameCur)-1]
-	#except Exception:
-		#pass
-	#if file is None:
-		#try:
-			#file = files[-1]
-		#except Exception:
-			#pass
-	#return file
+	files = contentBuffer._getFiles()
+	try:
+		file = files[files.index(fnameCur)-1]
+	except Exception:
+		pass
+	if file is None:
+		try:
+			file = files[-1]
+		except Exception:
+			pass
+	return file
 	
-#def getQRCodePage( urlPage ):
-	#qr = QRCode()
-	#qr.add_data( urlPage )
-	#qr.make()
-	#qrcode = '["' + '",\n"'.join(
-		#[''.join( '1' if v else '0' for v in qr.modules[row] ) for row in range(qr.modules_count)]
-	#) + '"]'
+def getQRCodePage( urlPage ):
+	qr = QRCode()
+	qr.add_data( urlPage )
+	qr.make()
+	qrcode = '["' + '",\n"'.join(
+		[''.join( '1' if v else '0' for v in qr.modules[row] ) for row in range(qr.modules_count)]
+	) + '"]'
 	
-	#result = StringIO()
-	#def w( s ):
-		#result.write( s )
-		#result.write( '\n' )
+	result = StringIO()
+	def w( s ):
+		result.write( s )
+		result.write( '\n' )
 	
-	#w( '<html>' )
-	#w( '<head>' )
-	#w( '''<style type="text/css">
-#body {
-  #font-family: sans-serif;
-  #text-align: center;
-  #}
-#</style>''' )
-	#w( '''<script>
-#function Draw() {
-	#var qrcode={qrcode};
-	#var c = document.getElementById("idqrcode");
-	#var ctx = c.getContext("2d");
-	#ctx.fillStyle = '#000';
-	#var s = Math.floor( c.width / qrcode.length );
-	#for( var y = 0; y < qrcode.length; ++y ) {
-		#var row = qrcode[y];
-		#for( var x = 0; x < row.length; ++x ) {
-			#if( row.charAt(x) == '1' )
-				#ctx.fillRect( x*s, y*s, s, s );
-		#}
-	#}
-#}
-#'''.replace('{qrcode}', qrcode) )
-	#w( '</script>' )
-	#w( '</head>' )
-	#w( '<body onload="Draw();">' )
-	#w( '<h1 style="margin-top: 32px;">Share Race Results</h1>' )
-	#w( '<canvas id="idqrcode" width="360" height="360"></canvas>' )
-	#w( '<h2>Scan the QRCode.<br/>Follow it to the Race Results page.</h2>' )
-	#w( '<h2>{}</h2>'.format(urlPage) )
-	#w( 'Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.' )
-	#w( '</body>' )
-	#w( '</html>' )
-	#return result.getvalue().encode()
+	w( '<html>' )
+	w( '<head>' )
+	w( '''<style type="text/css">
+body {
+  font-family: sans-serif;
+  text-align: center;
+  }
+</style>''' )
+	w( '''<script>
+function Draw() {
+	var qrcode={qrcode};
+	var c = document.getElementById("idqrcode");
+	var ctx = c.getContext("2d");
+	ctx.fillStyle = '#000';
+	var s = Math.floor( c.width / qrcode.length );
+	for( var y = 0; y < qrcode.length; ++y ) {
+		var row = qrcode[y];
+		for( var x = 0; x < row.length; ++x ) {
+			if( row.charAt(x) == '1' )
+				ctx.fillRect( x*s, y*s, s, s );
+		}
+	}
+}
+'''.replace('{qrcode}', qrcode) )
+	w( '</script>' )
+	w( '</head>' )
+	w( '<body onload="Draw();">' )
+	w( '<h1 style="margin-top: 32px;">Share Race Results</h1>' )
+	w( '<canvas id="idqrcode" width="360" height="360"></canvas>' )
+	w( '<h2>Scan the QRCode.<br/>Follow it to the Race Results page.</h2>' )
+	w( '<h2>{}</h2>'.format(urlPage) )
+	w( 'Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.' )
+	w( '</body>' )
+	w( '</html>' )
+	return result.getvalue().encode()
 
 def getIndexPage( share=True ):
 	info = contentBuffer.getIndexInfo()
@@ -472,60 +454,52 @@ class CrossMgrHandler( BaseHTTPRequestHandler ):
 		up = urllib.parse.urlparse( self.path )
 		content, gzip_content = None,  None
 		try:
-			#if up.path=='/':
-				#content = getIndexPage()
-				#content_type = self.html_content
-				#assert isinstance( content, bytes )
-			#elif up.path=='/favicon.ico':
-				#content = favicon
-				#content_type = 'image/x-icon'
-				#assert isinstance( content, bytes )
-			#elif self.reLapCounterHtml.match( up.path ):
-				#content = getLapCounterHtml()
-				#content_type = self.html_content
-				#assert isinstance( content, bytes )
-			#elif up.path=='/Announcer.html':
-				#content = getAnnouncerHtml()
-				#content_type = self.html_content
-				#assert isinstance( content, bytes )
-			#elif up.path=='/qrcode.html':
-				#urlPage = GetCrossMgrHomePage()
-				#content = getQRCodePage( urlPage )
-				#content_type = self.html_content
-				#assert isinstance( content, bytes )
-			#elif up.path=='/servertimestamp.js':
+			if up.path == '/':
+				content = getIndexPage()
+				content_type = self.html_content
+				assert isinstance( content, bytes )
+			elif up.path=='/favicon.ico':
+				content = favicon
+				content_type = 'image/x-icon'
+				assert isinstance( content, bytes )
+			elif up.path=='/qrcode.html':
+				urlPage = GetCrossMgrHomePage()
+				content = getQRCodePage( urlPage )
+				content_type = self.html_content
+				assert isinstance( content, bytes )
+			elif up.path=='/servertimestamp.js':
 				#Return the clientTime and the serverTime so the client can computer the round-trip time.
 				#Used by Christian's algorithm to estimate the round-trip time and get a better time correction between the two computers.
-				#try:
-					#clientMilliseconds = float( urllib.parse.parse_qs(up.query).get('clientTime', None)[0] )
-				#except Exception:
-					#clientMilliseconds = 0.0
-				#content = json.dumps( {
-						#'serverTime':epochMilliseconds(),
-						#'clientTime':clientMilliseconds,
-					#}
-				#).encode()
-				#content_type = self.json_content
-			#elif up.path=='/identity.js':
+				try:
+					clientMilliseconds = float( urllib.parse.parse_qs(up.query).get('clientTime', None)[0] )
+				except Exception:
+					clientMilliseconds = 0.0
+				content = json.dumps( {
+						'serverTime':epochMilliseconds(),
+						'clientTime':clientMilliseconds,
+					}
+				).encode()
+				content_type = self.json_content
+			elif up.path=='/identity.js':
 				#Return the identify of this CrossMgr instance.
-				#content = json.dumps( {
-						#'serverTime':epochTime(),
-						#'version':Version.AppVerName,
-						#'host':socket.gethostname(),
-					#}
-				#).encode()
-				#content_type = self.json_content
-			#else:
+				content = json.dumps( {
+						'serverTime':epochTime(),
+						'version':Version.AppVerName,
+						'host':socket.gethostname(),
+					}
+				).encode()
+				content_type = self.json_content
+			else:
 				file = None
 				
-				if up.path == '/':
+				if up.path == '/CurrentResults.html':
 					try:
 						file = os.path.splitext(Model.race.getFileName())[0] + '.html'
 					except Exception:
 						pass
 				
-				#elif up.path == '/PreviousResults.html':
-					#file = GetPreviousFileName()
+				elif up.path == '/PreviousResults.html':
+					file = GetPreviousFileName()
 				
 				if file is None: 
 					file = url2pathname(os.path.basename(up.path))
@@ -553,20 +527,20 @@ class CrossMgrHandler( BaseHTTPRequestHandler ):
 		#return
 
 #--------------------------------------------------------------------------
-#def GetCrossMgrHomePage( ip=None ):
-	#if ip is None:
-		#ip = not sys.platform.lower().startswith('win')
-		#ip = True
+def GetCrossMgrHomePage( ip=None ):
+	if ip is None:
+		ip = not sys.platform.lower().startswith('win')
+		ip = True
 	
-	#if ip:
-		#hostname = DEFAULT_HOST
-	#else:
-		#hostname = socket.gethostname()
-		#try:
-			#socket.gethostbyname( hostname )
-		#except Exception:
-			#hostname = DEFAULT_HOST
-	#return 'http://{}:{}'.format(hostname, PORT_NUMBER)
+	if ip:
+		hostname = DEFAULT_HOST
+	else:
+		hostname = socket.gethostname()
+		try:
+			socket.gethostbyname( hostname )
+		except Exception:
+			hostname = DEFAULT_HOST
+	return 'http://{}:{}'.format(hostname, PORT_NUMBER)
 
 server = None
 def WebServer():
@@ -581,15 +555,15 @@ def WebServer():
 			time.sleep( 5 )
 
 def queueListener( q ):
-	#global DEFAULT_HOST, server
+	global DEFAULT_HOST, server
 	
-	#DEFAULT_HOST = Utils.GetDefaultHost()
+	DEFAULT_HOST = Utils.GetDefaultHost()
 	keepGoing = True
 	while keepGoing:
 		message = q.get()
 		cmd = message.get('cmd', None)
 		if cmd == 'fileName':
-			#DEFAULT_HOST = Utils.GetDefaultHost()
+			DEFAULT_HOST = Utils.GetDefaultHost()
 			contentBuffer.setFNameRace( message['fileName'] )
 		elif cmd == 'exit':
 			keepGoing = False
