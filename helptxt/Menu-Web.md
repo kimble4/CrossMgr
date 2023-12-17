@@ -34,12 +34,16 @@ __Publish and Share the Page with Race Attendees__
 
 That's it!
 
+## Web-based race clock
+
+A web-based race clock is available from the web Index page.  The clock receives messages from CrossMgr's currently running race and displays the elapsed race time accordingly.  The same URL is used for all races, you won't need to touch it again when new races start.  The clock will display "Unstarted" while waiting for the race to start, and stops counting when the race is finished.  It will free-run if it loses is network connection, and re-synchronizes automatically when the connection is restored.
+
 ## Web-based Lap Counters for Mass Start Races
 
 For Mass Start races, CrossMgr supports automatic Lap Counters for each start waves on course (see [LapCounter][] for details about automatic lap counter features).
 
 A web-based Lap Counter is also available from the web Index page.  The lap counter page receives message from CrossMgr's currently running race and changes accordingly.
-The same URL is used for all races, if you set up you lap counter displayes you  won't need to touch them again when new races start.  The LapCounter web page automatically changes laps exactly the same as the lap counter page in CrossMgr.
+The same URL is used for all races, if you set up you lap counter displays you won't need to touch them again when new races start.  The LapCounter web page automatically changes laps exactly the same as the lap counter page in CrossMgr.
 
 The idea is that you would use a tablet or a computer with an LCD screen as a lap counter.  This device would be connected over wifi to the CrossMgr computer.  The Lap Counter(s) would automatically be flipped during the race.
 
