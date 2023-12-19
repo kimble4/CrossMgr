@@ -10,16 +10,21 @@
 		</style>
 <script>
 
-function formatTime( secs ) {
-	secs = Math.floor( secs );
+function formatTime( time, places ) {
+	secs = Math.floor( time );
 	var s = secs % 60;
 	var m = Math.floor(secs / 60) % 60;
 	var h = Math.floor(secs / (60*60));
-	return (h ? (h + ':') : '') +  ('0' + m + ':').slice(-3) + ('0' + s).slice(-2);
+	if (places > 0) {
+		var d = time - secs;
+		return (h ? (h + ':') : '') +  (m ? (('0' + m + ':').slice(-3)) : '') + ('0' + s).slice(-2) + ('.' + d.toFixed(places)).slice(2);
+	} else {
+		return (h ? (h + ':') : '') +  ('0' + m + ':').slice(-3) + ('0' + s).slice(-2);
+	}
 }
 
-function formatTimeNoLeadingZero( secs ) {
-	var t = formatTime( secs );
+function formatTimeNoLeadingZero( secs, places ) {
+	var t = formatTime( secs, places );
 	if( t && t.charAt(0) == '0' )
 		t = t.substring( 1 )
 	return t;
@@ -65,8 +70,15 @@ function RaceClock( aCanvas ) {
 		} else if (msg.curRaceTime == 0) {
 			this.finished = true;
 		}
+		this.sprintBib = msg.sprintBib;
+		this.sprintName = msg.sprintName;
+		this.sprintStart = msg.sprintStart;
+		this.sprintTime = msg.sprintTime;
+		this.sprintSpeed = msg.sprintSpeed;
+		this.speedUnit = msg.speedUnit;
+		this.sprintTimeout = msg.sprintTimeout;
 		if( !this.nTimer ) {
-			this.nTimer = setInterval( this.onTimer.bind(this), 1000 );
+			this.nTimer = setInterval( this.onTimer.bind(this), 333 );
 		}
 		this.draw();
 	}
@@ -75,21 +87,21 @@ function RaceClock( aCanvas ) {
 		var dc = this.canvas.getContext('2d');
 		var width = this.canvas.width, height = this.canvas.height;
 		
-		function getFontSizeToFit( dc, text, w, h ) {
+		function getFontSizeToFit( dc, text, w, h, font ) {
 			w = Math.floor( w * 0.95 );
 			h = Math.floor( h * 0.95 );
 			var fontSize = h * 1.15;
-			dc.font = 'bold ' + fontSize + "px Monospace";
+			dc.font = 'bold ' + fontSize + "px " + font;
 			var wText = dc.measureText( text ).width;
 			if( wText > w ) {
 				fontSize *= w / wText;
-				dc.font = 'bold ' + fontSize + "px Monospace";
+				dc.font = 'bold ' + fontSize + "px " + font;
 			}
 			return fontSize;
 		}
 		
-		function drawText( dc, label, colour, x, y, w, h ) {
-			var fontSize = getFontSizeToFit( dc, label, w, h );
+		function drawText( dc, label, colour, x, y, w, h, font ) {
+			var fontSize = getFontSizeToFit( dc, label, w, h, font );
 			var xText = x + w/2, yText = y + h / 2;
 			dc.textAlign = 'center';
 			dc.textBaseline = 'middle';
@@ -104,13 +116,57 @@ function RaceClock( aCanvas ) {
 		dc.strokeRect( 0, 0, width, height );
 		
 		if ( this.finished) {
-			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFFF', 0, 0, width, height );
+			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFE0', 0, 0, width, height, "sans-serif");
 		} else if ( this.raceTime > 0) {
 			// Calculate locally so the clock keeps ticking if the network is lost
 			var secs = ((new Date).getTime() - this.tRaceStart) / 1000.0;
-			drawText( dc, formatTimeNoLeadingZero(secs), '#FFFFFF', 0, 0, width, height );
+			drawText( dc, formatTimeNoLeadingZero(secs, 0), '#FFFFE0', 0, 0, width, height, "monospace" );
 		} else {
-			drawText(dc, "Unstarted", '#FFFFFF', 0, 0, width, height);
+			var displaySecs = this.sprintStart;
+			if (this.sprintTime) {
+				displaySecs += this.sprintTime;
+			}
+			if ((new Date).getTime() - displaySecs * 1000 < this.sprintTimeout * 1000) {
+				var text = "";
+				if (this.sprintBib) {
+					text += "#";
+					text += this.sprintBib;
+					if (this.sprintName) {
+						text += " ";
+						text+= this.sprintName;
+					}
+					text += ";"
+				}
+				if (this.sprintTime) {
+					text +=  formatTimeNoLeadingZero(this.sprintTime, 3);
+					if (this.sprintTime < 60) {
+						text += "s";
+					}
+					text += ";"
+				}
+				if (this.sprintSpeed) {
+					if (this.speedUnit) {
+						text += this.sprintSpeed.toFixed(3);
+						text += this.speedUnit;
+					} else {
+						text += "Speed: ";
+						text += this.sprintSpeed.toFixed(3);
+					}
+					text += ";";
+				}
+				var lines = text.split(";")
+				var h = height/lines.length;
+				for (var i = 0; i < lines.length; i++) {
+					drawText(dc, lines[i], '#FFFFFF', 0, h*i+0.5*h, width, h, "sans-serif");
+				}
+				if (lines.length < 1) {
+					drawText(dc, "No data", '#FFFFFF', 0, h*i+0.5*h, width, h, "sans-serif");
+				}
+			} else {
+				var time = (new Date).toLocaleTimeString("en-GB")
+				drawText(dc, time, '#00BFFF', 0, 0, width, height/2, "monospace");
+				drawText(dc, "Waiting...", '#FFFFFF', 0, height/2, width, height/2, "sans-serif");
+			}
 		}
 	}
 }

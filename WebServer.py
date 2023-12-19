@@ -780,11 +780,25 @@ def WsLapCounterSendTagTest( num = None ):
 		return
 	if num is None:
 		return
-	message = GetLapCounterRefresh()  # Keeps the lap counter happy
-	# Tell clock to display bib number for 5 seconds before timing out
-	message['sprintTimeout'] = 5
-	message['sprintBib'] = num 
-	message['sprintStart'] = int(datetime.datetime.now().timestamp())
+	# Use sprint timer extension to tell clock to display bib number for 5 seconds before timing out
+	message = { 'cmd': 'refresh',
+				'labels': [],
+				'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
+				'backgrounds': ['rgb(16, 16, 16)'],
+				'raceStartTime': None,
+				'lapElapsedClock': False,
+				'sprintTimeout': 5,
+				'sprintBib': bib,
+				'sprintStart': int(datetime.datetime.now().timestamp()),
+				}
+	# Add rider's name if we have it
+	excelLink = getattr(race, 'excelLink', None)
+	if excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
+		try:
+			externalInfo = excelLink.read()
+			message['sprintName'] = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
+		except:
+			pass
 	wsLapCounterQ.put( message )
 			
 if __name__ == '__main__':

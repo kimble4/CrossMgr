@@ -116,7 +116,7 @@ function RaceClock( aCanvas ) {
 		dc.strokeRect( 0, 0, width, height );
 		
 		if ( this.finished) {
-			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFFF', 0, 0, width, height, "sans-serif");
+			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFE0', 0, 0, width, height, "sans-serif");
 		} else if ( this.raceTime > 0) {
 			// Calculate locally so the clock keeps ticking if the network is lost
 			var secs = ((new Date).getTime() - this.tRaceStart) / 1000.0;
