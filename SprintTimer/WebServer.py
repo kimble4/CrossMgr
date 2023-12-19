@@ -51,7 +51,7 @@ now = datetime.datetime.now
 reCrossMgrHtml = re.compile( r'^\d\d\d\d-\d\d-\d\d-.*\.html$' )
 futureDate = datetime.datetime( now().year+20, 1, 1 )
 
-with open( os.path.join(Utils.getImageFolder(), 'CrossMgr.ico'), 'rb' ) as f:
+with open( os.path.join(Utils.getImageFolder(), 'SprintTimer.ico'), 'rb' ) as f:
 	favicon = f.read()
 
 def readBase64( fname ):

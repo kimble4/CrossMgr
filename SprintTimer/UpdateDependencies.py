@@ -17,7 +17,7 @@ def UpdateDependencies():
 			
 			with open(os.path.join('..', fname)) as fc:
 				contents = fc.read()
-			if fname in ('Utils.py', 'HelpIndex.py'):
+			if fname in ('Utils.py', 'HelpIndex.py', 'HelpSearch.py'):
 				contents = contents.replace("'CrossMgr", "'SprintTimer")
 			with open(fname, 'w') as fc:
 				fc.write( contents )
