@@ -64,8 +64,7 @@ with open( os.path.join(Utils.getImageFolder(), 'CrossMgrHeader.png'), 'rb' ) as
 icons = {
 	'QRCodeIconSrc': readBase64('QRCodeIcon.png'),
 	'CountdownIconSrc': readBase64('countdown.png'),
-	'StartListIconSrc': readBase64('tt_start_list.png'),
-	'LapCounterIconSrc':  readBase64('lapcounter.png'), 
+	'RaceClockIconSrc':  readBase64('raceclock.png'),
 	'ResultsCurrentIconSrc': readBase64('results_current.png'),
 	'ResultsPreviousIconSrc': readBase64('results_previous.png'),
 	'AnnouncerIconSrc': readBase64('announcer.png'),
@@ -88,6 +87,11 @@ def validContent( content ):
 #@syncfunc
 def getCurrentHtml():
 	return Model.getCurrentHtml()
+	
+with open(os.path.join(Utils.getHtmlFolder(), 'RaceClock.html')) as f:
+	raceClockTemplate = f.read().encode()
+def getRaceClockHtml():
+	return raceClockTemplate
 	
 def coreName( fname ):
 	return os.path.splitext(os.path.basename(fname).split('?')[0])[0].replace('_TTCountdown','').replace('_TTStartList','').strip('-')
@@ -255,11 +259,7 @@ class ContentBuffer:
 					raceIsRunning = payload.get('raceIsRunning',False),
 					raceIsFinished = payload.get('raceIsFinished',False),
 				)
-				if g.isTimeTrial:
-					g.urlTTCountdown = urllib.request.pathname2url(os.path.splitext(fname)[0] + '_TTCountdown.html')
-					g.urlTTStartList = urllib.request.pathname2url(os.path.splitext(fname)[0] + '_TTStartList.html')
-				else:
-					g.urlLapCounter = urllib.request.pathname2url('LapCounter.html')
+				g.urlRaceClock = urllib.request.pathname2url('RaceClock.html')
 				info.append( g )
 		
 		result['info'] = info
@@ -461,6 +461,10 @@ class CrossMgrHandler( BaseHTTPRequestHandler ):
 			elif up.path=='/favicon.ico':
 				content = favicon
 				content_type = 'image/x-icon'
+				assert isinstance( content, bytes )
+			elif up.path=='/RaceClock.html':
+				content = getRaceClockHtml()
+				content_type = self.html_content
 				assert isinstance( content, bytes )
 			elif up.path=='/qrcode.html':
 				urlPage = GetCrossMgrHomePage()

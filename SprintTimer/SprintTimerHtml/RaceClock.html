@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Race Clock</title>
+		<style>
+			* { margin:0; padding:0 }
+			html, body { width:100%; height:100%; }
+			canvas { display:block; }
+		</style>
+<script>
+
+function formatTime( secs ) {
+	secs = Math.floor( secs );
+	var s = secs % 60;
+	var m = Math.floor(secs / 60) % 60;
+	var h = Math.floor(secs / (60*60));
+	return (h ? (h + ':') : '') +  ('0' + m + ':').slice(-3) + ('0' + s).slice(-2);
+}
+
+function formatTimeNoLeadingZero( secs ) {
+	var t = formatTime( secs );
+	if( t && t.charAt(0) == '0' )
+		t = t.substring( 1 )
+	return t;
+}
+
+function strToMillis( s ) {
+	if( s == null )
+		return null;
+	s = s.replace(/[^0-9]/g,' ');
+	var v = s.split(' ');
+	return (new Date(
+		parseInt(v[0],10), parseInt(v[1],10)-1, parseInt(v[2],10),
+		parseInt(v[3],10), parseInt(v[4],10), parseInt(v[5],10), parseInt(v[6],10)
+	)).getTime();
+}
+
+function RaceClock( aCanvas ) {
+	this.canvas = aCanvas;
+	this.tRaceStart = null;
+	this.finished = false;
+	this.nTimer = 0;
+	
+	this.onResize = function() {
+		this.canvas.width = window.innerWidth;
+		this.canvas.height = window.innerHeight;
+		this.draw();
+	}
+
+	this.onTimer = function() {
+		this.draw();
+	}
+
+	this.onRefresh = function( msg ) {
+		this.tRaceStart = (new Date).getTime() - msg.curRaceTime * 1000.0;
+		// Only update if we have a non-zero curRaceTime - this stops the clock at the end of the race
+		if (msg.curRaceTime > 0) {
+			this.raceTime = msg.curRaceTime;
+			this.finished = false;
+		} else if (msg.curRaceTime == null) {
+			// Set to null to indicate the race hasn't started
+			this.raceTime = null;
+			this.finished = false;
+		} else if (msg.curRaceTime == 0) {
+			this.finished = true;
+		}
+		if( !this.nTimer ) {
+			this.nTimer = setInterval( this.onTimer.bind(this), 1000 );
+		}
+		this.draw();
+	}
+	
+	this.draw = function() {
+		var dc = this.canvas.getContext('2d');
+		var width = this.canvas.width, height = this.canvas.height;
+		
+		function getFontSizeToFit( dc, text, w, h ) {
+			w = Math.floor( w * 0.95 );
+			h = Math.floor( h * 0.95 );
+			var fontSize = h * 1.15;
+			dc.font = 'bold ' + fontSize + "px Monospace";
+			var wText = dc.measureText( text ).width;
+			if( wText > w ) {
+				fontSize *= w / wText;
+				dc.font = 'bold ' + fontSize + "px Monospace";
+			}
+			return fontSize;
+		}
+		
+		function drawText( dc, label, colour, x, y, w, h ) {
+			var fontSize = getFontSizeToFit( dc, label, w, h );
+			var xText = x + w/2, yText = y + h / 2;
+			dc.textAlign = 'center';
+			dc.textBaseline = 'middle';
+			dc.fillStyle = colour;
+			dc.fillText( label, xText, yText );
+		}
+		
+		dc.fillStyle = '#000000';
+		dc.fillRect( 0, 0, width, height );
+		dc.lineWidth = 4;
+		dc.strokeStyle = '#000000';
+		dc.strokeRect( 0, 0, width, height );
+		
+		if ( this.finished) {
+			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFFF', 0, 0, width, height );
+		} else if ( this.raceTime > 0) {
+			// Calculate locally so the clock keeps ticking if the network is lost
+			var secs = ((new Date).getTime() - this.tRaceStart) / 1000.0;
+			drawText( dc, formatTimeNoLeadingZero(secs), '#FFFFFF', 0, 0, width, height );
+		} else {
+			drawText(dc, "Unstarted", '#FFFFFF', 0, 0, width, height);
+		}
+	}
+}
+
+var websocket = null;
+var timeoutID = null;
+function RetryResetWebSocket() {
+	if( timeoutID === null )
+		timeoutID = setTimeout( ResetWebSocket, 5000 );
+}
+function ResetWebSocket() {
+	if( timeoutID !== null ) {
+		clearTimeout( timeoutID );
+		timeoutID = null;
+	}
+
+	if ("WebSocket" in window) {
+		if( websocket && websocket.readyState != websocket.CLOSED ) {
+			websocket.close();
+			websocket = null;
+		}
+
+		var wsurl = 'ws://' + window.location.hostname + ':' + (parseInt(window.location.port) + 2) + '/';
+		websocket = new window.WebSocket( wsurl );
+
+		websocket.onmessage = function( evt ) {
+			var msg = JSON.parse( evt.data );
+			if( msg.cmd == 'refresh' ) {
+				raceClock.onRefresh( msg );
+			}
+		};
+		
+		websocket.onerror = function(e) {
+			console.log('WebSocket: Error.  Scheduling reconnect in 5 seconds...');
+			RetryResetWebSocket();
+		};
+		
+		websocket.onclose = function(e) {
+			console.log('WebSocket: Closed.  Scheduling reconnect in 5 seconds...');
+			RetryResetWebSocket();
+		};
+	}
+}
+function CloseWebSocket() {
+	if( websocket )
+		websocket.close();
+	websocket = null;
+}
+
+function onLoad() {
+	raceClock = new RaceClock( document.getElementById('raceClock') );
+	window.addEventListener('resize', raceClock.onResize.bind(raceClock), false);
+	raceClock.onResize();
+	ResetWebSocket();
+}
+</script>
+	</head>
+	<body onload="onLoad()">
+		<canvas id="raceClock"></canvas>
+	</body>
+</html>
