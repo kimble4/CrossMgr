@@ -264,7 +264,13 @@ def PlaySound( soundFile ):
 #------------------------------------------------------------------------
 
 def logException( e, exc_info ):
-	pass
+	eType, eValue, eTraceback = exc_info
+	ex = traceback.format_exception( eType, eValue, eTraceback )
+	print( '**** Begin Exception ****' )
+	for d in ex:
+		for line in d.split( '\n' ):
+			print( line )
+	print( '**** End Exception ****' )
 
 def disable_stdout_buffering():
 	fileno = sys.stdout.fileno()
