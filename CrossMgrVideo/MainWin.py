@@ -56,6 +56,7 @@ from FIFOCache import FIFOCacheSet
 from Version import AppVerName
 import WebServer
 from DateSelectDialog import DateSelectDialog
+from HelpSearch import HelpSearchDialog, getHelpURL
 
 imageWidth, imageHeight = 640, 480
 
@@ -511,12 +512,17 @@ class MainWin( wx.Frame ):
 		#-------------------------------------------
 		if 'WXMAC' not in wx.Platform:
 			self.helpMenu = wx.Menu()
-			item = self.helpMenu.Append( wx.ID_ABOUT, "&About", "About CrossMgrVideo" )
-			self.Bind(wx.EVT_MENU, self.OnAboutBox, item )
 			
 			item = self.helpMenu.Append( wx.ID_HELP, "&Help", "CrossMgrVideo QuickHelp" )
 			self.Bind(wx.EVT_MENU, self.onHelp, item )
-
+			
+			item = self.helpMenu.Append( wx.ID_ANY, _("Help &Search..."), _("Search Help...") )
+			self.Bind(wx.EVT_MENU, self.menuHelpSearch, item )
+			self.helpSearch = HelpSearchDialog( self, title=_('Help Search') )
+			
+			item = self.helpMenu.Append( wx.ID_ABOUT, "&About", "About CrossMgrVideo" )
+			self.Bind(wx.EVT_MENU, self.OnAboutBox, item )
+			
 			self.menuBar.Append(self.helpMenu, "Help")
 		#-------------------------------------------
 
@@ -832,6 +838,9 @@ class MainWin( wx.Frame ):
 
 	def onHelp( self, event ):
 		OpenHelp()
+		
+	def menuHelpSearch( self, event ):
+		self.helpSearch.Show()
 		
 	def onWeb( self, event ):
 		url = 'http://{}:{}'.format( GetMyIP(), WebServer.PORT_NUMBER )

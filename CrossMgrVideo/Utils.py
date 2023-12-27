@@ -30,6 +30,7 @@ import datetime
 import unicodedata
 import platform
 import subprocess
+import traceback
 
 timeoutSecs = None
 
@@ -192,11 +193,13 @@ else:
 imageFolder = os.path.join(dirName, 'CrossMgrVideoImages')
 helpFolder = os.path.join(dirName, 'CrossMgrVideoHtmlDoc')
 htmlFolder = os.path.join(dirName, 'CrossMgrVideoHtml')
+helpIndexFolder = os.path.join(dirName, 'CrossMgrVideoHelpIndex')
 
 def getDirName():		return dirName
 def getImageFolder():	return imageFolder
 def getHelpFolder():	return helpFolder
 def getHtmlFolder():	return htmlFolder
+def getHelpIndexFolder(): return helpIndexFolder
 
 def getBitmap( fname ):
 	fname = os.path.join( imageFolder, fname )
@@ -259,6 +262,9 @@ def PlaySound( soundFile ):
 	return Play( soundFile )
 
 #------------------------------------------------------------------------
+
+def logException( e, exc_info ):
+	pass
 
 def disable_stdout_buffering():
 	fileno = sys.stdout.fileno()
