@@ -13,7 +13,6 @@ import arial10
 import GetResults
 import FitSheetWrapper
 import ReadSignOnSheet
-import HelpIndex
 import HelpSearch
 import ModuleUnpickler
 import ReadCategoriesFromExcel
