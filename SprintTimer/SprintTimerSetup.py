@@ -25,6 +25,10 @@ googleDrive = os.path.join( googleDrive, 'CrossMgrVideo' )
 from helptxt.compile import CompileHelp
 CompileHelp( 'helptxt' )
 
+# Index the help files.
+from HelpIndex import BuildHelpIndex
+BuildHelpIndex()
+
 # Copy all dependent files into this folder.
 copyFiles = [
     "LapStats.py"
