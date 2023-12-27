@@ -771,12 +771,13 @@ class MainWin( wx.Frame ):
 		
 		#------------------------------------------------------------------------------
 		self.helpMenu = wx.Menu()
-
+		
+		item = self.helpMenu.Append( wx.ID_HELP, _("&Help..."), _("Help with SprintTimer...") )
+		self.Bind(wx.EVT_MENU, self.menuHelp, item )
+		
 		item = self.helpMenu.Append( wx.ID_ANY, _("Help &Search..."), _("Search Help...") )
 		self.Bind(wx.EVT_MENU, self.menuHelpSearch, item )
 		self.helpSearch = HelpSearchDialog( self, title=_('Help Search') )
-		item = self.helpMenu.Append( wx.ID_HELP, _("&Help..."), _("Help with SprintTimer...") )
-		self.Bind(wx.EVT_MENU, self.menuHelp, item )
 
 		#self.helpMenu.AppendSeparator()
 		#item = self.helpMenu.Append( wx.ID_ANY, _("&What's New..."), _("What's New in CrossMgr...") )
