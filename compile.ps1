@@ -252,6 +252,11 @@ function CopyAssets($program)
 		Write-Host "Copying Html to $resourcedir"
 		Copy-Item -Recurse -Force -Path "$builddir/${program}Html" -Destination "$resourcedir"
 	}
+	if (Test-Path "$builddir/${program}HelpIndex")
+	{
+		Write-Host "Copying HelpIndex to $resourcedir"
+		Copy-Item -Recurse -Force -Path "$builddir/${program}HelpIndex" -Destination "$resourcedir"
+	}
 	if (Test-Path "$builddir/${program}Locale")
 	{
 		BuildLocale($program)

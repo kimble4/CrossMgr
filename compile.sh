@@ -192,6 +192,10 @@ copyAssets() {
 		echo "Copying Html to $RESOURCEDIR"
 		cp -rv "${BUILDDIR}/${PROGRAM}Html" $RESOURCEDIR
 	fi
+	if [ -d "${BUILDDIR}/${PROGRAM}HelpIndex" ]; then
+		echo "Copying HelpIndex to $RESOURCEDIR"
+		cp -rv "${BUILDDIR}/${PROGRAM}HelpIndex" $RESOURCEDIR
+	fi
 	if [ -d "${BUILDDIR}/${PROGRAM}Locale" ]; then
 		buildLocale $PROGRAM
 		echo "Copying Locale to $RESOURCEDIR"
