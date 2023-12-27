@@ -1,4 +1,3 @@
-
 from whoosh.index import create_in, open_dir
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.fields import *
@@ -9,8 +8,8 @@ import glob
 import re
 from bs4 import BeautifulSoup
 
-htmlDocDir = 'CrossMgrHtmlDoc'
-indexDir = 'CrossMgrHelpIndex'
+htmlDocDir = 'CrossMgrVideoHtmlDoc'
+indexDir = 'CrossMgrVideoHelpIndex'
 
 def BuildHelpIndex():
 
@@ -30,10 +29,10 @@ def BuildHelpIndex():
 	nonNumeric = re.compile( r'[^\d]' )
 
 	def addDocument( fname, section, lastTitle, textCur ):
-		# print 'addDocument: lastTitle={}'.format(lastTitle)
+		# print( 'addDocument: lastTitle={}'.format(lastTitle) )
 		if lastTitle and textCur:
 			section = '|'.join( section ) if section else lastTitle.get_text()
-			# print 'Indexing: {}: {}'.format(os.path.basename(fname), section)
+			# print( 'Indexing: {}: {}'.format(os.path.basename(fname), section) )
 			content = newLines.sub( '\n', '\n'.join(textCur) )
 			writer.add_document(	path = os.path.basename(fname) + '#' + lastTitle['id'],
 									title = lastTitle.get_text(),
@@ -54,13 +53,13 @@ def BuildHelpIndex():
 		for child in div.contents:
 			try:
 				tag = child.name
-			except Exception as e:
+			except Exception:
 				tag = None
 			
 			if tag not in titleTags:
 				try:
 					textCur.append( child.get_text() )
-				except Exception as e:
+				except Exception:
 					pass
 				continue
 			
