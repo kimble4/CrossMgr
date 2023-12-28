@@ -56,6 +56,7 @@
 [Race Options]:		Properties.html#race-options
 [RFID]:				Properties.html#rfid-options
 [FTP]:				Properties.html#ftp
+[Camera]:			Properties.html#camera
 [Edit Rider]:		RiderDetail.html#edit-button
 [Batch Publish]:	Menu-Publish.html#batch-publish-files
 

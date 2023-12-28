@@ -31,7 +31,7 @@ Yellow times on the [Results][] page are extrapolated times.  **If everything is
 
 #### For a specific rider
 
-Check RiderDetail.   Is the rider in the race?  (If not, check the sign-on sheet.)
+Check RiderDetail.   Does the rider exist?  (If not, check the sign-on sheet.)
 
 Check the list of lap times...
 
@@ -48,7 +48,7 @@ Yes|Check the rider's details in the sign-on sheet - are the 'Tag' field(s) corr
 No|Probably a dodgy, badly positioned or missing tag.  (Has the rider removed a hood or fairing?)  Enter the rider's times manually until the end of the race.
 Yes, but it's the wrong number|You can change this in the sign-on sheet and it will be applied retrospectively.
 The tag is listed as 'stray'|A tag with the rider's number is within range of the RFID aerials and has been for some time.  Remove it from the area or place it in the RF-blocking bag.
-The tag is being 'skipped'|As above.  Can also be a symptom of the tag reader's clock drifting with respect to the computer's.  Try pressing 'reset' in CrossMgrImpinj.  If this solves the problem, you have a clock drift issue, try enabling "**Recalculate clock offset as tag reads are reported**" or setting "**Repeat Seconds**" to zero in CrossMgrImpinj's Advanced settings.
+The tag is being 'skipped'|As above.  Can also be a symptom of the tag reader's clock drifting into the future with respect to the computer's.  Try pressing 'reset' in CrossMgrImpinj.  If this solves the problem, you have a clock drift issue, try enabling "**Recalculate clock offset as tag reads are reported**" or setting "**Repeat Seconds**" to zero in CrossMgrImpinj's Advanced settings.
 
 #### For everyone
 
@@ -74,15 +74,17 @@ If this is correct, then you have some sort of networking problem between the la
 
 - That the router and tag reader have power
 - That the laptop is connected to one of the external ethernet ports on the flightcase
-- That the status LED on the tag reader is whatever colour the status LED goes when it has finished booting up
-- That the blinkenlight on the router labelled "RFID" is lit up (flashing to show activity is good)
-- That the blinkenlights on the tag reader's Ethernet port are also lit
-- That the blinkenlight on the router corresponding to the port the laptop is connected to is lit (flashing to show activity is good)
+- That the power LED on the tag reader is GREEN
+- That the status LED on the tag reader is GREEN (when ready and idle), or flashing ORANGE (when the reader is operating)
+- That the power LED on the router is solid GREEN (flashes during bootup)
+- That the Ethernet LED on the router labelled "RFID" is lit up (flashing to show activity is good)
+- That the LEDs on the tag reader's Ethernet port are also lit
+- That the Ethernet LED on the router corresponding to the RJ45 port the laptop is connected to is lit (flashing to show activity is good)
 - Can you ping the tag reader?  Type `ping 192.168.1.250` in a command prompt window on the laptop and see if it gets a response
 - Can you access the tag reader's web interface on [http://192.168.1.250/](http://192.168.1.250/cgi-bin/index.cgi) from the laptop?
-- Can you ping the router?  type `ping 192.168.1.254` in a command prompt window on the laptop and see if it gets a response
+- If you can't ping the tag reader, can you ping the router?  Type `ping 192.168.1.254` in a command prompt window on the laptop and see if it gets a response
 - Can you access the router's web interface on [http://192.168.1.254/](http://192.168.1.254/) from the laptop?
-- Is there some sort of Windows problem preventing the Ethernet port from working.  Check the output of `ipconfig /all`, the section pertaining to the wired Ethernet port should look like:
+- If you can't ping the router either, is there some sort of Windows problem preventing the Ethernet port from working.  Check the output of `ipconfig /all`, the section pertaining to the wired Ethernet port should look like:
 >Ethernet adapter Ethernet:  
 Connection-specific DNS Suffix  . :  
 Description . . . . . . . . . . . : Realtek PCIe GbE Family Controller  
@@ -100,7 +102,7 @@ NetBIOS over Tcpip. . . . . . . . : Enabled
 
 If there is a problem between the laptop and the router, you will not be able to reach the tag reader.  Try power-cycling the router (it takes a minute or so to boot).  Try another Ethernet cable.  If it's hopeless, try connecting an Ethernet cable directly between the laptop and the tag reader's Ethernet port.  (If you do this, the race clock will no longer work, as it will not be connected to the laptop.)
 
-If you can reach the router but not the tag reader, try power-cycling the tag reader.  Again, it takes a minute to boot.
+If you can reach the router but not the tag reader, try power-cycling the tag reader.  Again, it takes a minute or so to boot.
 
 ###### Communications with CrossMgr
 
@@ -121,11 +123,23 @@ The IR beam-break is a useful backup against RFID problems, but isn't reliable w
 
 The Trigger-O-Matic is compatible with the sprint timer's tape switches.  They might be an alternative option?
 
+### CrossMgrVideo isn't receiving triggers from CrossMgr
+
+Ensure that "**Photos on Every Lap**" is enabled in [Properties/Camera][Camera].
+
+This stopped working once during the 2023 season, and we have not been able to reproduce the behaviour.  Restarting CrossMgrVideo solved the problem in that instance, so try that?
+
+### Murky images in CrossMgrVideo
+
+The finish line camera has a manual aperture.  If the amount of ambient light changes markedly due to Weather, it may need adjusting to avoid over or under exposure:
+
+While watching the CrossMgrVideo preview window, open the cover of the camera enclosure and gently rotate the aperture ring (this is the part in the middle of the lens that does not have a locking 'peg' on it).  (The focus and zoom settings should not normally require adjustment). Ensure the camera is correctly aligned with the finish line after closing the cover.
+
 ### Power failure
 
-If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  This also powers the camera and Trigger-O-Matic, and should be sufficient for a couple of hours.
+If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  The laptop powers the camera and Trigger-O-Matic, and should be sufficient for a couple of hours.
 
-The RFID tag reader, wireless router and GPS time source are powered by a redundant power supply.  If a DC (battery) source is present, they will continue to operate on DC power.  If enabled, the AC power failure alarm should sound, and CrossMgrImpinj will pop up a warning message.  The race clock is powered by AC power alone, and will cease functioning.
+The RFID tag reader, wireless router and GPS time source are powered by a redundant power supply.  If a DC (battery) source is present, they will continue to operate on DC power when the AC power fails.  If enabled, the AC power failure alarm should sound, and CrossMgrImpinj will pop up a warning message.  The race clock is powered by AC power alone, and will cease functioning.
 
 To avoid risk of damage from voltage fluctuations, **disconnect all the timing equipment before attempting to restart a generator**.  Reconnect only after the generator output has stabilised.
 
@@ -207,7 +221,7 @@ Historically CrossMgrVideo would go "Not Responding" during intensive database a
 
 ##### Virus warnings
 
-Windows Defender sometimes false-positives on the CrossMgr suite applications and warns that they are a virus.  Do not allow it to remove/quarantine the applications, otherwise you're going to have a really bad day.  (With any luck, there's still a copy of the installer `.exe`s in the Downloads directory.)
+Windows Defender sometimes false-positives on the CrossMgr suite applications and warns that they are a virus.  Do not allow it to remove/quarantine the applications, otherwise you're going to have a really bad day.  (With any luck, there's still a copy of the installer files in the Downloads directory.)
 
 ##### Windows update
 
@@ -217,7 +231,7 @@ This *should* be set to not install updates during racing hours.  Don't start a 
 
 The best approach is to make a pen & paper note of the rider's bib number and approximate DNF time before touching [RiderDetail][].  The DNF time can always be entered retrospectively after the race if you are busy or unsure.
 
-Keep an eye out for DNF riders deciding to resume the race, and for riders who haven't told you they've DNFed sneaking around behind the timing tent and generating spurious RFID reads.
+Keep an eye out for DNF riders deciding to resume the race, and for riders who haven't told you they've DNFed sneaking around behind the timing tent and generating spurious RFID reads.  Newbie riders may be confused by the bell and DNF on the last lap.  Experienced riders may overcook it and crash or have a mechanical failure on the last lap.
 
 In a fixed-laps race, it's better to set riders who abandon to PUL rather than DNF, so that they get credit for the laps they've completed.
 
@@ -251,7 +265,7 @@ Don't get too deep in the weeds troubleshooting live results issues during the r
 
 Check the laptop has internet access.  (Is it connected to a WiFi network or hotspot?)  The upload process will use exponential backoff - if the connection is very slow it may update very infrequently.
 
-Check the CrossMgr [FTP properties][FTP].  If the settings are correct, this is probably a problem with the internet connection.
+Check the CrossMgr [FTP properties][FTP].  If the settings are correct, this is probably a problem with the internet connection.  (It's very easy to get the FTP path wrong.)
 
 If the index page does not link to the current race, results may be uploaded but people won't be able to find them; [re-publish the index.html][Batch Publish].
 
@@ -285,7 +299,7 @@ A catgeory's gender has been set incorrectly in one of the race files, causing a
 
 Race timing depends on being able to synchronise the real-time clock in the tag reader (and where applicable, sprint timer) with that of the laptop.  While clock drift is negligible over the course of a race, this is complicated when Windows has a connection to the wider internet, allowing it to synchronise with an NTP server.  Symptoms of clock drift include triggers being offset in CrossMgrVideo and tag reads being erroneously 'skipped' by CrossMgrImpinj.
 
-In an attempt to migitage these problems, our version of CrossMgrImpinj has been modified to provide the ability to monitor and correct the offset between the laptop and tag reader's clock in real time, rather than just on initial connection.
+In an attempt to mitigate these problems, our version of CrossMgrImpinj has been modified to provide the ability to monitor and correct the offset between the laptop and tag reader's clock in real time, rather than just on initial connection.
 
 Additionally, a GPS-based stratum 1 NTP time server has been installed in the flightcase with the tag reader.  Once it has obtained a time signal, the laptop, router, tag reader and race clock should synchronise their real-time clocks to it over the course of a few minutes.  If this is done before the start of a race, everything should stay synchronised to within a few milliseconds.  On this basis, it is important to power up the flightcase as early as possible in the setup process, so it may begin to acquire a GPS fix.
 
@@ -296,4 +310,4 @@ If you need to mate an XLR-style Ethernet plug with a normal socket for troubles
 
 ### Laptop power supply
 
-The delicate Acer 3*1.1mm DC barrel connector is a conspicuous single point of failure.  Treat it with care.  A dongle to allow the use of an alternative power supply is a work in progress.
+The delicate Acer 3x1.1mm DC barrel connector is a conspicuous single point of failure.  Treat it with care.  A dongle to allow the use of an alternative power supply is a work in progress.
