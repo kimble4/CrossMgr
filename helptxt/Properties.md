@@ -50,6 +50,7 @@ See the [Record][] screen for details on managing a race with one lap counter, o
 ## Race Options
 Property|Description
 :-------|:----------
+Criterium|Enables the Criterium-specific [Record][] options.  Mutually exclusive with Time Trial.
 Time Trial|Specifies Time Trial mode.  In this mode, the rider's start time from the Excel spreadsheet is used.  If pre-seeded start times are not used, or there is no start time for the rider in the Excel sheet, the first time recorded for a rider starts the clock for that rider.  See [TimeTrial][].
 Best n laps|A variation on Time Trial mode where only a subset of the rider's total laps count towards their finish position and overall time.  For example, you could use this for a best-one-of-three-laps velodrome event.  The number of laps to count is set on a per-wave basis in [Categories][].  This option is disabled for mass start races.
 All Categories Finish After Fastest Rider's Last Lap|Applies to multi-category races only.  Tells CrossMgr that all riders were stopped after the fastest rider in the race finished.  This means you stopped riders lapped by the fastest Category leader, but not lapped by their own Category leader.  This option is ignored for all Categories with "Race Laps" specified (see [Categories][]).
