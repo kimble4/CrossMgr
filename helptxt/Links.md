@@ -52,5 +52,11 @@
 [USACycling]:		https://usacycling.org/
 [Chart Right-Click]: Chart.html#right-click
 [USB Webcam]:		Properties.html#use-usb-camera-photo-finish
+[General Info]:		Properties.html#general-info
+[Race Options]:		Properties.html#race-options
+[RFID]:				Properties.html#rfid-options
+[FTP]:				Properties.html#ftp
+[Edit Rider]:		RiderDetail.html#edit-button
+[Batch Publish]:	Menu-Publish.html#batch-publish-files
 
 [CrossMgrIntegration]: CrossMgrIntegration.html
