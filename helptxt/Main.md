@@ -1,3 +1,9 @@
+## [BHPC Workflow][]
+BHPC-specific documentation: How to time a race
+
+## [BHPC Troubleshooting][]
+What to do if it's all going wrong....
+
 ## [Quick Start][]
 Get started with CrossMgr now!
 

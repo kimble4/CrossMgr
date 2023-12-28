@@ -1,4 +1,6 @@
 [Quick Start]:		QuickStart.html
+[BHPC Workflow]:	BHPC-Workflow.html
+[BHPC Troubleshooting]:	BHPC-Troubleshooting.html
 
 [File]: 			Menu-File.html
 [Publish]:			Menu-Publish.html
