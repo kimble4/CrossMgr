@@ -168,21 +168,27 @@ This is usually caused by the **minimum possible lap time** (see [Properties/Rac
 
 #### Incorrect ranking in live results
 
-If [ranking by average speed][Race Options], ensure that all [Categories][] have a lap distance set.  (CrossMgr's [Results][] page does not use average speed ranking while the race is in progress, so only the HTML output will be affected.)
+If [ranking by average speed][Race Options], ensure that all [Categories][Category Screen] have a lap distance set.  (CrossMgr's [Results][] page does not use average speed ranking while the race is in progress, so only the HTML output will be affected.)
 
 #### Two leaders / Rider in their own start wave
 
-Someone has edited the sign-on sheet to move a rider from one race to another and not updated their EventCategory accordingly.  Fix the sign-on sheet.
+Likely someone has edited the sign-on sheet to move a rider from one race to another and not updated their EventCategory accordingly.  Fix the sign-on sheet.
 
-#### Time trial false start
+#### Fixed-laps race: CrossMgr seems to stop recording times early
+
+Check the "**Lapped Riders Continue**" settings in the [Category Screen][].  In a time-based race, you'd normally want everyone to finish on the leader's last lap, so this would be unset.  In a distance based race, you'd want to set this so that all riders have to complete the full number of laps.
+
+#### Time trial: False start
 
 In a manually/RFID started time trial you can [delete a rider from the race][Edit Rider] and start them again.
 
-Otherwise, the safest approach is to time them with a stopwatch, pen and paper then fudge the results afterwards.
+Alternatively, a safer approach (for example, if a rider is having a second attempt after a crash) is to time them with a stopwatch, pen and paper then fudge the results afterwards.
+
+If multiple riders want a second attempt, it may be worth using [New Next][File] to create a separate race file for second attempts, and manually combining the data later.  (Alternatively, consider running a [Best n Laps][Category Screen] event.)
 
 #### Spurious RFID reads during sprints
 
-If someone brings their timing tags near the RFID aerials during a sprint event, they can accidentally claim another rider's times.  This is particularly bad, as it isn't their own results that get corrupted.
+If someone brings their timing tags near the RFID aerials during a sprint event, they can accidentally claim another rider's times.  This is worse than loitering near the finish in mass-start races, as it isn't just their own results that get corrupted.
 
 The best approach is vigilance, and to correct (or clear) the 'bib' field of the affected sprints as soon as possible.  Use the 'note' field to explain what happened.
 
@@ -286,11 +292,11 @@ If something serious goes wrong during a merge it probably needs Kim to meditate
 
 ### Ranking seems wrong
 
-If ranking by average speed, ensure that all [Categories][] have a lap distance set.
+If ranking by average speed, ensure that all [Categories][Category Screen] have a lap distance set.
 
 ### Spurious (Women) classes in SeriesMgr table
 
-A catgeory's gender has been set incorrectly in one of the race files, causing a separate category to be created (look at who's ranked in it to work out which race).  CrossMgr sometimes interprets categories with only female riders as being women's categories when they should be 'Open'.  Fix the [Categories][] in the relevant race, and refresh the results.
+A catgeory's gender has been set incorrectly in one of the race files, causing a separate category to be created (look at who's ranked in it to work out which race).  CrossMgr sometimes interprets categories with only female riders as being women's categories when they should be 'Open'.  Fix the [Categories][Category Screen] in the relevant race, and refresh the results.
 
 
 ## Misc

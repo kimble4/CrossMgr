@@ -59,5 +59,6 @@
 [Camera]:			Properties.html#camera
 [Edit Rider]:		RiderDetail.html#edit-button
 [Batch Publish]:	Menu-Publish.html#batch-publish-files
+[Category Screen]:	Categories.html#category-screen
 
 [CrossMgrIntegration]: CrossMgrIntegration.html
