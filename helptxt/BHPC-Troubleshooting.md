@@ -180,7 +180,7 @@ Check the "**Lapped Riders Continue**" settings in the [Category Screen][].  In 
 
 #### Time trial: False start
 
-In a manually/RFID started time trial you can [delete a rider from the race][Edit Rider] and start them again.
+In a manually/RFID started time trial you can [delete a rider from the race][Edit Rider] and start them again.  (This does not delete the rider from the sign-on sheet; CrossMgr will recognise their bib number/RFID tags if they reappear.)
 
 Alternatively, a safer approach (for example, if a rider is having a second attempt after a crash) is to time them with a stopwatch, pen and paper then fudge the results afterwards.
 
