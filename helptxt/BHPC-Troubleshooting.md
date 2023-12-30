@@ -2,7 +2,7 @@
 
 # BHPC Troubleshooting
 
-This document is intended to help BHPC volunteers resolve problems with the race timing system.  If you are not the British Human Power Club, then much of this won't make sense.  It has been added to the CrossMgr help so that it is easily available during races.
+This document is intended to help BHPC volunteers resolve problems with the race timing system.  If you are not the [British Human Power Club](https://www.bhpc.org.uk), then much of this won't make sense.  It has been added to the CrossMgr help so that it is easily accessible during races.
 
 Topics are listed in approximate order of urgency.  The search facility may be useful!
 
