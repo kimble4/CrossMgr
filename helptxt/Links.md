@@ -57,6 +57,7 @@
 [RFID]:				Properties.html#rfid-options
 [FTP]:				Properties.html#ftp
 [Camera]:			Properties.html#camera
+[GPX]:				Properties.html#GPX
 [Edit Rider]:		RiderDetail.html#edit-button
 [Batch Publish]:	Menu-Publish.html#batch-publish-files
 [Category Screen]:	Categories.html#category-screen
