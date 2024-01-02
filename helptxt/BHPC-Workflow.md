@@ -205,6 +205,9 @@ A variation on a time trial, where riders complete several laps, but are only sc
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
+#### E) Flying Sprints
+
+These are timed using the dedicated SprintTimer application, rather than CrossMgr.  See SprintTimer's Quick-Start guide for how to set up and time a flying sprint event.
 
 ### Set the course GPX
 
