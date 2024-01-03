@@ -1,6 +1,8 @@
 [Quick Start]:		QuickStart.html
 [BHPC Workflow]:	BHPC-Workflow.html
 [BHPC Troubleshooting]:	BHPC-Troubleshooting.html
+[Communications Tagreader]:	BHPC-Troubleshooting.html#communications-with-tag-reader
+[Clock Issues]:		BHPC-Troubleshooting.html#race-clock-issues
 
 [File]: 			Menu-File.html
 [Publish]:			Menu-Publish.html

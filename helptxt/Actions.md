@@ -6,14 +6,14 @@ Starts and Finishes a race.
 # Controls
 
 ## Start/Finish Race
-Press this button to start the race.
+Press this button to start the race.  A confirmation dialog will appear, and the clock only starts when you press '**OK**'.
 
 When the race is running, press this button to finith the race.
 
 Stopping the race turns off the ability to enter values through the [Record][] screen.  It is always possible to make manually edits at any time, or to add additional lap times in RiderDetail.
 
 ## Start Race Automatically at Future Time
-Allows you to start the race automatically at a future time.  After setting the time, a display counts down to the race start.  You can Cancel the automatic start at any time.
+Allows you to start the race automatically at a future time.  The **Start Race** button will open a window that allows you to set the start time, and a display counts down to the race start.  You can **Cancel** the automatic start at any time.
 
 ## Chip Timing Options
 
