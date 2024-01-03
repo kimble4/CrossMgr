@@ -27,14 +27,18 @@ def InlineImages( html ):
 		if not match:
 			break
 		fname = match.group(1)
-		with open(os.path.join('images',fname), 'rb') as f:
-			b64 = str(base64.b64encode( f.read() ))[2:-1]
-			print(b64)
-		sReplace = 'src="data:image/{};base64,{}"'.format(
-			os.path.splitext(fname)[1][1:],
-			b64,
-		)
+		try:
+			with open(os.path.join('images',fname), 'rb') as f:
+				b64 = str(base64.b64encode( f.read() ))[2:-1]
+			sReplace = 'src="data:image/{};base64,{}"'.format(
+				os.path.splitext(fname)[1][1:],
+				b64,
+			)
+		except:
+			print('Image not found: ' + str(fname))
+			sReplace = 'src="images/{}"'.format(fname)
 		html = html.replace( match.group(0), sReplace )
+		
 	return html
 
 def getHelpFiles( dir='.' ):
