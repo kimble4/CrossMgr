@@ -38,7 +38,6 @@ def InlineImages( html ):
 			print('Image not found: ' + str(fname))
 			sReplace = 'src="images/{}"'.format(fname)
 		html = html.replace( match.group(0), sReplace )
-		
 	return html
 
 def getHelpFiles( dir='.' ):

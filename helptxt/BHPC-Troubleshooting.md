@@ -39,6 +39,7 @@ If times are being recorded, but filtered:
 
 - Check the **minimum possible lap time** (see [Properties/Race Options][Race Options])
 - If spurious reads are being accumulated, search the area around the finish line for spare tags/helmets/bikes.  Ensure that unclaimed tags are in the RF-blocking bag.
+- If the track layout means that riders pass close to the finish line on the far section of the track (eg. Stourport, occasionally Lancaster), their tags may be picked up twice.  This is not a problem when they pass through the finish line first (eg. anticlockwise at Stourport), as the **minimum possible lap time** filtering will ignore the subsequent read.  In the other direction, however, it can cause chaos with inconsistent lap times.  The only real solution (other than spending a lot of time inspecting video) is to reduce the performace of the offending RFID aerial.  (We've found that using the desktop aerial facing **upwards** at the trackside gives a range of about 3 metres horizontally, which works as a near-side aerial at Stourport.)
 
 If times are not being recorded, check CrossMgrImpinj:
 
@@ -119,7 +120,9 @@ The right pane of the CrossMgrImpinj window turns green when the connection is e
 
 ### Trigger-O-Matic isn't triggering
 
-The IR beam-break is a useful backup against RFID problems, but isn't reliable when the track is wide (eg. Darley Moor) or in bright sunlight.  The 'auto capture' button will trigger a recording manually, and its use should be encouraged for close finishes and where a rider's tags aren't reading.
+Ensure the **Auto-Capture** toggle switch is not in the 'disable' position.
+
+The IR beam-break is a useful backup against RFID problems, but isn't reliable when the track is wide (eg. Darley Moor) or in bright sunlight.  The 'auto capture' push button will trigger a recording manually, and its use should be encouraged for close finishes and where a rider's tags aren't reading.
 
 The Trigger-O-Matic is compatible with the sprint timer's tape switches.  They might be an alternative option?
 

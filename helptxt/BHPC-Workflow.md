@@ -262,6 +262,30 @@ If you change a race's filename, the original file will be left in place.  You m
 
 ## Hardware setup
 
+**Prerequisites:  Timing tent (or other suitable shelter) erected with AC power available.**
+
+The setup process has been simplified by integrating the router and RFID reader into the flight-case, along with a redundant power supply and GPS time source.  This means that many of the connections are permanently in place, and you only need to connect the power source(s), Ethernet to the laptop and RFID aerials on race day.
+
+![RFID reader etc. in flightcase](./images/flightcase_front.jpg "RFID reader etc. in flight-case")
+
+1. Unpack the cables and loose equipment from the flight-case.
+1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end (an adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform), and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon socket on the side of the flight-case, and twist clockwise so it clicks into place.  Connect the other end to mains power (or a generator or inverter supply).  The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
+1. **DC power** can be connected using one (or more) of: **(A)** The small black **2.5mm DC barrel jack** inlet on the side of the flight-case.  (A short jack-jack cable is included to connect to a 2.1mm DC jack)  **(B)** The yellow **male XT60** connector on the side of the flight-case. (Cables are included to connect to spade terminals, or a 12V vehicle cigarette lighter socket) **(C)** The **female USB-C inlet** on the bottom left of the power supply panel. (Cables not included.  The USB power source must be 'laptop' rated - a standard phone-charging power bank cannot provide enough power to run the tag-reader)  Once connected, the DC power display should show a voltage appropriate for your power source, but no significant current/power will be drawn while AC power is present.
+1. Ensure the **AC power failure alarm** switch is in the '**on**' position.  As long as DC power is present, the alarm will sound if the AC supply is interrupted.
+1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the latop.
+1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect this end to either of the two RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
+1. Locate appropriately long **coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials, and the male RP-TNC connectors to the female RP-TNC connectors on the tag reader.  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.  By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
+1. Optional (only **for writing tags**): Locate the short coaxial cable with male TNC connector on one end and a male RP-TNC connector on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.  **Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
+1. Attach the camera to a tripod, and connect it to one of the **USB ports** on the left side of the laptop.
+1. Locate the beige **USB-A to USB-C cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.
+1. Optional: Screw the **reflective IR beam break** unit onto its drainpipe and mount it on its stand beside the nearside RFID aerial.  Locate the black **male 3-pin XLR to female 3-pin XLR** cable and use it to connect the IR beam-break unit (alternatively, a tape-switch) to the XLR socket on the Trigger-O-Matic.
+1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
+1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the PowerCon connector to the back of the clock (again, twisting clockwise to lock into place).  Connect the BS1363 mains plug to AC power.  The clock should boot up and display the time of day and temperature as it searches for a WiFi network.
+
+
+
+
+
 ## Testing
 
 ## Timing a race
@@ -334,6 +358,7 @@ Merge|A BHPC process for combining the results of multiple **races** to determin
 Merge-O-Matic|Deprecated **Excel** macro used for combining BHPC race results in Excel format.  This functionality is now built into CrossMgr.
 Missed Read|When a rider crosses the **finish line**, but the **RFID** system doesn't detect their **tag**.
 MultiReader|**Impinj** application that is useful for testing and for changing the tag number of RFID tags.
+N-connector|A chunky threaded coaxial connector used on the **trackside RFID aerials**.  Sometimes found on laboratory test equipment, and specialist RF applications.
 NP|*Not Placed* - Non-judgemental status given to **riders** who should not be **ranked** for some reason (eg. you know that their lap times are incorrect).
 (S)NTP|*(Simple) Network Time Protocol*.  A protocol used by computing devices to synchronise their **real time clocks** over a **TCP/IP** network.
 Points|Points are calculated by SeriesMgr.  Points mean prizes.
@@ -351,9 +376,10 @@ Real Time Clock (RTC)|A subsystem of a computing device that keeps track of the 
 Results|The outcome of a **race** or **round**.  Will include ranking and time data, but not **points**.  Those are allocated later.
 RFID|*Radio Frequency Identification*.  In this context a long-range high-throughput tag system suitable for tracking vehicles, warehouse inventory and sports timing, rather than the short-range systems used for card-entry type applications.
 Rider|A participant in a **race**.
-RJ45|The cheap plastic modular connectors used on twisted-pair **Ethernet** cables.  Notable for requiring special tools to fit, and having an easily-broken retaining tab.  RJ45 connectors do not react well to being dropped in mud.
+RJ45|The cheap plastic modular connectors used on twisted-pair **Ethernet** cables.  Notable for requiring special tools to fit, and having an easily-broken retaining tab.  RJ45 connectors do not react well to being dropped in mud.  Some of our equipment uses RJ45 connectors in an **XLR** shell, for increased ruggedness.
 Round|A particular type of **race**.  For example "30 minute criterium" "1-lap time trial".  At BHPC **events**, a **round** may be composed of more than one **race**, as the BHPC often splits the group for safety reasons.
 Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as an **Ethernet switch** and **WiFi** **access point**.
+RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**.
 Series|A championship table for a racing season or **event**.  A SeriesMgr `.smn` file pertaining to a series.
 SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the CrossMgr suite.
 Sign-on sheet|An **Excel** file containing details of riders, used by CrossMgr to populate the [categories][Category Screen] table and look up rider's names, teams, etc.  Crucially, this is needed in order to match **tags** to **riders**.
@@ -372,6 +398,7 @@ TCP/IP|*Transmission Control Protocol/Internet Protocol*.  The de-facto standard
 Team|In CrossMgr, a Team is an attribute of a **rider**.  **Points** may be calculated on a team basis.
 Time of day, Wall time|The time of day, possibly including the date.  May be UTC or in the local timezone.  Contrast with **Race time**.
 Time Trial|A type of **race** where **riders** start at different times, and compete against the clock.
+TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC**
 Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from CrossMgr over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
 Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.
