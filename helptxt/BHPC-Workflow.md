@@ -133,7 +133,30 @@ A criterium is a mass start race of a given duration, plus an extra whole lap.  
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
-#### B) Fixed number of laps
+#### B) Fixed-duration race
+
+A mass-start race where riders finish after the leader crosses the finish line after a given duration.  Unlike a criterium, CrossMgr can work out when the end of the race is without intervention.
+
+1. Switch to the [Race Options][] tab.
+1. Disable **Criterium** and **Time Trial**.
+1. Enable **All Categories Finish After Fastest Rider's Last Lap**.
+1. Enable **Set 'Autocorrect Lap Data' option by Default**.
+1. Disable **Show times to 100s of a Second**.
+1. Disable **Road Race Finish Times**.
+1. Disable **Estimate Laps Down Finish Time**.
+1. Set **Rank finishers by** to "**average speed**".
+1. Enable **Consider Riders in Spreadheet to be DNS if no race data**.
+1. Set **Lap time for 80% rule** to **2nd lap time**.
+1. Set **Distance Unit** to **miles**.
+1. Enable **Show Lap notes, Edits and Projected Times in HTML Output**.
+1. Enable **Show Course Animation in Html**.
+1. Set the **Min possible Lap Time** to a healthy margin less than whatever Slash was lapping at last time we raced on this track.  If in doubt, lower is better.
+1. Set **Play reminder sound** to `10` seconds.
+1. Leave **License Link...** empty.
+1. Disable **Win and Out**.
+1. Click 'Commit' to save changes.
+
+#### C) Fixed number of laps
 
 A mass-start race where all racers ride the same number of laps.  Riders will have to count their own laps, and should be encouraged to continue racing if they lose count (which they probably will).
 
@@ -157,7 +180,7 @@ A mass-start race where all racers ride the same number of laps.  Riders will ha
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
-#### C) *n*-lap Time Trial
+#### D) *n*-lap Time Trial
 
 A time trial is where riders start individually one after another, and compete against the clock.
 
@@ -181,7 +204,7 @@ A time trial is where riders start individually one after another, and compete a
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
-#### D) Best of *n* laps
+#### E) Best of *n* laps
 
 A variation on a time trial, where riders complete several laps, but are only scored on one of them.  Good for velodromes.
 
@@ -205,7 +228,7 @@ A variation on a time trial, where riders complete several laps, but are only sc
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
-#### E) Flying Sprints
+#### F) Flying Sprints
 
 These are timed using the dedicated SprintTimer application, rather than CrossMgr.  See SprintTimer's Quick-Start guide for how to set up and time a flying sprint event.
 
@@ -266,6 +289,8 @@ If you change a race's filename, the original file will be left in place.  You m
 
 The setup process has been simplified by integrating the router and RFID reader into the flight-case, along with a redundant power supply and GPS time source.  This means that many of the connections are permanently in place, and you only need to connect the power source(s), Ethernet to the laptop and RFID aerials on race day.
 
+If you are using a generator, start it and allow the output to stabilise before connecting the timing equipment.  This prevents damage from voltage spikes or repeated cycling on and off.
+
 ![RFID reader etc. in flightcase](./images/flightcase_front.jpg "RFID reader etc. in flight-case")
 
 1. Unpack the cables and loose equipment from the flight-case.  **Prop the flight-case lid open** by engaging the piece of aluminium profile on the right hand side of the lid with the protruding bolt in the base.
@@ -282,11 +307,11 @@ The setup process has been simplified by integrating the router and RFID reader 
 1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
 1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the female PowerCon connector to the back of the clock (again, twisting clockwise to click into place).  Connect the BS1363 mains plug to AC power.  The clock should boot up and display the time of day and temperature as it searches for a WiFi network.
 
-### Stourport variation
+### Stourport (far side of track close to finish line) variation
 
 * Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground facing upwards at the trackside in place of the usual nearside aerial.
-* This limits the pickup range to approximately 3 metres (about half the width of the track), and prevents spurious reads.
-* Connect it to port 2 of the tag reader, and the software will not need to be re-configured.
+* This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads.
+* Connect it to port 2 (fixme) of the tag reader, and the software will not need to be re-configured.
 
 ### Sprint timer
 
@@ -329,8 +354,9 @@ The setup process has been simplified by integrating the router and RFID reader 
 1. Open a **File Explorer** window and navigate to the race file directory you created for the day's racing.
 1. Make any **last-minute changes to the sign-on sheet**.
 1. Double-click the `.cmn` file for the first race.  CrossMgr should start and you should be looking at the [Actions][] screen.  *Do not* click on the big friendly '**Start Race**' button until you mean it!
-1. Switch to [Properties][] and double-check the settings in each of the tabs.  Refer to the earlier part of this guide if necessary.  If you will be using it, confirm that the FTP upload works.
+1. Switch to [Properties][] and double-check the settings in each of the tabs.  Refer to the earlier part of this guide if necessary.
 1. Also check the [Categories][] screen.
+1. If you will be using live results, confirm that the FTP upload works.  Check that an `index.html` page linking to the race file(s) is present on the web server: You may need to perform a bath publish of the un-started race(s).
 1. If this is all okay, go to [Properties/RFID][RFID], and click **Setup/Test RFID Reader...**
 1. Start the **RFID test**.  CrossMgrImpinj should establish a connection and you should start to see tag reads in the **Messages** pane.
 1. You can leave the RFID test running until the race is about to start.  This allows you to check that rider's tags are working.
@@ -371,27 +397,28 @@ The setup process has been simplified by integrating the router and RFID reader 
 * Are the **RFID aerials** pegged or weighed down?
 * Does the organiser have the **bell** and **flags**?
 * Do you know where the **first aid kit** is?
-* If you are using a **generator**, does it have plenty of fuel and oil?  Do you know how to restart it?
+* If you are using a **generator**, does it have plenty of **fuel** and oil?  Do you know how to restart it?
+* Place any spare **live tags in the RF-blocking tag bag** to prevent spurious reads.
 * Check the flight-case **power supply**:  Are AC and DC power present?  Is the AC power failure **alarm enabled**?
 * Is the **laptop** running on AC power?  Is its battery charged?
-* Are there any **notifications** from Windows (eg. wanting to reboot for updates, virus warnings) that might cause problems?
+* Are there any **notifications** from **Windows** (eg. wanting to reboot for updates, virus warnings) that might cause problems?
 * Does the **GPS time source** have a satellite signal (orange LED lit or flashing)?  Does it have a time signal (blue LED lit or preferably flashing once per second)?
 * Check **CrossMgrVideo**:  Is the camera aligned, with correct **focus and exposure**?
 * Is the **IR beam break** aligned and operating the Trigger-O-Matic correctly?
-* Check **CrossMgrImpinj**.  Is it connected and reading tags?  Are tags being read on both antennas?  Press the reset button and confirm the **clock offset** is still reasonable (typically 3600 seconds to within one second).
+* Check **CrossMgrImpinj**.  Is it connected and reading tags?  Are tags being read on both antennas?  Press the reset button and confirm the **clock offset** is still reasonable (typically 3600 seconds to within one second during *British Summer Time*).
 * Is **CrossMgr** open with the **correct race** file?
 * Is the **RFID test** successful?
-* Is the **Race Clock** working and visible?
+* Is the **Race Clock** working and visible?  If it's likely to blow over, place it at ground level.
 * Does someone have a **backup stopwatch** ready?
-* **If you're racing**, is your bike ready, do you have your helmet and elbow pads on?
-* Get a **headcount of riders **on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
-* Do you have a **pen and paper** ready to note down DNFs, incidents etc. as they happen?  Write the race name on it clearly.
+* If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
+* Get a **headcount of riders**  on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
+* Do you have a **pen and paper** ready to note down DNFs, incidents etc. as they happen?  *Write the race name on it clearly.*
 * Do you have a device that can **video the finish** if the timing system fails?
 
 ### Starting the mass-start race
 
 1. Finish the RFID test.  Switch to the [Actions][] screen and click the **Start Race** button.  The race will not start until you click '**OK**' on the dialog that pops up.
-1. Tell the person starting the race that you're ready.  Pay attention.
+1. Tell the person starting the race that you're ready.  Pay attention so you don't miss the start.
 1. Click '**OK**' when they say "Go!"
 1. Switch to the [Results][] screen.  Riders whose tags were read immediately after the start will be listed.  Others will not.
 1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for.
@@ -399,16 +426,134 @@ The setup process has been simplified by integrating the router and RFID reader 
 1. As the riders come round for their first lap, keep an eye out for anyone whose tags aren't reading.  Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if necessary.
 1. Check that CrossMgrVideo is being triggered by CrossMgr, and capturing video successfully.
 
-Once all riders are accounted for, you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure if the ambient light level changes drastically.
+Once all riders are accounted for, you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure if the ambient light level changes drastically.  
+
+Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if something goes wrong during the race.
 
 ### Race finish
 
+#### A) Criterium race
+
+As CrossMgr cannot determine when the leader is going to get the bell, you will have to edit the race duration retrospectively once the bell lap time is known.
+
+1. As the end of the race approaches, switch the [Results][] screen to show **Race Times**, so you can see when the leader is predicted to cross the finish line after the criterium duration has elapsed.  (Eg. For a 30 minute criterium, this would be their first race time greater than 30 minutes.)
+1. Remind the *bell-ringer / flag-waver* to stand on the opposite side of the finish line, so they can be seen by the camera.  (It is much easier to work out if an image is of the final lap if the bell/flag is visible, and finish-line images of the organiser's leg are useless!)
+1. Once the leader has been given the bell, *and CrossMgr has processed the associated tag read*, note the **race time** of their bell lap.  (Eg. For a 30-minute criterium, this might be `31:23`)
+1. Switch to [Properties/General Info][General Info] and adjust the **Race Minutes** field to the next integer number of minutes.  (Eg. If the bell lap was as `31:23` this would be `32` minutes.)
+1. Click "**Commit**".
+1. Return to the [Results][] screen.
+1. Hopefully this shows the leader with a single predicted (yellow) lap still to go.  When they finish the race, this should turn white.  Other riders' predicted final laps will turn white as their tags are read.  If things look wrong, *don't panic* - changes to the race duration are reversible.  As long as you don't Finish the race, CrossMgr will keep recording tag reads, even if they are not shown in the Results.
+1. If all riders are predicted to ride the same number of laps as the leader, check the "**Lapped Riders Continue**" settings in the [Category Screen][].
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+
+
+#### B) Fixed-duration race
+
+Unlike a criterium, CrossMgr can work out when the end of the race is without intervention.
+
+1. Remind the *bell-ringer / flag-waver* to stand on the opposite side of the finish line, so they can be seen by the camera.
+1. You can sit and watch the predicted final lap times turn yellow as riders' tags are read.
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+
+
+#### C) Fixed number of laps
+
+CrossMgr can work out when the end of the race is without intervention.
+
+1. Remind the *bell-ringer / flag-waver* to stand on the opposite side of the finish line, so they can be seen by the camera.
+1. You can sit and watch the predicted final lap times turn yellow as riders' tags are read.
+1. If all riders are not predicted to ride the full number of laps, check the "**Lapped Riders Continue**" settings in the [Category Screen][].
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+
+#### D) *n*-lap Time Trial
+
+The end of the race is simply when everyone has had their turn, the timing is not critical.
+
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+
+#### E) Best of *n* laps
+
+The end of the race is simply when everyone has had their turn, the timing is not critical.
+
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+
+#### F) Flying Sprints
+
+This is much like a time trial.  See the SprintTimer documentation.
+
+## After the race
+
+1. Before making non-trivial corrections to the race data, close CrossMgr and create a backup of the file.
+1. Set riders to DNF as needed.
+1. Investigate riders who stopped, or whose tags weren't reading.  Make notes.
+1. If you have time, refer to CrossMgrVideo to see if you can fill in any missing lap times.
+1. If a rider's results are a mess, set their status to NP.
+1. Batch publish the race to the web so the live results are up to date.
+1. Ensure that your paper notes are in a safe place, and move on to setting up the next race.  Unless you urgently need to know the ranking to award trophies, correcting results is best done somewhere warm and quiet without any time pressure or interruptions.
 
 ## Packing up
+
+At the end of the final race, close CrossMgr and ensure that all race data is backed up.  Close CrossMgrVideo and CrossMgrImpinj, and shut down the laptop, then you can disconnect the equipment.
+
+* The camera, Trigger-O-Matic and IR beam break sensor live in the flight-case with the RFID reader, along with a 4-way mains adaptor.
+* Note the camera only fits in the labelled orientation (lying on its right side in front of the power supply, facing right), and ensure that the WiFi aerial on the router is folded downwards so as not to be crushed by the camera when the lid is closed.
+* Plug the AC power cable into the 4-way, along with the 4-way's own plug (this makes them more compact), and place the 4-way along the right-hand side of the case beside the tag reader.
+* The Trigger-O-Matic fits in front of the tag reader, with the IR beam-break on top of it.
+* Coil the assorted cables into the remaining space on top of the tag reader, trying to make the pile as flat as possible so the lid can close.  **DO NOT force the lid closed**
+
+Item|Location
+:---|:------
+Camera|Flight-case
+Trigger-O-Matic|Flight-case
+IR Beam break|Flight-case
+4-way mains adaptor|Flight-case
+Flight-case AC power cable|Flight-case
+2.5mm to 2.1mm DC barrel jack cable|Flight-case
+XT60 to spade connector cable|Flight-case
+XT60 to cigarette lighter cable|Flight-case
+Short Male TNC to male RP-TNC coaxial cable|Flight-case
+Red Ethernet cable|Flight-case
+5m male XLR to female XLR cable|Flight-case
+Male USB-A to male USB-B cable|Flight-case
+Male TNC to female N adaptor|Flight-case
+Laptop|Laptop bag
+Laptop power supply|Laptop bag
+HDMI cable|Laptop bag
+Misc USB cables|Laptop bag
+Mouse|Laptop bag
+Clipboard|Laptop bag
+RF-blocking tag-bag|Laptop bag
+Jiffy bag of unused tags|Laptop bag
+Small pens|Laptop bag
+Long male N-connector to male RP-TNC coaxial cables|Timing crate
+Race clock AC power cable|Timing crate
+BS1363 to 16A Ceeform adaptor|Timing crate
+Bell|Timing crate
+Flags|Timing crate
+Marker pens, scissors, etc.|Timing crate
+Gaffer tape|Timing crate
+Random cardboard, correx, etc|Timing crate
+Foam pads for spacing tags off conductive materials|Timing crate
+Steel tent pegs for aerials|Timing crate
+Mallet|Timing crate
+Aluminium tent pegs for timing tent|Must go in tent bag
+Right-angle N-connector adaptors|Leave attached to back of trackside aerials
+Stopwatches|First-aid kit (So they travel separately from the rest of the timing equipment.)
+Trackside aerials|Travel separately
+Desktop aerial|Must go with flight-case and laptop bag for writing tags for next race
 
 # Post-processing results
 
 ## Finish line photos
+
+Perhaps unintuitively, this is usually the best place to start, as it will be useful for correcting finish times.
+
+For each race:
+
+1. Determine the leader's finish time from CrossMgr.
+1. Locate the associated trigger in CrossMgrVideo, and confirm they take the flag.
+
+[fixme]
 
 ## Fixing the timing data
 
@@ -423,108 +568,110 @@ To avoid confusion, we have tried to be consistent with the CrossMgr suite's use
 Term|Meaning
 :---|:------
 Alias|In SeriesMgr, aliases are used to unify different spellings of a **rider**, **machine** or **team** name across a **series**, for when a rider appears as "Joe Bloggs", "Joe Blogs" and "Joseph B" in the results of different races.
-Bell|In cycle racing, a bell is rung to indicate that a **rider** has one lap remaining.
-Bell Lap|The race leader's last lap.
+Bell|In cycle racing, a bell is rung to indicate that a **rider** has one **lap** remaining.
+Bell Lap|The race leader's last **lap**.
 BHPC|The [British Human Power Club](https://www.bhpc.org.uk/)
 Bib, number|A rider's race number, as printed on the side of their HPV, and used for manual entry into CrossMgr/SprintTimer
 Carbon fibre|Lightweight composite material notable for its radio-blocking properties.  Do not attach RFID tags directly to carbon fibre.
 Category|A class of rider (eg. Junior) or HPV (eg. Part-Faired).  In CrossMgr terms a [Category][Category Screen] is a list of bib numbers and associated meta-data that defines how they are timed and scored.
 Class|Historical **BHPC** term equivalent to **category** that we try to avoid using.
+Coaxial|A type of electrical cable or connector in which one conductor completely surrounds another.  Used for radio-frequency signals, because physics.  The connections between the **RFID tag reader** and its aerials are coaxial.
 Component Category|A sub-category that makes up a **Start Wave**.  We don't usually use these in **BHPC** racing, as unlike **CustomCategory** they cannot overlap.
-Criterium|A type of cycle race where riders race for a certain period of time, and then complete an extra lap.  CrossMgr cannot handle this on its own, as it cannot know whether the leader will cross the finish line before or after the time period has elapsed until after it has happened.
+Criterium|A type of cycle race where riders race for a certain period of time, and then complete an extra lap.  **CrossMgr** cannot handle this on its own, as it cannot know whether the leader will cross the finish line before or after the time period has elapsed until after it has happened.
 CrossMgr|A software application designed for timing cyclocross races developed by Edward Sitarski.  The suite of applications that complement CrossMgr.
-CrossMgrImpinj|A software application that allows **Impinj** **RFID** readers to be used with CrossMgr by emulating a **JChip** reader.
-CrossMgrVideo|A software application that grabs short sequences of video from a **USB** camera and stores them in a database.  Used in combination with CrossMgr to collect time-stamped **finish line** images.
-CustomCategory|CrossMgr term for an arbitrary [Category][Category Screen] that is used to generate a ranking, but does not control when riders start and finish.
+CrossMgrImpinj|A software application that allows **Impinj** **RFID** readers to be used with **CrossMgr** by emulating a **JChip** reader.
+CrossMgrVideo|A software application that grabs short sequences of video from a **USB** camera and stores them in a database.  Used in combination with **CrossMgr** to collect time-stamped **finish line** images.
+CustomCategory|**CrossMgr** term for an arbitrary [Category][Category Screen] that is used to generate a ranking, but does not control when riders start and finish.
 DNF|*Did Not Finish* - status given to **riders** who fail to complete a **race**.
 DNS (computing)|*Domain Name System* a system for resolving human-readable names like `www.bhpc.org.uk` to IP addresses like `92.53.241.24` and vice-versa, by querying a *DNS Server*.  A DNS server is not normally available at the track-side, so devices must be referred to by their IP address.
 DNS (racing)|*Did Not Start* - status given to **riders** who fail to make it to the start line of a **race**.
-DQ|*Disqualified* - status given to **riders** who will not be **ranked** due to some violation of TEH RULEZ.
+DQ|*Disqualified* - status given to **riders** who will not be **ranked** due to some violation of `TEH RULEZ`.
 Ethernet|The IEEE 802.3 standard for data communications (usually on twisted-pair cable, terminated with RJ45 modular connectors).  Ethernet is is typically used to carry TCP/IP.
 Ethernet Switch|A device that forwards Ethernet packets from one wired network segment to another.  The **router** built into the flight-case with the **BHPC**'s tag reader includes a 4-port Ethernet switch.
 Event|In this context, a day of racing.  Particularly for **points** purposes.
-Excel|A functional programming language masquerading as a piece of accountancy software that's commonly used for managing databases.  CrossMgr reads its **sign-on sheet** in Excel format, and can also use it to output results.
+Excel|A functional programming language masquerading as a piece of accountancy software that's commonly used for managing databases.  **CrossMgr** reads its **sign-on sheet** in Excel format, and can also use it to output results.
 Fast Race|A **BHPC** **race** composed of mainly faster, or more experienced, riders.
-Filtering|When CrossMgr ignores tag reads due to some internal logic  (eg. multiple tag reads occurring too close together to be distinct laps)
+Filtering|When **CrossMgr** ignores tag reads due to some internal logic  (eg. multiple tag reads occurring too close together to be distinct laps)
 Finisher|Status given to **riders** who complete (or are expected to complete) a **race**.
 Finish line|The place on the track where you set up your RFID aerials and finish line camera.  In **BHPC** events this is usually the same as the start line.
 Finish order|The order in which **riders** cross the **finish line** at the end of a **race**.  This is the most important piece of race data, and if riders are close together cannot always be determined by **RFID** alone: Human observation or video evidence may be required.
-Flag|A chequered flag is waved to indicate that riders are finishing the **race**.  We may refer to a rider 'getting the flag' when their race is over.
+Flag|A chequered flag is waved to indicate that riders are finishing the **race**.  We may refer to a rider 'getting the flag' when their race is over.  A red flag is used to stop the race in an emergency.
 FTP(S), SFTP|*File Transfer Protocol (Secure)*, *SSH File Transfer Protocol* - Protocols used for transferring files over a TCP/IP network.  CrossMgr uses this to upload results to a website.
-Gender|In CrossMgr terms this may be one of 'Open', 'Women' or 'Men'.  Most **BHPC** [Categories][Category Screen] are 'Open'.
+Gender|In **CrossMgr** terms this may be one of 'Open', 'Women' or 'Men'.  Most **BHPC** [Categories][Category Screen] are 'Open'.
 GPS|*Global Positoning System*.  A satellite navigation system that can be used to determine positions in space and time.
-GPX (track)|A standard file format used by **GPS** receivers to record positions over a period of time.  Used by CrossMgr to draw the race animation, and to import lap times for riders.
+GPX (track)|A standard file format used by **GPS** receivers to record positions over a period of time.  Used by **CrossMgr** to draw the race animation, and to import lap times for riders.
 Hexadecimal, Hex|Numbers in base 16 (0-F), rather than the usual base 10 (0-9).  Used for tag numbers.
 HPV|*Human Powered Vehicle*, for example a bicycle, tricycle, handcycle, wheelchair, velomobile, streamliner or pedal car.
 Impinj|The manufacturer of the *Speedway* **RFID** reader we use for timing races, and by extension their tag/hardware/software/protocol ecosystem.
 IP address|A numerical address used to uniquely identify a device on a **TCP/IP** network.
-JChip|An electronic timing system designed for sports events.  CrossMgrImpinj converts **LLRP** data from the **Impinj** reader into JChip protocol data for CrossMgr.
+JChip|An electronic timing system designed for sports events.  CrossMgrImpinj converts **LLRP** data from the **Impinj** reader into JChip protocol data for **CrossMgr**.
 Lap|One complete circuit of a race track.
 Lapped|A **rider** who has become far enough ahead in a **race** that they overtake a rider who is logically still behind them is said to have *lapped* the slower rider.  Lapped riders are expected in **BHPC** **races**, due to the wide range of **machines** and athletic ability.
 Lap Time|The **race time** at which a rider crosses the finish line at the end of a lap.  May be extrapolated in the event of a **missed read**.
 Leader|The **rider** currently in first position of their **race** or **category**.
-License|In CrossMgr, a (?unique) identifier of **rider** used in **UCI**-compliant bicycle racing.  The **BHPC** don't use this.
-LLRP|*Low Level Reader Protocol*.  The protocol used to communicate with the Impinj RFID reader over the TCP/IP network.
+License|In **CrossMgr**, a (?unique) identifier of **rider** used in **UCI**-compliant bicycle racing.  The **BHPC** don't use this.
+LLRP|*Low Level Reader Protocol*.  The protocol used to communicate with the **Impinj RFID** reader over the **TCP/IP** network.
 Local Time|The **time of day** in the appropriate time zone (eg. *British Summer Time*).
 Machine|Attribute of a **rider** used to record the name of their HPV.
 Mass Start|A **race** where multiple riders start at the same time.  Contrast with **Time Trial**.
 Mechanical|When a **rider** stops during a **race** due to a problem with their **HPV**.  They may resolve the problem and continue, or opt to **DNF**.
 Merge|A BHPC process for combining the results of multiple **races** to determine the results of a single **round**.
-Merge-O-Matic|Deprecated **Excel** macro used for combining BHPC race results in Excel format.  This functionality is now built into CrossMgr.
+Merge-O-Matic|Deprecated **Excel** macro used for combining BHPC race results in Excel format.  This functionality is now built into **CrossMgr**.
 Missed Read|When a rider crosses the **finish line**, but the **RFID** system doesn't detect their **tag**.
 MultiReader|**Impinj** application that is useful for testing and for changing the tag number of RFID tags.
-N-connector|A chunky threaded coaxial connector used on the **trackside RFID aerials**.  Sometimes used on laboratory test equipment, and in specialist RF applications.
+N-connector|A chunky threaded coaxial connector used on the **trackside RFID aerials**.  Sometimes found on laboratory test equipment, and in specialist RF applications.
 NP|*Not Placed* - Non-judgemental status given to **riders** who should not be **ranked** for some reason (eg. because you know that their lap times are incorrect).
 (S)NTP|*(Simple) Network Time Protocol*.  A protocol used by computing devices to synchronise their **real time clocks** over a **TCP/IP** network.
 Points|Points are calculated by SeriesMgr.  Points mean prizes.
 Points Structure|In SeriesMgr, a Points Structure is a mapping of rankings to numbers of **points**.  You can have a different points structure for each round.
+Port (networking)|In **TCP/IP**, a numerical identifier that a particular piece of software listens for connections on.  For example, web servers usually listen on ports `80` and `443`, **FTP** servers on port `21` and **CrossMgr** runs a web server on port `8765`.  Different services on the same machine may listen on different ports at the same time.
 PowerCon|A rugged electrical connector often used for providing AC power to professional audio equipment.  Notable for being weatherproof and having a twist-lock latching action.
-Publish|In CrossMgr terms, the act of producing (and optionally uploading) race results in an easily-read format.
+Publish|In **CrossMgr** terms, the act of producing (and optionally uploading) race results in an easily-read format.
 PUL|*Pulled* - status given to **riders** who have been removed from a **race** by officials, typically for being too slow.
-Race|An instance of people rushing about on bicycles.  A CrossMgr `.cmn` data file pertaining to a **race**.  Contrast: **round**, **event**.
+Race|An instance of people rushing about on bicycles.  A **CrossMgr** `.cmn` data file pertaining to a **race**.  Contrast: **round**, **event**.
 RaceDB|A software application for managing race entries and results written by Edward Sitarski.  The BHPC were unable to use this, as its handling of categories is too inflexible.
-Race Clock|In this context, a device built by Kim Wall in 2021 to display the Race Time on a large LED display at BHPC events.  The Race Clock is also available as a web page on the CrossMgr local webserver.
+Race Clock|In this context, a device built by Kim Wall in 2021 to display the Race Time on a large LED display at BHPC events.  The Race Clock is also available as a web page on the **CrossMgr** local webserver.
 Race Time|Time elapsed since the start of a race.  Compare with **Time of Day**
 Ranking|A list of riders in order of winningness.  Not the same as *finish order*, as riders are likely to be on different laps.
-Real Time|In computing, the processing of data quickly enough to keep up with it as it happens.  Perhaps unintuitively, CrossMgr does not process timing data in real time.  As such, the timing computer becoming slow to process data due to being overloaded does not normally affect the accuracy of recorded lap times, even if the user interface becomes sluggish.
+Real Time|In computing, the processing of data quickly enough to keep up with it as it happens.  Perhaps unintuitively, **CrossMgr** does not process timing data in real time.  As such, the timing computer becoming slow to process data due to being overloaded does not normally affect the accuracy of recorded lap times, even if the user interface becomes sluggish.
 Real Time Clock (RTC)|A subsystem of a computing device that keeps track of the **time of day**.  Often physically distinct from other time sources that coordinate the internal operation of the computer.  Electronic race timing relies on synchronising (or at least, accounting for the discrepancy between) multiple real time clocks.
 Results|The outcome of a **race** or **round**.  Will include ranking and time data, but not **points**.  Those are allocated later.
 RFID|*Radio Frequency Identification*.  In this context a long-range high-throughput tag system suitable for tracking vehicles, warehouse inventory and sports timing, rather than the short-range systems used for card-entry type applications.
 Rider|A participant in a **race**.
 RJ45|The cheap plastic modular connectors used on twisted-pair **Ethernet** cables.  Notable for requiring special tools to fit, and having an easily-broken retaining tab.  RJ45 connectors do not react well to being dropped in mud.  Some of our equipment uses RJ45 connectors in an **XLR** shell, for increased ruggedness.
 Round|A particular type of **race**.  For example "30 minute criterium" "1-lap time trial".  At BHPC **events**, a **round** may be composed of more than one **race**, as the BHPC often splits the group for safety reasons.
-Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as an **Ethernet switch** and **WiFi** **access point**.
+Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as a simples **Ethernet switch** and **WiFi** **access point**.
 RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**.
 Series|A championship table for a racing season or **event**.  A SeriesMgr `.smn` file pertaining to a series.
-SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the CrossMgr suite.
-Sign-on sheet|An **Excel** file containing details of riders, used by CrossMgr to populate the [categories][Category Screen] table and look up rider's names, teams, etc.  Crucially, this is needed in order to match **tags** to **riders**.
+SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the **CrossMgr** suite.
+Sign-on sheet|An **Excel** file containing details of riders, used by **CrossMgr** to populate the [categories][Category Screen] table and look up rider's names, teams, etc.  Crucially, this is needed in order to match **tags** to **riders**.
 Slow Race|A BHPC **race** composed of mainly slower or less experienced riders.
 Sprint|A **time trial** run over a very short distance, usually with a flying start.  Due to the high speeds involved, precision timing equipment is needed to judge sprint events; the **Impinj** **RFID** system is not precise enough.
 Sprint Time|The duration (ie. **race time**) of a **sprint**.
-SprintTimer|A software application designed for timing flying sprints, written in 2023 by Kim Wall of the BHPC.  It borrows heavily from CrossMgr's codebase.
+SprintTimer|A software application designed for timing flying sprints, written in 2023 by Kim Wall of the BHPC.  It borrows heavily from **CrossMgr**'s codebase.
 Sprint Timer Unit|A precision timing device designed for timing flying sprints, built in 2023 by Kim Wall of the BHPC.
 Start Time|The **time of day** that a **mass start** **race** started at, or the **time of day** that individual **rider** started at in a **time trial** or **sprint**.
-Start Wave|A CrossMgr term for a [Category][Category Screen] that defines a group of **riders** who start the **race** at the same time.  We would normally have a single Start Wave in a **race**.
-Stopwatch|A standalone timing device that you can use to time **races** when you don't trust CrossMgr.
+Start Wave|A **CrossMgr** term for a [Category][Category Screen] that defines a group of **riders** who start the **race** at the same time.  We would normally have a single Start Wave in a **race**.
+Stopwatch|A standalone timing device that you can use to time **races** when you don't trust the timing system.
 Stray tag|An **RFID tag** which has been within range of the **RFID** aerials for some time.  Usually an unused tag in the box of timing equipment, or a tag attached to a rider's helmet or HPV that has been left near the **finish line**.  Stray tags matching the **tag number** of a **rider** in the current **race** can cause all sorts of problems.
-Tag|A physical RFID tag (as stuck to a rider's HPV or helmet), or the Product ID number encoded onto it.  Tag numbers are sent to CrossMgr whenever a tag passes within range of the **RFID** aerials.
+Tag|A physical RFID tag (as stuck to a rider's HPV or helmet), or the Product ID number encoded onto it.  Tag numbers are sent to **CrossMgr** whenever a tag passes within range of the **RFID** aerials.
 Tape Switch|An momentary electrical switch in a long, flat format that may be operated by pressure at any point along its length.  These can be used to trigger a timing device when a wheel passes over them.
-TCP/IP|*Transmission Control Protocol/Internet Protocol*.  The de-facto standard protocol for computer networking.  Used by the CrossMgr suite applications to communicate with each other and with external hardware over **Ethernet** or **WiFi**.
+TCP/IP|*Transmission Control Protocol/Internet Protocol*.  The de-facto standard protocol for computer networking.  Used by the **CrossMgr** suite applications to communicate with each other and with external hardware over **Ethernet** or **WiFi**.
 Team|In CrossMgr, a Team is an attribute of a **rider**.  **Points** may be calculated on a team basis.
 Time of day, Wall time|The time of day, possibly including the date.  May be UTC or in the local timezone.  Contrast with **Race time**.
 Time Trial|A type of **race** where **riders** start at different times, and compete against the clock.
 TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC**
-Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from CrossMgr over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
+Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from **CrossMgr** over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
 Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.
 UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things, and have a strange obsession with socks.
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.
 USB-B|The large square USB connector usually found on printers and scanners.  The Trigger-O-Matic, Race Clock and Sprint Timer Unit have USB-B connectors in the interests of durability.
-USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the Acer Aspire 5 that the BHPC uses for race timing at the time of writing; its USB-C port is for data only.
-UTC|*Universal Time Coordinated*.  A pedant would point out that it's not technically the same thing as *Greenwich Mean Time*, but effectively that.  Software that has any sense tends to work with UTC internally, and only convert to local time for input and output.
-Webserver|CrossMgr and SprintTimer run a local web server on port `8765`.  This can be used to view live results or the **race clock**.
+USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.
+UTC|*Universal Time Coordinated*.  A pedant would point out that it's not technically the same thing as *Greenwich Mean Time*, but effectively that.  Software that has any sense tends to work with UTC internally, and only convert to local time for input and output.  **LLRP** always uses UTC time; **CrossMgrImpinj** calculates the offset to local time.
+Webserver|**CrossMgr** and **SprintTimer** run a local web server on **port** `8765`.  This can be used to view live results or a browser-based verison of the **race clock**.
 WiFi|In this context, the IEEE 802.11 standard for Ethernet-like data communications over spread-spectrum radio.
-WiFi Access Point|The base station of a **WiFi** network.  Usually bridges to a wired **Ethernet** network.
+WiFi Access Point|The base station of a **WiFi** network.  Usually bridges to a wired **Ethernet** network.  Consumer-grade **routers** often have an access point built-in.
 XLR|A latching electrical connector commonly used for signals on professional audio, video and lighting equipment.  It is robust and easily repaired in the field.
 
 

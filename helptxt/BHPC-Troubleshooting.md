@@ -121,7 +121,7 @@ The right pane of the CrossMgrImpinj window turns green when the connection is e
 ### Trigger-O-Matic isn't triggering
 
 Ensure the **Auto-Capture** toggle switch is not in the 'disable' position.
-
+v
 The IR beam-break is a useful backup against RFID problems, but isn't reliable when the track is wide (eg. Darley Moor) or in bright sunlight.  The 'auto capture' push button will trigger a recording manually, and its use should be encouraged for close finishes and where a rider's tags aren't reading.
 
 The Trigger-O-Matic is compatible with the sprint timer's tape switches.  They might be an alternative option?
