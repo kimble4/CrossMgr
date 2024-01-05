@@ -76,9 +76,11 @@ If this is correct, then you have some sort of networking problem between the la
 - That the router and tag reader have power
 - That the laptop is connected to one of the external ethernet ports on the flightcase
 - That the power LED on the tag reader is GREEN
+![Tag reader LEDs](./images/aerial_connections.jpg "Tag reader Status and Power LEDs (right)")
 - That the status LED on the tag reader is GREEN (when ready and idle), or flashing ORANGE (when the reader is operating)
 - That the power LED on the router is solid GREEN (flashes during bootup)
-- That the Ethernet LED on the router labelled "RFID" is lit up (flashing to show activity is good)
+![Tag reader LEDs](./images/router_blinkenlights.jpg "Tag reader Status and Power LEDs (right)")
+- That the Ethernet LED on the router labelled "RFID Reader" is lit up (flashing to show activity is good)
 - That the LEDs on the tag reader's Ethernet port are also lit
 - That the Ethernet LED on the router corresponding to the RJ45 port the laptop is connected to is lit (flashing to show activity is good)
 - Can you ping the tag reader?  Type `ping 192.168.1.250` in a command prompt window on the laptop and see if it gets a response
@@ -136,6 +138,8 @@ This stopped working once during the 2023 season, and we have not been able to r
 
 The finish line camera has a manual aperture.  If the amount of ambient light changes markedly due to Weather, it may need adjusting to avoid over or under exposure:
 
+![Camera focus and aperture adjustment](./images/finish_line_camera.jpg "Camera focus and aperture adjustment")
+
 While watching the CrossMgrVideo preview window, open the cover of the camera enclosure and gently rotate the aperture ring (this is the part in the middle of the lens that does not have a locking 'peg' on it).  (The focus and zoom settings should not normally require adjustment). Ensure the camera is correctly aligned with the finish line after closing the cover.
 
 ### Power failure
@@ -144,9 +148,11 @@ If AC power (eg. from a generator or inverter) fails, the laptop will continue t
 
 The RFID tag reader, wireless router and GPS time source are powered by a redundant power supply.  If a DC (battery) source is present, they will continue to operate on DC power when the AC power fails.  If enabled, the AC power failure alarm should sound, and CrossMgrImpinj will pop up a warning message.  The race clock is powered by AC power alone, and will cease functioning.
 
+![AC power failure](./images/AC_power_failure.jpg "AC power failure")
+
 To avoid risk of damage from voltage fluctuations, **disconnect all the timing equipment before attempting to restart a generator**.  Reconnect only after the generator output has stabilised.
 
-If power to the tag reader is completely lost, keep an eye on CrossMgrImpinj and make sure the connection is restored on boot-up (the old laptop had a quirk in its Ethernet driver whereby the USB dongle needed to be hot-plugged before it would bring up the connection).
+If power to the tag reader and router was completely lost, keep an eye on CrossMgrImpinj and make sure the connection is restored on boot-up (the old laptop had a quirk in its Ethernet driver whereby the USB dongle needed to be hot-plugged before it would bring up the connection).
 
 When AC power is successfully restored, remember to re-enable the power failure alarm for next time.
 
@@ -191,7 +197,7 @@ If multiple riders want a second attempt, it may be worth using [New Next][File]
 
 #### Spurious RFID reads during sprints
 
-If someone brings their timing tags near the RFID aerials during a sprint event, they can accidentally claim another rider's times.  This is worse than loitering near the finish in mass-start races, as it isn't just their own results that get corrupted.
+If someone brings their timing tags near the RFID aerials during a sprint event, they can accidentally claim another rider's times.  This is worse than loitering near the finish in mass-start races, as it isn't just their own results that are affected.
 
 The best approach is vigilance, and to correct (or clear) the 'bib' field of the affected sprints as soon as possible.  Use the 'note' field to explain what happened.
 
@@ -209,8 +215,8 @@ CrossMgrImpinj is the application that allows CrossMgr to communicate with the I
 
 Error|Course of action
 :----|:---------
-Tag reader has disconnected (red screen on left)|Check the tag reader and router have power.  Check the relevant Ethernet blinkenlights.  Check the wiring.  Try resetting CrossMgrImpinj.  Attempt TCP/IP diagnostics using `ping` and/or a web browser (FireFox has shortcuts to the router and tag reader's web interfaces).  Power-cycle whatever isn't working and pray.
-Not connected to CrossMgr (red screen on right)|This is normal if no race or RFID test is in progress; CrossMgr only listens for connections during a race or test.  If the race is running but it still fails to connect, check the [RFID properties][RFID] in CrossMgr.
+Tag reader has disconnected (red pane on left)|Check the tag reader and router have power.  Check the relevant Ethernet blinkenlights.  Check the wiring.  Try resetting CrossMgrImpinj.  Attempt TCP/IP diagnostics using `ping` and/or a web browser (FireFox has shortcuts to the router and tag reader's web interfaces).  Power-cycle whatever isn't working and pray.
+Not connected to CrossMgr (red pane on right)|This is normal if no race or RFID test is in progress; CrossMgr only listens for connections during a race or test.  If the race is running but it still fails to connect, check the [RFID properties][RFID] in CrossMgr.
 An aerial has disconnected|Check the coaxial cables to the aerials.  Try another cable (coax is easily damaged, and water ingress through a nick in the jacket will obliterate its RF performance).  Reset CrossMgrImpinj.
 A power source has disconnected|Check the power meters and blinkenlights to confirm.  Check the relevant power wiring.  Check that the generator is working (fuel/oil supply) and is on a level surface; that the battery is not depleted or that the mains supply hasn't tripped out or been switched off / unplugged at the far end.  Beware of tea urns.
 
@@ -254,7 +260,7 @@ Problem|Course of action
 :----|:---------
 LED display is blank|Check the LCD and `Power` blinkenlight for evidence of power.  Ensure the PowerCon mains power connector has been twisted clockwise to engage.  If the LCD is active but nothing appears on the LED display, this is probably a hardware fault.
 LED displays `i2cEr`, LCD blank or corrupt|Internal problem with the clock electronics.  Try pressing 'reboot' or cycling power.  If it persists, it may be a hardware fault.
-Time and temperature displayed but not race time during race|Check the race is running.  Check the display on the back of the clock and confirm that it has a WiFi connection to the `BHPC_Timing` SSID (as broadcast by the wireless router in the flightcase with the tag reader).  The `WiFi` LED should illuminate steadily to indicate a connection.  If it fails to connect, check the router is operating, and perhaps move the clock closer to the router.
+Time and temperature displayed but not race time during race|Check the race is running.  Check the display on the back of the clock and confirm that it has a WiFi connection to the `BHPC_Timing` SSID (as broadcast by the wireless router in the flightcase with the tag reader).  The `WiFi` LED should illuminate steadily to indicate a connection.  If it fails to connect, check the router is operating and that its 2.4G WiFi LED is lit.  Perhaps move the clock closer to the router.
 WiFi connected, but still no race time|If the `WebSock` LED does not light, the clock's connection to the CrossMgr PC may be misconfigured.  Check the clock documentation for more information.
 Incorrect time of day|This should resolve itself automatically within a couple of minutes of connecting to the laptop and/or GPS time source via the wireless network.  The clock has its own battery-backed real-time clock; if this happens repeatedly the battery may need replacing.
 Incorrect race time|This should only happen if the network connection has been lost during a race, and even then it should only drift by a matter of seconds.  Check the wireless router and try rebooting the clock or cycling power to re-establish the connection.  Otherwise, something may have gone hideously wrong with CrossMgr, and you have bigger issues.

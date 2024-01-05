@@ -291,43 +291,52 @@ The setup process has been simplified by integrating the router and RFID reader 
 
 If you are using a generator, start it and allow the output to stabilise before connecting the timing equipment.  This prevents damage from voltage spikes or repeated cycling on and off.
 
-![RFID reader etc. in flightcase](./images/flightcase_front.jpg "RFID reader etc. in flight-case")
-
 1. Unpack the cables and loose equipment from the flight-case.  **Prop the flight-case lid open** by engaging the piece of aluminium profile on the right hand side of the lid with the protruding bolt in the base.
-1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end (an adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform), and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon socket on the side of the flight-case, and twist clockwise so it clicks into place.  Connect the other end to mains power (or a generator or inverter supply).  The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
-1. **DC power** of 12-36V can be connected using one (or more) of: **(A)** The small black **2.5mm DC barrel jack** inlet on the side of the flight-case.  (A short jack-jack cable is included to connect to a 2.1mm DC jack)  **(B)** The yellow **male XT60** connector on the side of the flight-case. (Cables are included to connect to spade terminals, or a 12V vehicle cigarette lighter socket) **(C)** The **female USB-C inlet** on the bottom left of the power supply panel. (Cables not included.  The USB power source must be 'laptop' rated - a standard phone-charging power bank cannot provide enough power to run the tag-reader)  Once connected, the DC power display should show a voltage appropriate for your power source, but no significant current/power will be drawn while AC power is present.
+1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end (an adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform), and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon inlet on the side of the flight-case, and twist clockwise so it clicks into place.
+![Conections on the side panel of the flightcase](./images/side_panel.jpg "Connections on the side panel of the flight-case")
+Connect the other end to mains power (or another 85-265V AC supply, eg. from a generator or inverter).  The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
+1. **DC power** of 12-36V can be connected using one (or more) of: **(A)** The small black centre-positive **2.5mm DC barrel jack** inlet on the side of the flight-case.  (A short jack-jack cable is included to connect to a 2.1mm DC jack)  **(B)** The yellow **male XT60** connector on the side of the flight-case. (Cables are included to connect to spade terminals, or a 12V vehicle cigarette lighter socket) **(C)** The **female USB-C inlet** on the bottom left of the power supply panel. (Cables not included.  The USB power source must be 'laptop' rated - a standard phone-charging power bank cannot provide enough power to run the tag-reader)  Once connected, the DC power display should show a voltage appropriate for your power source, but no significant current/power will be drawn while AC power is present.  If DC power does not appear to work, check the polarity, and the respective inlet fuse.
+![Power supply panel](./images/power_supply.jpg "Dual power supply")
 1. Ensure the **AC power failure alarm** switch is in the '**on**' position.  As long as DC power is present, the alarm will sound if the AC supply is interrupted.
 1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the latop.
+!. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unrelaible when operated with sweaty fingers.)
 1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect this end to either of the two RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
-1. Locate appropriately long **coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the male RP-TNC connectors to the female RP-TNC connectors on the tag reader.  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.  By convention, we connect the near-side aerial to channel [fixme] 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
-1. Optional (only needed **for writing tags**): Locate the short coaxial cable with male TNC connector on one end and a male RP-TNC connector on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.  **Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
+1. Locate appropriately long **coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the male RP-TNC connectors to the female RP-TNC connectors on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
+![RP-TNC aerial connctions on RFID tag reade](./images/aerial_connections.jpg "RP-TNC aerial connctions on RFID tag reader")
+By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
+1. Optional (only needed **for writing tags**): Locate the short coaxial cable with male TNC connector on one end and a male RP-TNC connector on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.
+![TNC connector on desktop aerial](./images/desktop_aerial_TNC.jpg "TNC connector on desktop aerial")
+**Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
 1. Attach the camera to a tripod, and connect it to one of the **USB ports** on the left side of the laptop.
 1. Locate the beige **USB-A to USB-C cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.
+![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 1. Optional: Screw the **reflective IR beam break** unit onto its drainpipe and mount it on its stand beside the nearside RFID aerial.  Locate the black **male 3-pin XLR to female 3-pin XLR** cable and use it to connect the IR beam-break unit (alternatively, a tape-switch) to the XLR socket on the Trigger-O-Matic.
 1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
-1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the female PowerCon connector to the back of the clock (again, twisting clockwise to click into place).  Connect the BS1363 mains plug to AC power.  The clock should boot up and display the time of day and temperature as it searches for a WiFi network.
+1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the female PowerCon connector to the back of the clock (again, twisting clockwise to click into place).  Connect the mains plug to AC power.  The clock should boot up and display the time of day and temperature as it searches for a WiFi network.
 
 ### Stourport (far side of track close to finish line) variation
 
-* Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground facing upwards at the trackside in place of the usual nearside aerial.
+* Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground **facing upwards** at the trackside in place of the usual nearside aerial.
 * This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads.
-* Connect it to port 2 (fixme) of the tag reader, and the software will not need to be re-configured.
+* Connect it to port 1 of the tag reader, and the software will not need to be re-configured.
 
 ### Sprint timer
 
 * Additional steps are needed if you will be using the Sprint Timer Unit.  See the **SprintTimer** quick start guide for more information.
 
-## Software startup and Testing
+## Software startup and testing
 
 ### CrossMgrVideo
 
 1. **Boot up the laptop**, and ensure that it is receiving external power.
 1. Start **CrossMgrVideo**.  Hopefully you should see the view from the finish-line camera in the preview window (bottom left).  (If instead you see an image from the laptop's internal camera, check the connections and try using the Reset Camera dialog to select the right one.) 
-1. Click **Config Auto Capture**.  Capture should be set to "**by seconds**".  `3` seconds before and `5` seconds after the trigger are reasonable.  Ensure that **Sequential bib for capture** is disabled, and enable **Play shutter sound** (note that the sound is only played for real-time captures; those triggered retrospectively by CrossMgr are silent).
-1. Check that the autoselect mode (lower right, above the trigger list) is set to "** Fast Preview**"
-1. Click **Monitor/Focus**, and open the cover of the camera's weatherproof case.  Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line, with either a mark on the track or the RFID cable in view as a reference point.
-1. Align the **IR beam break** with the ScotchLite reflector on the RFID aerial on the far side of the track.  The LED should [fixme] light up when the beam is detected.  The drainpipe helps to keep sunlight out of the sensor, but range is limited to about 10 metres at best, so this will not always work.
-1. **Confirm that video is captured** when the **Auto-capture** button on the Trigger-O-Matic is pressed.  Now enable the Auto-Capture toggle switch on the Trigger-O-Matic and confirm that video is captured when the IR beam is broken.  Optionally disable the toggle switch for now, so as not to waste disk space capturing people warming-up.
+1. Click **Config Auto Capture**.  Capture should be set to "**by seconds**".  3 seconds before and 5 seconds after the trigger are reasonable.  Ensure that **Sequential bib for capture** is disabled, and enable **Play shutter sound** (note that the sound is only played for real-time captures; those triggered retrospectively by CrossMgr are silent).
+1. Check that the autoselect mode (lower right, above the trigger list) is set to "**Fast Preview**"
+1. Click **Monitor/Focus**, and open the cover of the camera's weatherproof case.
+![Camera focus and aperture adjustment](./images/finish_line_camera.jpg "Camera focus and aperture adjustment")
+Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line, with either a mark on the track or the RFID cable in view as a reference point.  Close the monitor/focus window.
+1. Align the **IR beam break** with the ScotchLite reflector on the RFID aerial on the far side of the track.  The LED on the beam-break unit should light up when the beam is detected.  The drainpipe helps to keep sunlight out of the sensor, but range is limited to about 10 metres, so this will not always work at all tracks.
+1. **Confirm that video is captured** when the **Auto-capture** button on the Trigger-O-Matic is pressed.  Now enable the Auto-Capture toggle switch on the Trigger-O-Matic and confirm that video is captured when the IR beam is broken.  Disable the toggle switch for now, so as not to waste disk space capturing video of people warming-up.
 1. Minimise CrossMgrVideo and leave it running in the background.
 
 ### CrossMgrImpinj
@@ -382,8 +391,9 @@ If you are using a generator, start it and allow the output to stabilise before 
 1. Start the Impinj **MultiReader** application, and *connect to the configured reader*.
 1. Place the tags on top of the desktop aerial (weighing them down with something non-conductive so they don't blow away).
 1. Click the **START Inventory Run** button.  Two tag numbers shold appear in the list to the left.  Stop the inventory run.
-1. Right-click on one of the tag numbers, and select **Change EPC**.  [fixme]
-1. Referring to the tags backing sheet, enter the new tag number as a hexadecimal number, and click **Write tag**.
+1. Right-click on one of the tag numbers, and select **Change EPC**.
+![MultiReader Change EPC dialog](./images/multireader_change_epc.png "MultiReader Change EPC dialog")
+1. Referring to the tag's backing sheet, enter the new tag number as a hexadecimal number, including leading zeroes, and click **Write tag**.  Check the **Log** pane to confirm this has worked.
 1. Close the window, and change the EPC of the *other* tag in the same way.
 1. Do the inventory run again; you should only see the correct tag number.
 1. Give the tags to the rider, close MultiReader.
@@ -393,12 +403,15 @@ If you are using a generator, start it and allow the output to stabilise before 
 ## Timing a race
 
 ### Final checklist:
-* **Timing tent** guy ropes etc secure?
+* **Timing tent** guy ropes etc secure?  Are the table legs weighed down? (Eg. with the flightcase or cable reel)
 * Are the **RFID aerials** pegged or weighed down?
 * Does the organiser have the **bell** and **flags**?
 * Do you know where the **first aid kit** is?
-* If you are using a **generator**, does it have plenty of **fuel** and oil?  Do you know how to restart it?
-* Place any spare **live tags in the RF-blocking tag bag** to prevent spurious reads.
+* If you are using a **generator**, does it have plenty of **fuel and oil**?  Do you know how to restart it?
+* If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
+* Place any spare **live tags** in the **RF-blocking tag bag** to prevent spurious reads.
+![Tag bag with tag](./images/tag_bag.jpg "The tag bag is made of a material that blocks radio signals")
+Ensure that you place the tags in the correct compartment of the bag - the front pocket does not block the signal.
 * Check the flight-case **power supply**:  Are AC and DC power present?  Is the AC power failure **alarm enabled**?
 * Is the **laptop** running on AC power?  Is its battery charged?
 * Are there any **notifications** from **Windows** (eg. wanting to reboot for updates, virus warnings) that might cause problems?
@@ -410,18 +423,19 @@ If you are using a generator, start it and allow the output to stabilise before 
 * Is the **RFID test** successful?
 * Is the **Race Clock** working and visible?  If it's likely to blow over, place it at ground level.
 * Does someone have a **backup stopwatch** ready?
-* If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
 * Get a **headcount of riders**  on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
 * Do you have a **pen and paper** ready to note down DNFs, incidents etc. as they happen?  *Write the race name on it clearly.*
 * Do you have a device that can **video the finish** if the timing system fails?
 
 ### Starting the mass-start race
 
+(At this point, CrossMgr is assumed to be open on the correct race file, likely with an RFID test in progress.  CrossMgrVideo and CrossMgrImpinj are running in the background.)
+
 1. Finish the RFID test.  Switch to the [Actions][] screen and click the **Start Race** button.  The race will not start until you click '**OK**' on the dialog that pops up.
 1. Tell the person starting the race that you're ready.  Pay attention so you don't miss the start.
 1. Click '**OK**' when they say "Go!"
 1. Switch to the [Results][] screen.  Riders whose tags were read immediately after the start will be listed.  Others will not.
-1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for.
+1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for, so you don't have to work it out.
 1. Enable the **Auto-Capture** toggle switch on the Trigger-O-Matic.
 1. As the riders come round for their first lap, keep an eye out for anyone whose tags aren't reading.  Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if necessary.
 1. Check that CrossMgrVideo is being triggered by CrossMgr, and capturing video successfully.
@@ -496,10 +510,11 @@ This is much like a time trial.  See the SprintTimer documentation.
 At the end of the final race, close CrossMgr and ensure that all race data is backed up.  Close CrossMgrVideo and CrossMgrImpinj, and shut down the laptop, then you can disconnect the equipment.
 
 * The camera, Trigger-O-Matic and IR beam break sensor live in the flight-case with the RFID reader, along with a 4-way mains adaptor.
-* Note the camera only fits in the labelled orientation (lying on its right side in front of the power supply, facing right), and ensure that the WiFi aerial on the router is folded downwards so as not to be crushed by the camera when the lid is closed.
+![Flight-case packed](./images/flightcase_packed.jpg "Flight-case packed")
+* Note the camera only fits properly in the labelled orientation (lying on its right side in front of the power supply, facing right), and **ensure that the WiFi aerial on the left of the router is folded downwards** so as not to be crushed by the camera when the lid is closed.
 * Plug the AC power cable into the 4-way, along with the 4-way's own plug (this makes them more compact), and place the 4-way along the right-hand side of the case beside the tag reader.
 * The Trigger-O-Matic fits in front of the tag reader, with the IR beam-break on top of it.
-* Coil the assorted cables into the remaining space on top of the tag reader, trying to make the pile as flat as possible so the lid can close.  **DO NOT force the lid closed**
+* Coil the assorted cables into the remaining space on top of the tag reader, trying to make the pile as flat as possible so the lid can close.  **DO NOT force the lid closed, you may damage something expensive!**
 
 Item|Location
 :---|:------
@@ -511,11 +526,10 @@ Flight-case AC power cable|Flight-case
 2.5mm to 2.1mm DC barrel jack cable|Flight-case
 XT60 to spade connector cable|Flight-case
 XT60 to cigarette lighter cable|Flight-case
-Short Male TNC to male RP-TNC coaxial cable|Flight-case
+Short TNC to RP-TNC coaxial cable|Flight-case
 Red Ethernet cable|Flight-case
 5m male XLR to female XLR cable|Flight-case
 Male USB-A to male USB-B cable|Flight-case
-Male TNC to female N adaptor|Flight-case
 Laptop|Laptop bag
 Laptop power supply|Laptop bag
 HDMI cable|Laptop bag
@@ -641,7 +655,7 @@ Rider|A participant in a **race**.
 RJ45|The cheap plastic modular connectors used on twisted-pair **Ethernet** cables.  Notable for requiring special tools to fit, and having an easily-broken retaining tab.  RJ45 connectors do not react well to being dropped in mud.  Some of our equipment uses RJ45 connectors in an **XLR** shell, for increased ruggedness.
 Round|A particular type of **race**.  For example "30 minute criterium" "1-lap time trial".  At BHPC **events**, a **round** may be composed of more than one **race**, as the BHPC often splits the group for safety reasons.
 Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as a simples **Ethernet switch** and **WiFi** **access point**.
-RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**.
+RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**. ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - RP-TNC on the top")
 Series|A championship table for a racing season or **event**.  A SeriesMgr `.smn` file pertaining to a series.
 SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the **CrossMgr** suite.
 Sign-on sheet|An **Excel** file containing details of riders, used by **CrossMgr** to populate the [categories][Category Screen] table and look up rider's names, teams, etc.  Crucially, this is needed in order to match **tags** to **riders**.
@@ -654,17 +668,17 @@ Start Time|The **time of day** that a **mass start** **race** started at, or the
 Start Wave|A **CrossMgr** term for a [Category][Category Screen] that defines a group of **riders** who start the **race** at the same time.  We would normally have a single Start Wave in a **race**.
 Stopwatch|A standalone timing device that you can use to time **races** when you don't trust the timing system.
 Stray tag|An **RFID tag** which has been within range of the **RFID** aerials for some time.  Usually an unused tag in the box of timing equipment, or a tag attached to a rider's helmet or HPV that has been left near the **finish line**.  Stray tags matching the **tag number** of a **rider** in the current **race** can cause all sorts of problems.
-Tag|A physical RFID tag (as stuck to a rider's HPV or helmet), or the Product ID number encoded onto it.  Tag numbers are sent to **CrossMgr** whenever a tag passes within range of the **RFID** aerials.
+Tag|A physical RFID tag (as stuck to a rider's HPV or helmet), or the Product ID number encoded onto it. ![Monza Dogbone R6 tag](./images/timing_tag.jpg "RFID tag")  Tag numbers are sent to **CrossMgr** whenever a tag passes within range of the **RFID** aerials.
 Tape Switch|An momentary electrical switch in a long, flat format that may be operated by pressure at any point along its length.  These can be used to trigger a timing device when a wheel passes over them.
 TCP/IP|*Transmission Control Protocol/Internet Protocol*.  The de-facto standard protocol for computer networking.  Used by the **CrossMgr** suite applications to communicate with each other and with external hardware over **Ethernet** or **WiFi**.
 Team|In CrossMgr, a Team is an attribute of a **rider**.  **Points** may be calculated on a team basis.
 Time of day, Wall time|The time of day, possibly including the date.  May be UTC or in the local timezone.  Contrast with **Race time**.
 Time Trial|A type of **race** where **riders** start at different times, and compete against the clock.
-TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC**
+TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC** ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - TNC on the bottom")
 Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from **CrossMgr** over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
 Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.
 UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things, and have a strange obsession with socks.
-USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.
+USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.  ![USB connectors](./images/usb_connectors.webp "Spotters' guide to USB connectors")
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.
 USB-B|The large square USB connector usually found on printers and scanners.  The Trigger-O-Matic, Race Clock and Sprint Timer Unit have USB-B connectors in the interests of durability.
 USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.

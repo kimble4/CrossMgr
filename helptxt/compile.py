@@ -30,7 +30,7 @@ def InlineImages( html ):
 		try:
 			with open(os.path.join('images',fname), 'rb') as f:
 				b64 = str(base64.b64encode( f.read() ))[2:-1]
-			sReplace = 'src="data:image/{};base64,{}"'.format(
+			sReplace = 'src="data:image/{};base64,{}" width=100%'.format(
 				os.path.splitext(fname)[1][1:],
 				b64,
 			)
