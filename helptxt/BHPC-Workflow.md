@@ -562,14 +562,60 @@ Desktop aerial|Must go with flight-case and laptop bag for writing tags for next
 
 Perhaps unintuitively, this is usually the best place to start, as it will be useful for correcting finish times.
 
-For each race:
+![CrossMgrVideo](./images/CrossMgrVideo.png "CrossMgrVideo")
 
-1. Determine the leader's finish time from CrossMgr.
+1. Start CrossMgrVideo.  Select **"Disable Capture**" from the Tools menu (this stops it wasting system resources maintaining a ring-buffer of the internal webcam feed).
+1. If necessary, select the race date using the **Select Date** button.
+
+Then, for each race:
+
+1. Determine the **leader's finish time** from CrossMgr.
 1. Locate the associated trigger in CrossMgrVideo, and confirm they take the flag.
+1. Use the mouse scrollwheel (or **+** and **-** buttons in the GUI ) to **find the frame** where the HPV crosses the finish line.
+1. Click the "**Save view to the Database**" icon to mark this frame.
+1. Click **Edit Info** and put "Takes flag" in the Note field for future reference.
+1. Click the "**Toggle Publish**" to enable publish for this image.
+1. Right-click on the trigger in the list, and select "**Publish wave finishes from here**" fromt he context menu.  CrossMgrVideo will automatically select one trigger for each subsequent rider in the race for publication.  This saves you having to keep track of which riders you've processed so far.
+1. For each selected-for-publication trigger, find the frame where the HPV crosses the finish line, and **Save the view to the database**.
+1. If for some reason the trigger does not show the rider getting the flag (Eg. a missed read on their final lap, and you are looking at them warming-down), de-select it for publication, and go hunting for that rider's true finish time.
 
-[fixme]
+Once you have selected the triggers for all races (possibly after you finish processing their CrossMgr and SeriesMgr data), you can generate HTML and image files for publication on the web:
+
+1. Click the "**Photo Web Page**" button to open the Photo Publish dialog.
+1. Browse to an empty directory to store the photos.  Eg. "`C:\Users\BHPC\Documents\BHPC Racing\2025\Photos\07 Darley Moor`" and click **Select Folder**.
+1. Set **Photo Output** to "**Selected: Output a photo for each trigger selected for publication**".
+1. Set **Web Page Generation** to "**Recommended: .html page lings to photos in separate .jpeg files**"
+1. Click **OK**.  It may take a few seconds to generate the files.
+1. Open the generated index page in a web browser and confirm that it works properly.
+1. To transfer the files to the BHPC web-server, use an FTP client.  FileZilla on the laptop should be configured with the relevant login details.
 
 ## Fixing the timing data
+
+Keeping CrossMgrVideo open in the background (or even better, on another display device) for reference, open the `.cmn` file for the race.
+Fixing the race data is not an exact science, but:
+
+* First, ensure the **leader's finish time** is correct (hopefully corroborated by the video timestamp showing them passing the chequered flag).
+* For a criterium, check the **race duration **is adjusted so that this is the leader's final lap time.
+* If you have **DNF riders**, ensure their status is set to DNF at an appropriate time.
+* Now check you have good **finish times for all the other riders**.  If there is no tag read, you may be able to find them on the video (either triggered by another rider, or auto-captured).
+* If there is a **close finish** (CrossMgr will highlight this in blue), refer to the video, and edit the finish times to match the video timestamps (this is higher precision than the RFID).
+* Now, examine the **lap times**.  Look for yellow extrapolated lap times, or unusually long or short laps.  Try to reconcile these with your notes.  (Eg. Perhaps a rider stopped for a mechanical and lost 3 laps.  Or perhaps they stopped behind the timing tent and accumulated some spurious reads.  Or maybe their timing tags were just reading intermittently.)
+* If you have spruious reads, it may be helpful to adjust the **Min Possible Lap Time** to be just lower than the true fastest lap.
+* To correct a rider's times, open the **RiderDetail** window, and disable **Autocorrect Lap Data**.  This will remove their extrapolated lap times, leaving the tag reads/manual entries that are not filtered.
+* To add a missing laps, click on the long lap in the coloured chart, and **add splits** as needed.
+* To **remove spurious laps**, delete or correct the times in the list on the left.
+* If a rider's tags were not reading, check the **Unmatched RFID Tags** window, in case a tag with an unexpected number was recorded (This might indicate a problem with the sign-on sheet, a mistake made when writing tags, or perhaps they had a random tag from some other event that you can use retrospectively.)
+* If you have a `.gpx` file from a rider's GPS unit, you can import this to generate lap times.  See [DataMgmt][] for details.
+* If CrossMgr failed for some reason during the race, you may be able to recover tag read data from CrossMgrImpinj's own log.
+* Spooling through the video to see if you can spot riders in the video of other riders' triggers is often fruitful.  Once you have entered some lap times, you can use the extrapolated laps as a guide to where in the video to look.
+* Eventually you should have corrected everything you can with the information you have.  If necessary, appeal to the BHPC forum for more information; riders are likely to know their position relative to each other, which you can use to fudge the times as necessary.
+
+
+
+
+
+
+## Merging races
 
 ## Scoring
 
@@ -594,7 +640,7 @@ Component Category|A sub-category that makes up a **Start Wave**.  We don't usua
 Criterium|A type of cycle race where riders race for a certain period of time, and then complete an extra lap.  **CrossMgr** cannot handle this on its own, as it cannot know whether the leader will cross the finish line before or after the time period has elapsed until after it has happened.
 CrossMgr|A software application designed for timing cyclocross races developed by Edward Sitarski.  The suite of applications that complement CrossMgr.
 CrossMgrImpinj|A software application that allows **Impinj** **RFID** readers to be used with **CrossMgr** by emulating a **JChip** reader.
-CrossMgrVideo|A software application that grabs short sequences of video from a **USB** camera and stores them in a database.  Used in combination with **CrossMgr** to collect time-stamped **finish line** images.
+CrossMgrVideo|A software application that grabs short sequences of video from a **USB** camera and stores them in a database.  Used in combination with **CrossMgr** to collect time-stamped **finish line** images.  ![CrossMgrVideo](./images/CrossMgrVideo.png "CrossMgrVideo")
 CustomCategory|**CrossMgr** term for an arbitrary [Category][Category Screen] that is used to generate a ranking, but does not control when riders start and finish.
 DNF|*Did Not Finish* - status given to **riders** who fail to complete a **race**.
 DNS (computing)|*Domain Name System* a system for resolving human-readable names like `www.bhpc.org.uk` to IP addresses like `92.53.241.24` and vice-versa, by querying a *DNS Server*.  A DNS server is not normally available at the track-side, so devices must be referred to by their IP address.
@@ -612,6 +658,7 @@ Finish order|The order in which **riders** cross the **finish line** at the end 
 Flag|A chequered flag is waved to indicate that riders are finishing the **race**.  We may refer to a rider 'getting the flag' when their race is over.  A red flag is used to stop the race in an emergency.
 FTP(S), SFTP|*File Transfer Protocol (Secure)*, *SSH File Transfer Protocol* - Protocols used for transferring files over a TCP/IP network.  CrossMgr uses this to upload results to a website.
 Gender|In **CrossMgr** terms this may be one of 'Open', 'Women' or 'Men'.  Most **BHPC** [Categories][Category Screen] are 'Open'.
+Global Shutter|A type of electronic camera where the state of every pixel in the image sensor is recorded at the same moment in time, rather than reading them sequentially.  This prevents *rolling shutter distortion* artefacts on moving objects.
 GPS|*Global Positoning System*.  A satellite navigation system that can be used to determine positions in space and time.
 GPX (track)|A standard file format used by **GPS** receivers to record positions over a period of time.  Used by **CrossMgr** to draw the race animation, and to import lap times for riders.
 Hexadecimal, Hex|Numbers in base 16 (0-F), rather than the usual base 10 (0-9).  Used for tag numbers.
@@ -654,7 +701,7 @@ RFID|*Radio Frequency Identification*.  In this context a long-range high-throug
 Rider|A participant in a **race**.
 RJ45|The cheap plastic modular connectors used on twisted-pair **Ethernet** cables.  Notable for requiring special tools to fit, and having an easily-broken retaining tab.  RJ45 connectors do not react well to being dropped in mud.  Some of our equipment uses RJ45 connectors in an **XLR** shell, for increased ruggedness.
 Round|A particular type of **race**.  For example "30 minute criterium" "1-lap time trial".  At BHPC **events**, a **round** may be composed of more than one **race**, as the BHPC often splits the group for safety reasons.
-Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as a simples **Ethernet switch** and **WiFi** **access point**.
+Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as a simple **Ethernet switch** and **WiFi** **access point**.  ![Router LEDs](./images/router_blinkenlights.jpg "Router LEDs")
 RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**. ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - RP-TNC on the top")
 Series|A championship table for a racing season or **event**.  A SeriesMgr `.smn` file pertaining to a series.
 SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the **CrossMgr** suite.
@@ -669,6 +716,7 @@ Start Wave|A **CrossMgr** term for a [Category][Category Screen] that defines a 
 Stopwatch|A standalone timing device that you can use to time **races** when you don't trust the timing system.
 Stray tag|An **RFID tag** which has been within range of the **RFID** aerials for some time.  Usually an unused tag in the box of timing equipment, or a tag attached to a rider's helmet or HPV that has been left near the **finish line**.  Stray tags matching the **tag number** of a **rider** in the current **race** can cause all sorts of problems.
 Tag|A physical RFID tag (as stuck to a rider's HPV or helmet), or the Product ID number encoded onto it. ![Monza Dogbone R6 tag](./images/timing_tag.jpg "RFID tag")  Tag numbers are sent to **CrossMgr** whenever a tag passes within range of the **RFID** aerials.
+Tag reader|The **Impinj** *Speedway* unit mounted in the flight-case, which contains an embedded computer and the radio transmitter and receiver needed for reading and writing RFID tags.  This communicates with software running on the laptop using **LLRP** over **TCP/IP** over wired **Ethernet**. ![Impinj Speedway](./images/aerial_connections.jpg "Impinj Speedway RFID tag reader")
 Tape Switch|An momentary electrical switch in a long, flat format that may be operated by pressure at any point along its length.  These can be used to trigger a timing device when a wheel passes over them.
 TCP/IP|*Transmission Control Protocol/Internet Protocol*.  The de-facto standard protocol for computer networking.  Used by the **CrossMgr** suite applications to communicate with each other and with external hardware over **Ethernet** or **WiFi**.
 Team|In CrossMgr, a Team is an attribute of a **rider**.  **Points** may be calculated on a team basis.
@@ -676,7 +724,7 @@ Time of day, Wall time|The time of day, possibly including the date.  May be UTC
 Time Trial|A type of **race** where **riders** start at different times, and compete against the clock.
 TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC** ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - TNC on the bottom")
 Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from **CrossMgr** over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
-Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.
+Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.  ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things, and have a strange obsession with socks.
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.  ![USB connectors](./images/usb_connectors.webp "Spotters' guide to USB connectors")
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.

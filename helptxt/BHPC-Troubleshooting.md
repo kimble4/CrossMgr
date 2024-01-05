@@ -79,7 +79,7 @@ If this is correct, then you have some sort of networking problem between the la
 ![Tag reader LEDs](./images/aerial_connections.jpg "Tag reader Status and Power LEDs (right)")
 - That the status LED on the tag reader is GREEN (when ready and idle), or flashing ORANGE (when the reader is operating)
 - That the power LED on the router is solid GREEN (flashes during bootup)
-![Tag reader LEDs](./images/router_blinkenlights.jpg "Tag reader Status and Power LEDs (right)")
+![Router LEDs](./images/router_blinkenlights.jpg "Router LEDs")
 - That the Ethernet LED on the router labelled "RFID Reader" is lit up (flashing to show activity is good)
 - That the LEDs on the tag reader's Ethernet port are also lit
 - That the Ethernet LED on the router corresponding to the RJ45 port the laptop is connected to is lit (flashing to show activity is good)
