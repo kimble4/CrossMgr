@@ -575,7 +575,7 @@ Then, for each race:
 1. Click the "**Save view to the Database**" icon to mark this frame.
 1. Click **Edit Info** and put "Takes flag" in the Note field for future reference.
 1. Click the "**Toggle Publish**" to enable publish for this image.
-1. Right-click on the trigger in the list, and select "**Publish wave finishes from here**" fromt he context menu.  CrossMgrVideo will automatically select one trigger for each subsequent rider in the race for publication.  This saves you having to keep track of which riders you've processed so far.
+1. Right-click on the trigger in the list, and select "**Publish wave finishes from here**" from the context menu.  CrossMgrVideo will automatically select one trigger for each subsequent rider in the race for publication.  This saves you having to keep track of which riders you've processed so far.
 1. For each selected-for-publication trigger, find the frame where the HPV crosses the finish line, and **Save the view to the database**.
 1. If for some reason the trigger does not show the rider getting the flag (Eg. a missed read on their final lap, and you are looking at them warming-down), de-select it for publication, and go hunting for that rider's true finish time.
 
@@ -599,7 +599,7 @@ Fixing the race data is not an exact science, but:
 * If you have **DNF riders**, ensure their status is set to DNF at an appropriate time.
 * Now check you have good **finish times for all the other riders**.  If there is no tag read, you may be able to find them on the video (either triggered by another rider, or auto-captured).
 * If there is a **close finish** (CrossMgr will highlight this in blue), refer to the video, and edit the finish times to match the video timestamps (this is higher precision than the RFID).
-* Now, examine the **lap times**.  Look for yellow extrapolated lap times, or unusually long or short laps.  Try to reconcile these with your notes.  (Eg. Perhaps a rider stopped for a mechanical and lost 3 laps.  Or perhaps they stopped behind the timing tent and accumulated some spurious reads.  Or maybe their timing tags were just reading intermittently.)
+* Now, examine the rest of the **lap times**.  Look for yellow extrapolated lap times, or unusually long or short laps (the [Chart][] view may be helpful).  Try to reconcile these with your notes.  (Eg. Perhaps a rider stopped for a mechanical and lost some laps.  Or perhaps they walked behind the timing tent and accumulated some spurious reads.  Or maybe their timing tags were just reading intermittently.)
 * If you have spruious reads, it may be helpful to adjust the **Min Possible Lap Time** to be just lower than the true fastest lap.
 * To correct a rider's times, open the **RiderDetail** window, and disable **Autocorrect Lap Data**.  This will remove their extrapolated lap times, leaving the tag reads/manual entries that are not filtered.
 * To add a missing laps, click on the long lap in the coloured chart, and **add splits** as needed.
@@ -607,7 +607,7 @@ Fixing the race data is not an exact science, but:
 * If a rider's tags were not reading, check the **Unmatched RFID Tags** window, in case a tag with an unexpected number was recorded (This might indicate a problem with the sign-on sheet, a mistake made when writing tags, or perhaps they had a random tag from some other event that you can use retrospectively.)
 * If you have a `.gpx` file from a rider's GPS unit, you can import this to generate lap times.  See [DataMgmt][] for details.
 * If CrossMgr failed for some reason during the race, you may be able to recover tag read data from CrossMgrImpinj's own log.
-* Spooling through the video to see if you can spot riders in the video of other riders' triggers is often fruitful.  Once you have entered some lap times, you can use the extrapolated laps as a guide to where in the video to look.
+* Spooling through the video to see if you can spot riders in other riders' triggers is often fruitful.  Once you have entered some lap times, you can use the extrapolated laps as a guide to where in the video to look.
 * Eventually you should have corrected everything you can with the information you have.  If necessary, appeal to the BHPC forum for more information; riders are likely to know their position relative to each other, which you can use to fudge the times as necessary.
 
 
