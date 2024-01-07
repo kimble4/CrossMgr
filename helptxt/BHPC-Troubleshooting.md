@@ -8,7 +8,7 @@ Topics are listed in approximate order of urgency.  The search facility may be u
 
 ## Before the race
 
-### Changing a rider's race classes
+### Changing a rider's race categories
 
 This can be done in the sign-on system, or by editing the racers spreadsheet.  If you edit the spreadsheet your changes will be lost if it is re-written by the sign-on system.  Be careful with the spelling of category names, if they do not match, additional categories will be created.
 
@@ -303,9 +303,9 @@ If something serious goes wrong during a merge it probably needs Kim to meditate
 
 If ranking by average speed, ensure that all [Categories][Category Screen] have a lap distance set.
 
-### Spurious (Women) classes in SeriesMgr table
+### Spurious (Women) categories in SeriesMgr table
 
-A catgeory's gender has been set incorrectly in one of the race files, causing a separate category to be created (look at who's ranked in it to work out which race).  CrossMgr sometimes interprets categories with only female riders as being women's categories when they should be 'Open'.  Fix the [Categories][Category Screen] in the relevant race, and refresh the results.
+A catgeory's gender has been set incorrectly in one of the race files, causing a new category to be created (look at who is ranked in it to work out which race).  CrossMgr sometimes interprets categories with only female riders as being women's categories when they should be 'Open'.  Fix the [Categories][Category Screen] in the relevant race, and refresh the results.
 
 
 ## Misc

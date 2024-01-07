@@ -299,12 +299,12 @@ Connect the other end to mains power (or another 85-265V AC supply, eg. from a g
 ![Power supply panel](./images/power_supply.jpg "Dual power supply")
 1. Ensure the **AC power failure alarm** switch is in the '**on**' position.  As long as DC power is present, the alarm will sound if the AC supply is interrupted.
 1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the latop.
-!. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unrelaible when operated with sweaty fingers.)
-1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect this end to either of the two RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
-1. Locate appropriately long **coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the male RP-TNC connectors to the female RP-TNC connectors on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
+1. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unrelaible when operated with sweaty fingers.)
+1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect this end to *either* of the two RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
+1. Locate the **long coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the RP-TNC plugs to the RP-TNC jacks on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
 ![RP-TNC aerial connctions on RFID tag reade](./images/aerial_connections.jpg "RP-TNC aerial connctions on RFID tag reader")
 By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
-1. Optional (only needed **for writing tags**): Locate the short coaxial cable with male TNC connector on one end and a male RP-TNC connector on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.
+1. Optional (only needed **for writing tags**): Locate the short coaxial cable with a TNC plug on one end and RP-TNC plug on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.
 ![TNC connector on desktop aerial](./images/desktop_aerial_TNC.jpg "TNC connector on desktop aerial")
 **Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
 1. Attach the camera to a tripod, and connect it to one of the **USB ports** on the left side of the laptop.
@@ -316,7 +316,7 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 
 ### Stourport (far side of track close to finish line) variation
 
-* Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground **facing upwards** at the trackside in place of the usual nearside aerial.
+* Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground **facing upwards** at the trackside in place of the usual **nearside** aerial.
 * This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads.
 * Connect it to port 1 of the tag reader, and the software will not need to be re-configured.
 
@@ -334,9 +334,9 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 1. Check that the autoselect mode (lower right, above the trigger list) is set to "**Fast Preview**"
 1. Click **Monitor/Focus**, and open the cover of the camera's weatherproof case.
 ![Camera focus and aperture adjustment](./images/finish_line_camera.jpg "Camera focus and aperture adjustment")
-Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line, with either a mark on the track or the RFID cable in view as a reference point.  Close the monitor/focus window.
+Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line (positioning of the camera is more critical than the RFID aerials), with either a mark on the track or the RFID cable in view as a reference point.  Close the monitor/focus window.
 1. Align the **IR beam break** with the ScotchLite reflector on the RFID aerial on the far side of the track.  The LED on the beam-break unit should light up when the beam is detected.  The drainpipe helps to keep sunlight out of the sensor, but range is limited to about 10 metres, so this will not always work at all tracks.
-1. **Confirm that video is captured** when the **Auto-capture** button on the Trigger-O-Matic is pressed.  Now enable the Auto-Capture toggle switch on the Trigger-O-Matic and confirm that video is captured when the IR beam is broken.  Disable the toggle switch for now, so as not to waste disk space capturing video of people warming-up.
+1. **Confirm that video is captured** when the **Auto-capture** button on the Trigger-O-Matic is pressed.  Now enable the Auto-Capture toggle switch on the Trigger-O-Matic and confirm that video is captured when the IR beam is broken.  Set the toggle switch back to 'Disable' for now, so as not to waste disk space capturing video of people warming-up.
 1. Minimise CrossMgrVideo and leave it running in the background.
 
 ### CrossMgrImpinj
@@ -365,10 +365,10 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. Double-click the `.cmn` file for the first race.  CrossMgr should start and you should be looking at the [Actions][] screen.  *Do not* click on the big friendly '**Start Race**' button until you mean it!
 1. Switch to [Properties][] and double-check the settings in each of the tabs.  Refer to the earlier part of this guide if necessary.
 1. Also check the [Categories][] screen.
-1. If you will be using live results, confirm that the FTP upload works.  Check that an `index.html` page linking to the race file(s) is present on the web server: You may need to perform a bath publish of the un-started race(s).
+1. If you will be using live results, confirm that the FTP upload works.  **Check that an `index.html` page linking to the race file(s) is present on the web server**: You may need to perform a bath publish of the un-started race(s).
 1. If this is all okay, go to [Properties/RFID][RFID], and click **Setup/Test RFID Reader...**
 1. Start the **RFID test**.  CrossMgrImpinj should establish a connection and you should start to see tag reads in the **Messages** pane.
-1. You can leave the RFID test running until the race is about to start.  This allows you to check that rider's tags are working.
+1. You can **leave the RFID test running** until the race is about to start.  This allows you to check that rider's tags are working.
 
 ### Race Clock
 
@@ -379,26 +379,26 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 
 ### Someone needs tags!
 
-* This is usually the point in proceedings where someone will come to you with a sob story about having to remove their timing tags for a pedal car race, leaving them on their other helmet or their fairing being eaten by a grue.  Alternately, you may have established that their existing tags are don't work properly during the RFID test, or are in danger of peeling off.
+* This is usually the point in proceedings where someone will come to you with a sob story about having to remove their timing tags for a pedal car race, leaving them on their other helmet or their fairing being eaten by a grue.  Alternately, you may have established that their existing tags are not working properly during the RFID test, or are in danger of peeling off.  Either way, they need new timing tags.
 
-* First, check that you haven't already got a set of new tags for them in the tag bag - *riders will not always remember if they asked for new tags at sign on*.  If you have to write new tags:
+* First, **check that you haven't already got a set of new tags** for them in the tag bag - riders will not always remember if they asked for new tags at sign on.  If you have to write new tags:
 
-1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the front of the tags with the rider's bib number in permanent marker pen.
-1. Establish what the rider's tag numbers should be in hexadecimal [fixme], and write this on the back of the tags' backing sheet.  *Do not trust yourself to hold this in short-term memory; someone will distract you and this is how mistakes get made*.
-1. Stop the RFID test, if running, and close CrossMgr.
-1. Close CrossMgrImpinj to free up the tag reader.
+1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
+1. Establish what the rider's **tag numbers** should be in hexadecimal (refer to the sign-on sheet if necessary), and write this on the **back** of the tags' backing sheet.  *Do not trust yourself to hold this in short-term memory; someone will distract you and this is how mistakes get made*.
+1. Stop the RFID test, if running, and **close CrossMgr**.
+1. **Close CrossMgrImpinj** to free up the tag reader.
 1. If the desktop aerial is not connected to port 3, follow the instructions above to connect it.
 1. Start the Impinj **MultiReader** application, and *connect to the configured reader*.
 1. Place the tags on top of the desktop aerial (weighing them down with something non-conductive so they don't blow away).
 1. Click the **START Inventory Run** button.  Two tag numbers shold appear in the list to the left.  Stop the inventory run.
 1. Right-click on one of the tag numbers, and select **Change EPC**.
 ![MultiReader Change EPC dialog](./images/multireader_change_epc.png "MultiReader Change EPC dialog")
-1. Referring to the tag's backing sheet, enter the new tag number as a hexadecimal number, including leading zeroes, and click **Write tag**.  Check the **Log** pane to confirm this has worked.
-1. Close the window, and change the EPC of the *other* tag in the same way.
-1. Do the inventory run again; you should only see the correct tag number.
-1. Give the tags to the rider, close MultiReader.
-1. Restart CrossMgrImpinj.
-1. Reopen the CrossMgr race file and re-start the RFID test.  If carbon fibre or similar are involved, this might be a good time to check the new tags work actually work once attached to the HPV.
+1. Referring to the tag's backing sheet, enter the new tag number as a hexadecimal number, including leading zeroes (delimiting each group of 4 hexadecimal digits with a '-'), and click **Write tag**.  Check the **Log** pane to confirm this has worked.
+1. Close the window, and change the EPC of the *other* tag in the same way.  (Note that if you attempt to write a tag twice, the subsequent attempts will fail, as the current EPC of the tag will have changed on the first successful attempt.)
+1. Do the **inventory run** again; you should only see the correct tag number.
+1. Give the tags to the rider, **close MultiReader**.
+1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
+1. **Reopen the CrossMgr race file** and re-start the **RFID test**.  If carbon fibre or similar are involved, this might be a good time to check the new tags work actually work once attached to the HPV.
 
 ## Timing a race
 
@@ -407,11 +407,11 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 * Are the **RFID aerials** pegged or weighed down?
 * Does the organiser have the **bell** and **flags**?
 * Do you know where the **first aid kit** is?
-* If you are using a **generator**, does it have plenty of **fuel and oil**?  Do you know how to restart it?
+* If you are using a **generator**, does it have plenty of **fuel and oil**?  Do you know how to refuel and restart it?
 * If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
-* Place any spare **live tags** in the **RF-blocking tag bag** to prevent spurious reads.
+* Place any **spare live tags** in the **RF-blocking tag bag** to prevent spurious reads.
 ![Tag bag with tag](./images/tag_bag.jpg "The tag bag is made of a material that blocks radio signals")
-Ensure that you place the tags in the correct compartment of the bag - the front pocket does not block the signal.
+Ensure that you place the tags in the correct compartment of the bag - the front pocket does not block the signal.  Unwritten tags with their factory unique ID numbers are harmless.
 * Check the flight-case **power supply**:  Are AC and DC power present?  Is the AC power failure **alarm enabled**?
 * Is the **laptop** running on AC power?  Is its battery charged?
 * Are there any **notifications** from **Windows** (eg. wanting to reboot for updates, virus warnings) that might cause problems?
@@ -424,7 +424,7 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 * Is the **Race Clock** working and visible?  If it's likely to blow over, place it at ground level.
 * Does someone have a **backup stopwatch** ready?
 * Get a **headcount of riders**  on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
-* Do you have a **pen and paper** ready to note down DNFs, incidents etc. as they happen?  *Write the race name on it clearly.*
+* Do you have a **pen and paper** ready to note down DNFs, incidents, HPV changes, etc. as they happen?  *Write the race name on it clearly.*
 * Do you have a device that can **video the finish** if the timing system fails?
 
 ### Starting the mass-start race
@@ -435,14 +435,14 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 1. Tell the person starting the race that you're ready.  Pay attention so you don't miss the start.
 1. Click '**OK**' when they say "Go!"
 1. Switch to the [Results][] screen.  Riders whose tags were read immediately after the start will be listed.  Others will not.
-1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for, so you don't have to work it out.
-1. Enable the **Auto-Capture** toggle switch on the Trigger-O-Matic.
+1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for, so you don't have to work it out by hand.
+1. If using the IR beam-break, enable the **Auto-Capture** toggle switch on the Trigger-O-Matic.
 1. As the riders come round for their first lap, keep an eye out for anyone whose tags aren't reading.  Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if necessary.
 1. Check that CrossMgrVideo is being triggered by CrossMgr, and capturing video successfully.
 
-Once all riders are accounted for, you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure if the ambient light level changes drastically.  
+Once all riders are accounted for, you can close the [Missing Riders][Windows] window.  In theory you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure if the ambient light level changes drastically.
 
-Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if something goes wrong during the race.
+Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if something goes wrong during the race, eg. tags not reading.
 
 ### Race finish
 
@@ -457,6 +457,7 @@ As CrossMgr cannot determine when the leader is going to get the bell, you will 
 1. Click "**Commit**".
 1. Return to the [Results][] screen.
 1. Hopefully this shows the leader with a single predicted (yellow) lap still to go.  When they finish the race, this should turn white.  Other riders' predicted final laps will turn white as their tags are read.  If things look wrong, *don't panic* - changes to the race duration are reversible.  As long as you don't Finish the race, CrossMgr will keep recording tag reads, even if they are not shown in the Results.
+1. As riders cross the finish for the final time, it's worth using the **manual buttons on the Trigger-O-Matic** to ensure that they are definitely captured on video.  (There is no harm in manually triggering the capture in addition to the automatic captures triggered by CrossMgr or the beam-break - CrossMgrVideo only stores a single copy of each video frame in the database.)  A short press of the **Auto-Capture** button will grab a few seconds of video, starting *before* you pressed the button.  Meanwhile, the **Capture** button will cause video to be recorded continuously for as long as it is held down, starting from when you press it.  Note that holding it down for more than 30 seconds or so at a time will put a very heavy load on the database - best to release it at intervals than to try to hold it down continuously for the entire finish.
 1. If all riders are predicted to ride the same number of laps as the leader, check the "**Lapped Riders Continue**" settings in the [Category Screen][].
 1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
 
@@ -467,6 +468,7 @@ Unlike a criterium, CrossMgr can work out when the end of the race is without in
 
 1. Remind the *bell-ringer / flag-waver* to stand on the opposite side of the finish line, so they can be seen by the camera.
 1. You can sit and watch the predicted final lap times turn yellow as riders' tags are read.
+1. As riders cross the finish for the final time, it's worth using the **manual buttons on the Trigger-O-Matic** to ensure that they are definitely captured on video.  (There is no harm in manually triggering the capture in addition to the automatic captures triggered by CrossMgr or the beam-break - CrossMgrVideo only stores a single copy of each video frame in the database.)  A short press of the **Auto-Capture** button will grab a few seconds of video, starting *before* you pressed the button.  Meanwhile, the **Capture** button will cause video to be recorded continuously for as long as it is held down, starting from when you press it.  Note that holding it down for more than 30 seconds or so at a time will put a very heavy load on the database - best to release it at intervals than to try to hold it down continuously for the entire finish.
 1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
 
 
@@ -476,6 +478,7 @@ CrossMgr can work out when the end of the race is without intervention.
 
 1. Remind the *bell-ringer / flag-waver* to stand on the opposite side of the finish line, so they can be seen by the camera.
 1. You can sit and watch the predicted final lap times turn yellow as riders' tags are read.
+1. As riders cross the finish for the final time, it's worth using the **manual buttons on the Trigger-O-Matic** to ensure that they are definitely captured on video.  (There is no harm in manually triggering the capture in addition to the automatic captures triggered by CrossMgr or the beam-break - CrossMgrVideo only stores a single copy of each video frame in the database.)  A short press of the **Auto-Capture** button will grab a few seconds of video, starting *before* you pressed the button.  Meanwhile, the **Capture** button will cause video to be recorded continuously for as long as it is held down, starting from when you press it.  Note that holding it down for more than 30 seconds or so at a time will put a very heavy load on the database - best to release it at intervals than to try to hold it down continuously for the entire finish.
 1. If all riders are not predicted to ride the full number of laps, check the "**Lapped Riders Continue**" settings in the [Category Screen][].
 1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
 
@@ -497,17 +500,18 @@ This is much like a time trial.  See the SprintTimer documentation.
 
 ## After the race
 
-1. Before making non-trivial corrections to the race data, close CrossMgr and create a backup of the file.
-1. Set riders to DNF as needed.
+1. Before making non-trivial corrections to the race data, **close CrossMgr and create a backup copy of the file**.
+1. Set riders to **DNF** as needed.
 1. Investigate riders who stopped, or whose tags weren't reading.  Make notes.
 1. If you have time, refer to CrossMgrVideo to see if you can fill in any missing lap times.
-1. If a rider's results are a mess, set their status to NP.
-1. Batch publish the race to the web so the live results are up to date.
-1. Ensure that your paper notes are in a safe place, and move on to setting up the next race.  Unless you urgently need to know the ranking to award trophies, correcting results is best done somewhere warm and quiet without any time pressure or interruptions.
+1. If a rider's results are a mess, set their status to **NP**.
+1. **Batch publish** the race to the web so the live results are up to date.
+1. Ensure that your **paper notes** are in a safe place.
+1. Move on to **setting up the next race**.  Unless you urgently need to know the ranking to award trophies, correcting results is best done somewhere warm and quiet without any time pressure or interruptions.
 
 ## Packing up
 
-At the end of the final race, close CrossMgr and ensure that all race data is backed up.  Close CrossMgrVideo and CrossMgrImpinj, and shut down the laptop, then you can disconnect the equipment.
+At the end of the final race, close CrossMgr and ensure that **all race data is backed up**.  Close CrossMgrVideo and CrossMgrImpinj, and shut down the laptop, then you can disconnect the equipment.
 
 * The camera, Trigger-O-Matic and IR beam break sensor live in the flight-case with the RFID reader, along with a 4-way mains adaptor.
 ![Flight-case packed](./images/flightcase_packed.jpg "Flight-case packed")
@@ -539,7 +543,7 @@ Clipboard|Laptop bag
 RF-blocking tag-bag|Laptop bag
 Jiffy bag of unused tags|Laptop bag
 Small pens|Laptop bag
-Long male N-connector to male RP-TNC coaxial cables|Timing crate
+Long male N-connector to RP-TNC plug coaxial cables|Timing crate
 Race clock AC power cable|Timing crate
 BS1363 to 16A Ceeform adaptor|Timing crate
 Bell|Timing crate
@@ -550,10 +554,10 @@ Random cardboard, correx, etc|Timing crate
 Foam pads for spacing tags off conductive materials|Timing crate
 Steel tent pegs for aerials|Timing crate
 Mallet|Timing crate
-Aluminium tent pegs for timing tent|Must go in tent bag
+Aluminium tent pegs for timing tent|**Must** go in tent bag
 Right-angle N-connector adaptors|Leave attached to back of trackside aerials
 Stopwatches|First-aid kit (So they travel separately from the rest of the timing equipment.)
-Trackside aerials|Travel separately
+Trackside aerials|Travel separately in reinfoced Jiffy bags
 Desktop aerial|Must go with flight-case and laptop bag for writing tags for next race
 
 # Post-processing results
@@ -577,7 +581,8 @@ Then, for each race:
 1. Click the "**Toggle Publish**" to enable publish for this image.
 1. Right-click on the trigger in the list, and select "**Publish wave finishes from here**" from the context menu.  CrossMgrVideo will automatically select one trigger for each subsequent rider in the race for publication.  This saves you having to keep track of which riders you've processed so far.
 1. For each selected-for-publication trigger, find the frame where the HPV crosses the finish line, and **Save the view to the database**.
-1. If for some reason the trigger does not show the rider getting the flag (Eg. a missed read on their final lap, and you are looking at them warming-down), de-select it for publication, and go hunting for that rider's true finish time.
+1. If for some reason the trigger does not show the rider getting the flag (Eg. a missed read on their final lap, and you are looking at them warming-down), de-select it for publication, and go hunting for that rider's true finish time.  Note that DNF riders will, by definition, not finish but they may have caused a stray tag read that triggered a capture.
+1. If you do not have an image of a rider's finish, it's okay for them not to have one.  If you're feeling completist, you can locate the trigger of a DNF rider's last completed lap and select that for publication in lieu of a finish photo.
 
 Once you have selected the triggers for all races (possibly after you finish processing their CrossMgr and SeriesMgr data), you can generate HTML and image files for publication on the web:
 
@@ -606,20 +611,84 @@ Fixing the race data is not an exact science, but:
 * To **remove spurious laps**, delete or correct the times in the list on the left.
 * If a rider's tags were not reading, check the **Unmatched RFID Tags** window, in case a tag with an unexpected number was recorded (This might indicate a problem with the sign-on sheet, a mistake made when writing tags, or perhaps they had a random tag from some other event that you can use retrospectively.)
 * If you have a `.gpx` file from a rider's GPS unit, you can import this to generate lap times.  See [DataMgmt][] for details.
-* If CrossMgr failed for some reason during the race, you may be able to recover tag read data from CrossMgrImpinj's own log.
+* If CrossMgr failed for some reason during the race, you may be able to recover tag read data from CrossMgrImpinj's own log file.
 * Spooling through the video to see if you can spot riders in other riders' triggers is often fruitful.  Once you have entered some lap times, you can use the extrapolated laps as a guide to where in the video to look.
 * Eventually you should have corrected everything you can with the information you have.  If necessary, appeal to the BHPC forum for more information; riders are likely to know their position relative to each other, which you can use to fudge the times as necessary.
 
-
-
-
-
-
 ## Merging races
+
+Where a **round** has been split into more than one **race**, it is necessary to combine the results in order to determine the overall ranking for that round.  We used to do this using an Excel macro called Merge-O-Matic, but this was a nightmare to maintain, as it had to handle all sorts of edge-cases in the results (eg. categories with no finisher), and would break with minor changes in the format of CrossMgr's Excel output.
+
+Instead, this functionality [is now built into our version of CrossMgr][Merging].  This simplifies the workflow, as you do not have to generate several Excel files in order to combine results, and you can make late adjustments to lap times etc. in the combined file without having to re-do the merge.  It's also programmatically simpler, as the recorded lap time data is merged before CrossMgr performs its filtering, category and ranking calculations, which should hopefully make it more robust.
+
+Our merging procedure effectively imports subsequent races in a round as additional **start waves** of the first race, with a very long gap between them.  CrossMgr's **CustomCategory** logic then combines the results of riders from multiple start waves who share that CustomCategory.  For this to work, we need a unified sign-on sheet for the round, with riders in each race having a different **EventCategory**.
+
+1. Ensure you have backup copies of all the race data.  There's great potential for corruption if something goes wrong!
+1. Open the **chronologically first** (usually slower group) race.  Change the [Event Name][General Info] to something appropriate for the combined results.  CrossMgr will warn that it is saving to a new filename.  This will create a copy of the existing race data.  Close CrossMgr.
+1. Combine the sign-on sheets for the individual races into a new sheet in the sign-on Excel file.  (For example, copy the `Round1Race1` sheet to a `Round1Combined` sheet, then copy&paste the data from the Round1Race2 sheet into it.)  This is simply a matter of carefuly copy&pasting, though it's hoped that the sign-on system will be able to generate this automatically in future.  Note that if the sign-on sheet for a race has been edited manually (eg. to reflect a change of machine), these will need to be preserved in the sheet for the combined results.
+1. Open the .cmn file for the combined results.  At this point, it will just be a copy of the first race.
+1. Use [Link External Excel Sheet][External Excel] to select the new combined sign-on sheet.  Ensure that "**Initialize CrossMgr Categories from Excel EventCategory and Bib# columns**" at the relevant stage.
+1. The [Categories][Category Screen] may need rearranging, lap distances and genders set, etc.  Note that you now have a **Start Wave** for each race.
+1. The [Results][] may show nonsense lap times for some of the fast race riders.  This is because their tags were read during the slow race, and is harmless.
+1. Select [Import from another CrossMgr race...][Merging] from the [DataMgmt][] Menu.  Browse to the `.cmn` file of the fast race.
+1. Set **Data Policy** to "**Merge New Data with Existing**"
+1. Ensure that **Adjust Start Waves** is enabled.
+1. Click '**OK**'
+1. Warnings that a rider appears in both races are harmless.  These are the ones whose tags have been read during the other group's race.
+1. You should now see the combined results.  Note that the offset for the new start wave has been calculated based on the difference between the two race start times.  Tag reads that occurred before a given rider's start time are filtered out, as are those after their finish, in the usual way.  CustomCategory results will normalise the riders' start offsets, so it is as if they were all competing in the same race.
+1. If this is a criterium event, ensure that [riders are being ranked by Average Speed][Race Options]; this is what the BHPC considers to be the fairest way of ranking riders who participated in races of different durations.
+
+## Finish times for DNF riders
+
+The BHPC credits DNF riders for the laps they completed during the race, by calculating the average speed for a virtual finish time.  This should be done **after merging races**, for reasons that will become apparent.
+
+1. Open the `.cmn` race file for the round (after merging, if necessary).
+1. Select [Give unfinshed riders a finish time...][Give Unfinished] from the [Edit][] menu.
+1. Select status **DNF** and "**Last finisher's time**"
+1. Click '**OK**'
+
+DNF riders should now have **Finisher** status, with a long last lap that effectively finishes at the same time as the last finisher.  They will be ranked in the results accordingly.
+
+## Change the FTP path and publish
+
+1. Open the `.cmn` race file for the first round.  (This may be after merging, or a standalone race.)
+1. Go to [Properties/(S)FTP][FTP] and change the upload and URL path to the correct directory for the finalised results.  (Eg. `/www2.bhpc.org.uk/public_html/wp-content/uploads/Events/2025/07/`)
+1. Batch publish the HTML results and index.html to upload them to the web.
+1. Repeat this for the rest of the rounds.
 
 ## Scoring
 
+Once you have the finalised race results, you can load them into **SeriesMgr** to allocate championship points.
+
+1. Navigate to the season's SeriesMgr directory, and open the season's master .smn file.  (Eg. "`C:\Users\BHPC\Documents\BHPC Racing\2025\SeriesMgr\BHPC_2025.smn`") If this is the first race of the season, make a copy of the previous season's series to use as a template, then delete all the races from it and change the Series Name accordingly.
+1. On the **Races** screen, click the **Add Races** button, and select the .cmn file for the round you are adding.  (If the round is a sprint, you will have to export the results as an Excel file from the SprintTimer application - SeriesMgr cannot read the `.spr` data files natively.)
+![SeriesMgr](./images/seriesmgr_races.png "SeriesMgr")
+1. Set the **Event** and **Race** names in the table to something consistent with the standard formatting.  (Eg. "`Darley Moor1`" and "`R1 30min`" respectively.)
+1. Leave **Grade** as "A", and select a **points structure** for the round as agreed by the race organiser.  (Points structures are a percentage of the total points for the event's racing.)  If a round is unofficial or just for fun, you can use the "0%" points structure so that riders are ranked in the championship table, but not allocated any points.
+1. Click the **Commit** button.
+1. Flip to the **Results** screen, and click **Refresh**.  Inspect the calculated points for obvious errors.
+1. You might need to adjust the "**Consider...**" settings on the **Scoring Criteria** screen.
+1. Check the **Category Options** screen.  Sort the categories into the standard order (Open; Partly-Faired; UnFaired; Faired Multitrack; Streed; Women; Women Part Faired; Arm-Powered; Junior; Car-Free by dragging the number on the left.  If there are 'Race' categories corresponding to start waves, de-select them for publication.  If there are spurious women's versions of categories, then [the category's gender needs adjusting in the race file][Spurious Womens].
+1. Return to the **Results** and sort the riders by name.  Look for riders who have appeared under multiple names, or who have multiple names for the same machine, and use the **aliases** screen to combine them.
+1. The results are now ready for publication.  Click **Publish to Html** and inspect the generated series page.
+1. If you are happy, click **Publish to Html with (S)FTP**.  Check the FTP details, particularly that the **Path on Host** and **URL path** are correct.  Click '**OK**' to publish directly to the website.
+
+### Points tables for individual events
+
+The easiest way to generate these (while keeping categories, aliases etc. consistent) is by duplicating the current seasons's series and then removing the unwanted races.
+
+1. Select **Save As** from the **File Menu**
+1. Create a new folder for the event within `C:\Users\BHPC\Documents\BHPC Racing\2025\SeriesMgr\`
+1. Save the series as points.smn within that directory.
+1. Switch to the **Races** screen, and edit the Series Name accordingly.
+1. Delete the races corresponding to other events.
+1. Clear the **Event** field for the races - this prevents Event columns being generated in the HTML output.
+1. Save the series, and publish as required.  Make sure to change the paths when publishing by FTP.
+
 ## Clean up for next time
+
+* Using an FTP client, clean up the `/www2.bhpc.org.uk/public_html/wp-content/uploads/Events/liveresults` directory on the web server, so that interested parties do not mistake the live results for the final corrected version.
+* Once any quibbles are resolved, upload a copy of the race data to [the BHPC's Google Drive storage](https://drive.google.com/drive/u/1/folders/1GJG1ahZJvge4mjT_PLBIx4B_dZPAFian) for backup.
 
 # Glossary
 
@@ -704,7 +773,7 @@ Round|A particular type of **race**.  For example "30 minute criterium" "1-lap t
 Router|A device that forwards **TCP/IP** packets from one network to another.  The router built into the flight-case with the BHPC's tag reader is not actually used as a router; it is configured to work as a simple **Ethernet switch** and **WiFi** **access point**.  ![Router LEDs](./images/router_blinkenlights.jpg "Router LEDs")
 RP-TNC|*Reverse-Polarity Threaded Neill–Concelman*.  Confusing variation of the **TNC** coaxial connector with gender of the central pins swapped.  Used on the **RFID tag reader**. ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - RP-TNC on the top")
 Series|A championship table for a racing season or **event**.  A SeriesMgr `.smn` file pertaining to a series.
-SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the **CrossMgr** suite.
+SeriesMgr|A software application designed for allocating scores to a **series** of **race** results.  Part of the **CrossMgr** suite.  ![SeriesMgr](./images/seriesmgr_races.png "SeriesMgr")
 Sign-on sheet|An **Excel** file containing details of riders, used by **CrossMgr** to populate the [categories][Category Screen] table and look up rider's names, teams, etc.  Crucially, this is needed in order to match **tags** to **riders**.
 Slow Race|A BHPC **race** composed of mainly slower or less experienced riders.
 Sprint|A **time trial** run over a very short distance, usually with a flying start.  Due to the high speeds involved, precision timing equipment is needed to judge sprint events; the **Impinj** **RFID** system is not precise enough.

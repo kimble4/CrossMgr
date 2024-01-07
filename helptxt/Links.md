@@ -3,6 +3,7 @@
 [BHPC Troubleshooting]:	BHPC-Troubleshooting.html
 [Communications Tagreader]:	BHPC-Troubleshooting.html#communications-with-tag-reader
 [Clock Issues]:		BHPC-Troubleshooting.html#race-clock-issues
+[Spurious Womens]:  BHPC-Troubleshooting.html#spurious-women-categories-in-seriesmgr-table
 
 [File]: 			Menu-File.html
 [Publish]:			Menu-Publish.html
@@ -54,7 +55,7 @@
 [USACycling]:		https://usacycling.org/
 [Chart Right-Click]: Chart.html#right-click
 [USB Webcam]:		Properties.html#use-usb-camera-photo-finish
-[General Info]:		Properties.html#general-info
+[General Info]:		Properties.html#general-options
 [Race Options]:		Properties.html#race-options
 [RFID]:				Properties.html#rfid-options
 [FTP]:				Properties.html#ftp
@@ -63,5 +64,7 @@
 [Edit Rider]:		RiderDetail.html#edit-button
 [Batch Publish]:	Menu-Publish.html#batch-publish-files
 [Category Screen]:	Categories.html#category-screen
+[Merging]:			Menu-DataMgmt.html#import-from-another-crossmgr-race
+[Give Unfinished]:	Menu-Edit.html#give-unfinshed-riders-a-finish-time
 
 [CrossMgrIntegration]: CrossMgrIntegration.html
