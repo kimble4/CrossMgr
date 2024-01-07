@@ -475,11 +475,11 @@ class Categories( wx.Panel ):
 			Utils.MessageOK(self, _("You must have a valid race.  Open or New a race first."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
 
 	def onPrint( self, event ):
-		self.commit()
+		self.commit( nagNoCatDistance=False )
 		PrintCategories()
 		
 	def onExcel( self, event ):
-		self.commit()
+		self.commit( nagNoCatDistance=False )
 		export = getExportGrid()
 		xlFName = Utils.getMainWin().getFormatFilename('excel')
 		xlFName = os.path.splitext( xlFName )[0] + '-Categories' + os.path.splitext( xlFName )[1]
@@ -510,7 +510,7 @@ class Categories( wx.Panel ):
 			return
 		if not Utils.MessageOK( self, _('Set the GPX distance for all Categories?'), _('Set GPX Distance'), wx.ICON_QUESTION ):
 			return
-		self.commit()	# Commit any current changes on the screen.
+		self.commit( nagNoCatDistance=False )	# Commit any current changes on the screen.
 		distance = geoTrack.lengthKm if race.distanceUnit == Model.Race.UnitKm else geoTrack.lengthMiles
 		for category in race.getCategories():
 			category.distance = distance
@@ -518,7 +518,7 @@ class Categories( wx.Panel ):
 		self.refresh( forceRefresh=True )
 	
 	def onNormalize( self, event ):
-		self.commit()
+		self.commit( nagNoCatDistance=False )
 		if Model.race:
 			Model.race.normalizeCategories()
 			self.state.reset()
@@ -677,7 +677,7 @@ and remove them from other categories.'''),
 				return
 			response = dlg.GetValue()
 
-		self.commit()
+		self.commit(nagNoCatDistance=False)
 		response = re.sub( '[^0-9,]', '', response.replace(' ', ',') )
 		with Model.LockRace() as race:
 			for numException in response.split(','):
@@ -756,7 +756,7 @@ and remove them from other categories.'''),
 			self.fixRowColours( row, catType, active )
 	
 	def onActivateAll( self, event ):
-		self.commit()
+		self.commit(nagNoCatDistance=False)
 		if Model.race:
 			for c in Model.race.getAllCategories():
 				if not c.active:
@@ -766,7 +766,7 @@ and remove them from other categories.'''),
 		wx.CallAfter( self.refresh )
 		
 	def onDeactivateAll( self, event ):
-		self.commit()
+		self.commit(nagNoCatDistance=False)
 		if Model.race:
 			for c in Model.race.getAllCategories():
 				if c.active:
@@ -882,7 +882,7 @@ and remove them from other categories.'''),
 			self.grid.FitInside()
 			self.GetSizer().Layout()
 
-	def commit( self ):
+	def commit( self, nagNoCatDistance=True ):
 		undo.pushState()
 		with Model.LockRace() as race:
 			self.grid.SaveEditControlValue()
@@ -898,12 +898,12 @@ and remove them from other categories.'''),
 				values['distanceType'] = self.DistanceTypeChoices.index(values['distanceType'])
 				numStrTuples.append( values )
 				# Nag if the distance is not set for a start wave
-				if  values['catType'] == 0:
+				if values['catType'] == 0:
 					if not values['distance']:
 						distanceUnsetWarning.append('Category \'' + str(values['name']) + '\' ' + self.DistanceTypeChoices[values['distanceType']] + ' distance is not set!')
 			race.setCategories( numStrTuples )
 			race.adjustAllCategoryWaveNumbers()
-		if len(distanceUnsetWarning):
+		if nagNoCatDistance and len(distanceUnsetWarning):
 			Utils.MessageOK( self, '\n'.join(distanceUnsetWarning), _('Distance not set') )
 		wx.CallAfter( Utils.refreshForecastHistory )
 	
