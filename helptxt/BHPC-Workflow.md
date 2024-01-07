@@ -310,7 +310,7 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 ![TNC connector on desktop aerial](./images/desktop_aerial_TNC.jpg "TNC connector on desktop aerial")
 **Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
 1. Attach the camera to a tripod, and connect it to one of the **USB ports** on the left side of the laptop.
-1. Locate the beige **USB-A to USB-C cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.
+1. Locate the pale grey **USB-A to USB-B cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.
 ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 1. Optional: Screw the **reflective IR beam break** unit onto its drainpipe and mount it on its stand beside the nearside RFID aerial.  Locate the black **male 3-pin XLR to female 3-pin XLR** cable and use it to connect the IR beam-break unit (alternatively, a tape-switch) to the XLR socket on the Trigger-O-Matic.
 1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
@@ -332,11 +332,11 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 
 1. **Boot up the laptop**, and ensure that it is receiving external power.
 1. Start **CrossMgrVideo**.  Hopefully you should see the view from the finish-line camera in the preview window (bottom left).  (If instead you see an image from the laptop's internal camera, check the connections and try using the Reset Camera dialog to select the right one.) 
-1. Click **Config Auto Capture**.  Capture should be set to "**by seconds**".  3 seconds before and 5 seconds after the trigger are reasonable.  Ensure that **Sequential bib for capture** is disabled, and enable **Play shutter sound** (note that the sound is only played for real-time captures; those triggered retrospectively by CrossMgr are silent).
-1. Check that the autoselect mode (lower right, above the trigger list) is set to "**Fast Preview**"
-1. Click **Monitor/Focus**, and open the cover of the camera's weatherproof case.
+1. Click **Config Auto Capture** (in the row of buttons at the top of the screen).  Capture should be set to "**by seconds**".  3 seconds before and 5 seconds after the trigger are reasonable.  Ensure that **Sequential bib for capture** is disabled, and enable **Play shutter sound** (note that the sound is only played for real-time captures; those triggered retrospectively by CrossMgr are silent).  Click '**OK**'
+1. Check that the autoselect mode (dropdown on the far right, above the trigger list) is set to "**Fast Preview**"
+1. Click **Monitor/Focus** (in the row of buttons at the top of the screen), and open the cover of the camera's weatherproof case.
 ![Camera focus and aperture adjustment](./images/finish_line_camera.jpg "Camera focus and aperture adjustment")
-Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line (positioning of the camera is more critical than the RFID aerials), with either a mark on the track or the RFID cable in view as a reference point.  Close the monitor/focus window.
+Adjust the **aperture ring** on the camera lens until the image is correctly exposed, allowing for likely changes in ambient light.  The focus should hopefully not need adjusting.  Close the weatherproof case and align the camera so it is looking straight across the finish line (positioning of the camera is more critical than the RFID aerials), with either a mark on the track or the RFID cable in view as a reference point.  **Close the monitor/focus window**.
 1. Align the **IR beam break** with the ScotchLite reflector on the RFID aerial on the far side of the track.  The LED on the beam-break unit should light up when the beam is detected.  The drainpipe helps to keep sunlight out of the sensor, but range is limited to about 10 metres, so this will not always work at all tracks.
 1. **Confirm that video is captured** when the **Auto-capture** button on the Trigger-O-Matic is pressed.  Now enable the Auto-Capture toggle switch on the Trigger-O-Matic and confirm that video is captured when the IR beam is broken.  Set the toggle switch back to 'Disable' for now, so as not to waste disk space capturing video of people warming-up.
 1. Minimise CrossMgrVideo and leave it running in the background.
@@ -367,8 +367,8 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. Double-click the `.cmn` file for the first race.  CrossMgr should start and you should be looking at the [Actions][] screen.  *Do not* click on the big friendly '**Start Race**' button until you mean it!
 1. Switch to [Properties][] and double-check the settings in each of the tabs.  Refer to the earlier part of this guide if necessary.
 1. Also check the [Categories][] screen.
-1. If you will be using live results, confirm that the FTP upload works.  **Check that an `index.html` page linking to the race file(s) is present on the web server**: You may need to perform a bath publish of the un-started race(s).
-1. If this is all okay, go to [Properties/RFID][RFID], and click **Setup/Test RFID Reader...**
+1. If you will be using live results, confirm that the FTP upload works.  **Check that an `index.html` page linking to the race file(s) is present on the web server**: You may need to perform a batch publish of the un-started race(s).
+1. If this is all okay, go to the [RFID][RFID] tab on the [Properties][] screen, and click **Setup/Test RFID Reader...**
 1. Start the **RFID test**.  CrossMgrImpinj should establish a connection and you should start to see tag reads in the **Messages** pane.
 1. You can **leave the RFID test running** until the race is about to start.  This allows you to check that rider's tags are working.
 
@@ -413,12 +413,12 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 * If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
 * Place any **spare live tags** in the **RF-blocking tag bag** to prevent spurious reads.
 ![Tag bag with tag](./images/tag_bag.jpg "The tag bag is made of a material that blocks radio signals")
-Ensure that you place the tags in the correct compartment of the bag - the front pocket does not block the signal.  Unwritten tags with their factory unique ID numbers are harmless.
+Ensure that you place the tags in the correct compartment of the bag - the front pocket does not block the signal.  Unwritten tags with their factory unique EPC numbers are harmless.
 * Check the flight-case **power supply**:  Are AC and DC power present?  Is the AC power failure **alarm enabled**?
 * Is the **laptop** running on AC power?  Is its battery charged?
 * Are there any **notifications** from **Windows** (eg. wanting to reboot for updates, virus warnings) that might cause problems?
 * Does the **GPS time source** have a satellite signal (orange LED lit or flashing)?  Does it have a time signal (blue LED lit or preferably flashing once per second)?
-* Check **CrossMgrVideo**:  Is the camera aligned, with correct **focus and exposure**?
+* Check **CrossMgrVideo**:  Is the camera aligned, with correct **focus and exposure**?  Look at the small preview image (bottom left) or focus window, *not* the still frame from the last trigger in the main window!
 * Is the **IR beam break** aligned and operating the Trigger-O-Matic correctly?
 * Check **CrossMgrImpinj**.  Is it connected and reading tags?  Are tags being read on both antennas?  Press the reset button and confirm the **clock offset** is still reasonable (typically 3600 seconds to within one second during *British Summer Time*).
 * Is **CrossMgr** open with the **correct race** file?
@@ -426,7 +426,7 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 * Is the **Race Clock** working and visible?  If it's likely to blow over, place it at ground level.
 * Does someone have a **backup stopwatch** ready?
 * Get a **headcount of riders**  on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
-* Do you have a **pen and paper** ready to note down DNFs, incidents, HPV changes, etc. as they happen?  *Write the race name on it clearly.*
+* Do you have a **pen and paper** ready to note down anything of importance during the race (eg. DNFs, incidents, HPV changes, etc.)  *Write the race name on it clearly, and start a new sheet for each race.*
 * Do you have a device that can **video the finish** if the timing system fails?
 
 ### Starting the mass-start race
