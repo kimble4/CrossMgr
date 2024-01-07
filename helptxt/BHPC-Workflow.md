@@ -48,7 +48,8 @@ These options are common to all BHPC events and are unlikely to change between r
 1. Within [Properties][], switch to the [RFID][] tab.
 1. Enable **Use RFID Reader During Race**.
 1. Select **Manual Start:  Collect every RFID read**.
-1. Click **Setup/Test RDID Reader** and ensure the **Reader Type** is set to **JChip/Impinj/Alien**.
+1. Leave "**Ignore RFID reads for unstarted time trial riders**" unset.
+1. Click **Setup/Test RFID Reader** and ensure the **Reader Type** is set to **JChip/Impinj/Alien**.
 1. Click 'OK' to close the **Chip Reader Setup**
 1. Click 'Commit' to save the changes.
 
@@ -56,7 +57,7 @@ These options are common to all BHPC events and are unlikely to change between r
 
 1. Switch to the **Web** Tab
 1. Set **Contact Email** to `compsec@bhpc.org.uk`
-1. Set the graphic to the 200 pixel wide BHPC logo from `C:\Users\BHPC\Documents\BHPC Racing\bhpc_logo_200px.png`
+1. Set the graphic to the 200 pixel wide BHPC logo from `C:\Users\BHPC\Documents\BHPC Racing\bhpc_logo_200px.png` (Weirdly, you have to select the folder before you can select the image file.)
 1. Click 'Commit' to save the changes.
 
 ### (S)FTP
@@ -103,7 +104,7 @@ These options are specific to the race.
 1. **Scheduled start** is the published start time, don't worry if the race starts a bit late (this will be noted in the results automatically).
 1. Race minutes should be set to the nominal length of the race.  (NB. for a criterium, this should be set considerably longer.)
 1. Set **Organiser** to your name.
-1. Leave the **Memo** field black, as it is appended to the filename.
+1. Leave the **Memo** field blank, as it is appended to the filename.
 1. Click 'Commit' to save changes.
 
 ### Race Options
@@ -243,12 +244,13 @@ These are timed using the dedicated SprintTimer application, rather than CrossMg
 
 ### Linking the sign-on sheet
 
-1. Switch to the **Files/Excel** tab.
-1. Click "**Link External Excel Sheet**
+1. Switch to the **Files/Excel**" tab.
+1. Click "**Link External Excel Sheet**".
 1. Browse to the location of your sign-on spreadsheet, and click **Next**.
 1. Now select the name of the sheet containing the sign-on data for this race, and click **Next**.
 1. As you have named your columns with the headings that CrossMgr expects, the only thing you need to do on this page is select the **Initialize CrossMgr Categories from Excel EventCategory/CustomCategory and Bib# columns** option.  Click **Next**.
 1. With any luck the summary page will announce status "*Success!*" with errors "*None*".  If not, check your spreadsheet format.  Click **Finish**.  You have now linked the sign-on data.
+1. The **Find Rider** window will open automatically to show you the imported rider data.  Click **'Close'**
 
 ### Categories
 
@@ -257,19 +259,18 @@ These are timed using the dedicated SprintTimer application, rather than CrossMg
 1. **Dist. By** should be set to **Lap** for all categories.
 1. **First Lap Dist.** should be empty for all categories.
 1. Rearrange the order of the categories by clicking and dragging the grey square at the start of each row.  The **Start Wave** should be at the top, followed by *Custom* categories, in the order: Open, Partly-faired, Unfaired, Faired Multitrack, Multitrack, Street, Women, Women Part-faired, Arm-powered, Junior, Car-free.
-1. Check that the category genders are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.
+1. Check that the category **genders** are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.
 1. **Start Offset** should be zero for all categories.
 1. If this is a *time trial*, *fixed laps* or *best of n laps* race, ensure the correct values are entered in the **Race Laps** and **Best Laps** columns for each category.  (For example, for a "best of three" round, set **Race Laps** to `3` and **Best Laps** to `1`.)  Otherwise, ensure these columns are empty.
 1. Ensure the **Race Minutes** column is empty for all categories; the global setting in [General Info][] will be used instead.
-1. **Publish** should be enabled for all categories.  **Series** should be enabled for all except the Start Wave.  (**Upload** is for results formats we do not use.)
+1. **Publish** should be enabled for all categories.  **Series** should be enabled for all except the Start Wave.  (**Upload** is for results formats we do not use, so it does not matter whether it is enabled.)
 1. When you are satisfied, Click **Commit** to save changes.
 
 ---
 
 At this point your race file should be ready for use.
 
-
-Either close CrossMgr, or use [New Next][File] to create the next race file based on the settings in this one.  (I like to create an additional dummy time trial with everyone in it to use for testing RFID tags before the racing starts.)
+* Either close CrossMgr, or use [New Next][File] to create the next race file based on the settings in this one.  (I like to create an additional dummy time trial with everyone in it to use for testing RFID tags before the racing starts.)
 
 #### After creating multiple race files, double-check the following:
 
@@ -277,7 +278,7 @@ Either close CrossMgr, or use [New Next][File] to create the next race file base
 * The correct Sheet is selected in the sign-on Excel file.
 * Start times are correct.
 * Race Minutes is correct.
-* Race direcion is correct, both in the GPX and the race name.
+* Race direction is correct, both in the GPX and the race name.
 
 If you change a race's filename, the original file will be left in place.  You may want to delete the old file now so as not to use the wrong one by mistake on race day.
 
@@ -292,15 +293,16 @@ The setup process has been simplified by integrating the router and RFID reader 
 If you are using a generator, start it and allow the output to stabilise before connecting the timing equipment.  This prevents damage from voltage spikes or repeated cycling on and off.
 
 1. Unpack the cables and loose equipment from the flight-case.  **Prop the flight-case lid open** by engaging the piece of aluminium profile on the right hand side of the lid with the protruding bolt in the base.
-1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end (an adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform), and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon inlet on the side of the flight-case, and twist clockwise so it clicks into place.
+1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end, and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon **AC power inlet** on the side of the flight-case, and twist clockwise so it clicks into place.
 ![Conections on the side panel of the flightcase](./images/side_panel.jpg "Connections on the side panel of the flight-case")
-Connect the other end to mains power (or another 85-265V AC supply, eg. from a generator or inverter).  The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
+Connect the other end to mains power (or another 85-265V AC supply, eg. from a generator or inverter).  An adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform.
+1. The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
 1. **DC power** of 12-36V can be connected using one (or more) of: **(A)** The small black centre-positive **2.5mm DC barrel jack** inlet on the side of the flight-case.  (A short jack-jack cable is included to connect to a 2.1mm DC jack)  **(B)** The yellow **male XT60** connector on the side of the flight-case. (Cables are included to connect to spade terminals, or a 12V vehicle cigarette lighter socket) **(C)** The **female USB-C inlet** on the bottom left of the power supply panel. (Cables not included.  The USB power source must be 'laptop' rated - a standard phone-charging power bank cannot provide enough power to run the tag-reader)  Once connected, the DC power display should show a voltage appropriate for your power source, but no significant current/power will be drawn while AC power is present.  If DC power does not appear to work, check the polarity, and the respective inlet fuse.
 ![Power supply panel](./images/power_supply.jpg "Dual power supply")
 1. Ensure the **AC power failure alarm** switch is in the '**on**' position.  As long as DC power is present, the alarm will sound if the AC supply is interrupted.
-1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the latop.
-1. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unrelaible when operated with sweaty fingers.)
-1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect this end to *either* of the two RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
+1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the laptop.
+1. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unreliable when operated with sweaty fingers.)
+1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect the XLR end to *either* of the two XLR-RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
 1. Locate the **long coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the RP-TNC plugs to the RP-TNC jacks on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
 ![RP-TNC aerial connctions on RFID tag reade](./images/aerial_connections.jpg "RP-TNC aerial connctions on RFID tag reader")
 By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
@@ -345,7 +347,7 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. It should immediately establish a connection to the tag reader and the left pane will turn green.  Otherwise check the [BHPC troubleshooting guide][Communications Tagreader] for help diagnosing the communication problem.
 1. Confirm that **Antenna Ports** `1` and `2` are enabled.  Icons should appear to indicate that the respective aerials are connected.
 1. Confirm that **Monitor Power** is enabled for all power sources.  Icons should appear to indicate that the respective supplies are present.
-1. Click **Advanced**.  **Report Method** shuold be set to "**Quad Regresssion**", with **Remove Outliers** enabled.  Set **Antenna Choice** to "**Max Signal dB**"
+1. Click **Advanced**.  **Report Method** should be set to "**Quad Regresssion**", with **Remove Outliers** enabled.  Set **Antenna Choice** to "**Max Signal dB**"
 1. Set **Tag Population** to 16.
 1. Leave **Transmit Power** and **Receiver Sensitivity** blank.
 1. Set **Connection Timeout** to `3` seconds, **Keepalive** to `2` seconds, and **Repeat** to `3` seconds.
@@ -557,7 +559,7 @@ Mallet|Timing crate
 Aluminium tent pegs for timing tent|**Must** go in tent bag
 Right-angle N-connector adaptors|Leave attached to back of trackside aerials
 Stopwatches|First-aid kit (So they travel separately from the rest of the timing equipment.)
-Trackside aerials|Travel separately in reinfoced Jiffy bags
+Trackside aerials|Travel separately in reinforced Jiffy bags
 Desktop aerial|Must go with flight-case and laptop bag for writing tags for next race
 
 # Post-processing results
@@ -605,7 +607,7 @@ Fixing the race data is not an exact science, but:
 * Now check you have good **finish times for all the other riders**.  If there is no tag read, you may be able to find them on the video (either triggered by another rider, or auto-captured).
 * If there is a **close finish** (CrossMgr will highlight this in blue), refer to the video, and edit the finish times to match the video timestamps (this is higher precision than the RFID).
 * Now, examine the rest of the **lap times**.  Look for yellow extrapolated lap times, or unusually long or short laps (the [Chart][] view may be helpful).  Try to reconcile these with your notes.  (Eg. Perhaps a rider stopped for a mechanical and lost some laps.  Or perhaps they walked behind the timing tent and accumulated some spurious reads.  Or maybe their timing tags were just reading intermittently.)
-* If you have spruious reads, it may be helpful to adjust the **Min Possible Lap Time** to be just lower than the true fastest lap.
+* If you have spurious reads, it may be helpful to adjust the **Min Possible Lap Time** to be just lower than the true fastest lap.
 * To correct a rider's times, open the **RiderDetail** window, and disable **Autocorrect Lap Data**.  This will remove their extrapolated lap times, leaving the tag reads/manual entries that are not filtered.
 * To add a missing laps, click on the long lap in the coloured chart, and **add splits** as needed.
 * To **remove spurious laps**, delete or correct the times in the list on the left.
