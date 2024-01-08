@@ -32,7 +32,7 @@ class MissingRiders( wx.Dialog ):
 		self.showStrayRiders.SetValue( True )
 		self.showStrayRiders.Bind( wx.EVT_CHECKBOX, self.onCheckbox )
 		
-		self.showNonFinishers = wx.CheckBox( self, label='Include &non-finishers' )
+		self.showNonFinishers = wx.CheckBox( self, label='Show &non-finishers' )
 		self.showNonFinishers.SetToolTip('Include riders who are DNS etc. and unstarted time trial riders.')
 		self.showNonFinishers.SetValue( False )
 		self.showNonFinishers.Bind( wx.EVT_CHECKBOX, self.onCheckbox )
@@ -57,7 +57,8 @@ class MissingRiders( wx.Dialog ):
 		hbs.Add( self.fitButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		
 		self.mainSizer.Add( hbs, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
-		self.mainSizer.Add( wx.StaticText(self, label='Riders we do not have any tag reads for:'), flag=wx.ALIGN_CENTRE)
+		self.listHeading = wx.StaticText(self, label='Riders we do not have any tag reads for:')
+		self.mainSizer.Add( self.listHeading, flag=wx.ALIGN_CENTRE)
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.SetSizer( self.mainSizer )
 		
@@ -225,9 +226,11 @@ class MissingRiders( wx.Dialog ):
 			self.grid.HideCol(3)
 			
 		if race.isTimeTrial:
-			self.showNonFinishers.SetLabel('Include u&nstarted')
+			self.showNonFinishers.SetLabel('Show u&nstarted')
 		else:
-			self.showNonFinishers.SetLabel('Include &non-finishers')
+			self.showNonFinishers.SetLabel('Show &non-finishers')
+		
+		self.listHeading.SetLabel(str(row) + ' riders we do not have any tag reads for:')
 		
 		self.grid.AutoSize()
 		self.Layout()
