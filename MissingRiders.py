@@ -179,7 +179,7 @@ class MissingRiders( wx.Dialog ):
 							elif self.showNonFinishers.GetValue():
 								riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unstarted', 0]})
 						else:
-							riderList.update({bib:[riderName, riderMachine, riderTeam, 'Unseen', 1]})
+							riderList.update({bib:[riderName, riderMachine, riderTeam, status, 1]})
 					elif self.showNonFinishers.GetValue():
 						riderList.update({bib:[riderName, riderMachine, riderTeam, status, 0]})
 				
