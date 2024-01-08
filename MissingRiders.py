@@ -54,9 +54,10 @@ class MissingRiders( wx.Dialog ):
 		hbs.Add( self.showStrayRiders, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		hbs.Add( self.showNonFinishers, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
 		hbs.AddStretchSpacer()
-		
 		hbs.Add( self.fitButton, flag=wx.ALIGN_CENTRE_VERTICAL|wx.ALL, border=2 )
+		
 		self.mainSizer.Add( hbs, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
+		self.mainSizer.Add( wx.StaticText(self, label='Riders we do not have any tag reads for:'), flag=wx.ALIGN_CENTRE)
 		self.mainSizer.Add( self.grid, flag=wx.EXPAND|wx.TOP|wx.ALL, border = 4)
 		self.SetSizer( self.mainSizer )
 		
@@ -123,6 +124,7 @@ class MissingRiders( wx.Dialog ):
 	
 	def refresh( self, event=None ):
 		Finisher = Model.Rider.Finisher
+		NP = Model.Rider.NP
 		race = Model.race
 		if not race:
 			return
@@ -170,7 +172,7 @@ class MissingRiders( wx.Dialog ):
 				else:
 					riderTeam = ''
 				if not rider.times:  # Rider has no times
-					if rider.status == Finisher:
+					if rider.status == Finisher or rider.status == NP:
 						if race.isTimeTrial:
 							if tNow > rider.firstTime:
 								riderList.update({bib:[riderName, riderMachine, riderTeam, 'Started', 1]})

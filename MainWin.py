@@ -4115,6 +4115,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			if self.missingRiders.IsShown():
 				try:
 					wx.CallAfter( self.missingRiders.refresh )
+					wx.CallAfter( self.missingRiders.Fit )
 				except AttributeError:
 					pass
 		except AttributeError:
