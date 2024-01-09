@@ -70,7 +70,7 @@ def CompileHelp( dir = '.' ):
 			prolog = prolog.replace( '<<<style>>>', style, 1 )
 			del style
 		with io.open('epilog.html', 'r') as f:
-			epilog = f.read().replace('YYYY','{}'.format(datetime.datetime.now().year))
+			epilog = f.read().replace('BUILDDATE', '{}'.format(str(datetime.datetime.now())[:-7]) )
 
 		contentDiv = '<div class="content">'
 		
