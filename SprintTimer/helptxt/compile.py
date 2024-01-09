@@ -30,7 +30,7 @@ def InlineImages( html ):
 		try:
 			with open(os.path.join('images',fname), 'rb') as f:
 				b64 = str(base64.b64encode( f.read() ))[2:-1]
-			sReplace = 'src="data:image/{};base64,{}"'.format(
+			sReplace = 'src="data:image/{};base64,{}" width=100%'.format(
 				os.path.splitext(fname)[1][1:],
 				b64,
 			)
@@ -61,7 +61,7 @@ def CompileHelp( dir = '.' ):
 			prolog = prolog.replace( '<<<style>>>', style, 1 )
 			del style
 		with open('epilog.html', 'r') as f:
-			epilog = f.read().replace('YYYY','{}'.format(datetime.datetime.now().year))
+			epilog = f.read().replace('BUILDDATE', '{}'.format(str(datetime.datetime.now())[:-7]) )
 
 		contentDiv = '<div class="content">'
 		
