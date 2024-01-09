@@ -20,9 +20,9 @@ Shows the __Missing Riders__ window.  Functionally similar to __Add DNS from ext
 
 Use this early in the race to help work out whether any riders have bad RFID tags, so that you can enter their times manually.
 
-Unseen riders (ie. those who are finishers, but have no recorded times) will be shown in yellow.  You can set their status to DNS or DQ from the right-click context menu, or double-click to open the [RiderDetail][] dialog.  Unseen riders will disappear from the list when a lap time is recorded for them.  (If riders are still unseen at the end on the race, and __Consider Riders in Spreadsheet to be DNS if no race data__ is selected in [Properties][], they will be marked DNS when the race is finished.)
+Unseen riders (ie. those who are potential finishers, but have no recorded times) will be shown in yellow.  You can set their status to DNS or DQ from the right-click context menu, or double-click to open the [RiderDetail][] dialog.  Unseen riders will disappear from the list when a lap time is recorded for them.  (If riders are still unseen at the end on the race, and __Consider Riders in Spreadsheet to be DNS if no race data__ is selected in [Properties][], they will be marked DNS when the race is finished.)
 
-If __Include non-finishers__ is selected, non-finishers (DNS etc.) who have no recorded times will be displayed in white.
+If __Show non-finishers__ is selected, non-finishers (DNS etc.) who have no recorded times will be displayed in white.
 
 Additionally, if the __Show unmatched riders__ box is checked, any riders who have recorded times but do *not* appear in the linked Excel spreadsheet will be included in the list, coloured in grey.  These are likely to be invalid bib numbers that have been manually entered by mistake, but may be confused riders or the result of a problem with the spreadsheet.  (As they do not appear in the spreadsheet, there will not be any RFID tag or additional data for these riders - see __Unmatched RFID Tags__ below.)  If you are sure the entries are spurious, you can delete the bib from the race via the context menu.
 
