@@ -62,7 +62,7 @@ def CompileHelp( dir = '.' ):
 			del style
 		with open('epilog.html', 'r') as f:
 			epilog = f.read().replace('YYYY','{}'.format(datetime.datetime.now().year))
-
+			epilog = epilog.replace('BUILDDATE', '{}'.format(str(datetime.datetime.now())[:-7]) )
 		contentDiv = '<div class="content">'
 		
 		with open('Links.md', 'r') as f:

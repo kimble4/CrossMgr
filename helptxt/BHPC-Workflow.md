@@ -302,7 +302,7 @@ Connect the other end to mains power (or another 85-265V AC supply, eg. from a g
 1. Ensure the **AC power failure alarm** switch is in the '**on**' position.  As long as DC power is present, the alarm will sound if the AC supply is interrupted.
 1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the laptop.
 1. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unreliable when operated with sweaty fingers.)
-1. Locate the **red** Ethernet cable.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect the XLR end to *either* of the two XLR-RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
+1. Locate the **red Ethernet cable**.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect the XLR end to *either* of the two XLR-RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
 1. Locate the **long coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the RP-TNC plugs to the RP-TNC jacks on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
 ![RP-TNC aerial connctions on RFID tag reade](./images/aerial_connections.jpg "RP-TNC aerial connctions on RFID tag reader")
 By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
@@ -310,7 +310,7 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 ![TNC connector on desktop aerial](./images/desktop_aerial_TNC.jpg "TNC connector on desktop aerial")
 **Ensure that you've got the cable the right way round by paying particular attention to the central pins of these confusingly stupid connectors.**
 1. Attach the camera to a tripod, and connect it to one of the **USB ports** on the left side of the laptop.
-1. Locate the pale grey **USB-A to USB-B cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.
+1. Locate the pale grey **USB-A to USB-B cable** and connect the **Trigger-O-Matic** to one of the **USB ports** on the left side of the laptop.  Ensure the auto-capture toggle switch is set to 'disable'.  The Trigger-O-Matic is not needed if you will be using the Sprint Timer.
 ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 1. Optional: Screw the **reflective IR beam break** unit onto its drainpipe and mount it on its stand beside the nearside RFID aerial.  Locate the black **male 3-pin XLR to female 3-pin XLR** cable and use it to connect the IR beam-break unit (alternatively, a tape-switch) to the XLR socket on the Trigger-O-Matic.
 1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
@@ -322,9 +322,18 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 * This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads.
 * Connect it to port 1 of the tag reader, and the software will not need to be re-configured.
 
-### Sprint timer
+### Sprint Timer
 
-* Additional steps are needed if you will be using the Sprint Timer Unit.  See the **SprintTimer** quick start guide for more information.
+Additional steps are needed if you will be using the Sprint Timer Unit.  See the **SprintTimer** help for more information.
+
+![Sprint timer back panel](./images/sprint_timer_back.jpg "Sprint timer unit connections")
+
+1. Use the pale grey **USB-A to USB-B cable** to connect the **Sprint Timer Unit** to one of the **USB ports** on the left side of the laptop.  (The Trigger-O-Matic is not needed for timing sprints.)  This provides 5V power to the Sprint Timer Unit.
+1. Locate the **blue Ethernet cable** (usually kept with the Sprint Timer Unit).  This has a rugged RJ45-in-an-XLR-shell plug on *both* ends.  Use it to connect the **Sprint Timer Unit** to the unused Ethernet socket on the side of the flight-case.
+1. The sprint timer should boot up and obtain an IP address from the router using DHCP.  It will begin searching for a GPS signal.
+1. Connect the **Timing gates** to the **T1** and **T2 inputs** on the sprint timer using **XLR cables**, as described in the **SprintTimer** documentation.
+1. Further steps are required to verify the operation of the sprint timing system.  See the Quick Start guide in the **SprintTimer** documentation.
+
 
 ## Software startup and testing
 
@@ -498,7 +507,7 @@ The end of the race is simply when everyone has had their turn, the timing is no
 
 #### F) Flying Sprints
 
-This is much like a time trial.  See the SprintTimer documentation.
+This is much like a time trial.  See the **SprintTimer** documentation for details of how to operate the software.
 
 ## After the race
 
