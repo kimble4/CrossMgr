@@ -26,7 +26,6 @@ ConnectionTimeoutSecondsDefault	= 3		# Interval for connection timeout
 KeepaliveSecondsDefault			= 2		# Interval to request a Keepalive message
 RepeatSecondsDefault			= 3		# Interval in which a tag is considered a repeat read.
 RecalculateOffsetDefault		= True	# Do we recalculate the time offset on each reported read
-FudgeOffsetDefault				= 0		# milliseconds to fudge offset by
 ProcessingMethodDefault 		= QuadraticRegressionMethod
 AntennaChoiceDefault			= MostReadsChoice
 RemoveOutliersDefault           = True
@@ -35,7 +34,6 @@ ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
 RecalculteOffset			= RecalculateOffsetDefault
-FudgeOffset					= FudgeOffsetDefault
 OffsetsToAverageFirstRead	= 64
 OffsetsToAverageQuadReg		= 512	# Quadreg is more jittery, but also returns data more freqently
 TagReadInFutureSeconds		= 3		# If a tag read is this many seconds in the future (after applying offset), distrust reader's reported time
@@ -249,7 +247,7 @@ class Impinj:
 		# Compute a correction between the reader's time and the computer's time.
 		readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-		self.timeCorrection = getTimeNow() - readerTime + datetime.timedelta( milliseconds = FudgeOffset )
+		self.timeCorrection = getTimeNow() - readerTime
 		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 		self.messageQ.put( ('Impinj', '\nReader UTC time is {} seconds behind computer time\n'.format(self.timeCorrection.total_seconds())) )
 		
@@ -625,7 +623,7 @@ class Impinj:
 					#recalculate correction between the reader's time and the computer's time.
 					#readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 					#readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-					#self.timeCorrection = getTimeNow() - readerTime + datetime.timedelta( milliseconds = FudgeOffset )
+					#self.timeCorrection = getTimeNow() - readerTime
 					#self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
 					#self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 				
@@ -747,7 +745,7 @@ class Impinj:
 				if RecalculateOffset and lastTagTime > 0 and lastSocketData - lastRecalculatedOffset > datetime.timedelta(seconds = 0.1):
 					lastRecalculatedOffset = lastSocketData
 					
-					oldRawTimeCorrection = self.timeCorrection - datetime.timedelta( milliseconds = FudgeOffset )
+					oldRawTimeCorrection = self.timeCorrection
 					tc = lastSocketData - utcfromtimestamp( lastTagTime / 1000000.0 )
 					
 					if offsetsBuffer is None:  # Init buffer
@@ -764,7 +762,7 @@ class Impinj:
 						# Fill buffer with new offset
 						offsetsBuffer.extend([tc.total_seconds()] * (offsetsToAverage-1))
 						
-					self.timeCorrection = datetime.timedelta(seconds = (sum(offsetsBuffer)/offsetsToAverage) + FudgeOffset/1000.0)
+					self.timeCorrection = datetime.timedelta(seconds = (sum(offsetsBuffer)/offsetsToAverage))
 		
 		# Cleanup.
 		if self.readerSocket:
