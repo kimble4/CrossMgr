@@ -10,7 +10,6 @@ import Animation
 import GanttChart
 import Excel
 import arial10
-import GetResults
 import FitSheetWrapper
 import ReadSignOnSheet
 import HelpSearch

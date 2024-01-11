@@ -38,6 +38,10 @@ maxInterpolateTime = 7.0*60.0*60.0	# 7 hours.
 
 lock = threading.RLock()
 
+versionCountStart = 10000
+versionCount = versionCountStart
+resultsBaseline = { 'cmd': 'baseline', 'categoryDetails':{}, 'info':{}, 'reference':{} }
+
 #----------------------------------------------------------------------
 class memoize:
 	"""
@@ -1862,7 +1866,6 @@ class Race:
 		return details
 	
 	def getCategoryDetails( self, ignoreEmptyCategories=True, publishOnly=False ):
-
 		#tempNums = UnstartedRaceDataProlog()
 		unstarted = self.isUnstarted()
 		
@@ -1950,9 +1953,62 @@ class Race:
 		
 		# Cleanup.
 		#UnstartedRaceDataEpilog( tempNums )
-
 		return catDetails
 		
+#--------------------------------------------------------------------------
+
+	def getReferenceInfo( self ):
+		global versionCount
+		tLastRaceTime = race.lastRaceTime() if race else 0.0;
+		tNow = datetime.datetime.now()	
+		return {
+			'versionCount': versionCount,
+			'raceName': self.name,
+			'raceIsRunning': self.isRunning(),
+			'raceIsUnstarted': self.isUnstarted(),
+			'raceIsFinished': self.isFinished(),
+			'isTimeTrial': self.isTimeTrial,
+			'winAndOut': False,
+			'timestamp': [tNow.ctime(), tLastRaceTime],
+			'tNow': tNow.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3],
+			'raceTimeZone': self.timezone,
+			'curRaceTime': self.curRaceTime() if self.isRunning() else 0.0,
+		}
+		
+	def GetResultsRAM( self ):
+		global versionCount, resultsBaseline
+		categoryDetails = { c['name']:c for c in self.getCategoryDetails(True, True) }
+		info = self.getAnimationData( None, True )
+		
+		if (	resultsBaseline['info'] == info and
+				resultsBaseline['categoryDetails'] == categoryDetails and
+				resultsBaseline['reference'].get('raceIsRunning',None) == self.isRunning() and
+				resultsBaseline['reference'].get('raceIsUnstarted',None) == self.isUnstarted() and
+				resultsBaseline['reference'].get('raceName',None) == self.name and
+				resultsBaseline['reference'].get('raceStartTime',None) == self.startTime
+			):
+			print('no change')
+			return None
+
+		versionCount += 1
+		resultsBaseline['reference'] = self.getReferenceInfo()
+
+		ram = {
+			'cmd':			'ram',
+			'categoryRAM':	Utils.dict_compare( categoryDetails, resultsBaseline['categoryDetails'] ),
+			'infoRAM':		Utils.dict_compare( info, resultsBaseline['info'] ),
+			'reference':    resultsBaseline['reference'],
+		}
+		
+		resultsBaseline['categoryDetails'] = categoryDetails
+		resultsBaseline['info'] = info	
+		return ram
+		
+	def GetResultsBaseline( self ):
+		resultsBaseline['reference'] = self.getReferenceInfo()
+		return resultsBaseline
+		
+#----------------------------------------------------------------------------
 	
 	def getSprintBibs( self ):
 		return self.sprintBibs.copy()

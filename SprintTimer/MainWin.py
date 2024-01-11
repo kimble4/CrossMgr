@@ -2005,7 +2005,7 @@ class MainWin( wx.Frame ):
 		
 		#------------------------------------------------------------------------
 		title = '{} - {} {} {}'.format( race.title, _('Starting'), raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
-		html = html.replace( 'CrossMgr Race Results by Edward Sitarski', escape(title) )
+		html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
 		if getattr(race, 'gaTrackingID', None):
 			html = html.replace( '<!-- Google Analytics -->', gaSnippet.replace('UA-XXXX-Y', race.gaTrackingID) )
 		if race.isRunning():
@@ -2147,7 +2147,7 @@ class MainWin( wx.Frame ):
 			#hour, minute, second = timeComponents
 			#raceTime = datetime.datetime( year, month, day, hour, minute, second )
 			#title = '{} {} {}'.format( race.title, _('Course for'), raceTime.strftime(localDateFormat) )
-			#html = html.replace( 'CrossMgr Race Results by Edward Sitarski', escape(title) )
+			#html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
 			
 			#payload['raceName']			= escape(race.title)
 			#payload['organizer']		= getattr(race, 'organizer', '')
@@ -2683,7 +2683,7 @@ class MainWin( wx.Frame ):
 			#hour, minute, second = timeComponents
 			#raceTime = datetime.datetime( year, month, day, hour, minute, second )
 			#title = '{} Raw Data for {} Start on {}'.format( race.title, raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
-			#html = html.replace( 'CrossMgr Race Results by Edward Sitarski', escape(title) )
+			#html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
 			#html = replaceJsonVar( html, 'organizer', getattr(race, 'organizer', '') )
 			
 		#html = replaceJsonVar( html, 'timestamp', now().ctime() )
@@ -4172,7 +4172,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def refreshCurrentPage( self ):
 		self.callPageRefresh( self.notebook.GetSelection() )
 		self.refreshWindows()
-		#WebServer.WsRefresh()
+		WebServer.WsRefresh()
 
 	def refresh( self ):
 		self.refreshCurrentPage()

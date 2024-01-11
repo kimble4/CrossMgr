@@ -588,85 +588,84 @@ webThread.start()
 
 from websocket_server import WebsocketServer
 #-------------------------------------------------------------------
+def message_received(client, server, message):
+	msg = json.loads( message )
+	if msg['cmd'] == 'send_baseline' and (msg['raceName'] == 'CurrentResults' or msg['raceName'] == GetRaceName()):
+		server.send_message( client, json.dumps(Model.race.GetResultsBaseline()) )
 
-#def message_received(client, server, message):
-	#msg = json.loads( message )
-	#if msg['cmd'] == 'send_baseline' and (msg['raceName'] == 'CurrentResults' or msg['raceName'] == GetRaceName()):
-		#server.send_message( client, json.dumps(GetResultsBaseline()) )
+wsServer = None
+def WsServerLaunch():
+	global wsServer
+	while True:
+		try:
+			wsServer = WebsocketServer( port=PORT_NUMBER + 1, host='' )
+			wsServer.set_fn_message_received( message_received )
+			wsServer.run_forever()
+		except Exception:
+			wsServer = None
+			time.sleep( 5 )
 
-#wsServer = None
-#def WsServerLaunch():
-	#global wsServer
-	#while True:
-		#try:
-			#wsServer = WebsocketServer( port=PORT_NUMBER + 1, host='' )
-			#wsServer.set_fn_message_received( message_received )
-			#wsServer.run_forever()
-		#except Exception as e:
-			#wsServer = None
-			#time.sleep( 5 )
-
-#def WsQueueListener( q ):
-	#global wsServer
+def WsQueueListener( q ):
+	global wsServer
 	
-	#keepGoing = True
-	#while keepGoing:
-		#message = q.get()
-		#if message.get('cmd', None) == 'exit':
-			#keepGoing = False
-		#elif wsServer and wsServer.hasClients():
-			#wsServer.send_message_to_all( Utils.ToJson(message).encode() )
-		#q.task_done()
+	keepGoing = True
+	while keepGoing:
+		message = q.get()
+		if message.get('cmd', None) == 'exit':
+			keepGoing = False
+		elif wsServer and wsServer.hasClients():
+			wsServer.send_message_to_all( Utils.ToJson(message).encode() )
+		q.task_done()
 	
-	#wsServer = None	
+	wsServer = None	
 
-#wsQ = Queue()
-#wsQThread = threading.Thread( target=WsQueueListener, name='WsQueueListener', args=(wsQ,) )
-#wsQThread.daemon = True
-#wsQThread.start()
+wsQ = Queue()
+wsQThread = threading.Thread( target=WsQueueListener, name='WsQueueListener', args=(wsQ,) )
+wsQThread.daemon = True
+wsQThread.start()
 
-#wsThread = threading.Thread( target=WsServerLaunch, name='WsServer' )
-#wsThread.daemon = True
-#wsThread.start()
+wsThread = threading.Thread( target=WsServerLaunch, name='WsServer' )
+wsThread.daemon = True
+wsThread.start()
 
-#wsTimer = tTimerStart = None
-#def WsPost():
-	#global wsServer, wsTimer, tTimerStart
-	#if wsServer and wsServer.hasClients():
-		#while True:
-			#try:
-				#ram = GetResultsRAM()
-				#break
-			#except AttributeError:
-				#time.sleep( 0.25 )
-		#if ram:
-			#wsQ.put( ram )
-	#if wsTimer:
-		#wsTimer.cancel()
-	#wsTimer = tTimerStart = None
+wsTimer = tTimerStart = None
+def WsPost():
+	global wsServer, wsTimer, tTimerStart
+	if wsServer and wsServer.hasClients():
+		while True:
+			try:
+				ram = Model.race.GetResultsRAM()
+				break
+			except AttributeError:
+				time.sleep( 0.25 )
+		if ram:
+			wsQ.put( ram )
+	if wsTimer:
+		wsTimer.cancel()
+	wsTimer = tTimerStart = None
 
-#def WsRefresh( updatePrevious=False ):
-	#global wsTimer, tTimerStart
+def WsRefresh( updatePrevious=False ):
+	global wsTimer, tTimerStart
 	
-	#if updatePrevious:
-		#wsQ.put( {'cmd':'reload_previous'} )
-		#return
+	if updatePrevious:
+		wsQ.put( {'cmd':'reload_previous'} )
+		return
 	
-	#If we have a string of competitors, don't send the update
-	#until there is a gap of a second or more between arrivals.
-	#if not tTimerStart:
-		#tTimerStart = now()
-	#else:
-		#Check if it has been 5 seconds since the last update.
-		#If so, let the currently scheduled update fire.
-		#if (now() - tTimerStart).total_seconds() > 5.0:
-			#return
-		#wsTimer.cancel()
+	# If we have a string of competitors, don't send the update
+	# until there is a gap of a second or more between arrivals.
+	if not tTimerStart:
+		tTimerStart = now()
+	else:
+		# Check if it has been 5 seconds since the last update.
+		# If so, let the currently scheduled update fire.
+		if (now() - tTimerStart).total_seconds() > 5.0:
+			return
+		wsTimer.cancel()
 
-	#Schedule an update to be sent in the next second.
-	#This either schedules the first update, or extends a pending update.
-	#wsTimer = threading.Timer( 1.0, WsPost )
-	#wsTimer.start()
+	# Schedule an update to be sent in the next second.
+	# This either schedules the first update, or extends a pending update.
+	wsTimer = threading.Timer( 1.0, WsPost )
+	wsTimer.start()
 			
 #-------------------------------------------------------------------
 def GetLapCounterRefresh():
