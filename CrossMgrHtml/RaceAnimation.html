@@ -3116,7 +3116,7 @@ function RefreshResultsTable()
 					td = createTD(tr);
 					if( v && field == 'License' && licenseLinkTemplate )
 						v = '<a href="' + licenseLinkTemplate + v + '" target="_blank">'+v+'</a>';
-					else if( field == 'UCICode' && v ) {
+					else if( (field == 'UCICode' || field == 'NatCode') && v ) {
 						var img = GetFlagImage( v );
 						if( img ) {
 							span = createChild( td, 'SPAN' );

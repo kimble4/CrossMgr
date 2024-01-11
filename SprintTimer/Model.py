@@ -1761,6 +1761,8 @@ class Race:
 					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo and externalInfoHasBib and 'LastName' in externalInfo[bib] else ''
 					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo and externalInfoHasBib and 'Machine' in externalInfo[bib] else ''
 					info['Team'] = externalInfo[bib]['Team'] if externalInfo and externalInfoHasBib and 'Team' in externalInfo[bib] else ''
+					info['NatCode'] = externalInfo[bib]['NatCode'] if externalInfo and externalInfoHasBib and 'NatCode' in externalInfo[bib] else ''
+					info['UCICode'] = externalInfo[bib]['UCICode'] if externalInfo and externalInfoHasBib and 'UCICode' in externalInfo[bib] else ''
 					if bibSprintDicts[1] is not None:
 						times = []
 						speeds = []

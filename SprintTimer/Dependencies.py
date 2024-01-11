@@ -44,3 +44,4 @@ import ParseHtmlPayload
 import websocket_server
 import ThreadPoolMixIn
 import ImageIO
+import Flags

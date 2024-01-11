@@ -121,7 +121,7 @@ from GetMatchingExcelFile import GetMatchingExcelFile
 #import ChangeRaceStartTime
 #from PageDialog			import PageDialog
 import ChipReader
-#import Flags
+import Flags
 import WebServer
 import ImageIO
 from ModuleUnpickler import ModuleUnpickler
@@ -2027,12 +2027,11 @@ class MainWin( wx.Frame ):
 		
 		#------------------------------------------------------------------------
 		codes = []
-		#if 'UCICode' in payload['infoFields']:
-			#codes.extend( r['UCICode'] for r in payload['data'].values() if r.get('UCICode',None) )
-		#if 'NatCode' in payload['infoFields']:
-			#codes.extend( r['NatCode'] for r in payload['data'].values() if r.get('NatCode',None) )
-		#payload['flags']				= Flags.GetFlagBase64ForUCI( codes )
-		payload['flage'] = {}
+		if 'UCICode' in payload['infoFields']:
+			codes.extend( r['UCICode'] for r in payload['data'].values() if r.get('UCICode',None) )
+		if 'NatCode' in payload['infoFields']:
+			codes.extend( r['NatCode'] for r in payload['data'].values() if r.get('NatCode',None) )
+		payload['flags']				= Flags.GetFlagBase64ForUCI( codes )
 		if gpsPoints:
 			payload['gpsPoints']		= gpsPoints
 		
