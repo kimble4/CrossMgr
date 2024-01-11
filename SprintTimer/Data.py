@@ -223,7 +223,7 @@ class Data( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Count', 'Time of day', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
+		self.colnames = ['Count', 'Time of day', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
 		
 		self.whiteColour = wx.Colour( 255, 255, 255 )
 		self.blackColour = wx.Colour( 0, 0, 0 )
@@ -506,7 +506,7 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
 			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
-		elif col > 2 and col < 6: #name, machine, team
+		elif col > 2 and col < 8: #name, machine, team
 			excelLink = getattr(race, 'excelLink', None)
 			if "sprintBib" in sprintDict and excelLink:
 				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\' ' +  _('field for sprints with a bib number') + '.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
@@ -519,6 +519,10 @@ class Data( wx.Panel ):
 					sprintDict["sprintMachineEdited"] = value
 				elif col == 5:
 					sprintDict["sprintTeamEdited"] = value
+				elif col == 6:
+					sprintDict["sprintGenderEdited"] = value
+				elif col == 7:
+					sprintDict["sprintNatcodeEdited"] = value
 				race.setChanged()
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 				wx.CallAfter(self.refresh)
@@ -602,6 +606,8 @@ class Data( wx.Panel ):
 		for sprint in sprints:
 			bib = None
 			name = ''
+			gender = ''
+			natcode = ''
 			machine = ''
 			team = ''
 			sortTime = sprint[0]
@@ -676,7 +682,6 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('Machine'):
 				try:
 					machine = externalInfo[bib]['Machine']
-					
 				except:
 					pass
 			elif "sprintMachineEdited" in sprintDict:
@@ -695,6 +700,34 @@ class Data( wx.Panel ):
 				team = sprintDict["sprintTeamEdited"]
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellValue(row, col, team)
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			col += 1
+			#Gender
+			if bib and excelLink is not None and excelLink.hasField('Gender'):
+				try:
+					gender = externalInfo[bib]['Gender']
+				except:
+					pass
+			elif "sprintGenderEdited" in sprintDict:
+				gender = sprintDict["sprintGenderEdited"]
+				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+			self.dataGrid.SetCellValue(row, col, gender)
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			col += 1
+			#NatCode
+			if bib and excelLink is not None and excelLink.hasField('NatCode'):
+				try:
+					natcode = externalInfo[bib]['NatCode']
+				except:
+					if excelLink.hasField('UCICode'):
+						try:
+							natcode = externalInfo[bib]['UCICode']
+						except:
+							pass
+			elif "sprintNatcodeEdited" in sprintDict:
+				natcode = sprintDict["sprintNatcodeEdited"]
+				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
+			self.dataGrid.SetCellValue(row, col, natcode)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			col += 1
 			if "sprintTime" in sprintDict:

@@ -83,7 +83,7 @@ class Results( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Seconds', 'Speed', 'Time of day', 'Note', 'Attempts']
+		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Time of day', 'Note', 'Attempts']
 		
 		#self.category = None
 		#self.showRiderData = True
@@ -762,33 +762,53 @@ class Results( wx.Panel ):
 		for i, bibSprintDicts in enumerate(res):
 			bib = bibSprintDicts[0]
 			status = race.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else Model.Rider.NP
+			name = ''
+			if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
+				try:
+					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
+				except:
+					pass
+			elif 'sprintNameEdited' in sprintDict:
+					name = sprintDict['sprintNameEdited']
+			gender = ''
+			if bib and excelLink is not None and excelLink.hasField('Gender'):
+				try:
+					gender = externalInfo[bib]['Gender']
+				except:
+					pass
+			elif 'sprintGenderEdited' in sprintDict:
+					gender = sprintDict['sprintGenderEdited']
+			natcode = ''
+			if bib and excelLink is not None and excelLink.hasField('NatCode'):
+				try:
+					natcode = externalInfo[bib]['NatCode']
+				except:
+					if excelLink.hasField('UCICode'):
+						try:
+							natcode = externalInfo[bib]['UCIcode']
+						except:
+							pass
+			elif 'sprintNatcodeEdited' in sprintDict:
+					natcode = sprintDict['sprintNatcodeEdited']
+			machine = ''
+			if bib and excelLink is not None and excelLink.hasField('Machine'):
+				try:
+					machine = externalInfo[bib]['Machine']
+					
+				except:
+					pass
+			elif 'sprintMachineEdited' in sprintDict:
+				machine = sprintDict['sprintMachineEdited']
+			team = ''
+			if bib and excelLink is not None and excelLink.hasField('Team'):
+				try:
+					team = externalInfo[bib]['Team']
+				except:
+					pass
+			elif 'sprintTeamEdited' in sprintDict:
+				team = sprintDict['sprintTeamEdited']
 			if bibSprintDicts[1] is not None:
 				sprintDict = bibSprintDicts[1][0]
-				name = ''
-				if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
-					try:
-						name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
-					except:
-						pass
-				elif 'sprintNameEdited' in sprintDict:
-						name = sprintDict['sprintNameEdited']
-				machine = ''
-				if bib and excelLink is not None and excelLink.hasField('Machine'):
-					try:
-						machine = externalInfo[bib]['Machine']
-						
-					except:
-						pass
-				elif 'sprintMachineEdited' in sprintDict:
-					machine = sprintDict['sprintMachineEdited']
-				team = ''
-				if bib and excelLink is not None and excelLink.hasField('Team'):
-					try:
-						team = externalInfo[bib]['Team']
-					except:
-						pass
-				elif 'sprintTeamEdited' in sprintDict:
-					team = sprintDict['sprintTeamEdited']
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
@@ -807,6 +827,10 @@ class Results( wx.Panel ):
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(team))
 				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(gender))
+				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(natcode))
+				col += 1				
 				self.resultsGrid.SetCellValue(row, col, str('{:.3f}'.format(sprintDict["sprintTime"])))
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 				col += 1
@@ -833,25 +857,6 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			else:
 				# No sprints for rider
-				name = ''
-				if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
-					try:
-						name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
-					except:
-						pass
-				machine = ''
-				if bib and excelLink is not None and excelLink.hasField('Machine'):
-					try:
-						machine = externalInfo[bib]['Machine']
-						
-					except:
-						pass
-				team = ''
-				if bib and excelLink is not None and excelLink.hasField('Team'):
-					try:
-						team = externalInfo[bib]['Team']
-					except:
-						pass
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
@@ -866,6 +871,10 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str(machine))
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(team))
+				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(gender))
+				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(natcode))
 				col += 5
 				self.resultsGrid.SetCellValue(row, col, '0')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)

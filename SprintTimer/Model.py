@@ -1757,12 +1757,14 @@ class Race:
 					info['CustomCategory8'] = externalInfo[bib]['CustomCategory8'] if externalInfo and externalInfoHasBib and 'CustomCategory8' in externalInfo[bib] else ''
 					info['CustomCategory9'] = externalInfo[bib]['CustomCategory9'] if externalInfo and externalInfoHasBib and 'CustomCategory9' in externalInfo[bib] else ''
 					info['FirstName'] = externalInfo[bib]['FirstName'] if externalInfo and externalInfoHasBib and 'FirstName' in externalInfo[bib] else ''
-					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo and externalInfoHasBib and 'Gender' in externalInfo[bib] else ''
 					info['LastName'] = externalInfo[bib]['LastName'] if externalInfo and externalInfoHasBib and 'LastName' in externalInfo[bib] else ''
 					info['Machine'] = externalInfo[bib]['Machine'] if externalInfo and externalInfoHasBib and 'Machine' in externalInfo[bib] else ''
 					info['Team'] = externalInfo[bib]['Team'] if externalInfo and externalInfoHasBib and 'Team' in externalInfo[bib] else ''
+					info['Gender'] = externalInfo[bib]['Gender'] if externalInfo and externalInfoHasBib and 'Gender' in externalInfo[bib] else ''
+					info['License'] = externalInfo[bib]['License'] if externalInfo and externalInfoHasBib and 'License' in externalInfo[bib] else ''
 					info['NatCode'] = externalInfo[bib]['NatCode'] if externalInfo and externalInfoHasBib and 'NatCode' in externalInfo[bib] else ''
 					info['UCICode'] = externalInfo[bib]['UCICode'] if externalInfo and externalInfoHasBib and 'UCICode' in externalInfo[bib] else ''
+					info['UCIID'] = externalInfo[bib]['UCIID'] if externalInfo and externalInfoHasBib and 'UCIID' in externalInfo[bib] else ''
 					if bibSprintDicts[1] is not None:
 						times = []
 						speeds = []
