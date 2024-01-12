@@ -761,7 +761,12 @@ class Results( wx.Panel ):
 		
 		for i, bibSprintDicts in enumerate(res):
 			bib = bibSprintDicts[0]
-			status = race.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else Model.Rider.NP
+			status = race.getRiderStatus(bib)
+			if status is None:
+				if race.isFinished() and  getattr(race, 'setNoDataDNS', False):
+						status = Model.Rider.DNS
+				else:
+					status = Model.Rider.NP
 			name = ''
 			if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
 				try:

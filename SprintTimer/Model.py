@@ -25,6 +25,7 @@ from BatchPublishAttrs import setDefaultRaceAttr
 import minimal_intervals
 import SetRangeMerge
 from InSortedIntervalList import InSortedIntervalList
+from SetNoDataDNS import SetNoDataDNS
 
 from getuser import lookup_username
 try:
@@ -1241,7 +1242,8 @@ class Race:
 	#lapCounterCycle = None
 	#lapElapsedClock = True
 	
-	#setNoDataDNS = False				# If True, will set all riders in the spreadsheet to DNS if they have no data in the race.
+	rankReverseOrder = False			# If true, riders will be ranked slowest-first
+	setNoDataDNS = False				# If True, will set all riders in the spreadsheet to DNS if they have no data in the race.
 	#lastChangedTime = sys.float_info.max
 	
 	#headerImage = None
@@ -1619,9 +1621,26 @@ class Race:
 
 	def getSprints( self ):
 		return self.sprints.copy()
+		
+	def riderHasValidTimes( self, rider=None ):
+		if not rider:
+			return None
+		for sortTime, sprintDict in self.getSprints():
+			if "sprintBib" in sprintDict:
+				try:
+					bib = int(sprintDict['sprintBib'])
+					if int(bib) == int(rider):
+						# Filter by min lap time
+						if "sprintTime" in sprintDict:
+							if float(sprintDict['sprintTime']) >= self.minPossibleLapTime:
+								return True
+				except:
+					continue
+		return False
 	
 	def getSprintResults( self, category=None ):
 		res = defaultdict(list)
+		SetNoDataDNS()
 		
 		# get all the sprints in this category that have a valid bib number
 		for sortTime, sprintDict in self.getSprints():
@@ -1709,7 +1728,10 @@ class Race:
 						ranking.append((status, bib, -1))
 					
 		ranking.sort(key=lambda sbt: (sbt[1]))  # sorts in place by bib
-		ranking.sort(key=lambda sbt: (-sbt[2]))  # sorts in place by speed
+		if self.rankReverseOrder:
+			ranking.sort(key=lambda sbt: (sbt[2]))  # sorts in place by speed (ascending)
+		else:
+			ranking.sort(key=lambda sbt: (-sbt[2]))  # sorts in place by speed (desending)
 		ranking.sort(key=lambda sbt: (Rider.statusSortSeq[sbt[0]]))  # sorts in place by status
 		
 		# return list of riders' results in preferred order

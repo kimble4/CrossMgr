@@ -226,7 +226,9 @@ class RaceOptionsProperties( wx.Panel ):
 		self.multiplePolicySizer.Add( self.multiplePolicy )
 		self.multiplePolicySizer.AddStretchSpacer()
 		
-		#self.setNoDataDNS = wx.CheckBox( self, label=_('Consider Riders in Spreadsheet to be DNS if no race data') )
+		self.rankReverseOrder = wx.CheckBox( self, label=_('Rank finishers in reverse order (slowest wins)') )
+		
+		self.setNoDataDNS = wx.CheckBox( self, label=_('Consider Riders in Spreadsheet to be DNS if no race data') )
 		
 		#self.rule80MinLapCountLabel = wx.StaticText( self, label=_("Lap Time for 80% Rule: ") )
 		#self.rule80MinLapCount1 = wx.RadioButton( self, label=_("1st Lap Time"), style=wx.RB_GROUP )
@@ -303,7 +305,8 @@ class RaceOptionsProperties( wx.Panel ):
 			#(blank(),				0, labelAlign),		(self.estimateLapsDownFinishTime,		1, fieldAlign),
 			#(self.rankByLabel, 0, labelAlign), 			(self.rankBySizer,					1, fieldAlign),
 			(self.multiplePolicyLabel, 0, labelAlign), 	(self.multiplePolicySizer,		1, fieldAlign),
-			#(blank(),				0, labelAlign),		(self.setNoDataDNS,				1, fieldAlign),
+			(blank(),				0, labelAlign),		(self.rankReverseOrder,			1, fieldAlign),
+			(blank(),				0, labelAlign),		(self.setNoDataDNS,				1, fieldAlign),
 			#(self.rule80MinLapCountLabel, 0, labelAlign),(self.rule80MinLapCountSizer,	1, fieldAlign),
 			(self.distanceUnitLabel,0, labelAlign),		(self.distanceUnitSizer,		1, fieldAlign),
 			(blank(),				0, labelAlign),		(self.showDetails,				1, fieldAlign),
@@ -372,7 +375,8 @@ class RaceOptionsProperties( wx.Panel ):
 		#self.roadRaceFinishTimes.SetValue( race.roadRaceFinishTimes )
 		#self.estimateLapsDownFinishTime.SetValue( race.estimateLapsDownFinishTime )
 		#self.rankBy.SetSelection( getattr(race, 'rankBy', Model.Race.rankByLapsTime) )
-		#self.setNoDataDNS.SetValue( getattr(race, 'setNoDataDNS', False) )
+		self.rankReverseOrder.SetValue( getattr(race, 'rankReverseOrder', False) )
+		self.setNoDataDNS.SetValue( getattr(race, 'setNoDataDNS', False) )
 		#if race.rule80MinLapCount == 1:
 			#self.rule80MinLapCount1.SetValue( True )
 		#else:
@@ -406,7 +410,8 @@ class RaceOptionsProperties( wx.Panel ):
 		#race.roadRaceFinishTimes = self.roadRaceFinishTimes.IsChecked()
 		#race.estimateLapsDownFinishTime = self.estimateLapsDownFinishTime.IsChecked()
 		#race.rankBy = self.rankBy.GetSelection()
-		#race.setNoDataDNS = self.setNoDataDNS.IsChecked()
+		race.rankReverseOrder = self.rankReverseOrder.IsChecked()
+		race.setNoDataDNS = self.setNoDataDNS.IsChecked()
 		#race.rule80MinLapCount = (1 if self.rule80MinLapCount1.GetValue() else 2)
 		race.distanceUnit = self.distanceUnit.GetSelection()
 		race.hideDetails = not self.showDetails.IsChecked()
