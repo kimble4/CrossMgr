@@ -630,14 +630,17 @@ class Results( wx.Panel ):
 			return
 		menu = wx.Menu()
 		menu.SetTitle('Change #' + str(bib) + ' status:')
+		fin = menu.Append( wx.ID_ANY, 'Set Finisher', 'Set rider Finisher...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderFinisher(event, bib), fin )
+		np = menu.Append( wx.ID_ANY, 'Set NP', 'Set rider NP...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.setRiderNP(event, bib), np )
 		dns = menu.Append( wx.ID_ANY, 'Set DNS', 'Set rider DNS...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDNS(event, bib), dns )
 		dnf = menu.Append( wx.ID_ANY, 'Set DNF', 'Set rider DNF...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDNF(event, bib), dnf )
 		dq = menu.Append( wx.ID_ANY, 'Set DQ', 'Set rider DQ...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.setRiderDQ(event, bib), dq )
-		fin = menu.Append( wx.ID_ANY, 'Set Finisher', 'Set rider Finisher...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.setRiderFinisher(event, bib), fin )
+		
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -675,7 +678,15 @@ class Results( wx.Panel ):
 		race.setRiderStatus( bib, Model.Rider.DQ )
 		race.setChanged()
 		self.refresh()
-		
+	
+	def setRiderNP( self, event, bib ):
+		race = Model.race
+		if not race:
+			return
+		race.setRiderStatus( bib, Model.Rider.NP )
+		race.setChanged()
+		self.refresh()
+	
 	def setRiderFinisher( self, event, bib ):
 		race = Model.race
 		if not race:
@@ -765,12 +776,7 @@ class Results( wx.Panel ):
 		
 		for i, bibSprintDicts in enumerate(res):
 			bib = bibSprintDicts[0]
-			status = race.getRiderStatus(bib)
-			# if status is None:
-			# 	if race.isFinished() and  getattr(race, 'setNoDataDNS', False):
-			# 			status = Model.Rider.DNS
-			# 	else:
-			# 		status = Model.Rider.NP
+			status = race.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else Model.Rider.NP
 			name = ''
 			if bib and excelLink is not None and ((excelLink.hasField('FirstName') or excelLink.hasField('LastName'))):
 				try:
