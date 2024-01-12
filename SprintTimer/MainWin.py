@@ -1953,7 +1953,7 @@ class MainWin( wx.Frame ):
 		payload['raceIsRunning']	= race.isRunning()
 		payload['raceIsUnstarted']	= race.isUnstarted()
 		payload['raceIsFinished']	= race.isFinished()
-		payload['rankFinishersBy']	= Model.Race.rankByNames[getattr(race, 'rankBy', Model.Race.rankByLapsTime)] if not race.isRunning() else 'recorded lap times'
+		payload['rankFinishersBy']	= 'fastest first' if not getattr(race, 'rankReverseOrder', False) else 'slowest first'
 		payload['lapDetails']		= race.getLapDetails()
 		payload['hideDetails']		= False
 		payload['showCourseAnimation'] = False #getattr(race, 'showCourseAnimationInHtml', False)

@@ -17,11 +17,12 @@ def SetNoDataDNS():
 	
 	if race.isRunning():
 		for num in externalInfo.keys():
-			if race.getRiderStatus(num) == NP:
+			status = race.getRiderStatus(num)
+			if status == NP or status == None:
 				if race.riderHasValidTimes(num):
 					race.setRiderStatus( num, Finisher )
 					isChanged = True
-			elif race.getRiderStatus(num) == Finisher:
+			elif status == Finisher:
 				if not race.riderHasValidTimes(num):
 					race.setRiderStatus( num, NP )
 					isChanged = True
