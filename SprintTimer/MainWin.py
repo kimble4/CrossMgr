@@ -193,7 +193,7 @@ class MainWin( wx.Frame ):
 		#Add code to configure file history.
 		self.filehistory = wx.FileHistory(8)
 		dataDir = Utils.getHomeDir()
-		configFileName = os.path.join(dataDir, 'CrossMgr.cfg')
+		configFileName = os.path.join(dataDir, 'SprintTimer.cfg')
 		self.config = wx.Config(appName="SprintTimer",
 								vendorName="BHPC",
 								localFilename=configFileName
