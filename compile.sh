@@ -495,6 +495,7 @@ $0 [ -hcitywVqserCtaep: ]
  -e        - Build CallupSeedingMgr
  -g        - Build StageRaceGC
  -n        - Build SprintTimer
+ -x        - Build HPVMgr
  -a        - Build all programs
 
  -d		   - Download AppImage builder
@@ -553,6 +554,8 @@ do
 		;;
 		n) PROGRAMS="$PROGRAMS SprintTimer"
 		;;
+		x) PROGRAMS="$PROGRAMS HPVMgr"
+		;;
 		V) PROGRAMS="$PROGRAMS CrossMgrVideo"
 		;;
 		v) 	getVersion "CrossMgr"
@@ -564,6 +567,7 @@ do
 			getVersion "PointsRaceMgr"
 			getVersion "SprintMgr"
 			getVersion "SprintTimer"
+			getVersion "HPVMgr"
 			getVersion "CallupSeedingMgr"
 			getVersion "StageRaceGC"
 		;;
@@ -652,6 +656,7 @@ do
 		   fixDependencies 'CrossMgrVideo'
 		   fixDependencies 'SprintMgr'
 		   fixDependencies 'SprintTimer'
+		   fixDependencies 'HPVMgr'
 		   fixDependencies 'CallupSeedingMgr'
 		   fixDependencies 'StageRaceGC'
 		;;

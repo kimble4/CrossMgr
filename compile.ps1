@@ -164,6 +164,7 @@ function Cleanup($program)
 		'StageRaceGC/__pycache__',
 		'SprintMgr/__pycache__',
 		'SprintTimer/__pycache__',
+		'HPVMgr/__pycache__',
 		'dist',
 		'build',
 		'release',
@@ -627,6 +628,7 @@ function doHelp
 	-gc          - Build StageRaceGC
 	-spr         - Build SprintMgr
 	-timer       - Build SprintTimer
+	-hpv         - Build HPVMgr
 	-all         - Build all programs
 	
 	-checkver     - check python version
@@ -750,6 +752,11 @@ if ($timer -eq $true)
 {
 	$programs += 'SprintTimer'
 }
+if ($hpv -eq $true)
+{
+	$programs += 'HPVMgr'
+}
+
 if ($all -eq $true)
 {
 	$programs = @(
@@ -764,6 +771,7 @@ if ($all -eq $true)
 		'StageRaceGC',
 		'SprintMgr',
 		'SprintTimer'
+		'HPVMgr'
 		)
 	$virus = $true
 }
