@@ -39,93 +39,14 @@ import xlsxwriter
 
 import Utils
 
-#from AddExcelInfo import AddExcelInfo
-#from LogPrintStackStderr import LogPrintStackStderr
-#from Data				import Data, ManualEntryDialog
-#from ForecastHistory	import ForecastHistory
-#from NumKeypad			import NumKeypad
-#from Actions			import Actions
-#from Gantt				import Gantt
-#from History			import History
-#from RiderDetail		import RiderDetail
-#from Results			import Results
-#from Categories			import Categories
-#from Properties			import Properties, PropertiesDialog, BatchPublishPropertiesDialog
-#from Recommendations	import Recommendations
-#from RaceAnimation		import RaceAnimation
-#from Search				import SearchDialog
-#from Situation			import Situation
-#from GapChart			import GapChart
-#from LapCounter			import LapCounter
-#from Announcer			import Announcer
-#from Primes				import Primes, GetGrid
-#from Prizes				import Prizes
-#from HistogramPanel		import HistogramPanel
-#from UnmatchedTagsGantt	import UnmatchedTagsGantt
-#import FtpWriteFile
-#from FtpWriteFile		import realTimeFtpPublish
-#from SetAutoCorrect		import SetAutoCorrectDialog
-#from DNSManager			import DNSManagerDialog
-#from USACExport			import USACExport
-#from UCIExport			import UCIExport
-#from UCIExcel			import UCIExcel
-#from VTTAExport			import VTTAExport
-#from JPResultsExport	import JPResultsExport
-#from CrossResultsExport	import CrossResultsExport
-#from WebScorerExport	import WebScorerExport
 from HelpSearch			import HelpSearchDialog, getHelpURL
 from Utils				import logCall, logException
-#from FileDrop			import FileDrop
-#from RaceDB				import RaceDB, RaceDBUpload
-#from SimulateData		import SimulateData
-#from NonBusyCall		import NonBusyCall
-#from Playback			import Playback
-#from Pulled				import Pulled
-#from TeamResults		import TeamResults
-#from BibEnter			import BibEnter
-#from MissingRiders 		import MissingRiders
-#from BackgroundJobMgr	import BackgroundJobMgr
-#from Restart			import Restart
-#from ReissueBibs	 	import ReissueBibsDialog
-#from GiveTimes 			import GiveTimesDialog
-#from FinishLynx			import FinishLynxDialog
-#import BatchPublishAttrs
-#import Model
-#import JChipSetup
-#import JChipImport
-#import RaceResultImport
-#import JChip
-#import OrionImport
-#import AlienImport
-#import ImpinjImport
-#import IpicoImport
-#import OutputStreamer
-#import GpxImport
-#import CmnImport
-#from JSONTimer import JSONTimer
-#from Undo import undo
-#from Printing			import CrossMgrPrintout, CrossMgrPrintoutPNG, CrossMgrPrintoutPDF, CrossMgrPodiumPrintout, getRaceCategories
-#from Printing			import ChoosePrintCategoriesDialog, ChoosePrintCategoriesPodiumDialog
-#from ExportGrid			import ExportGrid
-#import SimulationLapTimes
 import Version
-#from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
-#from SetGraphic			import SetGraphicDialog
-#from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM
-#from PhotoFinish		import DeletePhotos, okTakePhoto
-#from SendPhotoRequests	import SendPhotoRequests
-#from PhotoViewer		import PhotoViewerDialog
-#from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
-#from TemplateSubstitute import TemplateSubstitute
-#from GetMatchingExcelFile import GetMatchingExcelFile
-#import ChangeRaceStartTime
-#from PageDialog			import PageDialog
-#import ChipReader
-#import Flags
-#import WebServer
-#import ImageIO
-#from ModuleUnpickler import ModuleUnpickler
-#import GpxTimesImport
+from Riders 			import Riders
+from RiderDetail		import RiderDetail
+from Settings			import Settings
+import Model
+
 
 now = datetime.datetime.now
 
@@ -197,11 +118,6 @@ class MainWin( wx.Frame ):
 		self.fileName = None
 		#self.numSelect = None
 		
-		#Default print options.
-		#self.printData = wx.PrintData()
-		# #self.printData.SetPaperId(wx.PAPER_LETTER)
-		#self.printData.SetPrintMode(wx.PRINT_MODE_PRINTER)
-		#self.printData.SetOrientation(wx.LANDSCAPE)
 		
 		#Configure the main menu.
 		self.menuBar = wx.MenuBar(wx.MB_DOCKABLE)
@@ -209,20 +125,20 @@ class MainWin( wx.Frame ):
 		#-----------------------------------------------------------------------
 		self.fileMenu = wx.Menu()
 
-		# item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New..."), _("Create a new race"), Utils.GetPngBitmap('document-new.png') )
-		# self.Bind(wx.EVT_MENU, self.menuNew, item )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New..."), _("Create a new database"), Utils.GetPngBitmap('document-new.png') )
+		self.Bind(wx.EVT_MENU, self.menuNew, item )
 
-		# item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("New Nex&t..."), _("Create a new race starting from the current race"), Utils.GetPngBitmap('document-new-next.png') )
-		# self.Bind(wx.EVT_MENU, self.menuNewNext, item )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("&Save..."), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
+		self.Bind(wx.EVT_MENU, self.menuSave, item )
 
 		#self.fileMenu.AppendSeparator()
 		
 		#item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("New from &RaceDB Excel..."), _("Create a new race from RaceDB Excel output"), Utils.GetPngBitmap('database-add.png') )
 		#self.Bind(wx.EVT_MENU, self.menuNewRaceDB, item )
 
-		# self.fileMenu.AppendSeparator()
-		# item = AppendMenuItemBitmap( self.fileMenu, wx.ID_OPEN, _("&Open..."), _("Open a race"), Utils.GetPngBitmap('document-open.png') )
-		# self.Bind(wx.EVT_MENU, self.menuOpen, item )
+		self.fileMenu.AppendSeparator()
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_OPEN, _("&Open..."), _("Open a database"), Utils.GetPngBitmap('document-open.png') )
+		self.Bind(wx.EVT_MENU, self.menuOpen, item )
 
 		#item = self.fileMenu.Append( wx.ID_ANY, _("Open N&ext..."), _("Open the next race starting from the current race") )
 		#self.Bind(wx.EVT_MENU, self.menuOpenNext, item )
@@ -541,13 +457,15 @@ class MainWin( wx.Frame ):
 			self.pages.append( page )
 			
 		self.attrClassName = [
+			[ 'riders',			Riders,				_('Riders') ],
+			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
+			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
 			#[ 'record',			NumKeypad,			_('Record') ],
 			#[ 'results',		Results,			_('Results') ],
 			#[ 'pulled',			Pulled,				_('Pulled') ],
 			#[ 'history',		History,			_('Passings') ],
-			#[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			#[ 'gantt', 			Gantt,				_('Chart') ],
 			#[ 'recommendations',Recommendations,	_('Recommendations') ],
 			#[ 'categories', 	Categories,			_('Categories') ],
@@ -562,11 +480,11 @@ class MainWin( wx.Frame ):
 			#[ 'histogram',		HistogramPanel,		_('Histogram') ],
 			#[ 'teamResults',	TeamResults,		_('Team Results') ],
 		]
-		self.attrWindowSet = {'results', 'history', 'gantt', 'raceAnimation', 'gapChart', 'announcer', 'lapCounter', 'teamResults'}
+		#self.attrWindowSet = {'results', 'history', 'gantt', 'raceAnimation', 'gapChart', 'announcer', 'lapCounter', 'teamResults'}
 		
 		for i, (a, c, n) in enumerate(self.attrClassName):
 			setattr( self, a, c(self.notebook) )
-			getattr( self, a ).SetDropTarget( self.fileDrop )
+			#getattr( self, a ).SetDropTarget( self.fileDrop )
 			addPage( getattr(self, a), '{}. {}'.format(i+1, n) )
 			setattr( self, 'i' + a[0].upper() + a[1:] + 'Page', i )
 		#Add page alternale names.
@@ -806,7 +724,8 @@ class MainWin( wx.Frame ):
 		# self.Bind(JSONTimer.EVT_SPRINT_TIMER, self.handleHPVMgrEvent)
 		# self.lastPhotoTime = now()
 		
-
+	def menuShowPage( self, event ):
+		self.showPage( self.idPage[event.GetId()] )
 
 	def menuUndo( self, event ):
 		undo.doUndo()
@@ -816,18 +735,6 @@ class MainWin( wx.Frame ):
 		undo.doRedo()
 		self.refresh()
 		
-				
-	
-	#@logCall
-	#def menuChangeRaceStartTime( self, event ):
-		#race = Model.race
-		#if not race:
-			#return
-		#if race.isUnstarted():
-			#Utils.MessageOK( self, _('Cannot change Start Time of unstarted race.  Start the race from Actions.'), _('Race Not Started') )
-			#return
-		#with ChangeRaceStartTime.ChangeRaceStartTimeDialog(self) as dlg:
-			#dlg.ShowModal()
 	
 	@logCall
 	def menuRestartRace( self, event ):
@@ -876,179 +783,7 @@ class MainWin( wx.Frame ):
 	def menuLaunchExcelAfterPublishingResults( self, event ):
 		self.launchExcelAfterPublishingResults = self.menuItemLaunchExcelAfterPublishingResults.IsChecked()
 		self.config.WriteBool( 'launchExcelAfterPublishingResults', self.launchExcelAfterPublishingResults )
-	
-	#def menuTipAtStartup( self, event ):
-		#showing = self.config.ReadBool('showTipAtStartup', True)
-		#if Utils.MessageOKCancel( self, _('Turn Off Tips at Startup?') if showing else _('Show Tips at Startup?'), _('Tips at Startup') ):
-			#self.config.WriteBool( 'showTipAtStartup', showing ^ True )
-
-	#def menuRestoreFromInput( self, event ):
-		#if not Model.race:
-			#Utils.MessageOK(self, _("You must have a valid race."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
-			#return
-		#if not Utils.MessageOKCancel( self,
-				#_("This will restore the race from the original input and replace your adds/splits/deletes.\nAre you sure you want to continue?"),
-				#_("Restore from Original Input"), iconMask=wx.ICON_WARNING ):
-			#return
-				
-		#startTime, finishTime, numTimes = OutputStreamer.ReadStreamFile()
-		#if not numTimes:
-			#Utils.MessageOK( self, '{}.\n\n{} "{}".'.format(
-				#_('No Data Found'),
-				#_('Check file'),
-				#OutputStreamer.getFileName()), _("No Data Found")
-			#)
-			#return
-		#self.showPage( self.iActionsPage )
-		#undo.pushState()
-		
-		#DNS, Finisher = Model.Rider.DNS, Model.Rider.Finisher
-		#with Model.LockRace() as race:
-			#race.clearAllRiderTimes()
 			
-			#SyncExcelLink( race )
-			
-			#race.startTime = race.finishTime = None
-			#if race.isTimeTrial:
-				#AutoImportTTStartTimes()
-			#race.startTime = startTime
-			
-			#for num, t in numTimes:
-				#rider = race.getRider( num )
-				#if rider.status == DNS:
-					#rider.status = Finisher
-				#race.addTime( num, t )
-			
-			#race.finishTime = finishTime
-			#race.numLaps = race.getMaxLap()
-			#race.setChanged()
-		
-		#self.refreshAll()
-		#self.showResultsPage()
-			
-	#def menuChangeProperties( self, event ):
-		#if not Model.race:
-			#Utils.MessageOK(self, _("You must have a valid race.  Open or New a race first."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
-			#return
-		#ChangeProperties( self )
-		
-	#def menuJChip( self, event ):
-		#if not Model.race:
-			#Utils.MessageOK(self, _("You must have a valid race.  Open or New a race first."), _("No Valid Race"), iconMask=wx.ICON_ERROR)
-			#return
-		#self.commit()
-		#if Model.race.isRunning():
-			#Utils.MessageOK( self, _('Cannot perform RFID setup while race is running.'), _('Cannot Perform RFID Setup'), iconMask=wx.ICON_ERROR )
-			#return
-		#with JChipSetup.JChipSetupDialog(self) as dlg:
-			#dlg.ShowModal()
-
-	#def menuJChipImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with JChipImport.JChipImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	#def menuAlienImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with AlienImport.AlienImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	#def menuIpicoImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with IpicoImport.IpicoImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	#def menuImpinjImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with ImpinjImport.ImpinjImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	#def menuOrionImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with OrionImport.OrionImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	#def menuRaceResultImport( self, event ):
-		#correct, reason = JChipSetup.CheckExcelLink()
-		#explain = '{}\n\n{}'.format(
-			#_('You must have a valid Excel sheet with associated tags and Bib numbers.'),
-			#_('See documentation for details.')
-		#)
-		#if not correct:
-			#Utils.MessageOK( self, '{}\n\n    {}\n\n{}'.format(_('Problems with Excel sheet.'), reason, explain),
-									#title = _('Excel Link Problem'), iconMask = wx.ICON_ERROR )
-			#return
-			
-		#with RaceResultImport.RaceResultImportDialog(self) as dlg:
-			#dlg.ShowModal()
-		#wx.CallAfter( self.refresh )
-		
-	def menuShowPage( self, event ):
-		self.showPage( self.idPage[event.GetId()] )
-		
-	#def menuShowBibEnter( self, event ):
-		#self.bibEnter.populateBibs()
-		#self.bibEnter.Show()
-		
-	#def menuShowMissingRiders( self, event):
-		#self.missingRiders.refresh()
-		#self.missingRiders.Fit()
-		#self.missingRiders.Show()
-		
-	#def getDirName( self ):
-		#return Utils.getDirName()
-		
-	#--------------------------------------------------------------------------------------------
 	
 	def menuSetContactEmail( self, event = None ):
 		if Model.race and Model.race.email:
@@ -1615,7 +1350,7 @@ class MainWin( wx.Frame ):
 # 		
 # 		#------------------------------------------------------------------------
 # 		title = '{} - {} {} {}'.format( race.title, _('Starting'), raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
-# 		html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
+# 		html = html.replace( 'HPVMgr Race Results by BHPC', escape(title) )
 # 		if getattr(race, 'gaTrackingID', None):
 # 			html = html.replace( '<!-- Google Analytics -->', gaSnippet.replace('UA-XXXX-Y', race.gaTrackingID) )
 # 		if race.isRunning():
@@ -1756,7 +1491,7 @@ class MainWin( wx.Frame ):
 			#hour, minute, second = timeComponents
 			#raceTime = datetime.datetime( year, month, day, hour, minute, second )
 			#title = '{} {} {}'.format( race.title, _('Course for'), raceTime.strftime(localDateFormat) )
-			#html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
+			#html = html.replace( 'HPVMgr Race Results by BHPC', escape(title) )
 			
 			#payload['raceName']			= escape(race.title)
 			#payload['organizer']		= getattr(race, 'organizer', '')
@@ -2292,7 +2027,7 @@ class MainWin( wx.Frame ):
 			#hour, minute, second = timeComponents
 			#raceTime = datetime.datetime( year, month, day, hour, minute, second )
 			#title = '{} Raw Data for {} Start on {}'.format( race.title, raceTime.strftime(localTimeFormat), raceTime.strftime(localDateFormat) )
-			#html = html.replace( 'SprintTimer Race Results by BHPC', escape(title) )
+			#html = html.replace( 'HPVMgr Race Results by BHPC', escape(title) )
 			#html = replaceJsonVar( html, 'organizer', getattr(race, 'organizer', '') )
 			
 		#html = replaceJsonVar( html, 'timestamp', now().ctime() )
@@ -2352,8 +2087,14 @@ class MainWin( wx.Frame ):
 		
 	#--------------------------------------------------------------------------------------------
 	def doCleanup( self ):
-		pass
-		#self.showResultsPage()
+		database = Model.database
+		if database:
+			if database.hasChanged():
+				if Utils.MessageOKCancel( self, _('Save changes?'), _('Changes unsaved') ):
+					self.saveDatabase()
+				else:
+					Utils.writeLog( 'Exiting without saving changes!' )
+		   
 		# race = Model.race
 		# if race:
 		# 	try:
@@ -2390,15 +2131,15 @@ class MainWin( wx.Frame ):
 		self.doCleanup()
 		wx.Exit()
 
-	def writeRace( self, doCommit = True ):
-		if doCommit:
-			self.commit()
-		with Model.LockRace() as race:
-			if race is not None:
-				with open(self.fileName, 'wb') as fp:
-					Utils.writeLog( 'Dumping race to: ' + str(self.fileName))
-					pickle.dump( race, fp, 2 )
-				race.setChanged( False )
+	# def writeRace( self, doCommit = True ):
+	# 	if doCommit:
+	# 		self.commit()
+	# 	with Model.LockRace() as race:
+	# 		if race is not None:
+	# 			with open(self.fileName, 'wb') as fp:
+	# 				Utils.writeLog( 'Dumping race to: ' + str(self.fileName))
+	# 				pickle.dump( race, fp, 2 )
+	# 			race.setChanged( False )
 
 	#def setActiveCategories( self ):
 		#with Model.LockRace() as race:
@@ -2406,9 +2147,12 @@ class MainWin( wx.Frame ):
 				#return
 			#race.setActiveCategories()
 
-# 	@logCall
-# 	def menuNew( self, event ):
-# 		#self.showPage(self.iActionsPage)
+	@logCall
+	def menuNew( self, event ):
+		self.showPage(self.iRidersPage)
+		Model.database = Model.Database()
+		
+		
 # 		#self.closeFindDialog()
 # 		self.writeRace()
 # 		
@@ -2508,8 +2252,8 @@ class MainWin( wx.Frame ):
 # 		self.resumeRaceMenuItem.Enable(False)
 # 		self.setNumSelect( None )
 # 		self.writeRace()
-# 		self.showPage(self.iDataPage)
-# 		self.refreshAll()
+		self.showPage(self.iRidersPage)
+		self.refreshAll()
 	
 # 	@logCall
 # 	def menuNewNext( self, event ):
@@ -2749,7 +2493,7 @@ class MainWin( wx.Frame ):
 		#self.openRaceDBExcel( fname )
 
 	def updateRecentFiles( self ):
-		self.filehistory.AddFileToHistory(self.fileName)
+		self.filehistory.AddFileToHistory(Model.database.fileName)
 		self.filehistory.Save(self.config)
 		self.config.Flush()
 		
@@ -2757,839 +2501,62 @@ class MainWin( wx.Frame ):
 		#if getattr(self, 'findDialog', None):
 			#self.findDialog.Show( False )
 
-# 	def openRace( self, fileName ):
-# 		if not fileName:
-# 			Utils.writeLog('No filename; not opening race')
-# 			return
-# 		#self.showResultsPage()
-# 		self.refresh()
-# 		Model.resetCache()
-# 		ResetExcelLinkCache()
-# 		self.writeRace()
-# 		#Model.writeModelUpdate()
-# 		#self.closeFindDialog()
-# 		
-# 		#fileNameSave = self.fileName
-# 		
-# 		try:
-# 			with open(fileName, 'rb') as fp, Model.LockRace() as race:
-# 				try:
-# 					race = pickle.load( fp, encoding='latin1', errors='replace' )
-# 				except Exception:
-# 					fp.seek( 0 )
-# 					race = ModuleUnpickler( fp, module='SprintTimer', encoding='latin1', errors='replace' ).load()
-# 				race.resetAllCaches()
-# 				race.lastOpened = now()
-# 				Model.setRace( race )
-# 				#print(race)
-# 			
-# 			ChipReader.chipReaderCur.reset( race.chipReaderType )
-# 			self.fileName = fileName
-# 			Utils.writeLog('Opened race: ' + str(self.fileName))
-# 			
-# 			os.chdir(os.path.dirname(os.path.abspath(self.fileName)))
-# 			Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
-# 			
-# 			undo.clear()
-# 			ResetExcelLinkCache()
-# 			Model.resetCache()
-# 			
-# 			if race.isUnstarted():
-# 				self.startRaceMenuItem.Enable(True)
-# 				self.finishRaceMenuItem.Enable(False)
-# 				self.resumeRaceMenuItem.Enable(False)
-# 			elif race.isRunning():
-# 				self.startRaceMenuItem.Enable(False)
-# 				self.finishRaceMenuItem.Enable(True)
-# 				self.resumeRaceMenuItem.Enable(False)
-# 			elif race.isFinished():
-# 				self.startRaceMenuItem.Enable(False)
-# 				self.finishRaceMenuItem.Enable(False)
-# 				self.resumeRaceMenuItem.Enable(True)
-# 			else:
-# 				self.startRaceMenuItem.Enable(True)
-# 				self.finishRaceMenuItem.Enable(True)
-# 				self.resumeRaceMenuItem.Enable(True)
-# 			self.setNumSelect( None )
-# 			self.showPage( self.iResultsPage if race.isFinished() else self.iDataPage )
-# 			self.refreshAll()
-# 			Utils.writeLog( '{}: {} {}'.format(Version.AppVerName, platform.system(), platform.release()) )
-# 			Utils.writeLog( 'call: openRace: "{}"'.format(fileName) )
-# 			
-# 			#eventFileName = os.path.join( os.path.dirname(self.fileName), race.getFileName() )
-# 			#if self.fileName != eventFileName:
-# 				#if os.path.isfile(eventFileName):
-# 					#exists = '\n\n{}: "{}"'.format(_('This will replace an Existing Race file'), os.path.basename(eventFileName))
-# 				#else:
-# 					#exists = ''
-# 				
-# 				#if not Utils.MessageOKCancel( self, '{}.\n\n{}:\n\n\t{}{}\n\n{}'.format(
-# 						#_("The FileName does not match the Event Name format"),
-# 						#_("Going forward, this event will saved as"), eventFileName,
-# 						#exists,
-# 						#_('To change the File Name, change the event Date, Name or Race Number in Properties/General Properties')
-# 						#),
-# 						#_('Unmatched Filename'),
-# 					#):
-# 					#if fileNameSave:
-# 						#self.openRace( fileNameSave )
-# 					#else:
-# 						#Model.setRace( None )
-# 						#self.refresh()
-# 					#return
-# 				
-# 				#Utils.writeLog( 'openRace: changed FileName to "{}".'.format(eventFileName) )
-# 				#self.fileName = eventFileName
-# 			
-# 			self.updateRecentFiles()
-# 			WebServer.SetFileName( self.fileName )
-# 
-# 			excelLink = getattr(race, 'excelLink', None)
-# 			if excelLink is None or not excelLink.fileName:
-# 				return
-# 				
-# 			if os.path.isfile(excelLink.fileName):
-# 				Utils.writeLog( 'openRace: Excel file "{}"'.format(excelLink.fileName) )
-# 				return
-# 				
-# 			#Check if we have a missing spreadsheet but can find one in the same folder as the race.
-# 			Utils.writeLog( 'openRace: cannot open Excel file "{}"'.format(excelLink.fileName) )
-# 			newFileName = GetMatchingExcelFile(fileName, excelLink.fileName)
-# 			if newFileName and Utils.MessageOKCancel(self,
-# 				'{}:\n\n"{}"\n\n{}:\n\n"{}"\n\n{}'.format(
-# 					_('Could not find Excel file'), excelLink.fileName,
-# 					_('Found this Excel file in the race folder with matching name'), newFileName, _('Use this Excel file from now on?')
-# 				),
-# 				_('Excel Link Not Found') ):
-# 				race.excelLink.fileName = newFileName
-# 				race.setChanged()
-# 				ResetExcelLinkCache()
-# 				Model.resetCache()
-# 				self.refreshAll()
-# 				Utils.writeLog( 'openRace: changed Excel file to "{}"'.format(newFileName) )
-# 				
-# 		except Exception as e:
-# 			Utils.logException( e, sys.exc_info() )
-# 			Utils.MessageOK(self, '{} "{}"\n\n{}.'.format(_('Cannot Open File'), fileName, e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
 
-	#@logCall
+	@logCall
+	def openDatabase( self, fileName ):
+		busy = wx.BusyCursor()
+		with Model.LockDatabase() as db:
+			try:
+				with open(fileName, "r") as infile:
+					Utils.writeLog( 'Loading databse from: ' + str(fileName) )
+					Model.database = Model.Database( fileName, jsonDataFile=infile )
+					self.updateRecentFiles()
+					self.showPage(self.iRidersPage)
+					self.refreshAll()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
+				Utils.MessageOK(self, '{} "{}"\n\n{}.'.format(_('Cannot Open File'), fileName, e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
+
+	@logCall
 	def menuOpen( self, event ):
-		dlg = wx.FileDialog( self, message=_("Choose a Race file"),
+		dlg = wx.FileDialog( self, message=_("Choose a Database file"),
 							defaultFile = '',
 							defaultDir = Utils.getFileDir(),
-							wildcard = _('SprintTimer files (*.spr)|*.spr'),
+							wildcard = _('HPVMgr database (*.hdb)|*.hdb'),
 							style=wx.FD_OPEN | wx.FD_CHANGE_DIR )
 		if dlg.ShowModal() == wx.ID_OK:
-			busy = wx.BusyCursor()
-			self.openRace( dlg.GetPath() )
+			self.openDatabase( dlg.GetPath() )
+	
+	@logCall
+	def menuSave( self, event ):
+		self.saveDatabase()
+		
+	def saveDatabase( self ):
+		database = Model.database
+		if database is None:
+			return
+		fileName = database.fileName
+		if fileName is None:
+			Utils.MessageOK(self, _("Database filename is not set"), _("Error"), wx.ICON_ERROR )
+			return
+		Utils.writeLog( 'Saving database to ' + str(fileName) )
+		with Model.LockDatabase() as db:
+			with open(fileName, "w") as outfile:
+				outfile.write(db.getDatabaseAsJSON())
+				self.updateRecentFiles()
+		
 
 	def menuFileHistory( self, event ):
 		fileNum = event.GetId() - wx.ID_FILE1
 		fileName = self.filehistory.GetHistoryFile(fileNum)
 		self.filehistory.AddFileToHistory(fileName)  # move up the list
-		self.openRace( fileName )
+		self.openDatabase( fileName )
 		
-	#@logCall
-	#def menuOpenNext( self, event ):
-		#race = Model.race
-
-		#if race is None or not self.fileName:
-			#self.menuOpen( event )
-			#return
-
-		#if race is not None and race.isRunning():
-			#if not Utils.MessageOKCancel(self,	_('The current race is still running.\nFinish it and continue?'),
-												#_('Current race running') ):
-				#return
-			#race.finishRaceNow()
-			#self.writeRace()
-		
-		#path, fnameCur = os.path.split( self.fileName )
-		#prefix, suffix = os.path.splitext( race.getFileName(raceNum=race.raceNum+1, includeMemo=False) )
-
-		#try:
-			#self.openRace( sorted(glob.glob(os.path.join(path, prefix) + '*' + suffix), reverse=True, key=lambda v: len(v))[0] )
-		#except IndexError:
-			#Utils.MessageOK(self, _('No next race found'), _('No next race found'), iconMask=wx.ICON_ERROR )
-
-	#@property
-	#def raceDBDialog( self ):
-		#try:
-			#return self._raceDBDialog
-		#except AttributeError:
-			#self._raceDBDialog = RaceDB( self )
-			#return self._raceDBDialog
-
-	#@property
-	#def raceDBUploadDialog( self ):
-		#try:
-			#dlg = self._raceDBUploadDialog
-		#except AttributeError:
-			#dlg = self._raceDBUploadDialog = RaceDBUpload( self )
-		#dlg.refresh()
-		#return dlg
-			
-	#@logCall
-	#def menuOpenRaceDB( self, event ):
-		#self.raceDBDialog.ShowModal()
-
-	#@logCall
-	#def menuUploadRaceDB( self, event ):
-		#race = Model.race
-
-		#if race is None or not self.fileName:
-			#Utils.MessageOK(self,	_('No race to upload.\n\nOpen a race, then upload it.'),
-												#_('No race loaded') )
-			#return
-	
-		#self.showResultsPage()	# Switch to a read-only view to force a commit.
-		#self.updateLapCounter()
-		#self.closeFindDialog()
-		#self.refresh()
-
-		#self.raceDBUploadDialog.ShowModal()
-
-	#@logCall
-	#def menuPublishAsRaceDB( self, event=None, silent=False ):
-		#self.raceDBUploadDialog.doUpload( silent=True )
-		#if not silent:
-			#self.raceDBUploadDialog.ShowModal()
-
-	#@logCall
-	#def menuCloseRace(self, event ):
-		#race = Model.race
-
-		#if race is None or not self.fileName:
-			#return
-
-		#if race is not None and race.isRunning():
-			#if not Utils.MessageOKCancel(self,	_('The current race is still running.\nFinish it and continue?'),
-												#_('Current race running') ):
-				#return
-			#race.finishRaceNow()
-		
-		#Model.writeModelUpdate()
-		#self.doCleanup()
-		#Model.setRace( None )
-		#self.refresh()
 	
 	@logCall
 	def menuExit(self, event):
 		self.onCloseWindow( event )
 
-	#def genTimes( self, regen=False ):
-		#if regen:
-			#for k, v in SimulateData(200, 40).items():
-				#setattr( self, k, v )
-		#else:
-			#self.raceMinutes = SimulationLapTimes.raceMinutes
-			#self.lapTimes = copy.copy(SimulationLapTimes.lapTimes)
-				
-			#self.riderInfo = None
-			#self.categories = [
-				#{'name':'Junior', 'catStr':'100-199', 'startOffset':'00:00', 'distance':0.5, 'gender':'Men'},
-				#{'name':'Senior', 'catStr':'200-299', 'startOffset':'00:10', 'distance':0.5, 'gender':'Women', 'raceMinutes':6}
-			#]
-			
-			#Add some out-of-category numbers to test.
-			#for e in range(10, 50, 10):
-				#self.lapTimes[e] = ( self.lapTimes[e][0], 1111+e )
-		
-		#return self.lapTimes
-		
-	#@logCall
-	#def menuSimulate( self, event=None, userConfirm=True, isTimeTrial=False ):
-		#Put simulation in user's home directory.
-		#simulationDir = os.path.join( os.path.expanduser('~'), 'CrossMgrSimulation' )
-		
-		#Create the stub of the race so we can get the file name.
-		#race = Model.Race()
-		#race.name = 'Simulation'
-		#race.raceNum = 1
-		#race.organizer = 'Edward Sitarski'
-		#race.memo = ''
-		#race.simulation = True	# Flag this as a simulation race.
-		#ApplyDefaultTemplate( race )
-		
-		#fName = os.path.join( simulationDir, race.getFileName() )
-		#if userConfirm:
-			#with SimulateDialog( self, fName ) as dlg:
-				#ret = dlg.ShowModal()
-				#if ret == wx.ID_CANCEL:
-					#return
-				#rfidResetStartClockOnFirstTag = dlg.rfidResetStartClockOnFirstTag.GetValue()
-				#isTimeTrial = (ret == SimulateDialog.ID_TIME_TRIAL)
-		#else:
-			#rfidResetStartClockOnFirstTag = False
-			#isTimeTrial = isTimeTrial
-
-		#Delete any pre-existing Simulation directory.
-		#try:
-			#shutil.rmtree( simulationDir, ignore_errors=True )
-		#except Exception:
-			#pass
-		
-		#Create the simulation directory.
-		#try:
-			#os.makedirs( simulationDir )
-		#except Exception:
-			#pass
-		
-		#Test if we can write something there.
-		#try:
-			#with open(fName, 'w') as fp:
-				#pass
-		#except IOError:
-			#Utils.MessageOK(self, '{} "{}".'.format(_('Cannot open file'), fName), _('File Open Error'), iconMask=wx.ICON_ERROR)
-			#return
-
-		#self.showResultsPage()	# Switch to a read-only view and force a commit.
-		#self.updateLapCounter()
-		#self.closeFindDialog()
-		#self.refresh()
-		
-		#Get the simulation times.
-		#bigSimulation = False
-		#self.lapTimes = self.genTimes( bigSimulation )
-		#tMin = self.lapTimes[0][0]
-		#self.lapTimes.reverse()			# Reverse the times so we can pop them from the end later.
-
-		#Commit to the new race and file for the simulation.
-		#undo.clear()
-		#Model.setRace( race )
-		#self.fileName = fName
-		#WebServer.SetFileName( self.fileName )
-		#self.updateRecentFiles()
-		
-		#race.isTimeTrial = isTimeTrial
-		#race.enableUSBCamera = True
-		#race.minutes = self.raceMinutes
-		#race.enableJChipIntegration = race.resetStartClockOnFirstTag = rfidResetStartClockOnFirstTag
-		#race.minPossibleLapTime = 0.0	# Override any defaults so that laps will show up.
-		#race.photosAtRaceEndOnly = True
-		
-		#Prep the simulation data.
-		#self.simulateSeen = set()
-		#categories = getattr( self, 'categories', None )
-		#if not categories:
-			#categories = [	{'name':'Junior', 'catStr':'100-199', 'startOffset':'00:00', 'distance':0.5, 'gender':'Men'},
-							#{'name':'Senior', 'catStr':'200-299', 'startOffset':'00:10', 'distance':0.5, 'gender':'Women', 'raceMinutes':6}]
-		#if race.isTimeTrial:
-			#for c in categories:
-				#c.pop( 'raceMinutes', None )
-				#c['lappedRidersMustContinue'] = True
-			#categories[0]['numLaps'] = 3
-			#categories[1]['numLaps'] = 2
-			#race.setCategories( categories )
-			
-			#scheduledStart = datetime.datetime.now() + datetime.timedelta(seconds=120)
-			#scheduledStart -= datetime.timedelta( seconds=scheduledStart.second ) + datetime.timedelta( seconds=scheduledStart.microsecond/1000000.0 ) 
-			#race.scheduledStart = '{:02d}:{:02d}'.format(scheduledStart.hour, scheduledStart.minute)
-			
-			#nums = set()
-			#numTimes = defaultdict( list )
-			#for t, num in self.lapTimes:
-				#if num < 500:
-					#nums.add( num )
-					#numTimes[num].append( t )
-			
-			#numRaceTimes = {}
-			#for num, times in numTimes.items():
-				#times.sort()
-				#numRaceTimes[num] = [t - times[0] for t in times[1:]]	# Convert race times to zero start.
-			
-			#timeBeforeFirstRider = 120.0
-			#startGap = 30.0
-			#nums = sorted( nums, reverse=True )				
-			#numStartTime = {n:timeBeforeFirstRider + i*startGap for i, n in enumerate(nums)}	# Set start times for all competitors.
-			#self.lapTimes = []
-			#for num, raceTimes in numRaceTimes.items():
-				#startTime = numStartTime[num]
-				#race.getRider( num ).firstTime = startTime
-				#self.lapTimes.extend( [(t + startTime, num) for t in raceTimes] )
-			#self.lapTimes.sort( reverse=True )
-		#else:
-			#scheduledStart = datetime.datetime.now()
-			#race.scheduledStart = '{:02d}:{:02d}'.format(scheduledStart.hour, scheduledStart.minute)
-			
-			#race.setCategories( categories )
-			#self.lapTimes = [(t + race.getStartOffset(num), num) for t, num in self.lapTimes]
-			#if race.enableJChipIntegration and race.resetStartClockOnFirstTag:
-				#self.lapTimes.extend( (race.getStartOffset(num) + 2.0*random.random(), num) for num in set(tn[1] for tn in self.lapTimes) )
-				#self.lapTimes = [(t+4.0, num) for t, num in self.lapTimes]
-				#self.lapTimes.sort( reverse=True )
-
-		#Create an Excel rider data file.
-		#riderInfo = getattr( self, 'riderInfo', None )
-		#if not riderInfo:
-			#riderInfo = []
-			#fnameInfo = os.path.join( Utils.getImageFolder(), 'NamesTeams.csv' )
-			#try:
-				#with open(fnameInfo, encoding='iso-8859-1') as fp:
-					#header = None
-					#for r, line in enumerate(fp):
-						#if not header:
-							#header = line.split(',')
-							#continue
-						#riderInfo.append( [r+100] + line.split(',') )
-			#except IOError:
-				#pass
-			
-		#if riderInfo:
-			#fnameRiderInfo = os.path.join(simulationDir, 'SimulationRiderData.xlsx')
-			#sheetName = 'Registration'
-			#wb = xlsxwriter.Workbook( fnameRiderInfo )
-			#ws = wb.add_worksheet(sheetName)
-			#for c, h in enumerate(['Bib#', 'LastName', 'FirstName', 'Team']):
-				#ws.write(0, c, h)
-			#for r, row in enumerate(riderInfo):
-				#for c, v in enumerate(row):
-					#ws.write( r+1, c, v )
-			#wb.close()
-			
-			#race.excelLink = ExcelLink()
-			#race.excelLink.setFileName( fnameRiderInfo )
-			#race.excelLink.setSheetName( sheetName )
-			#race.excelLink.setFieldCol( {'Bib#':0, 'LastName':1, 'FirstName':2, 'Team':3} )
-
-		#Start the simulation.
-		#self.showPage( self.iRecordPage if isTimeTrial else self.iChartPage )
-		#self.record.setTimeTrialInput( race.isTimeTrial )
-
-		#ChipReader.chipReaderCur.reset( race.chipReaderType )
-
-		#Start the race.
-		#self.nextNum = None
-		#if race.isTimeTrial:
-			#If a TT, start the race at the start time in the future.
-			#def startRaceInFuture( aSelf, aRace ):
-				#aRace.startRaceNow()
-				#aSelf.simulateTimer = wx.CallLater( 1, aSelf.updateSimulation, True )
-				#OutputStreamer.writeRaceStart()
-				#wx.CallAfter( self.refresh )
-				
-			#wx.CallLater( max(0,int((scheduledStart-datetime.datetime.now()).total_seconds()*1000.0)), startRaceInFuture, self, race )
-			#Utils.MessageOK(
-				#self,
-				#'{}\n\n{}'.format( _('TT will start automatically in 1-2 minutes'), _('Review the TTCountdown page (from Web/Index).') ),
-				#_('TT Start'),
-			#)
-			#self.menuPublishHtmlTTStart()
-		#else:
-			#If a Mass Start, start the race now.
-			#race.startRaceNow()
-			#if not (race.enableJChipIntegration and race.resetStartClockOnFirstTag):
-				#Backup all the events and race start so we don't have to wait for the first lap.
-				#race.startTime -= datetime.timedelta( seconds = (tMin-5) )
-			#self.simulateTimer = wx.CallLater( 1, self.updateSimulation, True )
-			#OutputStreamer.writeRaceStart()
-
-		#self.writeRace()
-		#self.updateRaceClock()
-		#self.refresh()
-
-	#def updateSimulation( self, num ):
-		#if Model.race is None:
-			#return
-		
-		#'''
-		#if self.nextNum is not None and self.nextNum not in self.simulateSeen:
-			#self.forecastHistory.logNum( self.nextNum )
-
-		#with Model.LockRace() as race:
-			#if race.curRaceTime() > race.minutes * 60.0:
-				#self.simulateSeen.add( self.nextNum )
-
-		#try:
-			#t, self.nextNum = self.lapTimes.pop()
-			#with Model.LockRace() as race:
-				#if t < (self.raceMinutes*60.0 + race.getAverageLapTime()*1.5):
-					#self.simulateTimer.Restart( int(max(1,(t - race.curRaceTime()) * 1000)), True )
-					#return
-		#except IndexError:
-			#pass
-		#'''
-		
-		#race = Model.race
-		#aveLapTime = race.getAverageLapTime()
-		#curRaceTime = race.curRaceTime()
-		#tRaceEnd = self.raceMinutes*60.0 + aveLapTime*1.5
-		#nums = []
-		#while self.lapTimes:
-			#t, nextNum = self.lapTimes[-1]
-			#if t < curRaceTime:
-				#self.lapTimes.pop()
-				#if t < tRaceEnd:
-					#nums.append( nextNum )
-				#else:
-					#self.simulateSeen.add( nextNum )
-			#else:
-				#break
-		
-		#if nums:
-			#self.forecastHistory.logNum( nums )
-			
-		#if self.lapTimes:
-			#self.simulateTimer.Restart( random.randint(200,600), True )
-			#return
-		
-		#self.simulateTimer.Stop()
-		#nextNum = None
-		#with Model.LockRace() as race:
-			#race.finishRaceNow()
-		#ChipReader.chipReaderCur.CleanupListener()
-		
-		#OutputStreamer.writeRaceFinish()
-		#Give the streamer a chance to write the last message.
-		#wx.CallLater( 2000, OutputStreamer.StopStreamer )
-		
-		#Utils.writeRace()
-		#self.refresh()
-
-	#@logCall
-	#def menuImportCategories( self, event ):
-		#if not Model.race:
-			#Utils.MessageOK( self, _("A race must be loaded first."), _("Import Categories"), iconMask=wx.ICON_ERROR)
-			#return
-			
-		#with wx.FileDialog( self, message=_("Choose Race Categories File"),
-							#defaultFile="",
-							#defaultDir=Utils.getFileDir(),
-							#wildcard=_("Bicycle Race Categories (*.brc)|*.brc"),
-							#style=wx.FD_OPEN ) as dlg:
-			#if dlg.ShowModal() != wx.ID_OK:
-				#return
-			#categoriesFile = dlg.GetPath()
-			
-		#self.showResultsPage()
-		#try:
-			#with open(categoriesFile) as fp, Model.LockRace() as race:
-				#race.importCategories( fp )
-		#except IOError:
-			#Utils.MessageOK( self, '{}:\n\n{}'.format(_('Cannot open file'), categoriesFile), _("File Open Error"), iconMask=wx.ICON_ERROR)
-		#except (ValueError, IndexError):
-			#Utils.MessageOK( self, '{}:\n\n{}'.format(_('Bad file format'), categoriesFile), _("File Read Error"), iconMask=wx.ICON_ERROR)
-		#else:
-			#self.refresh()
-		#self.showPage( self.iCategoriesPage )
-	
-	#@logCall
-	#def menuExportCategories( self, event ):
-		#self.commit()
-		#race = Model.getRace()
-		#if not race:
-			#Utils.MessageOK( self, _("A race must be loaded first."), _("Export Categories"), iconMask=wx.ICON_ERROR)
-			#return
-			
-		#with wx.FileDialog( self, message=_("Choose Race Categories File"),
-							#defaultFile='',
-							#defaultDir=Utils.getFileDir(), 
-							#wildcard=_("Bicycle Race Categories (*.brc)|*.brc"),
-							#style=wx.FD_SAVE ) as dlg:
-							
-			#if dlg.ShowModal() != wx.ID_OK:
-				#return
-			#fname = dlg.GetPath()
-				
-		#try:
-			#with open(fname, 'w') as fp, Model.LockRace() as race:
-				#race.exportCategories( fp )
-		#except IOError:
-			#Utils.MessageOK( self, '{}:\n{}'.format(_('Cannot open file'), fname), _("File Open Error"), iconMask=wx.ICON_ERROR)
-		
-	#@logCall
-	#def menuExportHistory( self, event ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-
-		#self.showPage( self.iPassingsPage )
-		#self.history.setCategoryAll()
-		#self.history.refresh()
-		
-		#xlFName = os.path.splitext(self.fileName)[0] + '-Passings.xlsx'
-
-		#colnames = self.history.grid.GetColNames()
-		#data = self.history.grid.GetData()
-		#if data:
-			#rowMax = max( len(c) for c in data )
-			#colnames = ['Count'] + colnames
-			#data = [['{}'.format(i) for i in range(1, rowMax+1)]] + data
-		#with Model.LockRace() as race:
-			#title = '{}\n{}\n{}'.format( race.title, Utils.formatDate(race.date), _('Race Passings') )
-		#export = ExportGrid( title, colnames, data )
-
-		#wb = xlsxwriter.Workbook( xlFName )
-		#formats = ExportGrid.getExcelFormatsXLSX( wb )
-		#sheetCur = wb.add_worksheet( 'Passings' )
-		#export.toExcelSheetXLSX( formats, sheetCur )
-		
-		#try:
-			#wb.close()
-			#Utils.LaunchApplication( xlFName )
-			#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError:
-			#Utils.MessageOK(self,
-						#'{} "{}".\n\n{}\n{}'.format(
-							#_('Cannot write'), xlFName,
-							#_('Check if this spreadsheet is open.'),
-							#_('If so, close it, and try again.')
-						#),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuExportUSAC( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-
-		#self.showResultsPage()
-		
-		#xlFName = self.getFormatFilename( 'usacexcel' )
-		
-		#wb = xlwt.Workbook()
-		#sheetCur = wb.add_sheet( 'Combined Results' )
-		#USACExport( wb, sheetCur )
-			
-		#try:
-			#wb.save( xlFName )
-			#if not silent:
-				#if self.launchExcelAfterPublishingResults:
-					#Utils.LaunchApplication( xlFName )
-				#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError:
-			#Utils.MessageOK(self,
-						#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuExportVTTA( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-
-		#self.showPage( self.iResultsPage )
-		
-		#xlFName = self.getFormatFilename( 'vttaexcel' )
-
-		#wb = xlsxwriter.Workbook( xlFName )
-		#sheetCur = wb.add_worksheet( 'Combined Results' )
-		#VTTAExport( wb, sheetCur )
-		
-		#AddExcelInfo( wb )
-		#try:
-			#wb.close()
-			#if not silent:
-				#if self.launchExcelAfterPublishingResults:
-					#webbrowser.open( xlFName, new = 2, autoraise = True )
-				#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError:
-			#Utils.MessageOK(self,
-						#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuExportJPResults( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-
-		#self.showPage( self.iResultsPage )
-		
-		#xlFName = self.getFormatFilename( 'jpresultsexcel' )
-
-		#wb = xlsxwriter.Workbook( xlFName )
-		#sheetCur = wb.add_worksheet( 'JP Results' )
-		#JPResultsExport( wb, sheetCur )
-		
-		#AddExcelInfo( wb )
-		#try:
-			#wb.close()
-			#if not silent:
-				#if self.launchExcelAfterPublishingResults:
-					#webbrowser.open( xlFName, new = 2, autoraise = True )
-				#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError:
-			#Utils.MessageOK(self,
-						#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuUploadUCI( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4:
-			#return
-
-		#path, fname = os.path.split( self.fileName )
-		#fname = os.path.splitext( fname )[0]
-		
-		#xlFNames = (f for f in self.getFormatFilename('uciexcel'))
-		
-		#for catName, category in getRaceCategories():
-			#if catName == 'All' or not category.uploadFlag:
-				#continue
-				
-			#xlFName = next(xlFNames)
-			#try:
-				#UCIExcel( category, xlFName, True )
-			#except IOError:
-				#Utils.MessageOK(self,
-							#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-							#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-			
-			#xlFName = next(xlFNames)
-			#try:
-				#UCIExcel( category, xlFName, False)
-			#except IOError:
-				#Utils.MessageOK(self,
-							#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-							#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuExportUCI( self, event=None, silent=False ):
-		#return self.menuUploadUCI()
-		
-		#'''
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4:
-			#return
-
-		#xlFName = self.getFormatFilename( 'uciexcel' )
-
-		#wb = xlwt.Workbook()
-		#raceCategories = getRaceCategories()
-		#for catName, category in raceCategories:
-			#if catName == 'All' or not category.uploadFlag:
-				#continue
-			#sheetName = re.sub('[+!#$%&+~`".:;|\\/?*\[\] ]+', ' ', Utils.toAscii(catName))
-			#sheetName = sheetName[:31]
-			#sheetCur = wb.add_sheet( sheetName )
-			#UCIExport( sheetCur, category )
-
-		#try:
-			#wb.save( xlFName )
-			#if not silent:
-				#if self.launchExcelAfterPublishingResults:
-					#Utils.LaunchApplication( xlFName )
-				#Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
-		#except IOError:
-			#Utils.MessageOK(self,
-						#'{} "{}".\n\n{}\n{}'.format(_('Cannot write'), xlFName, _('Check if this spreadsheet is open.'), _('If so, close it, and try again.')),
-						#_('Excel File Error'), iconMask=wx.ICON_ERROR )
-		#'''
-	
-	#def resultsCheck( self ):
-		#return Utils.MessageOKCancel( self,
-				#'\n'.join([
-					#_('CrossResults/Race-Result Publish'),
-					#'',
-					#_('Make sure you publish correct results.'),
-					#_('Take a few minutes to check the following:'),
-					#'',
-					#'\n'.join( '{}. {}'.format(i+1, s) for i, s in enumerate([
-							#_('Is the Race Name spelled correctly?'),
-							#_('Is the Race Organizer spelled correctly?'),
-							#_('Are the City, State/Prov and Country fields correctly filled in?'),
-							#_('Are all the Category Names spelled and coded correctly?'),
-							#_('Are the Category Number Ranges correct?'),
-							#_('Have you fixed all scoring and data problems?'),
-							#_('Are the Rider Names / Teams / License data correct (spelling?  missing data)?'),
-						#]) ),
-					#'',
-					#_('If not, press Cancel, fix the issues and publish again.')
-				#]),
-				#_('Results Publish') )
-	
-	#@logCall
-	#def menuExportRoadResults( self, event=None, silent=False):
-		#self.menuExportCrossResults( event, isRoadResults=True, silent=silent )
-	
-	#@logCall
-	#def menuExportCrossResults( self, event=None, isRoadResults=False, silent=False ):
-		#destination = 'Road-Results' if isRoadResults else 'CrossResults'
-	
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-			
-		#race = Model.race
-
-		#if not race.city or not race.stateProv or not race.country:
-			#Utils.MessageOK(self,
-						#_('Missing City, State/Prov or Country fields.') + '\n\n' +
-							#_('Please fill in these fields in Properties.'),
-						#_('Missing Location Fields'), iconMask=wx.ICON_ERROR )
-			#ChangeProperties( self )
-			#self.showPage( self.iPropertiesPage )
-			#return
-			
-		#if not self.resultsCheck():
-			#return
-			
-		#self.showResultsPage()
-		
-		#fname = os.path.splitext(self.fileName)[0] + '-{}.csv'.format(destination)
-		
-		#year, month, day = race.date.split( '-' )
-		#raceName = race.title
-		#raceDate = datetime.date( year = int(year), month = int(month), day = int(day) ).strftime( '%m/%d/%Y' )
-		
-		#try:
-			#success, message = CrossResultsExport( fname )
-			#if not success:
-				#if not silent:
-					#Utils.MessageOK(self,
-								#'{} {}: "{}"'.format(destination, _('Error'), message),
-								#'{} {}'.format(destination,_('Error')), iconMask=wx.ICON_ERROR )
-				#return
-			
-			#url = 'http://www.{Destination}.com/?n=results&sn=upload&crossmgr={MD5}&name={RaceName}&date={RaceDate}&loc={Location}&presentedby={PresentedBy}'.format(
-				#Destination = destination.lower(),
-				#RaceName	= quote('{}'.format(raceName)),
-				#RaceDate	= quote('{}'.format(raceDate)),
-				#MD5			= hashlib.md5( (race.title + raceDate).encode() ).hexdigest(),
-				#Location	= quote('{}'.format(', '.join([race.city, race.stateProv, race.country]))),
-				#PresentedBy = quote('{}'.format(race.organizer)),
-			#)
-			#webbrowser.open( url, new = 2, autoraise = True )
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
-			#Utils.MessageOK(self,
-						#'{} "{}"\n\n{}'.format(_('Cannot write'), fname, e),
-						#'{} {}'.format(destination, _('File Error')), iconMask=wx.ICON_ERROR )
-	
-	#@logCall
-	#def menuExportWebScorer( self, event=None, silent=False ):
-		#self.commit()
-		#if self.fileName is None or len(self.fileName) < 4 or not Model.race:
-			#return
-			
-		#race = Model.race
-
-		#if not silent and not self.resultsCheck():
-			#return
-			
-		#self.showResultsPage()
-		
-		#fname = self.getFormatFilename( 'webscorertxt' )
-		
-		#try:
-			#success, message = WebScorerExport( fname )
-			#if not silent:
-				#if not success:
-					#Utils.MessageOK(self,
-								#'WebScorer {}: "{}".'.format(_('Error'), message),
-								#'WebScorer {}'.format(_('Error')), iconMask=wx.ICON_ERROR )
-					#return
-				#Utils.MessageOK(self, _('WebScorer file written to:') + '\n\n   {}'.format(fname), _('WebScorer Publish'))
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
-			#Utils.MessageOK(self,
-						#'{} "{}"\n\n{}.'.format(_('Cannot write'), fname, e),
-						#_('WebScorer Publish Error'), iconMask=wx.ICON_ERROR )
-	
-	#--------------------------------------------------------------------------------------------------
-	
 	#def windowCloseCallback( self, menuId ):
 		#try:
 			#attr, name, menuItem, dialog = self.menuIdToWindowInfo[menuId]
@@ -3780,7 +2747,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def refreshCurrentPage( self ):
 		self.callPageRefresh( self.notebook.GetSelection() )
 		self.refreshWindows()
-		WebServer.WsRefresh()
+		#WebServer.WsRefresh()
 
 	def refresh( self ):
 		self.refreshCurrentPage()
@@ -3791,11 +2758,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 		#self.menuItemHighPrecisionTimes.Check( bool(race and race.highPrecisionTimes) )
 		#self.menuItemSyncCategories.Check( bool(race and race.syncCategories) )
 		
-		self.updateRaceClock()
+		#self.updateRaceClock()
 
-	#def refreshTTStart( self ):
-		#if self.notebook.GetSelection() in (self.iHistoryPage, self.iRecordPage):
-			#self.refreshCurrentPage()
 
 	def updateUndoStatus( self, event = None ):
 		race = Model.race
