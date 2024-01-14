@@ -92,7 +92,7 @@ getVersion() {
 
 cleanup() {
 	echo "Cleaning up everything..."
-	rm -rf __pycache__ CrossMgrImpinj/__pycache__ CrossMgrVideo/__pycache__ SprintMgr/__pycache__ PointsRaceMgr/__pycache__ TagReadWrite/__pycache__ CrossMgrAlien/__pycache__ SeriesMgr/__pycache__ SprintTimer/__pycache__
+	rm -rf __pycache__ CrossMgrImpinj/__pycache__ CrossMgrVideo/__pycache__ SprintMgr/__pycache__ PointsRaceMgr/__pycache__ TagReadWrite/__pycache__ CrossMgrAlien/__pycache__ SeriesMgr/__pycache__ SprintTimer/__pycache__ HPVMgr/__pycache__
 	rm -rf dist build release
 	rm -f *.spec
 }
@@ -532,7 +532,7 @@ do
 		h) doHelp
 		;;
 		a) 
- 		    PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer CrossMgr"
+ 		    PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer HPVMgr CrossMgr"
 		;;
 		c) PROGRAMS="$PROGRAMS CrossMgr"
 		;;

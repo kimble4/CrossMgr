@@ -770,7 +770,7 @@ if ($all -eq $true)
 		'CallupSeedingMgr',
 		'StageRaceGC',
 		'SprintMgr',
-		'SprintTimer'
+		'SprintTimer',
 		'HPVMgr'
 		)
 	$virus = $true
