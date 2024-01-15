@@ -97,8 +97,9 @@ class Riders( wx.Panel ):
 		self.ridersGrid.AutoSizeColumns( True )
 		self.ridersGrid.DisableDragColSize()
 		self.ridersGrid.DisableDragRowSize()
-		# self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
-		# self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnCellChanged )
+		self.ridersGrid.EnableEditing(False)
+		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
+		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onDoubleClick )
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
 		# put a tooltip on the cells in a column
 		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
@@ -116,6 +117,56 @@ class Riders( wx.Panel ):
 			self.reverseSort = False
 		#print('sort by ' + str(self.sortBy) + ' reverse ' + str(self.reverseSort))
 		wx.CallAfter( self.refresh )
+		
+	def onDoubleClick (self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		try:
+			bib = int(self.ridersGrid.GetCellValue(row, 0))
+		except:
+			return
+		self.editRiderDetails( None, bib )
+		
+	def onRightClick( self, event ):
+		row = event.GetRow()
+		col = event.GetCol()
+		try:
+			bib = int(self.ridersGrid.GetCellValue(row, 0))
+			name = self.ridersGrid.GetCellValue(row, 1)
+		except:
+			return
+		menu = wx.Menu()
+		menu.SetTitle('#' + str(bib) + ' ' + name)
+		ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
+		if not Model.database.isRider(bib-1):
+			adb = menu.Append( wx.ID_ANY, 'Add rider before', 'Add a new rider before...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib-1), adb )
+		if not Model.database.isRider(bib+1):
+			ada = menu.Append( wx.ID_ANY, 'Add rider after', 'Add a new rider after...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib+1), ada )
+		de = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), de )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			
+	def addNewRider( self, event, bib ):
+		print('adding rider ' + str(bib))
+		with Model.LockDatabase() as db:
+			db.addRider(int(bib))
+		self.refresh()
+		
+	def deleteRider( self, event, bib ):
+		with Model.LockDatabase() as db:
+			db.deleteRider(int(bib))
+		self.refresh()
+			
+	def editRiderDetails(self, event, bib):
+		mainwin = Utils.getMainWin()
+		mainwin.riderDetail.setBib(bib)
+		wx.CallAfter(mainwin.showPage, mainwin.iRiderDetailPage )
 
 	def clearGrid( self ):
 		if self.ridersGrid.GetNumberRows():
@@ -135,9 +186,9 @@ class Riders( wx.Panel ):
 			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=self.reverseSort))
 			sortedRiders = dict(sorted(firstNameSortedRiders.items(), key=lambda item: item[1]['LastName'], reverse=self.reverseSort))
 		elif self.sortBy == 2: # Gender
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['Gender'], reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Gender']) if 'Gender' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 3: # NatCode
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['NatCode'], reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['NatCode']) if 'NatCode' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 4: # Last entered
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastEntered'], reverse=self.reverseSort))
 		else: #default (bib)
@@ -153,12 +204,15 @@ class Riders( wx.Panel ):
 			name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 			self.ridersGrid.SetCellValue(row, col, str(name))
 			col+=1
-			self.ridersGrid.SetCellValue(row, col, str(rider['Gender']))
+			self.ridersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
 			col+=1
 			self.ridersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
-			self.ridersGrid.SetCellValue(row, col, str(rider['NatCode']))
+			self.ridersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
 			col+=1
-			dt = datetime.datetime.fromtimestamp(rider['LastEntered'])
+			if rider['LastEntered']:
+				dt = datetime.datetime.fromtimestamp(rider['LastEntered'])
+			else:
+				dt = ''
 			self.ridersGrid.SetCellValue(row, col, str(dt))
 			
 		self.ridersGrid.AutoSizeColumns()

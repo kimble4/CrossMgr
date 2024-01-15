@@ -128,7 +128,7 @@ class MainWin( wx.Frame ):
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New..."), _("Create a new database"), Utils.GetPngBitmap('document-new.png') )
 		self.Bind(wx.EVT_MENU, self.menuNew, item )
 
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_ANY, _("&Save..."), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVE, _("&Save..."), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
 		self.Bind(wx.EVT_MENU, self.menuSave, item )
 
 		#self.fileMenu.AppendSeparator()
@@ -575,7 +575,7 @@ class MainWin( wx.Frame ):
 		self.menuBar.Append( self.toolsMenu, _("&Tools") )
 		
 		#-----------------------------------------------------------------------
-		self.optionsMenu = wx.Menu()
+		#self.optionsMenu = wx.Menu()
 		#item = self.menuItemHighPrecisionTimes = self.optionsMenu.Append( wx.ID_ANY, _("&Show 100s of a second"), _("Show 100s of a second"), wx.ITEM_CHECK )
 		#self.Bind( wx.EVT_MENU, self.menuShowHighPrecisionTimes, item )
 		
@@ -587,7 +587,7 @@ class MainWin( wx.Frame ):
 		#item = self.menuItemSyncCategories = self.optionsMenu.Append( wx.ID_ANY, _("Sync &Categories between Tabs"), _("Sync Categories between Tabs"), wx.ITEM_CHECK )
 		#self.Bind( wx.EVT_MENU, self.menuSyncCategories, item )
 		
-		self.optionsMenu.AppendSeparator()
+		#self.optionsMenu.AppendSeparator()
 		# item = self.menuItemLaunchExcelAfterPublishingResults = self.optionsMenu.Append( wx.ID_ANY,
 		# 	_("&Launch Excel after Publishing Results"),
 		# 	_("Launch Excel after Publishing Results"), wx.ITEM_CHECK )
@@ -597,11 +597,11 @@ class MainWin( wx.Frame ):
 		
 		#'''
 		#self.optionsMenu.AppendSeparator()
-		item = self.optionsMenu.Append( wx.ID_ANY, _("Set Contact &Email..."), _("Set Contact Email for HTML Output") )
-		self.Bind(wx.EVT_MENU, self.menuSetContactEmail, item )
-		
-		item = self.optionsMenu.Append( wx.ID_ANY, _("Set &Graphic..."), _("Set Graphic") )
-		self.Bind(wx.EVT_MENU, self.menuSetGraphic, item )
+		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set Contact &Email..."), _("Set Contact Email for HTML Output") )
+		#self.Bind(wx.EVT_MENU, self.menuSetContactEmail, item )
+	
+		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set &Graphic..."), _("Set Graphic") )
+		#self.Bind(wx.EVT_MENU, self.menuSetGraphic, item )
 		#'''
 		
 		#self.optionsMenu.AppendSeparator()
@@ -611,7 +611,7 @@ class MainWin( wx.Frame ):
 		#item = self.optionsMenu.Append( wx.ID_ANY, _("Set Default &Graphic..."), _("Set Default Graphic") )
 		#self.Bind(wx.EVT_MENU, self.menuSetDefaultGraphic, item )
 		
-		self.menuBar.Append( self.optionsMenu, _("&Options") )
+		#self.menuBar.Append( self.optionsMenu, _("&Options") )
 		
 
 		#------------------------------------------------------------------------------
@@ -679,7 +679,7 @@ class MainWin( wx.Frame ):
 		item = self.helpMenu.Append( wx.ID_HELP, _("&Help..."), _("Help with HPVMgr...") )
 		self.Bind(wx.EVT_MENU, self.menuHelp, item )
 		
-		item = self.helpMenu.Append( wx.ID_ANY, _("Help &Search..."), _("Search Help...") )
+		item = self.helpMenu.Append( wx.ID_ANY, _("Help Search..."), _("Search Help...") )
 		self.Bind(wx.EVT_MENU, self.menuHelpSearch, item )
 		self.helpSearch = HelpSearchDialog( self, title=_('Help Search') )
 
@@ -2087,13 +2087,8 @@ class MainWin( wx.Frame ):
 		
 	#--------------------------------------------------------------------------------------------
 	def doCleanup( self ):
-		database = Model.database
-		if database:
-			if database.hasChanged():
-				if Utils.MessageOKCancel( self, _('Save changes?'), _('Changes unsaved') ):
-					self.saveDatabase()
-				else:
-					Utils.writeLog( 'Exiting without saving changes!' )
+		
+		pass
 		   
 		# race = Model.race
 		# if race:
@@ -2128,6 +2123,13 @@ class MainWin( wx.Frame ):
 	
 	@logCall
 	def onCloseWindow( self, event ):
+		database = Model.database
+		if database:
+			if database.hasChanged():
+				if Utils.MessageOKCancel( self, _('Quit without saving changes?'), _('Changes unsaved') ):
+					Utils.writeLog( 'Exiting without saving changes!' )
+				else:
+					return
 		self.doCleanup()
 		wx.Exit()
 
@@ -2543,6 +2545,7 @@ class MainWin( wx.Frame ):
 		with Model.LockDatabase() as db:
 			with open(fileName, "w") as outfile:
 				outfile.write(db.getDatabaseAsJSON())
+				db.setChanged( False )
 				self.updateRecentFiles()
 		
 
@@ -2838,7 +2841,7 @@ def MainLoop():
 	#parser.add_argument("-t", "--tt", action="store_true", dest="timetrial", default=False, help='run time trial simulation')
 	#parser.add_argument("-b", "--batchpublish", action="store_true", dest="batchpublish", default=False, help="do batch publish and exit")
 	#parser.add_argument("-p", "--page", dest="page", default=None, nargs='?', help="page to show after launching")
-	parser.add_argument(dest="filename", default=None, nargs='?', help="HPVMgr data file", metavar="RaceFile.spr")
+	parser.add_argument(dest="filename", default=None, nargs='?', help="HPVMgr data file", metavar="Database.hdb")
 	args = parser.parse_args()
 	
 	Utils.initTranslation()
@@ -2876,13 +2879,13 @@ def MainLoop():
 	fileName = args.filename
 	
 	#Try to load a race.
-	raceLoaded = False
+	#raceLoaded = False
 	if fileName:
 		try:
 			ext = os.path.splitext( fileName )[1]
-			if ext == '.spr':
-				mainWin.openRace( fileName )
-				raceLoaded = True
+			if ext == '.hdb':
+				mainWin.openDatabase( fileName )
+				#raceLoaded = True
 			#elif ext in ('.xls', '.xlsx', '.xlsm') and IsValidRaceDBExcel(fileName):
 				#mainWin.openRaceDBExcel( fileName )
 				#raceLoaded = True

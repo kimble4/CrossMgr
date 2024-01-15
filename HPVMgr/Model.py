@@ -57,6 +57,16 @@ class memoize:
 # define a global database
 database = None
 
+Genders = ['Open', 'Men', 'Women']  #order for sort
+Open = 0
+Men = 1
+Women = 2
+
+def keys2int(x):
+    if isinstance(x, dict):
+        return {int(k):v for k,v in x.items()}
+    return x
+
 class LockDatabase:
 	def __enter__(self):
 		lock.acquire()
@@ -74,7 +84,8 @@ class Database:
 			try:
 				data = json.load(jsonDataFile)
 				#print(data)
-				self.riders = data['riders']
+				self.riders = keys2int(data['riders'])
+				#print(self.riders)
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 				self.riders = {}
@@ -82,11 +93,38 @@ class Database:
 			self.riders = {}
 		self.changed = False
 		
+	def isRider( self, bib ):
+		if bib in self.riders:
+			return True
+		else:
+			return False
+		
+	def getBibs( self ):
+		bibs = list(self.riders.keys())
+		return sorted(bibs)
+		
 	def getRiders( self ):
 		return self.riders
+		
+	def getRider( self, bib ):
+		return self.riders[bib]
 	
-	def setChanged( self ):
+	def addRider( self, bib ):
+		if bib in self.riders:
+			Utils.writeLog( 'Tried to add existing rider!' )
+			return
+		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
 		self.changed = True
+		
+	def deleteRider( self, bib ):
+		if not bib in self.riders:
+			Utils.writeLog( 'Tried to delete non-existent rider!' )
+			return
+		del self.riders[bib]
+		self.changed = True
+	
+	def setChanged( self, changed=True ):
+		self.changed = changed
 		
 	def hasChanged( self ):
 		return self.changed
