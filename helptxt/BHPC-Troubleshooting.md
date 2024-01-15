@@ -144,7 +144,7 @@ While watching the CrossMgrVideo preview window, open the cover of the camera en
 
 ### Power failure
 
-If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  The laptop powers the camera and Trigger-O-Matic, and should be sufficient for a couple of hours.
+If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  The laptop powers the camera and Trigger-O-Matic (or sprint timer unit), and should be sufficient for a couple of hours.  If a USB-C power bank that is able to power a laptop is available, there is a dongle in the laptop bag to adapt USB-C to the tiny Acer DC barrel jack.
 
 The RFID tag reader, wireless router and GPS time source are powered by a redundant power supply.  If a DC (battery) source is present, they will continue to operate on DC power when the AC power fails.  If enabled, the AC power failure alarm should sound, and CrossMgrImpinj will pop up a warning message.  The race clock is powered by AC power alone, and will cease functioning.
 

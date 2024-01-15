@@ -649,6 +649,8 @@ Our merging procedure effectively imports subsequent races in a round as additio
 1. You should now see the combined results.  Note that the offset for the new start wave has been calculated based on the difference between the two race start times.  Tag reads that occurred before a given rider's start time are filtered out, as are those after their finish, in the usual way.  CustomCategory results will normalise the riders' start offsets, so it is as if they were all competing in the same race.
 1. If this is a criterium event, ensure that [riders are being ranked by Average Speed][Race Options]; this is what the BHPC considers to be the fairest way of ranking riders who participated in races of different durations.
 
+To merge more than two races, merge the frist two, and then merge the third with this combined race, and so on.
+
 ## Finish times for DNF riders
 
 The BHPC credits DNF riders for the laps they completed during the race, by calculating the average speed for a virtual finish time.  This should be done **after merging races**, for reasons that will become apparent.
@@ -809,7 +811,7 @@ UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banni
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.  ![USB connectors](./images/usb_connectors.webp "Spotters' guide to USB connectors")
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.
 USB-B|The large square USB connector usually found on printers and scanners.  The Trigger-O-Matic, Race Clock and Sprint Timer Unit have USB-B connectors in the interests of durability.
-USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.
+USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.  (A dongle to allow a USB-C power source to be used with it is in the laptop bag.)
 UTC|*Universal Time Coordinated*.  A pedant would point out that it's not technically the same thing as *Greenwich Mean Time*, but effectively that.  Software that has any sense tends to work with UTC internally, and only convert to local time for input and output.  **LLRP** always uses UTC time; **CrossMgrImpinj** calculates the offset to local time.
 Webserver|**CrossMgr** and **SprintTimer** run a local web server on **port** `8765`.  This can be used to view live results or a browser-based verison of the **race clock**.
 WiFi|In this context, the IEEE 802.11 standard for Ethernet-like data communications over spread-spectrum radio.
