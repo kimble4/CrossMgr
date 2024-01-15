@@ -14,47 +14,38 @@ class Settings( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		self.parent = parent
-		bs = wx.BoxSizer(wx.VERTICAL)
+		vs = wx.BoxSizer(wx.VERTICAL)
 		hs = wx.BoxSizer(wx.HORIZONTAL)
 		self.dbFileNameLabel = wx.StaticText( self, label=_('Database filename:') )
+		hs.Add( self.dbFileNameLabel, flag=wx.ALIGN_CENTRE_VERTICAL)
 		self.dbFileName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(500,-1))
 		self.dbFileName.SetValue( Utils.getDocumentsDir() )
-		self.Bind( wx.EVT_TEXT_ENTER, self.onFileNameChanged, self.dbFileName )
-		hs.Add(self.dbFileName, flag=wx.EXPAND  )
+		hs.Add(self.dbFileName, flag=wx.ALIGN_CENTRE_VERTICAL  )
 		self.btn = wx.Button( self, label='{}...'.format(_('Browse')) )
 		self.btn.Bind( wx.EVT_BUTTON, self.onBrowseDatabase )
 		hs.Add( self.btn, flag=wx.ALIGN_CENTER_VERTICAL )
 		
-		bs.Add( self.dbFileNameLabel )
-		bs.Add( hs, flag=wx.EXPAND)
+		
+		vs.Add( hs, flag=wx.EXPAND)
+		
+		self.copyTagsWithDelim = wx.CheckBox( self, label='Copy tags with delmiters (for MultiReader)' )
+		vs.Add( self.copyTagsWithDelim )
+		
+		hs =  wx.BoxSizer(wx.HORIZONTAL)
+		self.tagTemplateLabel = wx.StaticText( self, label=_('Tag template:') )
+		hs.Add( self.tagTemplateLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.tagTemplate = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(500,-1))
+		self.tagTemplate.SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
+		hs.Add( self.tagTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
+		vs.Add( hs, flag=wx.EXPAND )
+		
+		self.commitButton = wx.Button( self, label='Commit')
+		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
+		vs.Add( self.commitButton )
 		
 		self.SetDoubleBuffered( True )
-		self.SetSizer(bs)
-		bs.SetSizeHints(self)
-	
-	def onFileNameChanged( self, event ):
-		fn = self.dbFileName.GetValue()
-		database = Model.database
-		if database is None:
-			return
-		oldfn = database.fileName
-		if fn != oldfn:
-			if (
-				not fn or
-				Utils.MessageOKCancel(self.parent, '\n\n'.join( [
-					_("The filename will be changed to:"),
-					'{}',
-					_("Continue?")]).format(fn), _("Change Filename?"))
-			):
-				if os.path.exists(fn):
-					if not Utils.MessageOKCancel(self.parent, '\n\n'.join( [
-							_("This file already exists:"),
-							'{}',
-							_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
-						return
-				print('filename is now: ' + str(fn))
-				database.fileName = fn
-				database.setChanged()
+		self.SetSizer(vs)
+		vs.SetSizeHints(self)
 		
 	def onBrowseDatabase( self, event ):
 		database = Model.database
@@ -95,7 +86,37 @@ class Settings( wx.Panel ):
 						print('filename is now: ' + str(fn))
 						database.fileName = fn
 						database.setChanged()
-		
+
+	def commit( self, event=None ):
+		Utils.writeLog('Settings commit: ' + str(event))
+		database = Model.database
+		if database is None:
+			return
+		with Model.LockDatabase() as db:
+			fn = self.dbFileName.GetValue()
+			oldfn = database.fileName
+			if fn != oldfn:
+				if (
+					not fn or
+					Utils.MessageOKCancel(self.parent, '\n\n'.join( [
+						_("The filename will be changed to:"),
+						'{}',
+						_("Continue?")]).format(fn), _("Change Filename?"))
+				):
+					if os.path.exists(fn):
+						if not Utils.MessageOKCancel(self.parent, '\n\n'.join( [
+								_("This file already exists:"),
+								'{}',
+								_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
+							return
+					print('filename is now: ' + str(fn))
+					db.fileName = fn
+			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
+			db.tagTemplate = self.tagTemplate.GetValue()
+			db.setChanged()
+		if event: #called by button
+			self.refresh()
+			self.Layout()
 
 	def refresh( self ):
 		database = Model.database
@@ -104,3 +125,5 @@ class Settings( wx.Panel ):
 			return
 		fn = database.fileName if database.fileName is not None else ''
 		self.dbFileName.SetValue( fn )
+		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
+		self.tagTemplate.SetValue( getattr(database, 'tagTemplate', '') )

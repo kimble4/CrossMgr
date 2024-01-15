@@ -79,18 +79,20 @@ class LockDatabase:
 class Database:
 	def __init__( self, fileName=None, jsonDataFile=None):
 		self.fileName = fileName
+		self.copyTagsWithDelim = False
+		self.riders = {}
+		self.tagTemplate = ''
 		#self.riders = {1:{'FirstName':'Testy', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253444}, 2:{'FirstName':'Ian', 'LastName':'Cress', 'Gender':'Men', 'NatCode':'IRL', 'LastEntered':1705153444}, 3:{'FirstName':'Arnold', 'LastName':'Rimmer', 'Gender':'Women', 'NatCode':'GER', 'LastEntered':1705053444}, 4:{'FirstName':'Junior', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253445}}
 		if jsonDataFile:
 			try:
 				data = json.load(jsonDataFile)
 				#print(data)
-				self.riders = keys2int(data['riders'])
+				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
+				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
+				self.riders = keys2int(data['riders']) if 'riders' in data else {}
 				#print(self.riders)
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
-				self.riders = {}
-		else:
-			self.riders = {}
 		self.changed = False
 		
 	def isRider( self, bib ):
@@ -114,6 +116,8 @@ class Database:
 			Utils.writeLog( 'Tried to add existing rider!' )
 			return
 		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
+		for i in range(10):
+			self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplate.format(i,bib)
 		self.changed = True
 		
 	def deleteRider( self, bib ):
@@ -132,7 +136,9 @@ class Database:
 	def getDatabaseAsJSON( self ):
 		self.resetCache()
 		db = {}
-		db['riders'] = self.riders
+		db['copyTagsWithDelim'] = self.copyTagsWithDelim
+		db['tagTemplate'] = self.tagTemplate
+		db['riders'] = dict(sorted(self.riders.items()))
 		return json.dumps(db, indent=2)
 
 	def resetCache( self ):
