@@ -93,7 +93,6 @@ class Riders( wx.Panel ):
 		
 		self.ridersGrid.SetRowLabelSize( 0 )
 		self.ridersGrid.SetMargins( 0, 0 )
-		#self.labelGrid.SetRightAlign( True )
 		self.ridersGrid.AutoSizeColumns( True )
 		self.ridersGrid.DisableDragColSize()
 		self.ridersGrid.DisableDragRowSize()
@@ -101,8 +100,6 @@ class Riders( wx.Panel ):
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onDoubleClick )
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
-		# put a tooltip on the cells in a column
-		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
 		
 		bs.Add(self.ridersGrid, 1, wx.GROW|wx.ALL, 5 )
 		

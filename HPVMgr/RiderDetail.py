@@ -47,6 +47,7 @@ class RiderDetail( wx.Panel ):
 		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
 		self.riderNat.SetToolTip( wx.ToolTip('IOC country code'))
 		self.Bind( wx.EVT_TEXT_ENTER, self.onNatCodeChanged, self.riderNat )
+		self.riderNat.Bind( wx.EVT_KILL_FOCUS, self.onNatCodeChanged, self.riderNat )
 		ncs.Add( self.riderNat )
 		self.riderFlag = wx.StaticBitmap(self, -1, wx.NullBitmap, size=(44,28))
 		ncs.AddSpacer(10)
@@ -67,7 +68,9 @@ class RiderDetail( wx.Panel ):
 			gbs.Add( getattr(self, 'riderTagDate' + str(i), None), pos=(row+i,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'riderTag' + str(i), wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1)) )
 			getattr(self, 'riderTag' + str(i), None).SetToolTip( wx.ToolTip('Tag number (Hexadecimal)'))
-			self.Bind( wx.EVT_TEXT, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
+			self.Bind( wx.EVT_TEXT, self.onEdited, getattr(self, 'riderTag' + str(i), None) )
+			self.Bind( wx.EVT_TEXT_ENTER, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
+			getattr(self, 'riderTag' + str(i), None).Bind( wx.EVT_KILL_FOCUS, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
 			gbs.Add( getattr(self, 'riderTag' + str(i), None), pos=(row+i,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'btnTagCopy' + str(i), wx.Button( self, label='Copy') )
 			getattr(self, 'btnTagCopy' + str(i), None).SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
@@ -112,9 +115,6 @@ class RiderDetail( wx.Panel ):
 		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
 		gbs.Add( self.machinesGrid, pos=(row,2), span=(1,5), flag=wx.EXPAND )
 		
-		
-		
-		
 		vs.Add( gbs )
 		
 		self.SetDoubleBuffered( True )
@@ -158,7 +158,7 @@ class RiderDetail( wx.Panel ):
 					getattr(self, 'btnTagCopy' + str(i), None).Disable()
 					getattr(self, 'btnTagWrite' + str(i), None).Disable()
 			self.refreshMachinesGrid()
-			self.editedWarning.SetLabel('')
+			self.onEdited( warn=False)
 		except KeyError:
 			self.clearRiderData()
 		except ValueError:
@@ -173,7 +173,7 @@ class RiderDetail( wx.Panel ):
 		try:
 			nat = self.riderNat.GetValue().upper()
 			self.riderNat.ChangeValue(nat)
-			self.editedWarning.SetLabel('Edited!')
+			self.onEdited()
 			image = Flags.GetFlagImage( nat )
 			if image:
 				self.riderFlag.SetBitmap(image.Scale(44, 28, wx.IMAGE_QUALITY_HIGH))
@@ -185,10 +185,13 @@ class RiderDetail( wx.Panel ):
 	def onTagChanged( self, event, tag ):
 		data = getattr(self, 'riderTag' + str(tag), None).GetValue().upper()
 		getattr(self, 'riderTag' + str(tag), None).ChangeValue(re.sub('[^0-9A-F]','', data))
-		self.editedWarning.SetLabel('Edited!')
+		self.onEdited()
 		
-	def onEdited( self, event ):
-		self.editedWarning.SetLabel('Edited!')
+	def onEdited( self, event=None, warn=True ):
+		if warn:
+			self.editedWarning.SetLabel('Edited!')
+		else:
+			self.editedWarning.SetLabel('')
 
 	def copyTag( self, event, tag ):
 		database = Model.database
@@ -331,9 +334,10 @@ class RiderDetail( wx.Panel ):
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
 					for row in range(self.machinesGrid.GetNumberRows()):
 						db.riders[bib]['Machines'][row] = self.machinesGrid.GetCellValue(row, 0).strip()
-					db.riders[bib]['Machines'][:] = [machine for machine in db.riders[bib]['Machines'] if machine]
+					if 'Machines' in db.riders[bib]:
+						db.riders[bib]['Machines'][:] = [machine for machine in db.riders[bib]['Machines'] if machine]
 					db.setChanged()
-					self.editedWarning.SetLabel('')
+					self.onEdited( warn=False )
 			else:
 				self.bib=''
 		except Exception as e:
