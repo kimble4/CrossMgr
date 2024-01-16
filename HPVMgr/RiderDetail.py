@@ -29,14 +29,17 @@ class RiderDetail( wx.Panel ):
 		row += 1
 		gbs.Add( wx.StaticText( self, label='First Name(s):'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderFirstName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(300,-1))
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderFirstName )
 		gbs.Add( self.riderFirstName, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
 		gbs.Add( wx.StaticText( self, label='Last Name:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderLastName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(300,-1))
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderLastName )
 		gbs.Add( self.riderLastName, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
 		gbs.Add( wx.StaticText( self, label='Gender:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderGender = wx.Choice( self, choices=Model.Genders)
+		self.Bind( wx.EVT_CHOICE, self.onEdited, self.riderGender )
 		gbs.Add( self.riderGender, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
 		gbs.Add( wx.StaticText( self, label='NatCode:'), pos=(row,0), span=(1,1), flag=labelAlign )
@@ -58,30 +61,62 @@ class RiderDetail( wx.Panel ):
 		# tag fields
 		row = 0
 		for i in range(10):
-			gbs.Add( wx.StaticText( self, label='Tag' + str(i) + ':'), pos=(i,2), span=(1,1), flag=labelAlign )
+			gbs.Add( wx.StaticText( self, label='Tag' + str(i) + ':'), pos=(row+i,2), span=(1,1), flag=labelAlign )
 			setattr(self, 'riderTagDate' + str(i), wx.StaticText( self, label='') )
 			getattr(self, 'riderTagDate' + str(i), None).SetToolTip( wx.ToolTip('Date the tag was last copied / written'))
-			gbs.Add( getattr(self, 'riderTagDate' + str(i), None), pos=(i,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+			gbs.Add( getattr(self, 'riderTagDate' + str(i), None), pos=(row+i,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'riderTag' + str(i), wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1)) )
 			getattr(self, 'riderTag' + str(i), None).SetToolTip( wx.ToolTip('Tag number (Hexadecimal)'))
 			self.Bind( wx.EVT_TEXT, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
-			gbs.Add( getattr(self, 'riderTag' + str(i), None), pos=(i,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+			gbs.Add( getattr(self, 'riderTag' + str(i), None), pos=(row+i,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'btnTagCopy' + str(i), wx.Button( self, label='Copy') )
 			getattr(self, 'btnTagCopy' + str(i), None).SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
 			getattr(self, 'btnTagCopy' + str(i), None).Disable()
 			self.Bind( wx.EVT_BUTTON, lambda event, tag=i: self.copyTag(event, tag), getattr(self, 'btnTagCopy' + str(i), None) )
-			gbs.Add( getattr(self, 'btnTagCopy' + str(i), None), pos=(i,5), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+			gbs.Add( getattr(self, 'btnTagCopy' + str(i), None), pos=(row+i,5), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'btnTagWrite' + str(i), wx.Button( self, label='Write') )
 			getattr(self, 'btnTagWrite' + str(i), None).SetToolTip( wx.ToolTip('Writes the tag'))
 			getattr(self, 'btnTagWrite' + str(i), None).Disable()
 			self.Bind( wx.EVT_BUTTON, lambda event, tag=i: self.writeTag(event, tag), getattr(self, 'btnTagWrite' + str(i), None) )
-			gbs.Add( getattr(self, 'btnTagWrite' + str(i), None), pos=(i,6), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+			gbs.Add( getattr(self, 'btnTagWrite' + str(i), None), pos=(row+i,6), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		row = 10
 		
-		vs.Add( gbs )
+		#commit button
 		self.commitButton = wx.Button( self, label='Commit')
 		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
-		vs.Add( self.commitButton )
+		gbs.Add( self.commitButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		
+		#edited warning
+		self.editedWarning = wx.StaticText( self, label='' )
+		gbs.Add( self.editedWarning, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		
+		#machines list
+		self.machinesGrid = wx.grid.Grid( self )
+		self.machinesGrid.CreateGrid(0, 1)
+		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
+		self.machinesGrid.HideRowLabels()
+		#self.machinesGrid.AutoSize()
+		self.machinesGrid.SetRowLabelSize( 0 )
+		self.machinesGrid.SetMargins( 0, 0 )
+		self.machinesGrid.AutoSizeColumns( True )
+		self.machinesGrid.DisableDragColSize()
+		self.machinesGrid.DisableDragRowSize()
+		self.machinesGrid.EnableEditing(True)
+		self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onMachinesRightClick )
+		self.machinesGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onMachinesRightClick )
+		self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.onEdited )
+		#self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onDoubleClick )
+		#self.machinesGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
+		# put a tooltip on the cells in a column
+		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
+		gbs.Add( self.machinesGrid, pos=(row,2), span=(1,5), flag=wx.EXPAND )
+		
+		
+		
+		
+		vs.Add( gbs )
+		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
@@ -122,6 +157,8 @@ class RiderDetail( wx.Panel ):
 					getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
 					getattr(self, 'btnTagCopy' + str(i), None).Disable()
 					getattr(self, 'btnTagWrite' + str(i), None).Disable()
+			self.refreshMachinesGrid()
+			self.editedWarning.SetLabel('')
 		except KeyError:
 			self.clearRiderData()
 		except ValueError:
@@ -136,6 +173,7 @@ class RiderDetail( wx.Panel ):
 		try:
 			nat = self.riderNat.GetValue().upper()
 			self.riderNat.ChangeValue(nat)
+			self.editedWarning.SetLabel('Edited!')
 			image = Flags.GetFlagImage( nat )
 			if image:
 				self.riderFlag.SetBitmap(image.Scale(44, 28, wx.IMAGE_QUALITY_HIGH))
@@ -147,6 +185,10 @@ class RiderDetail( wx.Panel ):
 	def onTagChanged( self, event, tag ):
 		data = getattr(self, 'riderTag' + str(tag), None).GetValue().upper()
 		getattr(self, 'riderTag' + str(tag), None).ChangeValue(re.sub('[^0-9A-F]','', data))
+		self.editedWarning.SetLabel('Edited!')
+		
+	def onEdited( self, event ):
+		self.editedWarning.SetLabel('Edited!')
 
 	def copyTag( self, event, tag ):
 		database = Model.database
@@ -171,6 +213,55 @@ class RiderDetail( wx.Panel ):
 					
 		else:
 			Utils.writeLog('Tag'+ str(tag) + ': Nothing to copy!')
+			
+	def onMachinesRightClick( self, event ):
+		row = event.GetRow()
+		print(row)
+		#col = event.GetCol()
+		menu = wx.Menu()
+		menu.SetTitle('#' + str(self.bib) + ' Machines')
+		add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
+		self.Bind( wx.EVT_MENU, self.addMachine, add )
+		delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+		
+	def addMachine( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			self.bib = self.riderBib.GetValue()
+			bib = int(self.bib)
+			with Model.LockDatabase() as db:
+				rider = db.getRider(bib)
+				if not 'Machines' in rider:
+					rider['Machines'] = []
+					db.setChanged()
+				if 'New Machine' not in rider['Machines']:
+					rider['Machines'].append('New Machine')
+					db.setChanged()
+			self.refreshMachinesGrid()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+	
+	def deleteMachine( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			self.bib = self.riderBib.GetValue()
+			bib = int(self.bib)
+			with Model.LockDatabase() as db:
+				rider = db.getRider(bib)
+				del rider['Machines'][row]
+				db.setChanged()
+			self.refreshMachinesGrid()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 	
 	def writeTag( self, event, tag ):
 		print(event)
@@ -188,6 +279,31 @@ class RiderDetail( wx.Panel ):
 			getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
 			getattr(self, 'btnTagCopy' + str(i), None).Disable()
 			getattr(self, 'btnTagWrite' + str(i), None).Disable()
+		self.clearMachinesGrid()
+			
+	def clearMachinesGrid( self ):
+		if self.machinesGrid.GetNumberRows():
+			self.machinesGrid.DeleteRows(0, self.machinesGrid.GetNumberRows())
+			
+	def refreshMachinesGrid( self ):
+		self.clearMachinesGrid()
+		database = Model.database
+		if database is None:
+			return
+		try:
+			self.bib = self.riderBib.GetValue()
+			bib = int(self.bib)
+			rider = database.getRider(bib)
+			self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
+			if 'Machines' in rider:
+				for machine in rider['Machines']:
+					self.machinesGrid.AppendRows(1)
+					row = self.machinesGrid.GetNumberRows() -1
+					self.machinesGrid.SetCellValue(row, 0, str(machine))
+			self.machinesGrid.AutoSizeColumns()
+			self.Layout()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 	
 	def setBib( self, bib ):
 		self.bib = str(bib)
@@ -213,12 +329,15 @@ class RiderDetail( wx.Panel ):
 						elif 'Tag' + (str(i) if i > 0 else '') in db.riders[bib]:
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '')]
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
+					for row in range(self.machinesGrid.GetNumberRows()):
+						db.riders[bib]['Machines'][row] = self.machinesGrid.GetCellValue(row, 0).strip()
+					db.riders[bib]['Machines'][:] = [machine for machine in db.riders[bib]['Machines'] if machine]
 					db.setChanged()
+					self.editedWarning.SetLabel('')
 			else:
 				self.bib=''
 		except Exception as e:
-			#Utils.logException( e, sys.exc_info() )
-			pass
+			Utils.logException( e, sys.exc_info() )
 		if event: #called by button
 			self.refresh()
 			self.Layout()

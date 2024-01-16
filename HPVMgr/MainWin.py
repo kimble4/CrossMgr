@@ -2772,7 +2772,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def onPageChanging( self, event ):
 		notebook = event.GetEventObject()
 		if notebook == self.notebook:
-			self.callPageCommit( event.GetOldSelection() )
+			#self.callPageCommit( event.GetOldSelection() )
 			self.callPageRefresh( event.GetSelection() )
 		try:
 			Utils.writeLog( 'page: {}\n'.format(notebook.GetPage(event.GetSelection()).__class__.__name__) )
