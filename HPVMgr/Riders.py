@@ -153,7 +153,6 @@ class Riders( wx.Panel ):
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 			
 	def addNewRider( self, event, bib ):
-		print('adding rider ' + str(bib))
 		with Model.LockDatabase() as db:
 			db.addRider(int(bib))
 		self.refresh()

@@ -35,11 +35,12 @@ class Settings( wx.Panel ):
 		self.tagTemplateLabel = wx.StaticText( self, label=_('Tag template:') )
 		hs.Add( self.tagTemplateLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.tagTemplate = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(500,-1))
-		self.tagTemplate.SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
+		self.tagTemplate.SetToolTip( wx.ToolTip('Python format string to init tags of new riders'))
 		hs.Add( self.tagTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs, flag=wx.EXPAND )
 		
 		self.commitButton = wx.Button( self, label='Commit')
+		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
 		vs.Add( self.commitButton )
 		

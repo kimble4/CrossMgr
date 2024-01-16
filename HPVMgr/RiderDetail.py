@@ -42,6 +42,7 @@ class RiderDetail( wx.Panel ):
 		gbs.Add( wx.StaticText( self, label='NatCode:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		ncs = wx.BoxSizer(wx.HORIZONTAL)
 		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
+		self.riderNat.SetToolTip( wx.ToolTip('IOC country code'))
 		self.Bind( wx.EVT_TEXT_ENTER, self.onNatCodeChanged, self.riderNat )
 		ncs.Add( self.riderNat )
 		self.riderFlag = wx.StaticBitmap(self, -1, wx.NullBitmap, size=(44,28))
@@ -61,7 +62,9 @@ class RiderDetail( wx.Panel ):
 			setattr(self, 'riderTagDate' + str(i), wx.StaticText( self, label='') )
 			getattr(self, 'riderTagDate' + str(i), None).SetToolTip( wx.ToolTip('Date the tag was last copied / written'))
 			gbs.Add( getattr(self, 'riderTagDate' + str(i), None), pos=(i,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
-			setattr(self, 'riderTag' + str(i), wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(400,-1)) )
+			setattr(self, 'riderTag' + str(i), wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1)) )
+			getattr(self, 'riderTag' + str(i), None).SetToolTip( wx.ToolTip('Tag number (Hexadecimal)'))
+			self.Bind( wx.EVT_TEXT, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
 			gbs.Add( getattr(self, 'riderTag' + str(i), None), pos=(i,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'btnTagCopy' + str(i), wx.Button( self, label='Copy') )
 			getattr(self, 'btnTagCopy' + str(i), None).SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
@@ -76,6 +79,7 @@ class RiderDetail( wx.Panel ):
 		
 		vs.Add( gbs )
 		self.commitButton = wx.Button( self, label='Commit')
+		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
 		vs.Add( self.commitButton )
 		self.SetDoubleBuffered( True )
@@ -139,6 +143,10 @@ class RiderDetail( wx.Panel ):
 				self.riderFlag.SetBitmap(wx.NullBitmap)
 		except ValueError:
 			pass
+			
+	def onTagChanged( self, event, tag ):
+		data = getattr(self, 'riderTag' + str(tag), None).GetValue().upper()
+		getattr(self, 'riderTag' + str(tag), None).ChangeValue(re.sub('[^0-9A-F]','', data))
 
 	def copyTag( self, event, tag ):
 		database = Model.database
