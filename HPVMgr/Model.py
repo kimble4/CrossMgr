@@ -5,6 +5,7 @@ from json.decoder import JSONDecodeError
 import Utils
 import wx
 import sys
+import functools
 
 lock = threading.RLock()
 #----------------------------------------------------------------------
@@ -81,6 +82,7 @@ class Database:
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
 		self.riders = {}
+		self.seasons = {}
 		self.tagTemplate = ''
 		#self.riders = {1:{'FirstName':'Testy', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253444}, 2:{'FirstName':'Ian', 'LastName':'Cress', 'Gender':'Men', 'NatCode':'IRL', 'LastEntered':1705153444}, 3:{'FirstName':'Arnold', 'LastName':'Rimmer', 'Gender':'Women', 'NatCode':'GER', 'LastEntered':1705053444}, 4:{'FirstName':'Junior', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253445}}
 		if jsonDataFile:
@@ -90,26 +92,38 @@ class Database:
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
+				self.seasons = data[seasons] if 'seasons' in data else {}
 				#print(self.riders)
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		self.changed = False
-		
+		memoize.clear()
+	
+	@memoize
 	def isRider( self, bib ):
 		if bib in self.riders:
 			return True
 		else:
 			return False
-		
+	
+	@memoize
 	def getBibs( self ):
 		bibs = list(self.riders.keys())
 		return sorted(bibs)
-		
+	
 	def getRiders( self ):
 		return self.riders
-		
+	
 	def getRider( self, bib ):
 		return self.riders[bib]
+	
+	@memoize
+	def getRiderName( self, bib ):
+		rider = self.riders[bib]
+		name = ''
+		if rider:
+			name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+		return name
 	
 	def addRider( self, bib ):
 		if bib in self.riders:
@@ -118,17 +132,31 @@ class Database:
 		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
 		for i in range(10):
 			self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplate.format(i,bib)
-		self.changed = True
+		self.setChanged()
 		
 	def deleteRider( self, bib ):
 		if not bib in self.riders:
 			Utils.writeLog( 'Tried to delete non-existent rider!' )
 			return
 		del self.riders[bib]
-		self.changed = True
+		self.setChanged()
+	
+	@memoize
+	def getSeasons( self ):
+		seasons = list(self.seasons.keys())
+		return sorted(seasons)
+	
+	@memoize
+	def getEvents( self, season ):
+		try:
+			events = list(self.seasons[season].keys())
+			return sorted(events)
+		except KeyError:
+			return {}
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed
+		self.resetCache()
 		
 	def hasChanged( self ):
 		return self.changed
@@ -139,6 +167,7 @@ class Database:
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['tagTemplate'] = self.tagTemplate
 		db['riders'] = dict(sorted(self.riders.items()))
+		db['seasons'] = self.seasons
 		return json.dumps(db, indent=2)
 
 	def resetCache( self ):

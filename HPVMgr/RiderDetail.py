@@ -105,7 +105,6 @@ class RiderDetail( wx.Panel ):
 		self.machinesGrid.CreateGrid(0, 1)
 		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
 		self.machinesGrid.HideRowLabels()
-		#self.machinesGrid.AutoSize()
 		self.machinesGrid.SetRowLabelSize( 0 )
 		self.machinesGrid.SetMargins( 0, 0 )
 		self.machinesGrid.AutoSizeColumns( True )
@@ -115,10 +114,6 @@ class RiderDetail( wx.Panel ):
 		self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onMachinesRightClick )
 		self.machinesGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onMachinesRightClick )
 		self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.onEdited )
-		#self.machinesGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onDoubleClick )
-		#self.machinesGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
-		# put a tooltip on the cells in a column
-		#self.labelGrid.GetGridWindow().Bind(wx.EVT_MOTION, self.onMouseOver)
 		gbs.Add( self.machinesGrid, pos=(row,2), span=(1,5), flag=wx.EXPAND )
 		
 		vs.Add( gbs )
@@ -342,7 +337,7 @@ class RiderDetail( wx.Panel ):
 		wx.CallAfter( self.refresh )
 		
 	def deleteRider( self, event=None ):
-		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + self.bib + ' ' + self.riderFirstName.GetValue() + ' ' + self.riderLastName.GetValue() + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
+		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + self.bib + ' ' + self.riderLastName.GetValue() + ', ' + self.riderFirstName.GetValue() + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
 			Utils.writeLog('Delete rider: ' + self.bib)
 			with Model.LockDatabase() as db:
 				db.deleteRider(int(self.bib))

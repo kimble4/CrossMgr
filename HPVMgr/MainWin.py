@@ -44,6 +44,7 @@ from Utils				import logCall, logException
 import Version
 from Riders 			import Riders
 from RiderDetail		import RiderDetail
+from Events				import Events
 from Settings			import Settings
 import Model
 
@@ -459,6 +460,7 @@ class MainWin( wx.Frame ):
 		self.attrClassName = [
 			[ 'riders',			Riders,				_('Riders') ],
 			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
+			[ 'events',			Events,				_('Events') ],
 			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
