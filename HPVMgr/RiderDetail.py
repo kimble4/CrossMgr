@@ -23,8 +23,9 @@ class RiderDetail( wx.Panel ):
 		#rider fields
 		row = 0
 		gbs.Add( wx.StaticText( self, label='Rider bib#:'), pos=(row,0), span=(1,1), flag=labelAlign )
-		self.riderBib = wx.ComboBox(self, value=self.bib, choices=[], name='Rider Bib', size=(100,-1) )
+		self.riderBib = wx.ComboBox(self, value=self.bib, choices=[], name='Rider Bib', size=(100,-1), style=wx.TE_PROCESS_ENTER)
 		self.Bind( wx.EVT_TEXT, self.onBibChanged, self.riderBib )
+		self.Bind( wx.EVT_TEXT_ENTER, self.onBibEnter, self.riderBib )
 		gbs.Add( self.riderBib, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
 		gbs.Add( wx.StaticText( self, label='First Name(s):'), pos=(row,0), span=(1,1), flag=labelAlign )
@@ -58,6 +59,11 @@ class RiderDetail( wx.Panel ):
 		self.riderLastEntered = wx.StaticText( self, label='')
 		self.riderLastEntered.SetToolTip( wx.ToolTip('Date the rider was last entered in a race'))
 		gbs.Add( self.riderLastEntered, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		row += 1
+		self.deleteButton = wx.Button( self, label='Delete Rider')
+		self.deleteButton.SetToolTip( wx.ToolTip('Saves changes'))
+		self.Bind( wx.EVT_BUTTON, self.deleteRider, self.deleteButton )
+		gbs.Add( self.deleteButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
 		
 		# tag fields
 		row = 0
@@ -120,8 +126,26 @@ class RiderDetail( wx.Panel ):
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
+		
+	def onBibEnter( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			self.bib = self.riderBib.GetValue()
+			bib = int(self.bib)
+			rider = database.getRider(bib)
+		except KeyError:  # rider does not exist
+			if Utils.MessageOKCancel( self, 'Rider #' + self.bib + ' does not exist, do you want to add them?', title = 'Add new rider?', iconMask = wx.ICON_QUESTION):
+				with Model.LockDatabase() as db:
+					db.addRider(bib)
+				wx.CallAfter( self.refresh )
+		except ValueError:  # invalid int
+			pass
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 	
-	def onBibChanged( self, event ):
+	def onBibChanged( self, event=None ):
 		database = Model.database
 		if database is None:
 			return
@@ -158,11 +182,11 @@ class RiderDetail( wx.Panel ):
 					getattr(self, 'btnTagCopy' + str(i), None).Disable()
 					getattr(self, 'btnTagWrite' + str(i), None).Disable()
 			self.refreshMachinesGrid()
+			self.deleteButton.Enable()
 			self.onEdited( warn=False)
-		except KeyError:
+		except KeyError: # rider does not exist
 			self.clearRiderData()
-		except ValueError:
-			self.bib = ''
+		except ValueError:  #invalid int
 			self.clearRiderData()
 		self.Layout()
 			
@@ -219,14 +243,13 @@ class RiderDetail( wx.Panel ):
 			
 	def onMachinesRightClick( self, event ):
 		row = event.GetRow()
-		print(row)
-		#col = event.GetCol()
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(self.bib) + ' Machines')
 		add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
 		self.Bind( wx.EVT_MENU, self.addMachine, add )
-		delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
+		if row >= 1 or (row == 0 and len(self.machinesGrid.GetCellValue(row, 0).strip()) > 0):
+			delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -248,6 +271,7 @@ class RiderDetail( wx.Panel ):
 					rider['Machines'].append('New Machine')
 					db.setChanged()
 			self.refreshMachinesGrid()
+			self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
@@ -263,6 +287,7 @@ class RiderDetail( wx.Panel ):
 				del rider['Machines'][row]
 				db.setChanged()
 			self.refreshMachinesGrid()
+			self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
@@ -271,8 +296,8 @@ class RiderDetail( wx.Panel ):
 		print('write tag ' + str(tag))
 
 	def clearRiderData( self ):
-		self.riderFirstName.SetValue('')
-		self.riderLastName.SetValue('')
+		self.riderFirstName.ChangeValue('')
+		self.riderLastName.ChangeValue('')
 		self.riderGender.SetSelection(Model.Open)
 		self.riderNat.ChangeValue('')
 		self.riderFlag.SetBitmap(wx.NullBitmap)
@@ -282,11 +307,14 @@ class RiderDetail( wx.Panel ):
 			getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
 			getattr(self, 'btnTagCopy' + str(i), None).Disable()
 			getattr(self, 'btnTagWrite' + str(i), None).Disable()
+		self.deleteButton.Disable()
 		self.clearMachinesGrid()
+		self.machinesGrid.AppendRows(1)
 			
 	def clearMachinesGrid( self ):
-		if self.machinesGrid.GetNumberRows():
-			self.machinesGrid.DeleteRows(0, self.machinesGrid.GetNumberRows())
+		rows = self.machinesGrid.GetNumberRows()
+		if rows:
+			self.machinesGrid.DeleteRows( 0, rows )
 			
 	def refreshMachinesGrid( self ):
 		self.clearMachinesGrid()
@@ -303,14 +331,23 @@ class RiderDetail( wx.Panel ):
 					self.machinesGrid.AppendRows(1)
 					row = self.machinesGrid.GetNumberRows() -1
 					self.machinesGrid.SetCellValue(row, 0, str(machine))
-			self.machinesGrid.AutoSizeColumns()
-			self.Layout()
+			if self.machinesGrid.GetNumberRows() == 0:
+				self.machinesGrid.AppendRows(1)
+			self.machinesGrid.SetColSize( 0, self.machinesGrid.GetGridWindow().GetSize()[0] )
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
 	def setBib( self, bib ):
 		self.bib = str(bib)
-		self.refresh()
+		wx.CallAfter( self.refresh )
+		
+	def deleteRider( self, event=None ):
+		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + self.bib + ' ' + self.riderFirstName.GetValue() + ' ' + self.riderLastName.GetValue() + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
+			Utils.writeLog('Delete rider: ' + self.bib)
+			with Model.LockDatabase() as db:
+				db.deleteRider(int(self.bib))
+			self.bib = ''
+			wx.CallAfter( self.refresh )
 	
 	def commit( self, event=None ):
 		Utils.writeLog('RiderDetail commit: ' + str(event))
@@ -332,19 +369,30 @@ class RiderDetail( wx.Panel ):
 						elif 'Tag' + (str(i) if i > 0 else '') in db.riders[bib]:
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '')]
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
+					machinesList = []
 					for row in range(self.machinesGrid.GetNumberRows()):
-						db.riders[bib]['Machines'][row] = self.machinesGrid.GetCellValue(row, 0).strip()
-					if 'Machines' in db.riders[bib]:
-						db.riders[bib]['Machines'][:] = [machine for machine in db.riders[bib]['Machines'] if machine]
+						data = self.machinesGrid.GetCellValue(row, 0).strip()
+						if len(data) > 0:
+							machinesList.append(data)
+					if len(machinesList) > 0:
+						db.riders[bib]['Machines'] = machinesList
+					elif 'Machines' in db.riders[bib]:
+						del db.riders[bib]['Machines']
 					db.setChanged()
 					self.onEdited( warn=False )
 			else:
-				self.bib=''
+				if Utils.MessageOKCancel( self, 'Rider #' + self.bib + ' does not exist, do you want to add them?', title = 'Add new rider?', iconMask = wx.ICON_QUESTION):
+					with Model.LockDatabase() as db:
+						db.addRider(bib)
+					wx.CallAfter( self.refresh )
+				else:
+					self.bib=''
+		except ValueError:  # invalid int
+			pass
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 		if event: #called by button
-			self.refresh()
-			self.Layout()
+			wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
 		database = Model.database

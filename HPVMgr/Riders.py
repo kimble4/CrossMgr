@@ -155,9 +155,11 @@ class Riders( wx.Panel ):
 		self.refresh()
 		
 	def deleteRider( self, event, bib ):
-		with Model.LockDatabase() as db:
-			db.deleteRider(int(bib))
-		self.refresh()
+		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
+			Utils.writeLog('Delete rider: ' + str(bib))
+			with Model.LockDatabase() as db:
+				db.deleteRider(int(bib))
+			wx.CallAfter( self.refresh )
 			
 	def editRiderDetails(self, event, bib):
 		mainwin = Utils.getMainWin()
