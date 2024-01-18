@@ -84,7 +84,6 @@ class Database:
 		self.riders = {}
 		self.seasons = {}
 		self.tagTemplate = ''
-		self.selectedRound = None
 		#self.riders = {1:{'FirstName':'Testy', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253444}, 2:{'FirstName':'Ian', 'LastName':'Cress', 'Gender':'Men', 'NatCode':'IRL', 'LastEntered':1705153444}, 3:{'FirstName':'Arnold', 'LastName':'Rimmer', 'Gender':'Women', 'NatCode':'GER', 'LastEntered':1705053444}, 4:{'FirstName':'Junior', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253445}}
 		if jsonDataFile:
 			try:
@@ -93,8 +92,24 @@ class Database:
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
-				self.seasons = data['seasons'] if 'seasons' in data else {}
 				#print(self.riders)
+				self.seasons = data['seasons'] if 'seasons' in data else {}
+				# for season in self.seasons:
+				# 	#print(season)
+				# 	evts = self.getEventsList(season)
+				# 	for evt in evts:
+				# 		#print(evt)
+				# 		rnds = self.getRoundsList(season, evt)
+				# 		#print(rnds)
+				# 		for rnd in rnds:
+				# 			#print(rnd)
+				# 			races = self.getRaces(season, evt, rnd)
+				# 			for race in races:
+				# 				self.seasons[season][evt]['rounds'][rnd] = keys2int(race)
+				# 				print(self.seasons[season][evt]['rounds'][rnd])
+			
+							
+				
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		self.changed = False
@@ -148,12 +163,28 @@ class Database:
 		return sorted(seasons)
 		
 	@memoize
-	def getEvents( self, season ):
+	def getEventsList( self, season ):
 		try:
 			events = list(self.seasons[season].keys())
 			return sorted(events)
 		except KeyError:
-			return {}
+			return []
+			
+	@memoize
+	def getRoundsList( self, season, evt ):
+		try:
+			rnds = list(self.seasons[season][evt]['rounds'].keys())
+			return sorted(rnds)
+		except KeyError:
+			return []
+			
+	@memoize
+	def getRaces( self, season, evt, rnd ):
+		try:
+			races = self.seasons[season][evt]['rounds'][rnd]
+			return races
+		except KeyError:
+			return []
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed

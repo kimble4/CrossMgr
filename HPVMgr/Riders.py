@@ -201,6 +201,7 @@ class Riders( wx.Panel ):
 			row = self.ridersGrid.GetNumberRows() -1
 			col = 0
 			self.ridersGrid.SetCellValue(row, col, str(bib))
+			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			col+=1
 			name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 			self.ridersGrid.SetCellValue(row, col, str(name))

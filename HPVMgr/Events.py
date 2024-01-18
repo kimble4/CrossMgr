@@ -79,7 +79,7 @@ class Events( wx.Panel ):
 		self.editRacesButton = wx.Button( self, label='Edit races')
 		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
 		self.editRacesButton.Disable()
-		#self.Bind( wx.EVT_BUTTON, self.editRaces, self.editRacesButton )
+		self.Bind( wx.EVT_BUTTON, self.onEditRacesButton, self.editRacesButton )
 		hs.Add( self.editRacesButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		gbs.Add( hs, pos=(row,1), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
@@ -346,7 +346,7 @@ class Events( wx.Panel ):
 							evt['rounds'] = {}
 						#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
 						if newRound not in evt['rounds']:
-							evt['rounds'][newRound] = {}
+							evt['rounds'][newRound] = []
 							db.setChanged()
 							wx.CallAfter( self.refresh )
 						else:
@@ -436,6 +436,9 @@ class Events( wx.Panel ):
 				evt['signonFileName'] = fn
 				database.setChanged()
 		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
+		
+	def onEditRacesButton( self, event ):
+		Utils.getMainWin().showRaceAllocationPage()
 			
 	def refreshSeasonsGrid( self ):
 		database = Model.database
@@ -524,7 +527,8 @@ class Events( wx.Panel ):
 		
 	def commit( self, event=None ):
 		Utils.writeLog('Events commit: ' + str(event))
-		Utils.getMainWin().raceAllocation.updateSelection( self.season, self.evt, self.rnd )
+		Utils.getMainWin().eventEntry.updateSelection( self.season, self.evt)
+		Utils.getMainWin().raceAllocation.updateSelection( self.season, self.evt, self.rnd)
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	

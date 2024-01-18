@@ -45,6 +45,7 @@ import Version
 from Riders 			import Riders
 from RiderDetail		import RiderDetail
 from Events				import Events
+from EventEntry			import EventEntry
 from RaceAllocation		import RaceAllocation
 from Settings			import Settings
 import Model
@@ -462,6 +463,7 @@ class MainWin( wx.Frame ):
 			[ 'riders',			Riders,				_('Riders') ],
 			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			[ 'events',			Events,				_('Events') ],
+			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
 			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
 			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
@@ -2713,8 +2715,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	#def setRiderDetail( self, num = None ):
 		#self.riderDetail.setRider( num )
 
-	#def showResultsPage( self ):
-		#self.showPage( self.iResultsPage )
+	def showRaceAllocationPage( self ):
+		self.showPage( self.iRaceAllocationPage )
 
 	def callPageRefresh( self, i ):
 		try:
