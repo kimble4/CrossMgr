@@ -42,16 +42,11 @@ class Events( wx.Panel ):
 		gbs.Add( self.seasonsGrid, pos=(row,0), span=(1,1), flag=wx.EXPAND )
 		
 		row += 1
-		gbs.Add( wx.StaticText( self, label='Current selection:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_RIGHT)
-
-		row += 1		
-		#commit button
-		self.editRacesButton = wx.Button( self, label='Edit races')
-		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
-		self.editRacesButton.Disable()
-		self.Bind( wx.EVT_BUTTON, self.commit, self.editRacesButton )
-		gbs.Add( self.editRacesButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
-
+		gbs.Add( wx.StaticText( self, label='Current selection:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		
+		row += 1
+		gbs.Add( wx.StaticText( self, label='Sign-on sheet:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		
 		row = 0
 		
 		#events list
@@ -74,8 +69,39 @@ class Events( wx.Panel ):
 		
 		row += 1
 		
+		#current selection
+		hs = wx.BoxSizer( wx.HORIZONTAL )
 		self.currentSelection = wx.StaticText( self, label='None' )
-		gbs.Add( self.currentSelection, pos=(row,1), span=(1,3), flag=wx.ALIGN_LEFT )
+		hs.Add( self.currentSelection, flag=wx.ALIGN_CENTER_VERTICAL )
+		
+		hs.AddStretchSpacer()
+		
+		#edit button
+		self.editRacesButton = wx.Button( self, label='Edit races')
+		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
+		self.editRacesButton.Disable()
+		#self.Bind( wx.EVT_BUTTON, self.editRaces, self.editRacesButton )
+		hs.Add( self.editRacesButton, flag=wx.ALIGN_CENTER_VERTICAL )
+		
+		gbs.Add( hs, pos=(row,1), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
+		
+		row += 1
+		
+		#signon filename
+		self.signonFileName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_RIGHT, size=(600,-1))
+		self.signonFileName.SetValue( '' )
+		self.signonFileName.Disable()
+		self.signonFileName.Bind( wx.EVT_TEXT_ENTER, self.onEditSignon )
+		gbs.Add( self.signonFileName, pos=(row,1), span=(1,3), flag=wx.ALIGN_LEFT )
+		
+		row += 1
+		
+		#write button
+		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
+		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
+		self.writeSignonButton.Disable()
+		#self.Bind( wx.EVT_BUTTON, self.writeSignonSheet, self.writeSignonButton )
+		gbs.Add( self.writeSignonButton, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
 		
 		row = 0
 		#rounds list
@@ -97,7 +123,13 @@ class Events( wx.Panel ):
 		self.roundsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectRnd )
 		gbs.Add( self.roundsGrid, pos=(row,2), span=(1,1), flag=wx.EXPAND )
 		
+		row += 3
 		
+		self.signonBrowseButton = wx.Button( self, label='{}...'.format(_('Browse')) )
+		self.signonBrowseButton.Disable()
+		self.signonBrowseButton.Bind( wx.EVT_BUTTON, self.onBrowseSignon )
+		gbs.Add( self.signonBrowseButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_TOP|wx.ALIGN_RIGHT )
+	
 		
 		vs.Add( gbs )
 		
@@ -114,6 +146,9 @@ class Events( wx.Panel ):
 			self.season = row
 			self.evt = None
 			self.rnd = None
+			self.signonFileName.SetValue('')
+			self.signonFileName.Disable()
+			self.signonBrowseButton.Disable()
 			self.editRacesButton.Disable()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -142,7 +177,6 @@ class Events( wx.Panel ):
 		if database is None:
 			return
 		try:
-			print('add seson')
 			with wx.TextEntryDialog(self, 'Enter the name for the new season:', caption='Add season', value='New Season', style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newSeason = dlg.GetValue()
@@ -178,6 +212,16 @@ class Events( wx.Panel ):
 		if row >= 0:
 			self.evt = row
 			self.rnd = None
+			if self.season is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				if self.evt is not None:
+					evtName = list(season)[self.evt]
+					evt = season[evtName]
+					self.signonFileName.SetValue(evt['signonFileName'] if 'signonFileName' in evt else '')
+			self.signonFileName.Enable()
+			self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
+			self.signonBrowseButton.Enable()
 			self.editRacesButton.Disable()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
@@ -212,7 +256,6 @@ class Events( wx.Panel ):
 		if self.season is None:
 			return
 		try:
-			print('add event')
 			with wx.TextEntryDialog(self, 'Enter the name for the new event:', caption='Add event', value='New Event', style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newEvent = dlg.GetValue()
@@ -292,7 +335,6 @@ class Events( wx.Panel ):
 		if self.season is None:
 			return
 		try:
-			print('add event')
 			with wx.TextEntryDialog(self, 'Enter the name for the new round:', caption='Add round', value='New Round', style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newRound = dlg.GetValue()
@@ -301,9 +343,11 @@ class Events( wx.Panel ):
 						season = db.seasons[seasonName]
 						evtName = list(season)[self.evt]
 						evt = season[evtName]
-						print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt))
-						if newRound not in evt:
-							evt[newRound] = {}
+						if 'rounds' not in evt:  # create rounds dict if it does not exist
+							evt['rounds'] = {}
+						#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
+						if newRound not in evt['rounds']:
+							evt['rounds'][newRound] = {}
 							db.setChanged()
 							wx.CallAfter( self.refresh )
 						else:
@@ -329,12 +373,70 @@ class Events( wx.Panel ):
 					evtName = list(season)[self.evt]
 					evt = season[evtName]
 					rnd = self.roundsGrid.GetCellValue(row, 0)
-					del evt[rnd]
+					del evt['rounds'][rnd]
 					db.setChanged()
 					self.rnd = None
 					wx.CallAfter( self.refresh )
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				
+	def onBrowseSignon( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		defaultFileName = self.signonFileName.GetValue()
+		if defaultFileName.endswith('.xlsx'):
+			dirName = os.path.dirname( defaultFileName )
+			fileName = os.path.basename( defaultFileName )
+		else:
+			dirName = defaultFileName
+			if self.season is not None and self.evt is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				fileName = 'racers_' + list(season)[self.evt].lower().replace(' ', '_') + '.xlsx'
+			else:
+				fileName = ''
+			if not dirName:
+				dirName = Utils.getDocumentsDir()
+		with wx.FileDialog( self, message=_("Choose Sigon Sheet File"),
+							defaultDir=dirName, 
+							defaultFile=fileName,
+							wildcard=_("CrossMgr sign-on sheet (*.xlsx)|*.xlsx"),
+							style=wx.FD_SAVE ) as dlg:
+			if dlg.ShowModal() == wx.ID_OK:
+				fn = dlg.GetPath()
+				self.signonFileName.SetValue( fn )
+				if self.season is not None and self.evt is not None:
+					with Model.LockDatabase() as db:
+						seasonName = db.getSeasonsList()[self.season]
+						season = db.seasons[seasonName]
+						evtName = list(season)[self.evt]
+						evt = season[evtName]
+						evt['signonFileName'] = fn
+						database.setChanged()
+						wx.CallAfter( self.refresh )
+		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
+			
+	def onEditSignon( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		fn = self.signonFileName.GetValue()
+		if fn.endswith('.xlsx'):
+			dirName = os.path.dirname( fn )
+			fileName = os.path.basename( fn )
+		else:
+			Utils.MessageOK( self, 'Sign-on sheet should be an .xlsx file!', title = 'Incorrect filetype', iconMask = wx.ICON_ERROR )
+			return
+		if self.season is not None and self.evt is not None:
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season)[self.evt]
+				evt = season[evtName]
+				evt['signonFileName'] = fn
+				database.setChanged()
+		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
 			
 	def refreshSeasonsGrid( self ):
 		database = Model.database
@@ -382,13 +484,14 @@ class Events( wx.Panel ):
 				evtName = list(season)[self.evt]
 				self.roundsGrid.SetColLabelValue(0, evtName + '\'s rounds')
 				evt = season[evtName]
-				#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt))
-				for rndName in evt:
-					self.roundsGrid.AppendRows(1)
-					row = self.roundsGrid.GetNumberRows() -1
-					self.roundsGrid.SetCellValue(row, 0, rndName)
-					self.roundsGrid.SetCellValue(row, 1, str(len(evt[rndName])))
-					self.roundsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
+				if 'rounds' in evt:
+					#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
+					for rndName in evt['rounds']:
+						self.roundsGrid.AppendRows(1)
+						row = self.roundsGrid.GetNumberRows() -1
+						self.roundsGrid.SetCellValue(row, 0, rndName)
+						self.roundsGrid.SetCellValue(row, 1, str(len(evt['rounds'][rndName])))
+						self.roundsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
 			else:
 				self.roundsGrid.SetColLabelValue(0, 'Event\'s rounds')
 		self.roundsGrid.AutoSize()
@@ -412,8 +515,8 @@ class Events( wx.Panel ):
 				evtName = list(season)[self.evt]
 				selection.append( evtName )
 				evt = season[evtName]
-				if self.rnd is not None:
-					rndName = list(evt)[self.rnd]
+				if self.rnd is not None and 'rounds' in evt:
+					rndName = list(evt['rounds'])[self.rnd]
 					selection.append( rndName )
 			self.currentSelection.SetLabel( ', '.join(n for n in selection) )
 		else:

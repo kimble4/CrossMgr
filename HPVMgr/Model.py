@@ -168,7 +168,7 @@ class Database:
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['tagTemplate'] = self.tagTemplate
 		db['riders'] = dict(sorted(self.riders.items()))
-		db['seasons'] = self.seasons
+		db['seasons'] = dict(sorted(self.seasons.items()))
 		return json.dumps(db, indent=2)
 
 	def resetCache( self ):

@@ -65,7 +65,7 @@ class Settings( wx.Panel ):
 							defaultDir=dirName, 
 							defaultFile=fileName,
 							wildcard=_("HPV database (*.hdb)|*.hdb"),
-							style=wx.FD_OPEN ) as dlg:
+							style=wx.FD_SAVE ) as dlg:
 			if dlg.ShowModal() == wx.ID_OK:
 				fn = dlg.GetPath()
 				oldfn = database.fileName
