@@ -2714,6 +2714,9 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 
 	#def setRiderDetail( self, num = None ):
 		#self.riderDetail.setRider( num )
+		
+	def showEventEntryPage( self ):
+		self.showPage( self.iEventEntryPage )
 
 	def showRaceAllocationPage( self ):
 		self.showPage( self.iRaceAllocationPage )

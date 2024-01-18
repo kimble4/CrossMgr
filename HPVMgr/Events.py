@@ -75,13 +75,23 @@ class Events( wx.Panel ):
 		
 		hs.AddStretchSpacer()
 		
+		bs = wx.BoxSizer( wx.VERTICAL )
+		#edit button
+		self.editEntryButton = wx.Button( self, label='Edit entries')
+		self.editEntryButton.SetToolTip( wx.ToolTip('Edit entries'))
+		self.editEntryButton.Disable()
+		self.Bind( wx.EVT_BUTTON, self.onEditEntryButton, self.editEntryButton )
+		bs.Add( self.editEntryButton, flag=wx.ALIGN_RIGHT )
+		
 		#edit button
 		self.editRacesButton = wx.Button( self, label='Edit races')
 		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
 		self.editRacesButton.Disable()
 		self.Bind( wx.EVT_BUTTON, self.onEditRacesButton, self.editRacesButton )
-		hs.Add( self.editRacesButton, flag=wx.ALIGN_CENTER_VERTICAL )
+		bs.Add( self.editRacesButton, flag=wx.ALIGN_RIGHT )
 		
+		hs.Add( bs, flag=wx.ALIGN_CENTER_VERTICAL)
+	
 		gbs.Add( hs, pos=(row,1), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
 		
 		row += 1
@@ -148,6 +158,7 @@ class Events( wx.Panel ):
 			self.signonFileName.SetValue('')
 			self.signonFileName.Disable()
 			self.signonBrowseButton.Disable()
+			self.editEntryButton.Disable()
 			self.editRacesButton.Disable()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -221,6 +232,7 @@ class Events( wx.Panel ):
 			self.signonFileName.Enable()
 			self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
 			self.signonBrowseButton.Enable()
+			self.editEntryButton.Enable()
 			self.editRacesButton.Disable()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
@@ -436,6 +448,9 @@ class Events( wx.Panel ):
 				evt['signonFileName'] = fn
 				database.setChanged()
 		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
+		
+	def onEditEntryButton( self, event ):
+		Utils.getMainWin().showEventEntryPage()
 		
 	def onEditRacesButton( self, event ):
 		Utils.getMainWin().showRaceAllocationPage()
