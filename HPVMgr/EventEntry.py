@@ -241,6 +241,7 @@ class EventEntry( wx.Panel ):
 					if bib not in evt['racers']:
 						evt['racers'].append(bib)
 						evt['racers'].sort()
+						db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
 						db.setChanged()
 					else:
 						Utils.writeLog( evtName + ': Not adding duplicate bib: ' + str(bib))
