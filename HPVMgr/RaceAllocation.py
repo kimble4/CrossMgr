@@ -10,6 +10,28 @@ import datetime
 import Model
 import wx.lib.intctrl as intctrl
 
+class riderNameCompleter(wx.TextCompleter):
+    def __init__(self, riderNames):
+        wx.TextCompleter.__init__(self)
+        self._iLastReturned = wx.NOT_FOUND
+        self._sPrefix = ''
+        self.riderNames = riderNames
+
+    def Start(self, prefix):
+        self._sPrefix = prefix.lower()
+        self._iLastReturned = wx.NOT_FOUND
+        for item in self.riderNames:
+            if item.lower().startswith(self._sPrefix):
+                return True
+        return False
+
+    def GetNext(self):
+        for i in range(self._iLastReturned+1, len(self.riderNames)):
+            if self.riderNames[i].lower().startswith(self._sPrefix):
+                self._iLastReturned = i
+                return self.riderNames[i]
+        return ''
+
 class RaceAllocation( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -19,6 +41,9 @@ class RaceAllocation( wx.Panel ):
 		self.rnd = None
 		self.race = 0
 		self.nrRaces = 1
+		self.colnames = ['Bib', 'Name', 'Machine', 'Categories']
+		
+		self.riderBibNames = []
 		
 		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
 		vs = wx.BoxSizer(wx.VERTICAL)
@@ -36,8 +61,37 @@ class RaceAllocation( wx.Panel ):
 		self.raceSelection = wx.Choice( self, choices=[] )
 		self.raceSelection.Bind( wx.EVT_CHOICE, self.onSelectRace )
 		hs.Add( self.raceSelection )
+		vs.Add( hs )
+		
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		hs.Add( wx.StaticText( self, label='Bib:' ) )
+		self.riderBibEntry = wx.Choice( self, choices=[] )
+		#self.riderBibEntry.Bind( wx.EVT_CHOICE, self.onSelectBib )
+		hs.Add( self.riderBibEntry )
+		hs.Add( wx.StaticText( self, label='Name:' ) )
+		self.riderNameEntry = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(300,-1))
+		self.riderNameEntry.SetValue( '' )
+		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRider )
+		hs.Add (self.riderNameEntry )
 		
 		vs.Add( hs )
+		
+		self.racersGrid = wx.grid.Grid( self )
+		self.racersGrid.CreateGrid(0, len(self.colnames) )
+		for i, name in enumerate(self.colnames):
+			self.racersGrid.SetColLabelValue(i, name)
+		self.racersGrid.HideRowLabels()
+		self.racersGrid.SetRowLabelSize( 0 )
+		self.racersGrid.SetMargins( 0, 0 )
+		self.racersGrid.AutoSizeColumns( True )
+		self.racersGrid.DisableDragColSize()
+		self.racersGrid.DisableDragRowSize()
+		self.racersGrid.EnableEditing(False)
+		self.racersGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
+		# self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onSeasonsRightClick )
+		# self.racersGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onSeasonsRightClick )
+		# self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectSeason )
+		vs.Add( self.racersGrid, flag=wx.EXPAND )
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
@@ -84,6 +138,10 @@ class RaceAllocation( wx.Panel ):
 		self.race = self.raceSelection.GetSelection()
 		print('race is now ' + str(self.race))
 		
+	def onEnterRider( self, event ):
+		
+		pass
+		
 	def refreshCurrentSelection( self ):
 		database = Model.database
 		if database is None:
@@ -118,5 +176,24 @@ class RaceAllocation( wx.Panel ):
 		print('RaceAllocation refresh')
 		self.refreshCurrentSelection()
 		self.refreshNumberOfRaces()
-		
+		database = Model.database
+		if database is None:
+			return
+		try:
+			riders = database.getRiders()
+			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
+			sortedRiders = dict(sorted(firstNameSortedRiders.items(), key=lambda item: item[1]['LastName'], reverse=False))
+			self.riderBibNames.clear()
+			for bib in sortedRiders:
+				rider = riders[bib]
+				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+				if name:
+					self.riderBibNames.append((bib, name))
+			self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] for bibName in self.riderBibNames]))
+			#self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] + ' (' + str(bibName[0]) + ')' for bibName in self.riderBibNames]))
+			bibs = list(map(str, database.getBibs()))
+			self.riderBibEntry.Clear()
+			self.riderBibEntry.AppendItems( bibs )
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 		self.Layout()
