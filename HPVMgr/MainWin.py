@@ -45,6 +45,7 @@ import Version
 from Riders 			import Riders
 from RiderDetail		import RiderDetail
 from Events				import Events
+from RaceAllocation		import RaceAllocation
 from Settings			import Settings
 import Model
 
@@ -461,6 +462,7 @@ class MainWin( wx.Frame ):
 			[ 'riders',			Riders,				_('Riders') ],
 			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			[ 'events',			Events,				_('Events') ],
+			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
 			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
@@ -2774,7 +2776,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def onPageChanging( self, event ):
 		notebook = event.GetEventObject()
 		if notebook == self.notebook:
-			#self.callPageCommit( event.GetOldSelection() )
+			self.callPageCommit( event.GetOldSelection() )
 			self.callPageRefresh( event.GetSelection() )
 		try:
 			Utils.writeLog( 'page: {}\n'.format(notebook.GetPage(event.GetSelection()).__class__.__name__) )

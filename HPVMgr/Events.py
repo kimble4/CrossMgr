@@ -8,7 +8,6 @@ from collections import defaultdict
 #from Undo import undo
 import datetime
 import Model
-import Flags
 
 class Events( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
@@ -507,6 +506,7 @@ class Events( wx.Panel ):
 		if database is None:
 			return
 		selection = []
+		title = 'None'
 		if self.season is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
@@ -518,14 +518,13 @@ class Events( wx.Panel ):
 				if self.rnd is not None and 'rounds' in evt:
 					rndName = list(evt['rounds'])[self.rnd]
 					selection.append( rndName )
-			self.currentSelection.SetLabel( ', '.join(n for n in selection) )
-		else:
-			self.currentSelection.SetLabel( 'None' )
+			title = ', '.join(n for n in selection)
+		self.currentSelection.SetLabel( title )
 		database.selection = selection
 		
-	
 	def commit( self, event=None ):
 		Utils.writeLog('Events commit: ' + str(event))
+		Utils.getMainWin().raceAllocation.updateSelection( self.season, self.evt, self.rnd )
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	

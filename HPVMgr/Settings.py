@@ -87,6 +87,7 @@ class Settings( wx.Panel ):
 						print('filename is now: ' + str(fn))
 						database.fileName = fn
 						database.setChanged()
+		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 
 	def commit( self, event=None ):
 		Utils.writeLog('Settings commit: ' + str(event))
@@ -126,5 +127,6 @@ class Settings( wx.Panel ):
 			return
 		fn = database.fileName if database.fileName is not None else ''
 		self.dbFileName.SetValue( fn )
+		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.tagTemplate.SetValue( getattr(database, 'tagTemplate', '') )
