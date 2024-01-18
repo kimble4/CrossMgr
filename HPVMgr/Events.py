@@ -46,10 +46,11 @@ class Events( wx.Panel ):
 
 		row += 1		
 		#commit button
-		self.commitButton = wx.Button( self, label='Commit')
-		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
-		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
-		gbs.Add( self.commitButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		self.editRacesButton = wx.Button( self, label='Edit races')
+		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
+		self.editRacesButton.Disable()
+		self.Bind( wx.EVT_BUTTON, self.commit, self.editRacesButton )
+		gbs.Add( self.editRacesButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
 
 		row = 0
 		
@@ -113,6 +114,7 @@ class Events( wx.Panel ):
 			self.season = row
 			self.evt = None
 			self.rnd = None
+			self.editRacesButton.Disable()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
@@ -176,6 +178,7 @@ class Events( wx.Panel ):
 		if row >= 0:
 			self.evt = row
 			self.rnd = None
+			self.editRacesButton.Disable()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
 			self.Layout()
@@ -255,6 +258,7 @@ class Events( wx.Panel ):
 		if row >= 0:
 			self.rnd = row
 			self.refreshCurrentSelection()
+			self.editRacesButton.Enable()
 			self.Layout()
 		
 	def onRoundsRightClick( self, event ):
