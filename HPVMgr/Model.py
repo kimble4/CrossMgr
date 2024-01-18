@@ -84,6 +84,7 @@ class Database:
 		self.riders = {}
 		self.seasons = {}
 		self.tagTemplate = ''
+		self.selection = []
 		#self.riders = {1:{'FirstName':'Testy', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253444}, 2:{'FirstName':'Ian', 'LastName':'Cress', 'Gender':'Men', 'NatCode':'IRL', 'LastEntered':1705153444}, 3:{'FirstName':'Arnold', 'LastName':'Rimmer', 'Gender':'Women', 'NatCode':'GER', 'LastEntered':1705053444}, 4:{'FirstName':'Junior', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253445}}
 		if jsonDataFile:
 			try:
@@ -92,7 +93,7 @@ class Database:
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
-				self.seasons = data[seasons] if 'seasons' in data else {}
+				self.seasons = data['seasons'] if 'seasons' in data else {}
 				#print(self.riders)
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
@@ -142,10 +143,10 @@ class Database:
 		self.setChanged()
 	
 	@memoize
-	def getSeasons( self ):
+	def getSeasonsList( self ):
 		seasons = list(self.seasons.keys())
 		return sorted(seasons)
-	
+		
 	@memoize
 	def getEvents( self, season ):
 		try:
