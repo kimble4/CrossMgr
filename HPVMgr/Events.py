@@ -348,8 +348,6 @@ class Events( wx.Panel ):
 			self.seasonsGrid.SetCellValue(row, 0, str(seasonName))
 			self.seasonsGrid.SetCellValue(row, 1, str(len(database.seasons[seasonName])))
 			self.seasonsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
-		if self.seasonsGrid.GetNumberRows() == 0:
-			self.seasonsGrid.AppendRows(1)
 		self.seasonsGrid.AutoSize()
 	
 	def refreshEventsGrid( self ):
@@ -370,8 +368,6 @@ class Events( wx.Panel ):
 				self.eventsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		else:
 			self.eventsGrid.SetColLabelValue(0, 'Season\'s events')
-		if self.eventsGrid.GetNumberRows() == 0:
-			self.eventsGrid.AppendRows(1)
 		self.eventsGrid.AutoSize()
 			
 	def refreshRoundsGrid( self ):
@@ -395,8 +391,6 @@ class Events( wx.Panel ):
 					self.roundsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
 			else:
 				self.roundsGrid.SetColLabelValue(0, 'Event\'s rounds')
-		if self.roundsGrid.GetNumberRows() == 0:
-			self.roundsGrid.AppendRows(1)
 		self.roundsGrid.AutoSize()
 
 	def clearGrid( self, grid ):
