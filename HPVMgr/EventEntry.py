@@ -112,6 +112,7 @@ class EventEntry( wx.Panel ):
 		self.riderNameEntry = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(300,-1))
 		self.riderNameEntry.SetValue( '' )
 		self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEnterRiderName )
+		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRiderName )
 		hs.Add (self.riderNameEntry, flag=wx.ALIGN_CENTER_VERTICAL )
 		self.addToRaceButton = wx.Button( self, label='Enter rider')
 		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
@@ -150,7 +151,7 @@ class EventEntry( wx.Panel ):
 		self.riderNameEntry.ChangeValue( riderName )
 		
 	def onEnterRiderName( self, event ):
-		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue())
+		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
 		sortedBibNames = sorted([bibName[0] for bibName in self.riderBibNames])
 		for bibName in self.riderBibNames:
 			if name == re.sub("[^a-z ]", "", bibName[1].lower()):
@@ -220,6 +221,7 @@ class EventEntry( wx.Panel ):
 						db.setChanged()
 					else:
 						Utils.writeLog( evtName + ': Not adding duplicate bib: ' + str(bib))
+						Utils.MessageOK( self, '#' + str(bib) + ' is already entered!', 'Duplicate entry' )
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
 			except Exception as e:

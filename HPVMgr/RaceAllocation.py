@@ -157,7 +157,7 @@ class RaceAllocation( wx.Panel ):
 		self.riderNameEntry.ChangeValue( riderName )
 		
 	def onEnterRiderName( self, event ):
-		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue())
+		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
 		sortedBibNames = sorted([bibName[0] for bibName in self.riderBibNames])
 		for bibName in self.riderBibNames:
 			if name == re.sub("[^a-z ]", "", bibName[1].lower()):
