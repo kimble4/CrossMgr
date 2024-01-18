@@ -118,7 +118,12 @@ class EventEntry( wx.Panel ):
 		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
 		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
 		hs.Add( self.addToRaceButton, flag=wx.ALIGN_CENTER_VERTICAL )
-		vs.Add( hs )
+		hs.AddStretchSpacer()
+		self.deleteAllButton = wx.Button( self, label='Delete all')
+		self.deleteAllButton.SetToolTip( wx.ToolTip('Deletes all racers from the event'))
+		self.Bind( wx.EVT_BUTTON, self.deleteAllRiders, self.deleteAllButton )
+		hs.Add( self.deleteAllButton, flag=wx.ALIGN_CENTER_VERTICAL )
+		vs.Add( hs, flag=wx.EXPAND )
 		
 		self.racersGrid = wx.grid.Grid( self )
 		self.racersGrid.CreateGrid(0, len(self.colnames) )
@@ -180,11 +185,10 @@ class EventEntry( wx.Panel ):
 		except Exception as e:
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 			
-	def deleteRider(self, event, bib):
+	def deleteRider( self, event, bib ):
 		database = Model.database
 		if database is None:
 			return
-		riderName = dict(self.riderBibNames)[bib]
 		if self.season is not None and self.evt is not None:
 			try:
 				with Model.LockDatabase() as db:
@@ -198,6 +202,25 @@ class EventEntry( wx.Panel ):
 					self.refreshRaceAllocationTable()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				
+	def deleteAllRiders( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		if Utils.MessageOKCancel( self, 'Are you sure you want to delete all racers from this event?', 'Delete all racers?' ):
+			if self.season is not None and self.evt is not None:
+				try:
+					with Model.LockDatabase() as db:
+						seasonName = db.getSeasonsList()[self.season]
+						season = db.seasons[seasonName]
+						evtName = list(season)[self.evt]
+						evt = season[evtName]
+						evt['racers'].clear()
+						db.setChanged()
+						self.refreshCurrentSelection()
+						self.refreshRaceAllocationTable()
+				except Exception as e:
+					Utils.logException( e, sys.exc_info() )
 		
 	def onAddToRaceButton( self, event ):
 		database = Model.database
