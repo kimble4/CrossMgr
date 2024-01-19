@@ -104,6 +104,7 @@ class RiderDetail( wx.Panel ):
 		self.machinesGrid = wx.grid.Grid( self )
 		self.machinesGrid.CreateGrid(0, 1)
 		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
+		#self.machinesGrid.SetColLabelValue(1, 'Categories')
 		self.machinesGrid.HideRowLabels()
 		self.machinesGrid.SetRowLabelSize( 0 )
 		self.machinesGrid.SetMargins( 0, 0 )
@@ -240,15 +241,15 @@ class RiderDetail( wx.Panel ):
 		row = event.GetRow()
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(self.bib) + ' Machines')
-		add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
-		self.Bind( wx.EVT_MENU, self.addMachine, add )
+		# add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
+		# self.Bind( wx.EVT_MENU, self.addMachine, add )
 		if row >= 1 or (row == 0 and len(self.machinesGrid.GetCellValue(row, 0).strip()) > 0):
 			delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
-		try:
-			self.PopupMenu( menu )
-		except Exception as e:
-			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			try:
+				self.PopupMenu( menu )
+			except Exception as e:
+				Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 		
 	def addMachine( self, event ):
 		database = Model.database
@@ -263,7 +264,7 @@ class RiderDetail( wx.Panel ):
 					rider['Machines'] = []
 					db.setChanged()
 				if 'New Machine' not in rider['Machines']:
-					rider['Machines'].append('New Machine')
+					rider['Machines'].append(('New Machine', []))
 					db.setChanged()
 			self.refreshMachinesGrid()
 			self.Layout()
@@ -322,10 +323,11 @@ class RiderDetail( wx.Panel ):
 			rider = database.getRider(bib)
 			self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
 			if 'Machines' in rider:
-				for machine in rider['Machines']:
+				for machineCategories in rider['Machines']:
 					self.machinesGrid.AppendRows(1)
 					row = self.machinesGrid.GetNumberRows() -1
-					self.machinesGrid.SetCellValue(row, 0, str(machine))
+					self.machinesGrid.SetCellValue(row, 0, str(machineCategories[0]))
+					#self.machinesGrid.SetCellValue(row, 1, ','.join(c for c in machineCategories[1]))
 			if self.machinesGrid.GetNumberRows() == 0:
 				self.machinesGrid.AppendRows(1)
 			self.machinesGrid.SetColSize( 0, self.machinesGrid.GetGridWindow().GetSize()[0] )
@@ -364,15 +366,6 @@ class RiderDetail( wx.Panel ):
 						elif 'Tag' + (str(i) if i > 0 else '') in db.riders[bib]:
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '')]
 							del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
-					machinesList = []
-					for row in range(self.machinesGrid.GetNumberRows()):
-						data = self.machinesGrid.GetCellValue(row, 0).strip()
-						if len(data) > 0:
-							machinesList.append(data)
-					if len(machinesList) > 0:
-						db.riders[bib]['Machines'] = machinesList
-					elif 'Machines' in db.riders[bib]:
-						del db.riders[bib]['Machines']
 					db.setChanged()
 					self.onEdited( warn=False )
 			else:

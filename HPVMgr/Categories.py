@@ -12,6 +12,9 @@ import wx.lib.intctrl as intctrl
 
 
 class Categories( wx.Panel ):
+	
+	maxCategories = 18
+	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
@@ -102,8 +105,8 @@ class Categories( wx.Panel ):
 	def addCategory( self, event ):
 		self.categoriesGrid.AppendRows(1)
 		row = self.categoriesGrid.GetNumberRows() -1
-		if row >= 15:
-			Utils.MessageOK( self, 'CrossMgr does not support more than 10 CustomCategories!', 'Too many categories' )
+		if row >= Categories.maxCategories:
+			Utils.MessageOK( self, 'We do not support more than ' + str(Categories.maxCategories) + ' categories!', 'Too many categories' )
 			self.categoriesGrid.DeleteRows(row, 1)
 			return
 		self.categoriesGrid.SetCellValue(row, 0, 'New Category')

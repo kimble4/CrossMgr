@@ -90,9 +90,11 @@ class riderNameCompleter(wx.TextCompleter):
         return ''
 
 class EventEntry( wx.Panel ):
+	
+	numCategories = 18
+	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
-		
 		self.season = None
 		self.evt = None
 		self.colnames = ['Bib', 'Name', 'Gender', 'Nat', 'Machine', 'Categories']
@@ -118,21 +120,23 @@ class EventEntry( wx.Panel ):
 		gbs.Add( self.riderBibEntry, pos=(0,3), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( wx.StaticText( self, label='Machine:' ), pos=(1,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.riderMachine = wx.ComboBox(self, value='', choices=[], name='Rider Machine', size=(300,-1), style=wx.TE_PROCESS_ENTER)
+		self.riderMachine.Bind( wx.EVT_COMBOBOX, self.onSelectMachine )
+		self.riderMachine.Bind( wx.EVT_TEXT_ENTER, self.onSelectMachine )
 		self.riderMachine.Disable()
 		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
 		
 		gbs.Add( wx.StaticText( self, label='Categories:' ), pos=(2,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		categoriesSizer = wx.GridBagSizer(2, 2)
-		for i in range(15):
+		for i in range(EventEntry.numCategories):
 			setattr(self, 'riderCategory' + str(i), wx.CheckBox(self, label='Category' + str(i) ) )
 			getattr(self, 'riderCategory' + str(i), None).Bind( wx.EVT_CHECKBOX, lambda event, cat = i: self.onCategoryChanged(event, cat), getattr(self, 'riderCategory' + str(i), None) )
 			getattr(self, 'riderCategory' + str(i), None).Hide()
-		for i in range(5):
+		for i in range(6):
 			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i), None), pos=(0,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
-		for i in range(5):
-			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+5), None), pos=(1,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
-		for i in range(5):
-			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+10), None), pos=(2,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		for i in range(6):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+6), None), pos=(1,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		for i in range(6):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+12), None), pos=(2,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		gbs.Add( categoriesSizer,  pos=(2,1), span=(1,3), flag=wx.EXPAND )
 		
 		self.deleteAllButton = wx.Button( self, label='Delete all')
@@ -176,8 +180,9 @@ class EventEntry( wx.Panel ):
 		riderName = dict(self.riderBibNames)[bib]
 		self.riderNameEntry.ChangeValue( riderName )
 		self.updateMachinesChoices(bib)
+		self.updateCategorySelection(bib)
 		self.riderMachine.Enable()
-		
+		self.onSelectMachine()
 		
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
@@ -189,18 +194,51 @@ class EventEntry( wx.Panel ):
 				self.riderBibEntry.SetSelection(iBib)
 				self.riderNameEntry.ChangeValue( bibName[1] )
 				self.updateMachinesChoices(bib)
+				self.updateCategorySelection(bib)
 				self.riderMachine.Enable()
 				return
 		self.riderBibEntry.SetSelection(wx.NOT_FOUND)
 	
 	def onCategoryChanged( self, event, iCat ):
 		count = 0
-		for i in range(15):
+		for i in range(EventEntry.numCategories):
 			if getattr(self, 'riderCategory' + str(i), None).IsChecked():
 				count += 1
 		if count > 10:
 			Utils.MessageOK( self, 'CrossMgr does not support more than 10 CustomCategories per rider!', 'Too many categories' )
 			getattr(self, 'riderCategory' + str(iCat), None).SetValue(False)
+			
+	def onSelectMachine( self, event=None ):
+		machine = self.riderMachine.GetValue()
+		database = Model.database
+		if database is None:
+			return
+		try:
+			iBib = self.riderBibEntry.GetSelection()
+			bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
+			categories = []
+			if 'Machines' not in database.riders[bib]:
+				return
+			for machineCategories in database.riders[bib]['Machines']:
+				if machine == machineCategories[0]:
+					categories = machineCategories[1]
+					break
+			if self.season is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				catCount = 0
+				if 'categories' in season:
+					if season['categories']:
+						iCat = 0
+						for categoryAbbrev in season['categories']:
+							if categoryAbbrev[0] in categories:
+								getattr(self, 'riderCategory' + str(iCat), None).SetValue(True)
+							else:
+								getattr(self, 'riderCategory' + str(iCat), None).SetValue(False)
+							iCat += 1
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+						
 		
 	def onRacerRightClick( self, event ):
 		row = event.GetRow()
@@ -219,7 +257,7 @@ class EventEntry( wx.Panel ):
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
-			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			Utils.logException( e, sys.exc_info() )
 			
 	def deleteRider( self, event, bib ):
 		database = Model.database
@@ -284,7 +322,7 @@ class EventEntry( wx.Panel ):
 							return
 					machine = self.riderMachine.GetValue()
 					categories = []
-					for i in range(10):
+					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
 							categories.append(season['categories'][i][0])
 					evt['racers'].append((bib, machine, categories))
@@ -292,9 +330,20 @@ class EventEntry( wx.Panel ):
 					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
 					if 'Machines' not in db.riders[bib]:
 						db.riders[bib]['Machines'] = []
-					if machine not in db.riders[bib]['Machines']:
-						db.riders[bib]['Machines'].append(machine)
+					found = False
+					for machineCategories in db.riders[bib]['Machines']:
+						if machine == machineCategories[0]:
+							machineCategories[1] = categories
+							found = True
+							break
+					if not found:
+						db.riders[bib]['Machines'].append((machine, categories))
 					db.setChanged()
+					self.riderNameEntry.ChangeValue( '' )
+					self.updateMachinesChoices(None)
+					self.riderBibEntry.SetSelection(wx.NOT_FOUND)
+					self.riderMachine.Disable()
+					self.updateCategorySelection(None)
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
 			except Exception as e:
@@ -374,13 +423,16 @@ class EventEntry( wx.Panel ):
 				season = database.seasons[seasonName]
 				catCount = 0
 				if 'categories' in season:
-					for category in season['categories']:
-						if categoryName.lower() == category[0].lower():
-							return category[1]
+					for categoryAbbrev in season['categories']:
+						if categoryName.lower() == categoryAbbrev[0].lower():
+							return categoryAbbrev[1]
 		return ''
 		
 	def updateMachinesChoices( self, bib ):
 		self.riderMachine.Clear()
+		self.riderMachine.ChangeValue('')
+		if bib is None:
+			return
 		database = Model.database
 		if database is None:
 			return
@@ -388,13 +440,18 @@ class EventEntry( wx.Panel ):
 			machines = []
 			rider = database.getRider(bib)
 			if 'Machines' in rider:
-				for machine in rider['Machines']:
-					machines.append(machine)
+				for machineCategories in rider['Machines']:
+					machines.append(machineCategories[0])
 				self.riderMachine.Clear()
 				self.riderMachine.Set( machines )
 				self.riderMachine.SetValue(machines[-1])
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
+			
+	def updateCategorySelection( self, bib ):
+		for i in range(EventEntry.numCategories):
+			#if bib is None:
+			getattr(self, 'riderCategory' + str(i), None).SetValue(False)
 
 	def clearGrid( self, grid ):
 		rows = grid.GetNumberRows()
@@ -434,8 +491,8 @@ class EventEntry( wx.Panel ):
 				catCount = 0
 				if 'categories' in season:
 					if season['categories']:
-						for category in season['categories']:
-							getattr(self, 'riderCategory' + str(catCount), None).SetLabel(category[0])
+						for categoryAbbrev in season['categories']:
+							getattr(self, 'riderCategory' + str(catCount), None).SetLabel(categoryAbbrev[0])
 							getattr(self, 'riderCategory' + str(catCount), None).Show()
 							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
 							catCount += 1
