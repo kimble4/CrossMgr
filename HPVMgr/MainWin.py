@@ -45,6 +45,7 @@ import Version
 from Riders 			import Riders
 from RiderDetail		import RiderDetail
 from Events				import Events
+from Categories			import Categories
 from EventEntry			import EventEntry
 from RaceAllocation		import RaceAllocation
 from Settings			import Settings
@@ -463,6 +464,7 @@ class MainWin( wx.Frame ):
 			[ 'riders',			Riders,				_('Riders') ],
 			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			[ 'events',			Events,				_('Events') ],
+			[ 'categories',		Categories,			_('Categories') ],
 			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
 			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
 			[ 'settings',		Settings,			_('Settings') ],

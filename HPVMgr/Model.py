@@ -94,22 +94,6 @@ class Database:
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
 				#print(self.riders)
 				self.seasons = data['seasons'] if 'seasons' in data else {}
-				# for season in self.seasons:
-				# 	#print(season)
-				# 	evts = self.getEventsList(season)
-				# 	for evt in evts:
-				# 		#print(evt)
-				# 		rnds = self.getRoundsList(season, evt)
-				# 		#print(rnds)
-				# 		for rnd in rnds:
-				# 			#print(rnd)
-				# 			races = self.getRaces(season, evt, rnd)
-				# 			for race in races:
-				# 				self.seasons[season][evt]['rounds'][rnd] = keys2int(race)
-				# 				print(self.seasons[season][evt]['rounds'][rnd])
-			
-							
-				
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		self.changed = False

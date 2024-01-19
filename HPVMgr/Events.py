@@ -544,13 +544,15 @@ class Events( wx.Panel ):
 		database.selection = selection
 		
 	def commit( self, event=None ):
-		Utils.writeLog('Events commit: ' + str(event))
+		print('Events commit: ' + str(event))
+		Utils.getMainWin().categories.updateSelection( self.season)
 		Utils.getMainWin().eventEntry.updateSelection( self.season, self.evt)
 		Utils.getMainWin().raceAllocation.updateSelection( self.season, self.evt, self.rnd)
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
+		print('Events refresh')
 		self.refreshSeasonsGrid()
 		self.refreshEventsGrid()
 		self.refreshRoundsGrid()
