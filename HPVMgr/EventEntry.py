@@ -194,8 +194,8 @@ class EventEntry( wx.Panel ):
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
-					evtName = list(season)[self.evt]
-					evt = season[evtName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
 					evt['racers'].remove(bib)
 					db.setChanged()
 					self.refreshCurrentSelection()
@@ -213,8 +213,8 @@ class EventEntry( wx.Panel ):
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
-						evtName = list(season)[self.evt]
-						evt = season[evtName]
+						evtName = list(season['events'])[self.evt]
+						evt = season['events'][evtName]
 						evt['racers'].clear()
 						db.setChanged()
 						self.refreshCurrentSelection()
@@ -234,8 +234,8 @@ class EventEntry( wx.Panel ):
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
-					evtName = list(season)[self.evt]
-					evt = season[evtName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
 					if 'racers' not in evt:
 						evt['racers'] = []
 					if bib not in evt['racers']:
@@ -263,8 +263,8 @@ class EventEntry( wx.Panel ):
 			try:
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
-				evtName = list(season)[self.evt]
-				evt = season[evtName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
 				if 'racers' in evt:
 					for bib in evt['racers']:
 						rider = database.getRider(bib)
@@ -303,9 +303,9 @@ class EventEntry( wx.Panel ):
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
 			season = database.seasons[seasonName]
-			evtName = list(season)[self.evt]
+			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
-			evt = season[evtName]
+			evt = season['events'][evtName]
 			if 'racers' in evt:
 				selection.append( str(len(evt['racers'])) + ' racers')
 			title = ', '.join(n for n in selection)

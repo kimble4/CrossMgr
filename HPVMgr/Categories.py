@@ -29,7 +29,13 @@ class Categories( wx.Panel ):
 		self.seasonSelection = wx.Choice( self, choices=[] )
 		self.seasonSelection.Bind( wx.EVT_CHOICE, self.onSelectSeason )
 		hs.Add( self.seasonSelection, flag=wx.ALIGN_CENTER_VERTICAL)
-		vs.Add( hs )
+
+		self.newCategoryButton = wx.Button( self, label='Add New')
+		self.newCategoryButton.SetToolTip( wx.ToolTip('Add a new category'))
+		self.Bind( wx.EVT_BUTTON, self.addCategory, self.newCategoryButton )
+		hs.AddStretchSpacer()
+		hs.Add( self.newCategoryButton )
+		vs.Add( hs, flag=wx.EXPAND)
 		
 		self.categoriesGrid = wx.grid.Grid( self )
 		self.categoriesGrid.CreateGrid(0, len(self.colnames) )
@@ -45,15 +51,24 @@ class Categories( wx.Panel ):
 		self.categoriesGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 		self.categoriesGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onCategoriesRightClick )
 		self.categoriesGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onCategoriesRightClick )
-		# self.categoriesGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectSeason )
+		self.categoriesGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.onCategoriesEdited )
 		vs.Add( self.categoriesGrid, flag=wx.EXPAND )
+		
+		vs.AddStretchSpacer()
+		
+		hs = wx.BoxSizer( wx.HORIZONTAL )
 		
 		#commit button
 		self.commitButton = wx.Button( self, label='Commit')
 		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
-		vs.AddStretchSpacer()
-		vs.Add( self.commitButton, flag=wx.ALIGN_LEFT )
+		hs.Add( self.commitButton, flag=wx.ALIGN_LEFT )
+		
+		#edited warning
+		self.editedWarning = wx.StaticText( self, label='' )
+		hs.Add( self.editedWarning, flag=wx.ALIGN_LEFT )
+		
+		vs.Add( hs, flag=wx.EXPAND)
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
@@ -80,23 +95,26 @@ class Categories( wx.Panel ):
 			self.PopupMenu( menu )
 		except Exception as e:
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			
+	def onCategoriesEdited( self, event ):
+		self.editedWarning.SetLabel('Edited!')
 		
 	def addCategory( self, event ):
-		database = Model.database
-		if database is None:
-			return
-		try:
-			with Model.LockDatabase() as db:
-				seasonName = db.getSeasonsList()[self.season]
-				season = db.seasons[seasonName]
-				if season['categories'] is None:
-					season['categories'] = []
-				season['categories'].append(('New Category', 'NC'))
-				db.setChanged()
-				wx.CallAfter( self.refresh )
-		except Exception as e:
-			Utils.logException( e, sys.exc_info() )
-	
+		self.categoriesGrid.AppendRows(1)
+		row = self.categoriesGrid.GetNumberRows() -1
+		self.categoriesGrid.SetCellValue(row, 0, 'New Category')
+		self.categoriesGrid.SetCellValue(row, 1, 'NC')
+		self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+		self.categoriesGrid.AutoSize()
+		self.editedWarning.SetLabel('Edited!')
+		self.Layout()
+			
+	def deleteCategory( self, event, row ):
+		self.categoriesGrid.DeleteRows(row, 1)
+		self.categoriesGrid.AutoSize()
+		self.editedWarning.SetLabel('Edited!')
+		self.Layout()
+		
 	def refreshCategoriesList( self ):
 		self.clearGrid( self.categoriesGrid )
 		database = Model.database
@@ -114,6 +132,7 @@ class Categories( wx.Panel ):
 						self.categoriesGrid.SetCellValue(row, 1, category[1])
 						self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		self.categoriesGrid.AutoSize()
+		self.editedWarning.SetLabel('')
 		
 	def clearGrid( self, grid ):
 		rows = grid.GetNumberRows()
@@ -126,27 +145,24 @@ class Categories( wx.Panel ):
 	
 	def commit( self, event=None ):
 		Utils.writeLog('Categories commit: ' + str(event))
-		database = Model.database
-		if database is None:
-			return
-		try:
-			with Model.LockDatabase() as db:
-				seasonName = db.getSeasonsList()[self.season]
-				season = db.seasons[seasonName]
-				if season['categories'] is None:
-					season['categories'] = []
-				season['categories'].clear()
-				for row in range(self.categoriesGrid.GetNumberRows()):
-					season['categories'].append((self.categoriesGrid.GetCellValue(row, 0), (self.categoriesGrid.GetCellValue(row, 1))))
-				db.setChanged()
-				wx.CallAfter( self.refresh )
-		except Exception as e:
-			Utils.logException( e, sys.exc_info() )
-		
-			
-		
 		if event: #called by button
-			wx.CallAfter( self.refresh )
+			database = Model.database
+			if database is None:
+				return
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					if season['categories'] is None:
+						season['categories'] = []
+					season['categories'].clear()
+					for row in range(self.categoriesGrid.GetNumberRows()):
+						season['categories'].append((self.categoriesGrid.GetCellValue(row, 0), (self.categoriesGrid.GetCellValue(row, 1))))
+					db.setChanged()
+					wx.CallAfter( self.refresh )
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
+				wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
 		print('Categories refresh')
