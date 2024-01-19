@@ -192,7 +192,7 @@ class Events( wx.Panel ):
 					newSeason = dlg.GetValue()
 					with Model.LockDatabase() as db:
 						if newSeason not in db.seasons:
-							db.seasons[newSeason] = {}
+							db.seasons[newSeason] = { 'categories':None }
 							db.setChanged()
 							wx.CallAfter( self.refresh )
 						else:
@@ -226,8 +226,8 @@ class Events( wx.Panel ):
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
 				if self.evt is not None:
-					evtName = list(season)[self.evt]
-					evt = season[evtName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
 					self.signonFileName.SetValue(evt['signonFileName'] if 'signonFileName' in evt else '')
 			self.signonFileName.Enable()
 			self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
@@ -252,7 +252,7 @@ class Events( wx.Panel ):
 		if row >= 1 or (row == 0 and len(self.eventsGrid.GetCellValue(row, 0).strip()) > 0):
 			seasonName = database.getSeasonsList()[self.season]
 			season = database.seasons[seasonName]
-			evtName = list(season)[row]
+			evtName = list(season['events'])[row]
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + evtName + ' from list', 'Delete this event...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteEvent(event, row), delete )
 		try:
@@ -273,8 +273,10 @@ class Events( wx.Panel ):
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
-						if newEvent not in season:
-							season[newEvent] = {}
+						if 'events' not in season:
+							season['events'] = {}
+						if newEvent not in season['events']:
+							season['events'][newEvent] = {}
 							db.setChanged()
 							wx.CallAfter( self.refresh )
 						else:
@@ -296,7 +298,7 @@ class Events( wx.Panel ):
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
 					event = self.eventsGrid.GetCellValue(row, 0)
-					del season[event]
+					del season['events'][event]
 					db.setChanged()
 					self.evt = None
 					self.rnd = None
@@ -329,8 +331,8 @@ class Events( wx.Panel ):
 		if row >= 1 or (row == 0 and len(self.eventsGrid.GetCellValue(row, 0).strip()) > 0):
 			seasonName = database.getSeasonsList()[self.season]
 			season = database.seasons[seasonName]
-			evtName = list(season)[self.evt]
-			evt = season[evtName]
+			evtName = list(season['events'])[self.evt]
+			evt = season['events'][evtName]
 			rndName = list(evt)[row]
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + rndName + ' from list', 'Delete this round...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteRound(event, row), delete )
@@ -352,8 +354,8 @@ class Events( wx.Panel ):
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
-						evtName = list(season)[self.evt]
-						evt = season[evtName]
+						evtName = list(season['events'])[self.evt]
+						evt = season['events'][evtName]
 						if 'rounds' not in evt:  # create rounds dict if it does not exist
 							evt['rounds'] = {}
 						#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
@@ -372,8 +374,8 @@ class Events( wx.Panel ):
 			return
 		seasonName = database.getSeasonsList()[self.season]
 		season = database.seasons[seasonName]
-		evtName = list(season)[self.evt]
-		evt = season[evtName]
+		evtName = list(season['events'])[self.evt]
+		evt = season['events'][evtName]
 		rndName = list(evt)[row]
 		if Utils.MessageOKCancel( self, 'Are you sure you want to delete ' + rndName + '?\nThis will also delete ALL associated races!', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
 			Utils.writeLog('Delete event: ' + evtName)
@@ -381,8 +383,8 @@ class Events( wx.Panel ):
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
-					evtName = list(season)[self.evt]
-					evt = season[evtName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
 					rnd = self.roundsGrid.GetCellValue(row, 0)
 					del evt['rounds'][rnd]
 					db.setChanged()
@@ -404,7 +406,7 @@ class Events( wx.Panel ):
 			if self.season is not None and self.evt is not None:
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
-				fileName = 'racers_' + list(season)[self.evt].lower().replace(' ', '_') + '.xlsx'
+				fileName = 'racers_' + list(season['events'])[self.evt].lower().replace(' ', '_') + '.xlsx'
 			else:
 				fileName = ''
 			if not dirName:
@@ -421,8 +423,8 @@ class Events( wx.Panel ):
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
-						evtName = list(season)[self.evt]
-						evt = season[evtName]
+						evtName = list(season['events'])[self.evt]
+						evt = season['events'][evtName]
 						evt['signonFileName'] = fn
 						database.setChanged()
 						wx.CallAfter( self.refresh )
@@ -443,8 +445,8 @@ class Events( wx.Panel ):
 			with Model.LockDatabase() as db:
 				seasonName = db.getSeasonsList()[self.season]
 				season = db.seasons[seasonName]
-				evtName = list(season)[self.evt]
-				evt = season[evtName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['event'][evtName]
 				evt['signonFileName'] = fn
 				database.setChanged()
 		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
@@ -465,7 +467,7 @@ class Events( wx.Panel ):
 			self.seasonsGrid.AppendRows(1)
 			row = self.seasonsGrid.GetNumberRows() -1
 			self.seasonsGrid.SetCellValue(row, 0, str(seasonName))
-			self.seasonsGrid.SetCellValue(row, 1, str(len(database.seasons[seasonName])))
+			self.seasonsGrid.SetCellValue(row, 1, str(len(database.seasons[seasonName]['events'])) if 'events' in database.seasons[seasonName] else '')
 			self.seasonsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		self.seasonsGrid.AutoSize()
 	
@@ -479,12 +481,13 @@ class Events( wx.Panel ):
 			season = database.seasons[seasonName]
 			self.eventsGrid.SetColLabelValue(0, seasonName + '\'s events')
 			#print('season: ' + seasonName + ', events: ' + str(season))
-			for eventName in season:
-				self.eventsGrid.AppendRows(1)
-				row = self.eventsGrid.GetNumberRows() -1
-				self.eventsGrid.SetCellValue(row, 0, eventName )
-				self.eventsGrid.SetCellValue(row, 1, str(len(season[eventName])))
-				self.eventsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+			if 'events' in season:
+				for eventName in season['events']:
+					self.eventsGrid.AppendRows(1)
+					row = self.eventsGrid.GetNumberRows() -1
+					self.eventsGrid.SetCellValue(row, 0, eventName )
+					self.eventsGrid.SetCellValue(row, 1, str(len(season['events'][eventName]['rounds'])) if 'rounds' in season['events'][eventName] else '')
+					self.eventsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		else:
 			self.eventsGrid.SetColLabelValue(0, 'Season\'s events')
 		self.eventsGrid.AutoSize()
@@ -498,16 +501,16 @@ class Events( wx.Panel ):
 			seasonName = database.getSeasonsList()[self.season]
 			season = database.seasons[seasonName]
 			if self.evt is not None:
-				evtName = list(season)[self.evt]
+				evtName = list(season['events'])[self.evt]
 				self.roundsGrid.SetColLabelValue(0, evtName + '\'s rounds')
-				evt = season[evtName]
+				evt = season['events'][evtName]
 				if 'rounds' in evt:
 					#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
 					for rndName in evt['rounds']:
 						self.roundsGrid.AppendRows(1)
 						row = self.roundsGrid.GetNumberRows() -1
 						self.roundsGrid.SetCellValue(row, 0, rndName)
-						self.roundsGrid.SetCellValue(row, 1, str(len(evt['rounds'][rndName])))
+						self.roundsGrid.SetCellValue(row, 1, str(len(evt['rounds'][rndName])) if 'rounds' in evt else '')
 						self.roundsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
 			else:
 				self.roundsGrid.SetColLabelValue(0, 'Event\'s rounds')
@@ -530,9 +533,9 @@ class Events( wx.Panel ):
 			selection.append( seasonName )
 			season = database.seasons[seasonName]
 			if self.evt is not None:
-				evtName = list(season)[self.evt]
+				evtName = list(season['events'])[self.evt]
 				selection.append( evtName )
-				evt = season[evtName]
+				evt = season['events'][evtName]
 				if self.rnd is not None and 'rounds' in evt:
 					rndName = list(evt['rounds'])[self.rnd]
 					selection.append( rndName )
