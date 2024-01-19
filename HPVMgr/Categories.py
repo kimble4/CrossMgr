@@ -102,6 +102,10 @@ class Categories( wx.Panel ):
 	def addCategory( self, event ):
 		self.categoriesGrid.AppendRows(1)
 		row = self.categoriesGrid.GetNumberRows() -1
+		if row >= 15:
+			Utils.MessageOK( self, 'CrossMgr does not support more than 10 CustomCategories!', 'Too many categories' )
+			self.categoriesGrid.DeleteRows(row, 1)
+			return
 		self.categoriesGrid.SetCellValue(row, 0, 'New Category')
 		self.categoriesGrid.SetCellValue(row, 1, 'NC')
 		self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)

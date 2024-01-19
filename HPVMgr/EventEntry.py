@@ -103,27 +103,48 @@ class EventEntry( wx.Panel ):
 		self.currentSelection = wx.StaticText( self, label='No event selected' )
 		vs.Add( self.currentSelection )
 		
-		hs = wx.BoxSizer( wx.HORIZONTAL )
-		hs.Add( wx.StaticText( self, label='Bib:' ), flag=wx.ALIGN_CENTER_VERTICAL )
-		self.riderBibEntry = wx.Choice( self, choices=[] )
-		self.riderBibEntry.Bind( wx.EVT_CHOICE, self.onSelectBib )
-		hs.Add( self.riderBibEntry, flag=wx.ALIGN_CENTER_VERTICAL )
-		hs.Add( wx.StaticText( self, label='Name:' ), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs = wx.GridBagSizer(5, 5)
+		
+		
+		gbs.Add( wx.StaticText( self, label='Name:' ), pos=(0,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.riderNameEntry = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(300,-1))
 		self.riderNameEntry.SetValue( '' )
 		self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEnterRiderName )
 		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRiderName )
-		hs.Add (self.riderNameEntry, flag=wx.ALIGN_CENTER_VERTICAL )
-		self.addToRaceButton = wx.Button( self, label='Enter rider')
-		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
-		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
-		hs.Add( self.addToRaceButton, flag=wx.ALIGN_CENTER_VERTICAL )
-		hs.AddStretchSpacer()
+		gbs.Add( self.riderNameEntry, pos=(0,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs.Add( wx.StaticText( self, label='Bib:' ), pos=(0,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.riderBibEntry = wx.Choice( self, choices=[] )
+		self.riderBibEntry.Bind( wx.EVT_CHOICE, self.onSelectBib )
+		gbs.Add( self.riderBibEntry, pos=(0,3), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs.Add( wx.StaticText( self, label='Machine:' ), pos=(1,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.riderMachine = wx.ComboBox(self, value='', choices=[], name='Rider Machine', size=(300,-1), style=wx.TE_PROCESS_ENTER)
+		self.riderMachine.Disable()
+		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
+		
+		gbs.Add( wx.StaticText( self, label='Categories:' ), pos=(2,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		categoriesSizer = wx.GridBagSizer(2, 2)
+		for i in range(15):
+			setattr(self, 'riderCategory' + str(i), wx.CheckBox(self, label='Category' + str(i) ) )
+			getattr(self, 'riderCategory' + str(i), None).Bind( wx.EVT_CHECKBOX, lambda event, cat = i: self.onCategoryChanged(event, cat), getattr(self, 'riderCategory' + str(i), None) )
+			getattr(self, 'riderCategory' + str(i), None).Hide()
+		for i in range(5):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i), None), pos=(0,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		for i in range(5):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+5), None), pos=(1,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		for i in range(5):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+10), None), pos=(2,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		gbs.Add( categoriesSizer,  pos=(2,1), span=(1,3), flag=wx.EXPAND )
+		
 		self.deleteAllButton = wx.Button( self, label='Delete all')
 		self.deleteAllButton.SetToolTip( wx.ToolTip('Deletes all racers from the event'))
 		self.Bind( wx.EVT_BUTTON, self.deleteAllRiders, self.deleteAllButton )
-		hs.Add( self.deleteAllButton, flag=wx.ALIGN_CENTER_VERTICAL )
-		vs.Add( hs, flag=wx.EXPAND )
+		gbs.Add( self.deleteAllButton, pos=(3,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.addToRaceButton = wx.Button( self, label='Enter rider')
+		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
+		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
+		gbs.Add( self.addToRaceButton, pos=(3,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		
+		vs.Add( gbs, flag=wx.EXPAND )
 		
 		self.racersGrid = wx.grid.Grid( self )
 		self.racersGrid.CreateGrid(0, len(self.colnames) )
@@ -154,6 +175,9 @@ class EventEntry( wx.Panel ):
 		bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
 		riderName = dict(self.riderBibNames)[bib]
 		self.riderNameEntry.ChangeValue( riderName )
+		self.updateMachinesChoices(bib)
+		self.riderMachine.Enable()
+		
 		
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
@@ -161,10 +185,22 @@ class EventEntry( wx.Panel ):
 		for bibName in self.riderBibNames:
 			if name == re.sub("[^a-z ]", "", bibName[1].lower()):
 				iBib = sortedBibNames.index(bibName[0])
+				bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
 				self.riderBibEntry.SetSelection(iBib)
 				self.riderNameEntry.ChangeValue( bibName[1] )
+				self.updateMachinesChoices(bib)
+				self.riderMachine.Enable()
 				return
 		self.riderBibEntry.SetSelection(wx.NOT_FOUND)
+	
+	def onCategoryChanged( self, event, iCat ):
+		count = 0
+		for i in range(15):
+			if getattr(self, 'riderCategory' + str(i), None).IsChecked():
+				count += 1
+		if count > 10:
+			Utils.MessageOK( self, 'CrossMgr does not support more than 10 CustomCategories per rider!', 'Too many categories' )
+			getattr(self, 'riderCategory' + str(iCat), None).SetValue(False)
 		
 	def onRacerRightClick( self, event ):
 		row = event.GetRow()
@@ -196,7 +232,9 @@ class EventEntry( wx.Panel ):
 					season = db.seasons[seasonName]
 					evtName = list(season['events'])[self.evt]
 					evt = season['events'][evtName]
-					evt['racers'].remove(bib)
+					for bibMachineCategories in evt['racers']:
+						if bibMachineCategories[0] == bib:
+							evt['racers'].remove(bibMachineCategories)
 					db.setChanged()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
@@ -238,14 +276,25 @@ class EventEntry( wx.Panel ):
 					evt = season['events'][evtName]
 					if 'racers' not in evt:
 						evt['racers'] = []
-					if bib not in evt['racers']:
-						evt['racers'].append(bib)
-						evt['racers'].sort()
-						db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
-						db.setChanged()
-					else:
-						Utils.writeLog( evtName + ': Not adding duplicate bib: ' + str(bib))
-						Utils.MessageOK( self, '#' + str(bib) + ' is already entered!', 'Duplicate entry' )
+					for bibMachineCategories in evt['racers']:
+						if bibMachineCategories[0] == bib:
+							Utils.writeLog( evtName + ': Not adding duplicate bib: ' + str(bib))
+							Utils.MessageOK( self, '#' + str(bib) + ' is already entered!', 'Duplicate entry' )
+							self.refreshCurrentSelection()
+							return
+					machine = self.riderMachine.GetValue()
+					categories = []
+					for i in range(10):
+						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
+							categories.append(season['categories'][i][0])
+					evt['racers'].append((bib, machine, categories))
+					evt['racers'].sort(key=lambda a: a[0])
+					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
+					if 'Machines' not in db.riders[bib]:
+						db.riders[bib]['Machines'] = []
+					if machine not in db.riders[bib]['Machines']:
+						db.riders[bib]['Machines'].append(machine)
+					db.setChanged()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
 			except Exception as e:
@@ -266,7 +315,8 @@ class EventEntry( wx.Panel ):
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
 				if 'racers' in evt:
-					for bib in evt['racers']:
+					for bibMachineCategories in evt['racers']:
+						bib = bibMachineCategories[0]
 						rider = database.getRider(bib)
 						self.racersGrid.AppendRows(1)
 						row = self.racersGrid.GetNumberRows() -1
@@ -277,14 +327,13 @@ class EventEntry( wx.Panel ):
 						self.racersGrid.SetCellValue(row, col, database.getRiderName(bib))
 						col += 1
 						self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
-						col	+=	1
+						col += 1
 						self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 						self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
-						# if 'machine' in race[bibStr]:
-						# 	if race[bibStr]['machine'] is not None:
-						# 		self.racersGrid.SetCellValue(row, col, race[bibStr]['machine'])
-						# 	else:
-						# 		self.racersGrid.SetCellValue(row, col, '[UNSET]')
+						col += 1
+						self.racersGrid.SetCellValue(row, col, bibMachineCategories[1])
+						col += 1
+						self.racersGrid.SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 						col += 1
 					# fixme categories
 					
@@ -316,6 +365,37 @@ class EventEntry( wx.Panel ):
 		self.season = season
 		self.evt = evt
 		
+	def getAbbreviatedCategory( self, categoryName ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				catCount = 0
+				if 'categories' in season:
+					for category in season['categories']:
+						if categoryName.lower() == category[0].lower():
+							return category[1]
+		return ''
+		
+	def updateMachinesChoices( self, bib ):
+		self.riderMachine.Clear()
+		database = Model.database
+		if database is None:
+			return
+		try:
+			machines = []
+			rider = database.getRider(bib)
+			if 'Machines' in rider:
+				for machine in rider['Machines']:
+					machines.append(machine)
+				self.riderMachine.Clear()
+				self.riderMachine.Set( machines )
+				self.riderMachine.SetValue(machines[-1])
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+
 	def clearGrid( self, grid ):
 		rows = grid.GetNumberRows()
 		#print('clearGrid deleting rows: ' + str(rows))
@@ -347,6 +427,23 @@ class EventEntry( wx.Panel ):
 			self.riderBibEntry.Clear()
 			self.riderBibEntry.AppendItems( list(map(str ,sorted([bibName[0] for bibName in self.riderBibNames]))) )
 			self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] for bibName in self.riderBibNames]))
+			# enable the categories checkboxes
+			if self.season is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				catCount = 0
+				if 'categories' in season:
+					if season['categories']:
+						for category in season['categories']:
+							getattr(self, 'riderCategory' + str(catCount), None).SetLabel(category[0])
+							getattr(self, 'riderCategory' + str(catCount), None).Show()
+							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
+							catCount += 1
+						for i in range(catCount, 10):
+							getattr(self, 'riderCategory' + str(catCount), None).SetLabel('Category' + str(catCount))
+							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
+							getattr(self, 'riderCategory' + str(catCount), None).Hide()
+							catCount += 1
 			
 			#now, the allocation table
 			self.refreshRaceAllocationTable()
