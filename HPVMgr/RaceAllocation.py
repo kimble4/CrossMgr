@@ -41,7 +41,12 @@ class RaceAllocation( wx.Panel ):
 		
 		self.numberOfRaces = intctrl.IntCtrl( self, value=self.nrRaces, name='Number of races', min=0, max=RaceAllocation.maxRaces, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
 		self.numberOfRaces.Bind( wx.EVT_TEXT_ENTER, self.onChangeNumberOfRaces )
-		hs.Add (self.numberOfRaces, flag=wx.ALIGN_CENTER_VERTICAL )
+		hs.Add( self.numberOfRaces, flag=wx.ALIGN_CENTER_VERTICAL )
+		hs.AddStretchSpacer()
+		self.copyAllocationButton = wx.Button( self, label='Copy allocation' )
+		self.copyAllocationButton.SetToolTip( wx.ToolTip('Copy the race allocations from another round'))
+		self.copyAllocationButton.Bind( wx.EVT_BUTTON, self.copyAllocation )
+		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
 		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
 		self.showDetails.Bind( wx.EVT_CHECKBOX, self.refresh )
@@ -178,6 +183,34 @@ class RaceAllocation( wx.Panel ):
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		
+	def copyAllocation( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			evtName = list(season['events'])[self.evt]
+			evt = season['events'][evtName]
+			rndName = list(evt['rounds'])[self.rnd]
+			rnd = evt['rounds'][rndName]
+			with wx.SingleChoiceDialog(self, 'Select round to copy allocations from', 'Copy allocation', list(evt['rounds']) ) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					pass
+					#fixme
+		# if self.season is not None and self.evt is not None and self.rnd is not None:
+		# 	try:
+		# 		with Model.LockDatabase() as db:
+		# 			seasonName = db.getSeasonsList()[self.season]
+		# 			season = db.seasons[seasonName]
+		# 			evtName = list(season['events'])[self.evt]
+		# 			evt = season['events'][evtName]
+		# 			rndName = list(evt['rounds'])[self.rnd]
+		# 			rnd = evt['rounds'][rndName]
+		# 			race = rnd[iRace]
+		
+		except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 	def editRacerMachine( self, event, bib, iRace ):
 		database = Model.database
 		if database is None:
@@ -328,6 +361,7 @@ class RaceAllocation( wx.Panel ):
 							for i in range(curLen - self.nrRaces):
 								rnd.pop()
 						db.setChanged()
+					self.addUnallocatedRiders()
 					self.refreshRaceTables()
 				except Exception as e:
 					Utils.logException( e, sys.exc_info() )
@@ -364,10 +398,11 @@ class RaceAllocation( wx.Panel ):
 					evt = season['events'][evtName]
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					race = rnd[0] # first race
-					for bib in unallocated:
-						race.append([bib, None, None])
-					db.setChanged()
+					if len(rnd) > 0:
+						race = rnd[0] # first race
+						for bib in unallocated:
+							race.append([bib, None, None])
+						db.setChanged()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
