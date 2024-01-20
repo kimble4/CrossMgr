@@ -179,7 +179,7 @@ class Events( wx.Panel ):
 		self.Bind( wx.EVT_MENU, self.addSeason, add )
 		if row >= 1 or (row == 0 and len(self.seasonsGrid.GetCellValue(row, 0).strip()) > 0):
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + database.getSeasonsList()[row] + ' from list', 'Delete this season...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.deleteSeason(event, row), delete )
+			self.Bind( wx.EVT_MENU, lambda event, row: self.deleteSeason(event, row), delete )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
