@@ -84,7 +84,7 @@ class Settings( wx.Panel ):
 									'{}',
 									_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
 								return
-						print('filename is now: ' + str(fn))
+						Utils.writeLog(('filename is now: ' + str(fn))
 						database.fileName = fn
 						database.setChanged()
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
@@ -111,7 +111,7 @@ class Settings( wx.Panel ):
 								'{}',
 								_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
 							return
-					print('filename is now: ' + str(fn))
+					Utils.writeLog('filename is now: ' + str(fn))
 					db.fileName = fn
 			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
 			db.tagTemplate = self.tagTemplate.GetValue()
