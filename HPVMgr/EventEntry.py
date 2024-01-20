@@ -223,7 +223,6 @@ class EventEntry( wx.Panel ):
 			for machineCategories in database.riders[bib]['Machines']:
 				if machine == machineCategories[0]:
 					categories = machineCategories[1]
-					database.setChanged()
 					break
 			if self.season is not None:
 				seasonName = database.getSeasonsList()[self.season]
@@ -300,7 +299,7 @@ class EventEntry( wx.Panel ):
 				except Exception as e:
 					Utils.logException( e, sys.exc_info() )
 		
-	def onAddToRaceButton( self, event ):
+	def onAddToRaceButton( self, event ):  #fixme sanity check at least one categories
 		database = Model.database
 		if database is None:
 			return
@@ -318,8 +317,8 @@ class EventEntry( wx.Panel ):
 						evt['racers'] = []
 					for bibMachineCategories in evt['racers']:
 						if bibMachineCategories[0] == bib:
-							Utils.writeLog( evtName + ': Not adding duplicate bib: ' + str(bib))
-							Utils.MessageOK( self, '#' + str(bib) + ' is already entered!', 'Duplicate entry' )
+							Utils.writeLog( evtName + ': Not adding duplicate rider #: ' + str(bib) + ' ' + database.getRiderName(bib))
+							Utils.MessageOK( self, '#' + str(bib)  + ' ' + database.getRiderName(bib, True) + ' is already entered!', 'Duplicate entry' )
 							self.refreshCurrentSelection()
 							return
 					machine = self.riderMachine.GetValue()
@@ -327,6 +326,8 @@ class EventEntry( wx.Panel ):
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
 							categories.append(season['categories'][i][0])
+					if len(categories) == 0:
+						Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' has no categories!', 'No categories' )
 					evt['racers'].append((bib, machine, categories))
 					evt['racers'].sort(key=lambda a: a[0])
 					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
