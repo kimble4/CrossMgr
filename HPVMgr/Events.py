@@ -155,15 +155,18 @@ class Events( wx.Panel ):
 			self.season = row
 			self.evt = None
 			self.rnd = None
+			self.commit()
 			self.signonFileName.SetValue('')
 			self.signonFileName.Disable()
 			self.signonBrowseButton.Disable()
 			self.editEntryButton.Disable()
 			self.editRacesButton.Disable()
+			self.refreshSeasonsGrid()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
 			self.Layout()
+			
 
 	def onSeasonsRightClick( self, event ):
 		database = Model.database
@@ -194,9 +197,15 @@ class Events( wx.Panel ):
 						if newSeason not in db.seasons:
 							db.seasons[newSeason] = { 'categories':None }
 							db.setChanged()
-							wx.CallAfter( self.refresh )
+							self.season = len(db.seasons) - 1
+							self.commit()
 						else:
 							Utils.MessageOK( self, 'Season ' + newSeason +' already exists!', title = 'Season exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+					self.refreshSeasonsGrid()
+					self.refreshEventsGrid()
+					self.refreshRoundsGrid()
+					self.refreshCurrentSelection()
+					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 						
@@ -210,6 +219,9 @@ class Events( wx.Panel ):
 				del db.seasons[season]
 				db.setChanged()
 			self.refreshSeasonsGrid()
+			self.refreshEventsGrid()
+			self.refreshRoundsGrid()
+			self.refreshCurrentSelection()
 			self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
@@ -234,9 +246,12 @@ class Events( wx.Panel ):
 			self.signonBrowseButton.Enable()
 			self.editEntryButton.Enable()
 			self.editRacesButton.Disable()
+			self.commit()
+			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
 			self.Layout()
+			
 			
 	def onEventsRightClick( self, event ):
 		database = Model.database
@@ -278,9 +293,14 @@ class Events( wx.Panel ):
 						if newEvent not in season['events']:
 							season['events'][newEvent] = {}
 							db.setChanged()
-							wx.CallAfter( self.refresh )
+							self.evt = len(season['events']) - 1
+							wx.CallAfter( self.commit )
 						else:
 							Utils.MessageOK( self, 'Event ' + newEvent +' already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+				self.refreshEventsGrid()
+				self.refreshRoundsGrid()
+				self.refreshCurrentSelection()
+				self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 						
@@ -302,7 +322,11 @@ class Events( wx.Panel ):
 					db.setChanged()
 					self.evt = None
 					self.rnd = None
-					wx.CallAfter( self.refresh )
+					self.commit()
+				self.refreshEventsGrid()
+				self.refreshRoundsGrid()
+				self.refreshCurrentSelection()
+				self.Layout()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 			
@@ -313,8 +337,10 @@ class Events( wx.Panel ):
 		row = event.GetRow()
 		if row >= 0:
 			self.rnd = row
-			self.refreshCurrentSelection()
 			self.editRacesButton.Enable()
+			self.commit()
+			self.refreshRoundsGrid()
+			self.refreshCurrentSelection()
 			self.Layout()
 		
 	def onRoundsRightClick( self, event ):
@@ -362,9 +388,13 @@ class Events( wx.Panel ):
 						if newRound not in evt['rounds']:
 							evt['rounds'][newRound] = []
 							db.setChanged()
-							wx.CallAfter( self.refresh )
+							self.rnd = len(evt['rounds'])-1
+							self.commit()
 						else:
 							Utils.MessageOK( self, 'Round ' + newRound +' already exists!', title = 'Round exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+					self.refreshRoundsGrid()
+					self.refreshCurrentSelection()
+					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 						
@@ -389,7 +419,10 @@ class Events( wx.Panel ):
 					del evt['rounds'][rnd]
 					db.setChanged()
 					self.rnd = None
-					wx.CallAfter( self.refresh )
+					self.commit()
+				self.refreshRoundsGrid()
+				self.refreshCurrentSelection()
+				self.Layout()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 				
@@ -544,17 +577,15 @@ class Events( wx.Panel ):
 		database.selection = selection
 		
 	def commit( self, event=None ):
-		print('Events commit: ' + str(event))
+		Utils.writeLog('Events commit: ' + str(event))
 		with Model.LockDatabase() as db:
 			db.curSeason = self.season
 			db.curEvt = self.evt
 			db.curRnd = self.rnd
 			db.setChanged()
-		if event: #called by button
-			wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
-		print('Events refresh')
+		Utils.writeLog('Events refresh')
 		database = Model.database
 		if database is not None:
 			self.season = database.curSeason

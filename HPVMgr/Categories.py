@@ -194,7 +194,7 @@ class Categories( wx.Panel ):
 				wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
-		print('Categories refresh')
+		Utils.writeLog('Categories refresh')
 		database = Model.database
 		if database is None:
 			return

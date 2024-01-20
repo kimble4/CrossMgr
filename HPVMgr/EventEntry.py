@@ -124,8 +124,8 @@ class EventEntry( wx.Panel ):
 		self.riderMachine.Bind( wx.EVT_TEXT_ENTER, self.onSelectMachine )
 		self.riderMachine.Disable()
 		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
-		
-		gbs.Add( wx.StaticText( self, label='Categories:' ), pos=(2,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.categoriesLabel = wx.StaticText( self, label='Categories:' )
+		gbs.Add( self.categoriesLabel, pos=(2,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		categoriesSizer = wx.GridBagSizer(2, 2)
 		for i in range(EventEntry.numCategories):
 			setattr(self, 'riderCategory' + str(i), wx.CheckBox(self, label='Category' + str(i) ) )
@@ -147,6 +147,7 @@ class EventEntry( wx.Panel ):
 		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
 		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
 		gbs.Add( self.addToRaceButton, pos=(3,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		
 		
 		vs.Add( gbs, flag=wx.EXPAND )
 		
@@ -461,8 +462,7 @@ class EventEntry( wx.Panel ):
 			wx.CallAfter( self.refresh )
 	
 	def refresh( self ):
-		print('EventEntry refresh')
-		self.refreshCurrentSelection()
+		Utils.writeLog('EventEntry refresh')
 		database = Model.database
 		if database is None:
 			return
@@ -470,6 +470,7 @@ class EventEntry( wx.Panel ):
 			#get current selection
 			self.season = database.curSeason
 			self.evt = database.curEvt
+			self.refreshCurrentSelection()
 			#get the riders database, populate the bib selection drop-down and the rider name AutoComplete
 			riders = database.getRiders()
 			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
@@ -495,12 +496,15 @@ class EventEntry( wx.Panel ):
 							getattr(self, 'riderCategory' + str(catCount), None).Show()
 							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
 							catCount += 1
+				if catCount == 0:
+					self.categoriesLabel.SetLabel('Season has\nno Categories!')
+				else:
+					self.categoriesLabel.SetLabel('Categories:')
 				for i in range(catCount, EventEntry.numCategories):
 					getattr(self, 'riderCategory' + str(catCount), None).SetLabel('Category' + str(catCount))
 					getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
 					getattr(self, 'riderCategory' + str(catCount), None).Hide()
 					catCount += 1
-			
 			#now, the allocation table
 			self.refreshRaceAllocationTable()
 		except Exception as e:
