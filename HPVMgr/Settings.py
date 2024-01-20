@@ -84,7 +84,7 @@ class Settings( wx.Panel ):
 									'{}',
 									_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
 								return
-						Utils.writeLog(('filename is now: ' + str(fn))
+						Utils.writeLog('filename is now: ' + str(fn))
 						database.fileName = fn
 						database.setChanged()
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
