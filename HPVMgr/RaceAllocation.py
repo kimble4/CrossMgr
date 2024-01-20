@@ -110,17 +110,180 @@ class RaceAllocation( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
-	def moveRacerToNextRace( self, event, bib, race ):
-		pass
+	def moveRacerToNextRace( self, event, bib, iRace ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					race = rnd[iRace]
+					newRace = rnd[iRace+1]
+					for bibMachineCategories in sorted(race):
+						if bibMachineCategories[0] == bib:
+							race.remove(bibMachineCategories)
+							newRace.append(bibMachineCategories)
+							db.setChanged()
+							break
+				self.refreshRaceTables()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 		
-	def moveRacerToPreviousRace( self, event, bib, race ):
-		pass
+	def moveRacerToPreviousRace( self, event, bib, iRace ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					race = rnd[iRace]
+					newRace = rnd[iRace-1]
+					for bibMachineCategories in sorted(race):
+						if bibMachineCategories[0] == bib:
+							race.remove(bibMachineCategories)
+							newRace.append(bibMachineCategories)
+							db.setChanged()
+							break
+				self.refreshRaceTables()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 		
-	def editRacerMachine( self, event, bib, race ):
-		pass
+	def editRacerMachine( self, event, bib, iRace ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					race = rnd[iRace]
+					rider = database.getRider(bib)
+					machineChoices = ['[Enter New]']
+					if 'Machines' in rider:
+						for machineCategories in rider['Machines']:
+							machineChoices.append(machineCategories[0])
+					with wx.SingleChoiceDialog(self, 'Select machine for #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' in race ' + str(iRace+1), 'Change machine', machineChoices ) as dlg:
+						if dlg.ShowModal() == wx.ID_OK:
+							if dlg.GetSelection() == 0: #enter new
+								with wx.TextEntryDialog(self, 'Enter the name for the new machine:', caption='Change machine', value='', style=wx.OK|wx.CANCEL) as entryDlg:
+									if entryDlg.ShowModal() == wx.ID_OK:
+										newMachine = entryDlg.GetValue()
+										if 'Machines' not in db.riders[bib]:
+											db.riders[bib]['Machines'] = []
+										found = False
+										for machineCategories in db.riders[bib]['Machines']:
+											if newMachine == machineCategories[0]:
+												found = True
+												break
+										if not found:
+											db.riders[bib]['Machines'].append((newMachine, []))
+									else:
+										return
+							else: #selected from list
+								newMachine = dlg.GetStringSelection()
+							for bibMachineCategories in race:
+								if bibMachineCategories[0] == bib:
+									race.remove(bibMachineCategories)
+									race.append([bibMachineCategories[0], newMachine, bibMachineCategories[2]])
+									db.setChanged()
+									print(race)
+									break
+				self.refreshRaceTables()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 		
-	def editRacerCategories( self, event, bib, race ):
-		pass
+	def editRacerCategories( self, event, bib, iRace ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					race = rnd[iRace]
+					rider = database.getRider(bib)
+					evtRacersDict = {}
+					if 'racers' in evt:
+						for bibMachineCategories in evt['racers']:
+							evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
+					editCategories = None
+					for bibMachineCategories in race:
+						if bibMachineCategories[0] == bib:
+							editedCategories = bibMachineCategories[2]
+					catChoices = []
+					catSelectedOrig = []
+					catSelected = []
+					#get the original categories for the event
+					if 'categories' in season:
+						if season['categories']:  
+							iCategory = 0
+							for categoryAbbrev in season['categories']:
+								catChanged = False
+								catChoices.append(categoryAbbrev[0])
+								#check for previous change
+								if editedCategories is not None:
+									if categoryAbbrev[0] in editedCategories:
+										catSelected.append(iCategory)
+										catChanged = True
+								# use the event category
+								if categoryAbbrev[0] in evtRacersDict[bib][1]:
+									catSelectedOrig.append(iCategory)
+									if not catChanged:
+										catSelected.append(iCategory)
+								iCategory += 1
+						with wx.MultiChoiceDialog(self, 'Select categories', 'Change categories', catChoices) as dlg:
+							dlg.SetSelections(catSelected)
+							if dlg.ShowModal() == wx.ID_OK:
+								newSelections = dlg.GetSelections()
+								if newSelections == catSelected:
+									Utils.writeLog('editRacerCategories: No change to #' + str(bib) + '\'s categories')
+									return
+								if newSelections == catSelectedOrig:
+									Utils.writeLog('editRacerCategories: Reverting #' + str(bib) + '\'s categories to event default')
+									for bibMachineCategories in race:
+										if bibMachineCategories[0] == bib:
+											race.remove(bibMachineCategories)
+											race.append([bibMachineCategories[0], bibMachineCategories[1], None])
+											db.setChanged()
+											self.refreshRaceTables()
+									return
+								iChoice = 0
+								selectedCategories = []
+								for category in catChoices:
+									if iChoice in newSelections:
+										selectedCategories.append(category)
+									iChoice += 1
+								for bibMachineCategories in race:
+									if bibMachineCategories[0] == bib:
+										race.remove(bibMachineCategories)
+										race.append([bibMachineCategories[0], bibMachineCategories[1], selectedCategories])
+										db.setChanged()
+										break
+				self.refreshRaceTables()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 		
 	def onChangeNumberOfRaces( self, event ):
 		database = Model.database
@@ -147,6 +310,7 @@ class RaceAllocation( wx.Panel ):
 						elif curLen > self.nrRaces:
 							for i in range(curLen - self.nrRaces):
 								rnd.pop()
+						db.setChanged()
 					self.refreshRaceTables()
 				except Exception as e:
 					Utils.logException( e, sys.exc_info() )
@@ -172,12 +336,14 @@ class RaceAllocation( wx.Panel ):
 			iRace = 0
 			allocatedBibs = []
 			for race in rnd:
+				#print(race)
 				for bibMachineCategories in sorted(race):
 					eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
 					getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
 					row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
 					col = 0
 					getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[0]))
+					getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 					col += 1
 					getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
 					col += 1
@@ -189,7 +355,7 @@ class RaceAllocation( wx.Panel ):
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[1]))
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
 					col += 1
-					if bibMachineCategories[1] is None:
+					if bibMachineCategories[2] is None:
 						# categories have not been changed from event default
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
@@ -208,6 +374,7 @@ class RaceAllocation( wx.Panel ):
 						row = self.raceGrid0.GetNumberRows() -1
 						col = 0
 						self.raceGrid0.SetCellValue(row, col, str(bibMachineCategories[0]))
+						self.raceGrid0.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 						col += 1
 						self.raceGrid0.SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
 						col += 1
@@ -292,6 +459,7 @@ class RaceAllocation( wx.Panel ):
 					for row in range(getattr(self, 'raceGrid' + str(i), None).GetNumberRows()):
 						racers.append((int(getattr(self, 'raceGrid' + str(i), None).GetCellValue(row, 0)), None, None))
 					rnd.append(racers)
+				db.setChanged()
 			self.editedWarning.SetLabel('')
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )

@@ -223,6 +223,7 @@ class EventEntry( wx.Panel ):
 			for machineCategories in database.riders[bib]['Machines']:
 				if machine == machineCategories[0]:
 					categories = machineCategories[1]
+					database.setChanged()
 					break
 			if self.season is not None:
 				seasonName = database.getSeasonsList()[self.season]

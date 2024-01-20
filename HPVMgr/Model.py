@@ -124,11 +124,14 @@ class Database:
 		return self.riders[bib]
 	
 	@memoize
-	def getRiderName( self, bib ):
+	def getRiderName( self, bib, firstNameFirst=False):
 		rider = self.riders[bib]
 		name = ''
 		if rider:
-			name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+			if firstNameFirst:
+				name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
+			else:
+				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 		return name
 	
 	def addRider( self, bib ):
