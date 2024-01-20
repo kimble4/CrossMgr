@@ -2513,7 +2513,7 @@ class MainWin( wx.Frame ):
 
 
 	@logCall
-	def openDatabase( self, fileName ):
+	def openDatabase( self, fileName, silent=False ):
 		busy = wx.BusyCursor()
 		with Model.LockDatabase() as db:
 			try:
@@ -2524,6 +2524,8 @@ class MainWin( wx.Frame ):
 					self.showPage(self.iRidersPage)
 					self.refreshAll()
 			except Exception as e:
+				if silent:
+					return
 				Utils.logException( e, sys.exc_info() )
 				Utils.MessageOK(self, '{} "{}"\n\n{}.'.format(_('Cannot Open File'), fileName, e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
 
@@ -2936,6 +2938,10 @@ def MainLoop():
 		#wx.CallAfter( mainWin.menuSimulate, userConfirm=False, isTimeTrial=args.timetrial)
 	#if args.page:
 		#wx.CallAfter( mainWin.showPageName, args.page )
+		
+	db = mainWin.config.Read('dataFile', '')
+	if db:
+		mainWin.openDatabase(db, silent=True)
 	
 	# Start processing events.
 	app.MainLoop()

@@ -97,7 +97,7 @@ class Settings( wx.Panel ):
 		with Model.LockDatabase() as db:
 			fn = self.dbFileName.GetValue()
 			oldfn = database.fileName
-			if fn != oldfn:
+			if fn is not '' and fn != oldfn:
 				if (
 					not fn or
 					Utils.MessageOKCancel(self.parent, '\n\n'.join( [
@@ -116,6 +116,9 @@ class Settings( wx.Panel ):
 			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
 			db.tagTemplate = self.tagTemplate.GetValue()
 			db.setChanged()
+			config = Utils.getMainWin().config
+			config.Write('dataFile', fn)
+			config.Flush()
 		if event: #called by button
 			self.refresh()
 			self.Layout()
@@ -125,7 +128,7 @@ class Settings( wx.Panel ):
 		if database is None:
 			self.dbFileName.SetValue('')
 			return
-		fn = database.fileName if database.fileName is not None else ''
+		fn = database.fileName
 		self.dbFileName.SetValue( fn )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
