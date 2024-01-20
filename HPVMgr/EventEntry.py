@@ -99,10 +99,13 @@ class EventEntry( wx.Panel ):
 		self.evt = None
 		self.colnames = ['Bib', 'Name', 'Gender', 'Nat', 'Machine', 'Categories']
 		
+		bigFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		
 		self.riderBibNames = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		self.currentSelection = wx.StaticText( self, label='No event selected' )
+		self.currentSelection.SetFont( bigFont )
 		vs.Add( self.currentSelection )
 		
 		gbs = wx.GridBagSizer(5, 5)
@@ -407,9 +410,9 @@ class EventEntry( wx.Panel ):
 			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
 			evt = season['events'][evtName]
-			if 'racers' in evt:
-				selection.append( str(len(evt['racers'])) + ' racers')
 			title = ', '.join(n for n in selection)
+			if 'racers' in evt:
+				title += ': ' + str(len(evt['racers'])) + ' racers'
 		self.currentSelection.SetLabel( title )
 		database.selection = selection
 		

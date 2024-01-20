@@ -27,10 +27,13 @@ class RaceAllocation( wx.Panel ):
 		self.nrRaces = 0
 		self.colnames = ['Bib', 'Name', 'Machine', 'Categories']
 		
+		bigFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		
 		self.riderBibNames = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		self.currentSelection = wx.StaticText( self, label='No round selected' )
+		self.currentSelection.SetFont( bigFont )
 		vs.Add( self.currentSelection )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
@@ -38,13 +41,13 @@ class RaceAllocation( wx.Panel ):
 		
 		self.numberOfRaces = intctrl.IntCtrl( self, value=self.nrRaces, name='Number of races', min=0, max=RaceAllocation.maxRaces, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
 		self.numberOfRaces.Bind( wx.EVT_TEXT_ENTER, self.onChangeNumberOfRaces )
-		hs.Add (self.numberOfRaces , flag=wx.ALIGN_CENTER_VERTICAL )
+		hs.Add (self.numberOfRaces, flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
-		# hs.Add( wx.StaticText( self, label='Select race:' ), flag=wx.ALIGN_CENTER_VERTICAL )
-		# self.raceSelection = wx.Choice( self, choices=[] )
-		# self.raceSelection.Bind( wx.EVT_CHOICE, self.onSelectRace )
-		# hs.Add( self.raceSelection, flag=wx.ALIGN_CENTER_VERTICAL)
-		vs.Add( hs )
+		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
+		self.showDetails.Bind( wx.EVT_CHECKBOX, self.refresh )
+		hs.Add( self.showDetails, flag=wx.ALIGN_CENTER_VERTICAL )
+
+		vs.Add( hs, flag=wx.EXPAND )
 		
 		gbs = wx.GridBagSizer(5, 5)
 		for i in range(RaceAllocation.maxRaces):
@@ -66,24 +69,39 @@ class RaceAllocation( wx.Panel ):
 			# getattr(self, 'raceGrid' + str(i), None).Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectSeason )
 			gbs.Add( getattr(self, 'raceGridTitle' + str(i), None), pos=(0,i), span=(1,1), flag=wx.ALIGN_CENTRE )
 			gbs.Add( getattr(self, 'raceGrid' + str(i), None), pos=(1,i), span=(1,1), flag=wx.EXPAND )
+			self.installGridHint( getattr(self, 'raceGrid' + str(i), None), self.getGridToolTip )
 		vs.Add( gbs,  flag=wx.EXPAND )
-		
-		
-		hs = wx.BoxSizer( wx.HORIZONTAL )
-		#commit button
-		self.commitButton = wx.Button( self, label='Commit')
-		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
-		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
-		hs.Add( self.commitButton, flag=wx.ALIGN_LEFT )
-		#edited warning
-		self.editedWarning = wx.StaticText( self, label='' )
-		hs.Add( self.editedWarning, flag=wx.ALIGN_CENTER_VERTICAL )
-		
-		vs.Add( hs, flag=wx.EXPAND)
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
+		
+	def getGridToolTip( self, grid, row, col ):
+		if not self.showDetails.IsChecked():
+			text = '\"' + grid.GetCellValue(row, 2) + '\": ' + grid.GetCellValue(row, 3)
+			return text
+		else:
+			return None
+		
+	def installGridHint(self, grid, rowcolhintcallback):
+		prev_rowcol = [None,None]
+		def OnMouseMotion(evt):
+			# evt.GetRow() and evt.GetCol() would be nice to have here,
+			# but as this is a mouse event, not a grid event, they are not
+			# available and we need to compute them by hand.
+			x, y = grid.CalcUnscrolledPosition(evt.GetPosition())
+			row = grid.YToRow(y)
+			col = grid.XToCol(x)
+
+			if (row,col) != prev_rowcol and row >= 0 and col >= 0:
+				prev_rowcol[:] = [row,col]
+				hinttext = rowcolhintcallback(grid, row, col)
+				if hinttext is None:
+					hinttext = ''
+				grid.GetGridWindow().SetToolTip( wx.ToolTip(hinttext) )
+			evt.Skip()
+			
+		wx.EVT_MOTION(grid.GetGridWindow(), OnMouseMotion)
 		
 	def onRacerRightClick( self, event, race ):
 		row = event.GetRow()
@@ -96,10 +114,10 @@ class RaceAllocation( wx.Panel ):
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(bib) + ' ' + name)
 		if race < self.nrRaces - 1:
-			right = menu.Append( wx.ID_ANY, 'Move to next', 'Move rider to next race...' )
+			right = menu.Append( wx.ID_ANY, 'Move to next  ->', 'Move rider to next race...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToNextRace(event, bib, race), right )
 		if race > 0:
-			left = menu.Append( wx.ID_ANY, 'Move to previous', 'Move rider to previous race...' )
+			left = menu.Append( wx.ID_ANY, '<-  Move to previous', 'Move rider to previous race...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToPreviousRace(event, bib, race), left )
 		editMachine = menu.Append( wx.ID_ANY, 'Change machine', 'Change machine for this race only...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerMachine(event, bib, race), editMachine )
@@ -398,6 +416,12 @@ class RaceAllocation( wx.Panel ):
 					else:
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+				if self.showDetails.IsChecked():
+					getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+					getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
+				else:
+					getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
+					getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
 				getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 				iRace += 1
 			self.Layout()
@@ -457,31 +481,10 @@ class RaceAllocation( wx.Panel ):
 
 	def commit( self, event=None ):
 		Utils.writeLog('RaceAllocation commit: ' + str(event))
-		# database = Model.database
-		# if database is None:
-		# 	return
-		# try:
-		# 	with Model.LockDatabase() as db:
-		# 		seasonName = db.getSeasonsList()[self.season]
-		# 		season = db.seasons[seasonName]
-		# 		evtName = list(season['events'])[self.evt]
-		# 		evt = season['events'][evtName]
-		# 		rndName = list(evt['rounds'])[self.rnd]
-		# 		rnd = evt['rounds'][rndName]
-		# 		rnd.clear()
-		# 		for i in range(self.nrRaces):
-		# 			racers = []
-		# 			for row in range(getattr(self, 'raceGrid' + str(i), None).GetNumberRows()):
-		# 				racers.append((int(getattr(self, 'raceGrid' + str(i), None).GetCellValue(row, 0)), None, None)) #fixme preserve changes
-		# 			rnd.append(racers)
-		# 		db.setChanged()
-		# 	self.editedWarning.SetLabel('')
-		# except Exception as e:
-		# 	Utils.logException( e, sys.exc_info() )
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	
-	def refresh( self ):
+	def refresh( self, event=None ):
 		Utils.writeLog('RaceAllocation refresh')
 		database = Model.database
 		if database is None:

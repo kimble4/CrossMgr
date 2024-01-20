@@ -17,6 +17,8 @@ class Events( wx.Panel ):
 		self.evt = None
 		self.rnd = None
 		
+		bigFont = wx.Font(15, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		
 		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
 		vs = wx.BoxSizer(wx.VERTICAL)
 		gbs = wx.GridBagSizer(5, 5)
@@ -71,6 +73,7 @@ class Events( wx.Panel ):
 		#current selection
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		self.currentSelection = wx.StaticText( self, label='None' )
+		self.currentSelection.SetFont(bigFont)
 		hs.Add( self.currentSelection, flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		hs.AddStretchSpacer()
