@@ -203,7 +203,6 @@ class RaceAllocation( wx.Panel ):
 									race.remove(bibMachineCategories)
 									race.append([bibMachineCategories[0], newMachine, bibMachineCategories[2]])
 									db.setChanged()
-									print(race)
 									break
 				self.refreshRaceTables()
 			except Exception as e:
@@ -315,6 +314,44 @@ class RaceAllocation( wx.Panel ):
 				except Exception as e:
 					Utils.logException( e, sys.exc_info() )
 			self.refreshNumberOfRaces()
+	
+	def addUnallocatedRiders( self ):
+		for i in range(RaceAllocation.maxRaces):
+			self.clearGrid( getattr(self, 'raceGrid' + str(i), None) )
+		database = Model.database
+		if database is None:
+			return
+		try:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			evtName = list(season['events'])[self.evt]
+			evt = season['events'][evtName]
+			rndName = list(evt['rounds'])[self.rnd]
+			rnd = evt['rounds'][rndName]
+			allocatedBibs = []
+			for race in rnd:  # first pass to see what's allocated
+				for bibMachineCategories in sorted(race):
+					allocatedBibs.append(bibMachineCategories[0])
+			unallocated = []
+			if 'racers' in evt: # build list of unallocated riders
+				for bibMachineCategories in sorted(evt['racers']):
+					if bibMachineCategories[0] not in allocatedBibs:
+						unallocated.append(bibMachineCategories[0])
+			# now add them to the first race
+			if len(unallocated) > 0:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					race = rnd[0] # first race
+					for bib in unallocated:
+						race.append([bib, None, None])
+					db.setChanged()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 			
 	def refreshRaceTables( self ):
 		for i in range(RaceAllocation.maxRaces):
@@ -334,7 +371,6 @@ class RaceAllocation( wx.Panel ):
 				for bibMachineCategories in evt['racers']:
 					evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
 			iRace = 0
-			allocatedBibs = []
 			for race in rnd:
 				#print(race)
 				for bibMachineCategories in sorted(race):
@@ -362,29 +398,8 @@ class RaceAllocation( wx.Panel ):
 					else:
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 						getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-					allocatedBibs.append(bibMachineCategories[0])
 				getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 				iRace += 1
-			# add all unallocated bibs to first race
-			unallocatedRiders = False
-			if 'racers' in evt:
-				for bibMachineCategories in sorted(evt['racers']):
-					if bibMachineCategories[0] not in allocatedBibs:
-						self.raceGrid0.AppendRows(1)
-						row = self.raceGrid0.GetNumberRows() -1
-						col = 0
-						self.raceGrid0.SetCellValue(row, col, str(bibMachineCategories[0]))
-						self.raceGrid0.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-						col += 1
-						self.raceGrid0.SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
-						col += 1
-						self.raceGrid0.SetCellValue(row, col, str(bibMachineCategories[1]))
-						col += 1
-						self.raceGrid0.SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
-						unallocatedRiders = True
-				self.raceGrid0.AutoSize()
-			if unallocatedRiders:
-				self.editedWarning.SetLabel('Edited!')
 			self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
@@ -442,27 +457,27 @@ class RaceAllocation( wx.Panel ):
 
 	def commit( self, event=None ):
 		Utils.writeLog('RaceAllocation commit: ' + str(event))
-		database = Model.database
-		if database is None:
-			return
-		try:
-			with Model.LockDatabase() as db:
-				seasonName = db.getSeasonsList()[self.season]
-				season = db.seasons[seasonName]
-				evtName = list(season['events'])[self.evt]
-				evt = season['events'][evtName]
-				rndName = list(evt['rounds'])[self.rnd]
-				rnd = evt['rounds'][rndName]
-				rnd.clear()
-				for i in range(self.nrRaces):
-					racers = []
-					for row in range(getattr(self, 'raceGrid' + str(i), None).GetNumberRows()):
-						racers.append((int(getattr(self, 'raceGrid' + str(i), None).GetCellValue(row, 0)), None, None))
-					rnd.append(racers)
-				db.setChanged()
-			self.editedWarning.SetLabel('')
-		except Exception as e:
-			Utils.logException( e, sys.exc_info() )
+		# database = Model.database
+		# if database is None:
+		# 	return
+		# try:
+		# 	with Model.LockDatabase() as db:
+		# 		seasonName = db.getSeasonsList()[self.season]
+		# 		season = db.seasons[seasonName]
+		# 		evtName = list(season['events'])[self.evt]
+		# 		evt = season['events'][evtName]
+		# 		rndName = list(evt['rounds'])[self.rnd]
+		# 		rnd = evt['rounds'][rndName]
+		# 		rnd.clear()
+		# 		for i in range(self.nrRaces):
+		# 			racers = []
+		# 			for row in range(getattr(self, 'raceGrid' + str(i), None).GetNumberRows()):
+		# 				racers.append((int(getattr(self, 'raceGrid' + str(i), None).GetCellValue(row, 0)), None, None)) #fixme preserve changes
+		# 			rnd.append(racers)
+		# 		db.setChanged()
+		# 	self.editedWarning.SetLabel('')
+		# except Exception as e:
+		# 	Utils.logException( e, sys.exc_info() )
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	
@@ -488,6 +503,8 @@ class RaceAllocation( wx.Panel ):
 				self.nrRaces = len(rnd)
 				self.numberOfRaces.ChangeValue(self.nrRaces)
 				self.refreshNumberOfRaces()
+				#unallocatedRiders
+				self.addUnallocatedRiders()
 				self.refreshRaceTables()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )

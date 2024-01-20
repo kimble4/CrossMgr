@@ -179,7 +179,7 @@ class Events( wx.Panel ):
 		self.Bind( wx.EVT_MENU, self.addSeason, add )
 		if row >= 1 or (row == 0 and len(self.seasonsGrid.GetCellValue(row, 0).strip()) > 0):
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + database.getSeasonsList()[row] + ' from list', 'Delete this season...' )
-			self.Bind( wx.EVT_MENU, lambda event, row: self.deleteSeason(event, row), delete )
+			self.Bind( wx.EVT_MENU, lambda event, r=row: self.deleteSeason(event, r), delete )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -218,6 +218,7 @@ class Events( wx.Panel ):
 				season = self.seasonsGrid.GetCellValue(row, 0)
 				del db.seasons[season]
 				db.setChanged()
+			self.season = None
 			self.refreshSeasonsGrid()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -294,6 +295,7 @@ class Events( wx.Panel ):
 							season['events'][newEvent] = {}
 							db.setChanged()
 							self.evt = len(season['events']) - 1
+							self.editEntryButton.Enable()
 							wx.CallAfter( self.commit )
 						else:
 							Utils.MessageOK( self, 'Event ' + newEvent +' already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
