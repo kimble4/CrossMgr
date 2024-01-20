@@ -364,7 +364,7 @@ class Events( wx.Panel ):
 			season = database.seasons[seasonName]
 			evtName = list(season['events'])[self.evt]
 			evt = season['events'][evtName]
-			rndName = list(evt)[row]
+			rndName = list(evt['rounds'])[row]
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + rndName + ' from list', 'Delete this round...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteRound(event, row), delete )
 		try:
