@@ -81,6 +81,9 @@ class Database:
 	def __init__( self, fileName=None, jsonDataFile=None):
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
+		self.curSeason = None
+		self.curEvt = None
+		self.curRnd = None
 		self.riders = {}
 		self.seasons = {}
 		self.tagTemplate = ''
@@ -94,6 +97,9 @@ class Database:
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
 				#print(self.riders)
 				self.seasons = data['seasons'] if 'seasons' in data else {}
+				self.curSeason = data['currentSeason'] if 'currentSeason' in data else None
+				self.curEvt = data['currentEvent'] if 'currentEvent' in data else None
+				self.curRnd = data['currentRound'] if 'currentRound' in data else None
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		self.changed = False
@@ -182,6 +188,9 @@ class Database:
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['tagTemplate'] = self.tagTemplate
+		db['currentSeason'] = self.curSeason
+		db['currentEvent'] = self.curEvt
+		db['currentRound'] = self.curRnd
 		db['riders'] = dict(sorted(self.riders.items()))
 		db['seasons'] = dict(sorted(self.seasons.items()))
 		return json.dumps(db, indent=2)

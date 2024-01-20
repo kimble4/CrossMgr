@@ -32,11 +32,14 @@ class Categories( wx.Panel ):
 		self.seasonSelection = wx.Choice( self, choices=[] )
 		self.seasonSelection.Bind( wx.EVT_CHOICE, self.onSelectSeason )
 		hs.Add( self.seasonSelection, flag=wx.ALIGN_CENTER_VERTICAL)
-
+		hs.AddStretchSpacer()
+		self.copyCategoriesButton = wx.Button( self, label='Copy categories')
+		self.copyCategoriesButton.SetToolTip( wx.ToolTip('Copy the categories list from another season'))
+		self.Bind( wx.EVT_BUTTON, self.copyCategories, self.copyCategoriesButton )
+		hs.Add( self.copyCategoriesButton )
 		self.newCategoryButton = wx.Button( self, label='Add New')
 		self.newCategoryButton.SetToolTip( wx.ToolTip('Add a new category'))
 		self.Bind( wx.EVT_BUTTON, self.addCategory, self.newCategoryButton )
-		hs.AddStretchSpacer()
 		hs.Add( self.newCategoryButton )
 		vs.Add( hs, flag=wx.EXPAND)
 		
@@ -97,10 +100,32 @@ class Categories( wx.Panel ):
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
-			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+			Utils.logException( e, sys.exc_info() )
 			
-	def onCategoriesEdited( self, event ):
+	def onCategoriesEdited( self, event=None ):
 		self.editedWarning.SetLabel('Edited!')
+		
+	def copyCategories( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			with wx.SingleChoiceDialog( self, 'Select the season to copy categories from:', 'Copy categories', database.getSeasonsList()) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					source = dlg.GetStringSelection()
+					season = database.seasons[source]
+					if 'categories' in season:
+						if season['categories']:
+							for category in season['categories']:
+								self.categoriesGrid.AppendRows(1)
+								row = self.categoriesGrid.GetNumberRows() -1
+								self.categoriesGrid.SetCellValue(row, 0, category[0])
+								self.categoriesGrid.SetCellValue(row, 1, category[1])
+								self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+					self.categoriesGrid.AutoSize()
+					self.onCategoriesEdited()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 		
 	def addCategory( self, event ):
 		self.categoriesGrid.AppendRows(1)
@@ -146,9 +171,6 @@ class Categories( wx.Panel ):
 		#print('clearGrid deleting rows: ' + str(rows))
 		if rows:
 			grid.DeleteRows( 0, rows )
-			
-	def updateSelection( self, season ):
-		self.season = season
 	
 	def commit( self, event=None ):
 		Utils.writeLog('Categories commit: ' + str(event))
@@ -176,6 +198,7 @@ class Categories( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
+		self.season = database.curSeason
 		self.seasonSelection.Clear()
 		self.seasonSelection.AppendItems( database.getSeasonsList() )
 		self.seasonSelection.SetSelection(self.season if self.season is not None else wx.NOT_FOUND)

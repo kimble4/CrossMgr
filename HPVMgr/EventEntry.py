@@ -410,10 +410,6 @@ class EventEntry( wx.Panel ):
 		self.currentSelection.SetLabel( title )
 		database.selection = selection
 		
-	def updateSelection( self, season, evt ):
-		self.season = season
-		self.evt = evt
-		
 	def getAbbreviatedCategory( self, categoryName ):
 		database = Model.database
 		if database is None:
@@ -471,6 +467,9 @@ class EventEntry( wx.Panel ):
 		if database is None:
 			return
 		try:
+			#get current selection
+			self.season = database.curSeason
+			self.evt = database.curEvt
 			#get the riders database, populate the bib selection drop-down and the rider name AutoComplete
 			riders = database.getRiders()
 			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
@@ -496,11 +495,11 @@ class EventEntry( wx.Panel ):
 							getattr(self, 'riderCategory' + str(catCount), None).Show()
 							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
 							catCount += 1
-						for i in range(catCount, 10):
-							getattr(self, 'riderCategory' + str(catCount), None).SetLabel('Category' + str(catCount))
-							getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
-							getattr(self, 'riderCategory' + str(catCount), None).Hide()
-							catCount += 1
+				for i in range(catCount, EventEntry.numCategories):
+					getattr(self, 'riderCategory' + str(catCount), None).SetLabel('Category' + str(catCount))
+					getattr(self, 'riderCategory' + str(catCount), None).SetValue(False)
+					getattr(self, 'riderCategory' + str(catCount), None).Hide()
+					catCount += 1
 			
 			#now, the allocation table
 			self.refreshRaceAllocationTable()
