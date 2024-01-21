@@ -6,6 +6,7 @@ import Utils
 import wx
 import sys
 import functools
+from FitSheetWrapper import FitSheetWrapper, FitSheetWrapperXLSX
 
 lock = threading.RLock()
 #----------------------------------------------------------------------
@@ -187,6 +188,66 @@ class Database:
 			return races
 		except KeyError:
 			return []
+			
+	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet ):
+		print('getRoundAsExcelSheetXLSX')
+		''' Write a round to an xlwt excel sheet. '''
+		titleStyle				= formats['titleStyle']
+		headerStyleAlignLeft	= formats['headerStyleAlignLeft']
+		headerStyleAlignRight	= formats['headerStyleAlignRight']
+		styleAlignLeft			= formats['styleAlignLeft']
+		styleAlignRight			= formats['styleAlignRight']
+		
+		styleTime				= formats['styleTime']
+		styleMMSS				= formats['styleMMSS']
+		styleSS					= formats['styleSS']
+		
+		styleTimeLP				= formats['styleTimeLP']
+		styleMMSSLP				= formats['styleMMSSLP']
+		styleSSLP				= formats['styleSSLP']
+		
+		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'Machine', 'Team',
+					'Tag', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6', 'Tag7', 'Tag8', 'Tag9',
+					'EventCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
+					 'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
+					  'CustomCategory8', 'CustomCategory9' ]
+		leftJustifyCols = ['FirstName', 'LastName', 'Gender', 'NatCode', 'Machine', 'Team',
+						'EventCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
+						'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
+						'CustomCategory8', 'CustomCategory9' ]
+		timeCols = ['StartTime']
+				
+		rowTop = 0
+		
+		sheetFit = FitSheetWrapperXLSX( sheet )
+		
+		# Write the colnames and data.
+		rowMax = 0
+		for col, c in enumerate(colnames):
+			headerStyle = headerStyleAlignLeft if c in leftJustifyCols else headerStyleAlignRight
+			style = styleTimeLP if c in timeCols else styleAlignLeft if c in leftJustifyCols else styleAlignRight
+			sheetFit.write( rowTop, col, c, headerStyle, bold=True )
+			
+			
+# 			for row, v in enumerate(self.data[col]):
+# 				if isSpeed and v:
+# 					v = ('{}'.format(v).split() or [''])[0]
+# 					if v == '"':
+# 						v += '    '
+# 				elif col in self.timeCols:
+# 					if v:
+# 						try:
+# 							v = Utils.StrToSeconds(v) / (24.0*60.0*60.0)	# Convert seconds to fraction of a day for Excel.
+# 						except Exception:
+# 							pass
+# 				
+# 				rowCur = rowTop + 1 + row
+# 				if rowCur > rowMax:
+# 					rowMax = rowCur
+# 				sheetFit.write( rowCur, col, v, style )
+# 			
+# 			if isSpeed:
+# 				self.colnames[col] = _('Speed')
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed

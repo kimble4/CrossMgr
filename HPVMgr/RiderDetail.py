@@ -47,7 +47,7 @@ class RiderDetail( wx.Panel ):
 		hs = wx.BoxSizer(wx.HORIZONTAL)
 		self.riderDOB = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_SHOWCENTURY|wx.adv.DP_ALLOWNONE, name="Date of Birth")
 		self.riderDOB.SetNullText('Unset')
-		self.Bind( wx.adv.EVT_DATE_CHANGED, self.onEdited, self.riderDOB )
+		self.Bind( wx.adv.EVT_DATE_CHANGED, self.onDOBChanged, self.riderDOB )
 		hs.Add( self.riderDOB, flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.riderAge = wx.StaticText( self, label = '' )
 		hs.Add( self.riderAge, flag=wx.ALIGN_CENTRE_VERTICAL )
@@ -166,7 +166,7 @@ class RiderDetail( wx.Panel ):
 				self.riderDOB.SetValue(wx.DateTime.FromTimeT(rider['DOB']) )
 			else:
 				self.riderDOB.SetValue( wx.DateTime.Now() )
-			self.riderAge.SetLabel(('Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
+			self.riderAge.SetLabel((' Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
 			if 'NatCode' in rider:
 				self.riderNat.ChangeValue(rider['NatCode'])
 				image = Flags.GetFlagImage( rider['NatCode'])
@@ -200,6 +200,14 @@ class RiderDetail( wx.Panel ):
 		except ValueError:  #invalid int
 			self.clearRiderData()
 		self.Layout()
+		
+	def onDOBChanged( self, event ):
+		dob = self.riderDOB.GetValue()
+		age = ''
+		if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
+			age = ' Age=' + str(int((wx.DateTime.Now() - dob).GetDays()/365))
+		self.riderAge.SetLabel( age )
+		self.onEdited()
 			
 	def onNatCodeChanged( self, event ):
 		database = Model.database
@@ -376,7 +384,6 @@ class RiderDetail( wx.Panel ):
 					dob = self.riderDOB.GetValue()
 					if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
 						db.riders[bib]['DOB'] = dob.GetTicks()
-						print(db.riders[bib]['DOB'])
 					db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
 					for i in range(10):
 						data = getattr(self, 'riderTag' + str(i), None).GetValue()

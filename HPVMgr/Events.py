@@ -8,8 +8,87 @@ from collections import defaultdict
 #from Undo import undo
 import datetime
 import Model
+import xlsxwriter
+from AddExcelInfo import AddExcelInfo 
 
 class Events( wx.Panel ):
+	
+	def getExcelFormatsXLSX( workbook ):
+		titleStyle = workbook.add_format({
+			'bold': True,
+			'font_size': 17,
+		})
+
+		headerStyleAlignLeft = workbook.add_format({
+			'bottom':	2,
+			'bold':		True,
+			'text_wrap':True,
+		})
+		
+		headerStyleAlignRight = workbook.add_format({
+			'bottom':	2,
+			'bold':		True,
+			'text_wrap':True,
+			'align':	'right',
+		})
+		
+		styleAlignLeft = workbook.add_format()
+		
+		styleAlignRight = workbook.add_format({
+			'align':	'right',
+		})
+		
+		#---------------------------------------------------------------
+		styleTime = workbook.add_format({
+			'align':	'right',
+			'num_format': 'hh:mm:ss.000',
+		})
+		
+		styleMMSS = workbook.add_format({
+			'align':	'right',
+			'num_format': 'mm:ss.000',
+		})
+		
+		styleSS = workbook.add_format({
+			'align':	'right',
+			'num_format': 'ss.000',
+		})
+		
+		#---------------------------------------------------------------
+		# Low-precision time formats
+		#
+		styleTimeLP = workbook.add_format({
+			'align':	'right',
+			'num_format': 'hh:mm:ss',
+		})
+		
+		styleMMSSLP = workbook.add_format({
+			'align':	'right',
+			'num_format': 'mm:ss',
+		})
+		
+		styleSSLP = workbook.add_format({
+			'align':	'right',
+			'num_format': 'ss',
+		})
+		
+		return {
+			'titleStyle':				titleStyle,
+			'headerStyleAlignLeft':		headerStyleAlignLeft,
+			'headerStyleAlignRight':	headerStyleAlignRight,
+			'styleAlignLeft':			styleAlignLeft,
+			'styleAlignRight':			styleAlignRight,
+			'styleTime':				styleTime,
+			'styleHHMMSS':				styleTime,
+			'styleMMSS':				styleMMSS,
+			'styleSS':					styleSS,
+
+			'styleTimeLP':				styleTimeLP,
+			'styleHHMMSSLP':			styleTimeLP,
+			'styleMMSSLP':				styleMMSSLP,
+			'styleSSLP':				styleSSLP,
+		}
+	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
@@ -112,7 +191,7 @@ class Events( wx.Panel ):
 		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
 		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
 		self.writeSignonButton.Disable()
-		#self.Bind( wx.EVT_BUTTON, self.writeSignonSheet, self.writeSignonButton )
+		self.writeSignonButton.Bind( wx.EVT_BUTTON, self.writeSignonSheet )
 		gbs.Add( self.writeSignonButton, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
 		
 		row = 0
@@ -149,6 +228,46 @@ class Events( wx.Panel ):
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
 		
+	def writeSignonSheet( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			if self.evt is not None:
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				if 'signonFileName' in evt:
+					xlFName = evt['signonFileName']
+					if 'rounds' in evt:
+						
+						wb = xlsxwriter.Workbook( xlFName )
+						formats = Events.getExcelFormatsXLSX( wb )
+						ues = Utils.UniqueExcelSheetName()
+						
+						for rndName in evt['rounds']:
+							sheetCur = wb.add_worksheet( ues.getSheetName(rndName) )
+							database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
+							
+						AddExcelInfo( wb )
+						try:
+							wb.close()
+							# if self.launchExcelAfterPublishingResults:
+							# 	Utils.LaunchApplication( xlFName )
+							Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
+						except IOError as e:
+							logException( e, sys.exc_info() )
+							Utils.MessageOK(self,
+										'{} "{}"\n\n{}\n{}'.format(
+											_('Cannot write'), xlFName,
+											_('Check if this spreadsheet is already open.'),
+											_('If so, close it, and try again.')
+										),
+										_('Excel File Error'), iconMask=wx.ICON_ERROR )
+						except Exception as e:
+							Utils.logException( e, sys.exc_info() )
+		
 	def selectSeason( self, event ):
 		database = Model.database
 		if database is None:
@@ -159,9 +278,7 @@ class Events( wx.Panel ):
 			self.evt = None
 			self.rnd = None
 			self.commit()
-			self.signonFileName.SetValue('')
-			self.signonFileName.Disable()
-			self.signonBrowseButton.Disable()
+			self.updateSignonSheetName()
 			self.editEntryButton.Disable()
 			self.editRacesButton.Disable()
 			self.refreshSeasonsGrid()
@@ -238,16 +355,7 @@ class Events( wx.Panel ):
 		if row >= 0:
 			self.evt = row
 			self.rnd = None
-			if self.season is not None:
-				seasonName = database.getSeasonsList()[self.season]
-				season = database.seasons[seasonName]
-				if self.evt is not None:
-					evtName = list(season['events'])[self.evt]
-					evt = season['events'][evtName]
-					self.signonFileName.SetValue(evt['signonFileName'] if 'signonFileName' in evt else '')
-			self.signonFileName.Enable()
-			self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
-			self.signonBrowseButton.Enable()
+			self.updateSignonSheetName()
 			self.editEntryButton.Enable()
 			self.editRacesButton.Disable()
 			self.commit()
@@ -256,6 +364,30 @@ class Events( wx.Panel ):
 			self.refreshCurrentSelection()
 			self.Layout()
 			
+	def updateSignonSheetName( self ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			if self.evt is not None:
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				if 'signonFileName' in evt:
+					self.signonFileName.SetValue(evt['signonFileName'])
+					if evt['signonFileName']:
+						self.writeSignonButton.Enable()
+				else:
+					self.signonFileName.SetValue('')
+					self.writeSignonButton.Disable()
+				self.signonFileName.Enable()
+				self.signonBrowseButton.Enable()
+				self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
+				return
+		self.writeSignonButton.Disable()
+		self.signonFileName.Disable()
+		self.signonBrowseButton.Disable()
 			
 	def onEventsRightClick( self, event ):
 		database = Model.database
@@ -600,4 +732,5 @@ class Events( wx.Panel ):
 		self.refreshEventsGrid()
 		self.refreshRoundsGrid()
 		self.refreshCurrentSelection()
+		self.updateSignonSheetName()
 		self.Layout()
