@@ -136,6 +136,16 @@ class Database:
 		return name
 		
 	@memoize
+	def getRiderFirstName( self, bib):
+		rider = self.riders[bib]
+		return rider['FirstName']
+		
+	@memoize
+	def getRiderLastName( self, bib):
+		rider = self.riders[bib]
+		return rider['LastName']
+		
+	@memoize
 	def getRiderAge( self, bib ):
 		rider = self.riders[bib]
 		if 'DOB' in rider:
@@ -190,7 +200,6 @@ class Database:
 			return []
 			
 	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet ):
-		print('getRoundAsExcelSheetXLSX')
 		''' Write a round to an xlwt excel sheet. '''
 		titleStyle				= formats['titleStyle']
 		headerStyleAlignLeft	= formats['headerStyleAlignLeft']
@@ -217,37 +226,89 @@ class Database:
 						'CustomCategory8', 'CustomCategory9' ]
 		timeCols = ['StartTime']
 				
-		rowTop = 0
+		row = 0
 		
 		sheetFit = FitSheetWrapperXLSX( sheet )
 		
-		# Write the colnames and data.
-		rowMax = 0
+		
+		seasonName = self.getSeasonsList()[self.curSeason]
+		season = self.seasons[seasonName]
+		evtName = list(season['events'])[self.curEvt]
+		evt = season['events'][evtName]
+		rnd = evt['rounds'][rndName]
+		evtRacersDict = {}
+		if 'racers' in evt:
+			for bibMachineCategories in evt['racers']:
+				evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
+				
+		
 		for col, c in enumerate(colnames):
+			#write headers
 			headerStyle = headerStyleAlignLeft if c in leftJustifyCols else headerStyleAlignRight
 			style = styleTimeLP if c in timeCols else styleAlignLeft if c in leftJustifyCols else styleAlignRight
-			sheetFit.write( rowTop, col, c, headerStyle, bold=True )
+			sheetFit.write( row, col, c, headerStyle, bold=True )
 			
-			
-# 			for row, v in enumerate(self.data[col]):
-# 				if isSpeed and v:
-# 					v = ('{}'.format(v).split() or [''])[0]
-# 					if v == '"':
-# 						v += '    '
-# 				elif col in self.timeCols:
-# 					if v:
-# 						try:
-# 							v = Utils.StrToSeconds(v) / (24.0*60.0*60.0)	# Convert seconds to fraction of a day for Excel.
-# 						except Exception:
-# 							pass
-# 				
-# 				rowCur = rowTop + 1 + row
-# 				if rowCur > rowMax:
-# 					rowMax = rowCur
-# 				sheetFit.write( rowCur, col, v, style )
-# 			
-# 			if isSpeed:
-# 				self.colnames[col] = _('Speed')
+		#now the data
+		iRace = 0
+		for race in rnd:
+			eventCategory = 'Race' + str(iRace+1)
+			#print(race)
+			for bibMachineCategories in sorted(race):
+				if bibMachineCategories[0] in evtRacersDict:
+					eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
+					rider = self.riders[bibMachineCategories[0]]
+					row += 1
+					col = 0
+					#StartTime
+					col += 1
+					#bib
+					sheetFit.write( row, col, bibMachineCategories[0],styleAlignRight )
+					col += 1
+					#first name
+					sheetFit.write( row, col, rider['FirstName'] if 'FirstName' in rider else '', styleAlignLeft )
+					col += 1
+					#last name
+					sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
+					col += 1
+					#gender
+					sheetFit.write( row, col, Genders[rider['Gender']] if 'Gender' in rider else '', styleAlignLeft )
+					col += 1
+					#age
+					sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
+					col += 1
+					#natcode
+					sheetFit.write( row, col, rider['NatCode'] if 'NatCode' in rider else '', styleAlignLeft )
+					col += 1
+					#machine
+					if bibMachineCategories[1] is None:
+						# machine has not been changed from event default
+						sheetFit.write( row, col, eventsMachineCategories[0], styleAlignLeft )
+					else:
+						sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
+					col += 1
+					#team
+					col += 1
+					#tag
+					sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
+					col += 1
+					#tag1-9
+					for i in range(1, 10):
+						sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+						col += 1
+					#eventcategory
+					sheetFit.write( row, col, eventCategory, styleAlignLeft )
+					col += 1
+					#customcategories
+					if bibMachineCategories[2] is None:
+						# categories have not been changed from event default
+						for i in range(len(eventsMachineCategories[1])):
+							sheetFit.write( row, col, eventsMachineCategories[1][i], styleAlignLeft )
+							col += 1
+					else:
+						for i in range(len(bibMachineCategories[2])):
+							sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
+							col += 1
+			iRace += 1
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed
