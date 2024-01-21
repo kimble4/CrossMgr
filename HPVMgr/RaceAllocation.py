@@ -194,21 +194,24 @@ class RaceAllocation( wx.Panel ):
 			evt = season['events'][evtName]
 			rndName = list(evt['rounds'])[self.rnd]
 			rnd = evt['rounds'][rndName]
-			with wx.SingleChoiceDialog(self, 'Select round to copy allocations from', 'Copy allocation', list(evt['rounds']) ) as dlg:
+			choices = list(evt['rounds'])
+			del choices[self.rnd]  # remove current round from list
+			with wx.SingleChoiceDialog(self, 'Select round to copy allocations from', 'Copy allocation', choices ) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
-					pass
-					#fixme
-		# if self.season is not None and self.evt is not None and self.rnd is not None:
-		# 	try:
-		# 		with Model.LockDatabase() as db:
-		# 			seasonName = db.getSeasonsList()[self.season]
-		# 			season = db.seasons[seasonName]
-		# 			evtName = list(season['events'])[self.evt]
-		# 			evt = season['events'][evtName]
-		# 			rndName = list(evt['rounds'])[self.rnd]
-		# 			rnd = evt['rounds'][rndName]
-		# 			race = rnd[iRace]
-		
+					sourceRound = dlg.GetStringSelection()
+					if self.season is not None and self.evt is not None and self.rnd is not None:
+						with Model.LockDatabase() as db:
+							season = db.seasons[seasonName]
+							evt = season['events'][evtName]
+							rnd = evt['rounds'][rndName]
+							# delete all races from current round
+							rnd.clear()
+							# copy the allocations
+							for sourceRace in evt['rounds'][sourceRound]:
+								rnd.append(sourceRace)
+							db.setChanged()
+						Utils.writeLog( 'copyAllocation: Copied race allocation in event "' + evtName + '" from round "' + sourceRound + '" to round "' + rndName + '"' )
+						wx.CallAfter( self.refresh )
 		except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 	def editRacerMachine( self, event, bib, iRace ):
@@ -390,7 +393,7 @@ class RaceAllocation( wx.Panel ):
 				for bibMachineCategories in sorted(evt['racers']):
 					enteredBibs.append(bibMachineCategories[0])
 					if bibMachineCategories[0] not in allocatedBibs:
-						unallocated.append(bibMachineCategories[0])
+						unallocatedBibs.append(bibMachineCategories[0])
 			missingBibs = [bib for bib in allocatedBibs if bib not in enteredBibs]
 			with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
@@ -405,7 +408,7 @@ class RaceAllocation( wx.Panel ):
 						for race in rnd:
 							for bibMachineCategories in race:
 								if bibMachineCategories[0] in missingBibs:
-									Utils.writeLog( 'addUnallocatedRiders: #' + str(bibMachineCategories[0]) + ' "' + database.getRiderName(bibMachineCategories[0], True) + '" in race ' + str(iRace) + ' but not in round "' + evtName + '"!  Removing rider from race.' )
+									Utils.writeLog( 'addUnallocatedRiders: #' + str(bibMachineCategories[0]) + ' "' + database.getRiderName(bibMachineCategories[0], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
 									race.remove(bibMachineCategories)
 							iRace += 1
 						db.setChanged()
@@ -414,6 +417,7 @@ class RaceAllocation( wx.Panel ):
 						if len(rnd) > 0:
 							race = rnd[0] # first race
 							for bib in unallocatedBibs:
+								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race 1.' )
 								race.append([bib, None, None])
 							db.setChanged()
 		except Exception as e:
@@ -558,7 +562,7 @@ class RaceAllocation( wx.Panel ):
 				self.nrRaces = len(rnd)
 				self.numberOfRaces.ChangeValue(self.nrRaces)
 				self.refreshNumberOfRaces()
-				#unallocatedRiders
+				#process unallocated/missing Riders
 				self.addUnallocatedRiders()
 				self.refreshRaceTables()
 		except Exception as e:
