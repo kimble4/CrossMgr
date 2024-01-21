@@ -43,6 +43,16 @@ class RiderDetail( wx.Panel ):
 		self.Bind( wx.EVT_CHOICE, self.onEdited, self.riderGender )
 		gbs.Add( self.riderGender, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
+		gbs.Add( wx.StaticText( self, label='DOB:'), pos=(row,0), span=(1,1), flag=labelAlign )
+		hs = wx.BoxSizer(wx.HORIZONTAL)
+		self.riderDOB = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_SHOWCENTURY|wx.adv.DP_ALLOWNONE, name="Date of Birth")
+		self.riderDOB.SetNullText('Unset')
+		self.Bind( wx.adv.EVT_DATE_CHANGED, self.onEdited, self.riderDOB )
+		hs.Add( self.riderDOB, flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.riderAge = wx.StaticText( self, label = '' )
+		hs.Add( self.riderAge, flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( hs, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		row += 1
 		gbs.Add( wx.StaticText( self, label='NatCode:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		ncs = wx.BoxSizer(wx.HORIZONTAL)
 		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
@@ -152,6 +162,11 @@ class RiderDetail( wx.Panel ):
 			self.riderFirstName.ChangeValue(rider['FirstName'])
 			self.riderLastName.ChangeValue(rider['LastName'])
 			self.riderGender.SetSelection(rider['Gender'])
+			if 'DOB' in rider:
+				self.riderDOB.SetValue(wx.DateTime.FromTimeT(rider['DOB']) )
+			else:
+				self.riderDOB.SetValue( wx.DateTime.Now() )
+			self.riderAge.SetLabel(('Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
 			if 'NatCode' in rider:
 				self.riderNat.ChangeValue(rider['NatCode'])
 				image = Flags.GetFlagImage( rider['NatCode'])
@@ -358,6 +373,10 @@ class RiderDetail( wx.Panel ):
 					db.riders[bib]['FirstName'] = self.riderFirstName.GetValue()
 					db.riders[bib]['LastName'] = self.riderLastName.GetValue()
 					db.riders[bib]['Gender'] = self.riderGender.GetSelection()
+					dob = self.riderDOB.GetValue()
+					if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
+						db.riders[bib]['DOB'] = dob.GetTicks()
+						print(db.riders[bib]['DOB'])
 					db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
 					for i in range(10):
 						data = getattr(self, 'riderTag' + str(i), None).GetValue()

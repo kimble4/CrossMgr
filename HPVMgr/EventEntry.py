@@ -97,7 +97,7 @@ class EventEntry( wx.Panel ):
 		super().__init__(parent, id)
 		self.season = None
 		self.evt = None
-		self.colnames = ['Bib', 'Name', 'Gender', 'Nat', 'Machine', 'Categories']
+		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Machine', 'Categories']
 		
 		bigFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
 		
@@ -382,6 +382,10 @@ class EventEntry( wx.Panel ):
 						self.racersGrid.SetCellValue(row, col, database.getRiderName(bib))
 						col += 1
 						self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
+						col += 1
+						age = ''
+						self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
+						self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 						col += 1
 						self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 						self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')

@@ -133,6 +133,15 @@ class Database:
 			else:
 				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 		return name
+		
+	@memoize
+	def getRiderAge( self, bib ):
+		rider = self.riders[bib]
+		if 'DOB' in rider:
+			dob = datetime.datetime.fromtimestamp(rider['DOB'])
+			return int((datetime.datetime.now() - dob).days/365)
+		else:
+			return None
 	
 	def addRider( self, bib ):
 		if bib in self.riders:
