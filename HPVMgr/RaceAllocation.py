@@ -347,6 +347,7 @@ class RaceAllocation( wx.Panel ):
 				self.numberOfRaces.SetValue(self.nrRaces)
 				return
 			self.nrRaces = self.numberOfRaces.GetValue()
+			self.showDetails.SetValue(self.nrRaces < 3)
 			if self.season is not None and self.evt is not None and self.rnd is not None:
 				try:
 					with Model.LockDatabase() as db:
@@ -561,6 +562,7 @@ class RaceAllocation( wx.Panel ):
 				rnd = evt['rounds'][rndName]
 				self.nrRaces = len(rnd)
 				self.numberOfRaces.ChangeValue(self.nrRaces)
+				self.showDetails.SetValue(self.nrRaces < 3)
 				self.refreshNumberOfRaces()
 				#process unallocated/missing Riders
 				self.addUnallocatedRiders()
