@@ -49,7 +49,7 @@ class RaceAllocation( wx.Panel ):
 		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
 		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
-		self.showDetails.Bind( wx.EVT_CHECKBOX, self.refresh )
+		self.showDetails.Bind( wx.EVT_CHECKBOX, self.refreshRaceTables )
 		hs.Add( self.showDetails, flag=wx.ALIGN_CENTER_VERTICAL )
 
 		vs.Add( hs, flag=wx.EXPAND )
@@ -424,7 +424,7 @@ class RaceAllocation( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
-	def refreshRaceTables( self ):
+	def refreshRaceTables( self, event=None ):
 		for i in range(RaceAllocation.maxRaces):
 			self.clearGrid( getattr(self, 'raceGrid' + str(i), None) )
 		database = Model.database
