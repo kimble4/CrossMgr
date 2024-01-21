@@ -331,7 +331,7 @@ class EventEntry( wx.Panel ):
 							categories.append(season['categories'][i][0])
 					if len(categories) == 0:
 						Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' has no categories!', 'No categories' )
-					evt['racers'].append((bib, machine, categories))
+					evt['racers'].append([bib, machine, categories])
 					evt['racers'].sort(key=lambda a: a[0])
 					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
 					if 'Machines' not in db.riders[bib]:
