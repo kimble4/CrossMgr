@@ -100,16 +100,6 @@ class RiderDetail( wx.Panel ):
 			gbs.Add( getattr(self, 'btnTagWrite' + str(i), None), pos=(row+i,6), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		row = 10
 		
-		#commit button
-		self.commitButton = wx.Button( self, label='Commit')
-		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
-		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
-		gbs.Add( self.commitButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
-		
-		#edited warning
-		self.editedWarning = wx.StaticText( self, label='' )
-		gbs.Add( self.editedWarning, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
-		
 		#machines list
 		self.machinesGrid = wx.grid.Grid( self )
 		self.machinesGrid.CreateGrid(0, 1)
@@ -128,6 +118,20 @@ class RiderDetail( wx.Panel ):
 		gbs.Add( self.machinesGrid, pos=(row,2), span=(1,5), flag=wx.EXPAND )
 		
 		vs.Add( gbs )
+		vs.AddStretchSpacer()
+		hs = wx.BoxSizer( wx.HORIZONTAL )
+		#commit button
+		self.commitButton = wx.Button( self, label='Commit')
+		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
+		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
+		hs.Add( self.commitButton, flag=wx.ALIGN_CENTRE_VERTICAL )
+		
+		#edited warning
+		self.editedWarning = wx.StaticText( self, label='' )
+		hs.Add( self.editedWarning, flag=wx.ALIGN_CENTRE_VERTICAL )
+		
+		
+		vs.Add (hs)
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)

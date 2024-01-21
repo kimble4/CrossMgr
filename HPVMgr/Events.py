@@ -255,6 +255,7 @@ class Events( wx.Panel ):
 							wb.close()
 							# if self.launchExcelAfterPublishingResults:
 							# 	Utils.LaunchApplication( xlFName )
+							Utils.writeLog( '{}: {}'.format(_('Excel file written to'), xlFName) )
 							Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
 						except IOError as e:
 							logException( e, sys.exc_info() )
