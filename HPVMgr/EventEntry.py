@@ -307,6 +307,8 @@ class EventEntry( wx.Panel ):
 		if database is None:
 			return
 		iBib = self.riderBibEntry.GetSelection()
+		if iBib == wx.NOT_FOUND:
+		 	return
 		bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
 		riderName = dict(self.riderBibNames)[bib]
 		if self.season is not None and self.evt is not None:
@@ -360,13 +362,8 @@ class EventEntry( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		iBib = self.riderBibEntry.GetSelection()
-		if iBib == wx.NOT_FOUND:
-			return
 		if self.season is not None and self.evt is not None:
 			try:
-				bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
-				riderName = dict(self.riderBibNames)[bib]
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
