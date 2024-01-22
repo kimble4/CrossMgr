@@ -169,7 +169,7 @@ class RiderDetail( wx.Panel ):
 			if 'DOB' in rider:
 				self.riderDOB.SetValue(wx.DateTime.FromTimeT(rider['DOB']) )
 			else:
-				self.riderDOB.SetValue( wx.DateTime.Now() )
+				self.riderDOB.SetValue( wx.InvalidDateTime )
 			self.riderAge.SetLabel((' Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
 			if 'NatCode' in rider:
 				self.riderNat.ChangeValue(rider['NatCode'])
