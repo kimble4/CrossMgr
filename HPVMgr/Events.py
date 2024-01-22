@@ -177,7 +177,7 @@ class Events( wx.Panel ):
 		
 		hs.Add( bs, flag=wx.ALIGN_CENTER_VERTICAL)
 	
-		gbs.Add( hs, pos=(row,1), span=(1,2), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
+		gbs.Add( hs, pos=(row,1), span=(1,4), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.EXPAND )
 		
 		row += 1
 		
@@ -217,12 +217,12 @@ class Events( wx.Panel ):
 		self.roundsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectRnd )
 		gbs.Add( self.roundsGrid, pos=(row,2), span=(1,1), flag=wx.EXPAND )
 		
-		row += 3
+		row += 2
 		
 		self.signonBrowseButton = wx.Button( self, label='{}...'.format(_('Browse')) )
 		self.signonBrowseButton.Disable()
 		self.signonBrowseButton.Bind( wx.EVT_BUTTON, self.onBrowseSignon )
-		gbs.Add( self.signonBrowseButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_TOP|wx.ALIGN_RIGHT )
+		gbs.Add( self.signonBrowseButton, pos=(row,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 	
 		
 		vs.Add( gbs )
@@ -389,6 +389,7 @@ class Events( wx.Panel ):
 				self.signonBrowseButton.Enable()
 				self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
 				return
+		self.signonFileName.SetValue('')
 		self.writeSignonButton.Disable()
 		self.signonFileName.Disable()
 		self.signonBrowseButton.Disable()
@@ -448,6 +449,8 @@ class Events( wx.Panel ):
 	def deleteEvent( self, event, row ):
 		database = Model.database
 		if database is None:
+			return
+		if self.season is None:
 			return
 		seasonName = database.getSeasonsList()[self.season]
 		season = database.seasons[seasonName]
@@ -512,7 +515,7 @@ class Events( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		if self.season is None:
+		if self.season is None or self.evt is None:
 			return
 		try:
 			with wx.TextEntryDialog(self, 'Enter the name for the new round:', caption='Add round', value='New Round', style=wx.OK|wx.CANCEL) as dlg:
@@ -542,6 +545,8 @@ class Events( wx.Panel ):
 	def deleteRound( self, event, row ):
 		database = Model.database
 		if database is None:
+			return
+		if self.season is None or self.evt is None:
 			return
 		seasonName = database.getSeasonsList()[self.season]
 		season = database.seasons[seasonName]
