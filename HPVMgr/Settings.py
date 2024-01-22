@@ -129,7 +129,7 @@ class Settings( wx.Panel ):
 			self.dbFileName.SetValue('')
 			return
 		fn = database.fileName
-		self.dbFileName.SetValue( fn )
+		self.dbFileName.SetValue( fn if fn else '' )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.tagTemplate.SetValue( getattr(database, 'tagTemplate', '') )

@@ -208,8 +208,9 @@ class RiderDetail( wx.Panel ):
 	def onDOBChanged( self, event ):
 		dob = self.riderDOB.GetValue()
 		age = ''
-		if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
-			age = ' Age=' + str(int((wx.DateTime.Now() - dob).GetDays()/365))
+		if dob.IsValid():
+			if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
+				age = ' Age=' + str(int((wx.DateTime.Now() - dob).GetDays()/365))
 		self.riderAge.SetLabel( age )
 		self.onEdited()
 			
@@ -385,17 +386,22 @@ class RiderDetail( wx.Panel ):
 					db.riders[bib]['FirstName'] = self.riderFirstName.GetValue()
 					db.riders[bib]['LastName'] = self.riderLastName.GetValue()
 					db.riders[bib]['Gender'] = self.riderGender.GetSelection()
+					if 'DOB' in db.riders[bib]:
+						del db.riders[bib]['DOB']
 					dob = self.riderDOB.GetValue()
-					if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
-						db.riders[bib]['DOB'] = dob.GetTicks()
+					if dob.IsValid():
+						if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
+							db.riders[bib]['DOB'] = dob.GetTicks()
 					db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
 					for i in range(10):
 						data = getattr(self, 'riderTag' + str(i), None).GetValue()
 						if data:
 							db.riders[bib]['Tag' + (str(i) if i > 0 else '')] = data
-						elif 'Tag' + (str(i) if i > 0 else '') in db.riders[bib]:
-							del db.riders[bib]['Tag' + (str(i) if i > 0 else '')]
-							del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
+						else:
+							if 'Tag' + (str(i) if i > 0 else '') in db.riders[bib]:
+								del db.riders[bib]['Tag' + (str(i) if i > 0 else '')]
+							if 'Tag' + (str(i) if i > 0 else '') + 'LastWritten' in db.riders[bib]:
+								del db.riders[bib]['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
 					db.setChanged()
 					self.onEdited( warn=False )
 			else:

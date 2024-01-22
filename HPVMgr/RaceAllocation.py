@@ -105,8 +105,7 @@ class RaceAllocation( wx.Panel ):
 					hinttext = ''
 				grid.GetGridWindow().SetToolTip( wx.ToolTip(hinttext) )
 			evt.Skip()
-			
-		wx.EVT_MOTION(grid.GetGridWindow(), OnMouseMotion)
+		grid.GetGridWindow().Bind( wx.EVT_MOTION, OnMouseMotion)
 		
 	def onRacerRightClick( self, event, race ):
 		row = event.GetRow()
