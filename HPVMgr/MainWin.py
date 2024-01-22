@@ -127,7 +127,6 @@ class MainWin( wx.Frame ):
 		defaultFont.SetFractionalPointSize(self.defaultFontSize)
 		self.SetFont(defaultFont)
 		
-		
 		#Configure the main menu.
 		self.menuBar = wx.MenuBar(wx.MB_DOCKABLE)
 

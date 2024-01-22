@@ -127,7 +127,9 @@ class Settings( wx.Panel ):
 			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
 			fontSize = self.fontSize.GetValue()
-			config.WriteInt('fontSize', fontSize)
+			if fontSize != Utils.getMainWin().defaultFontSize:
+				Utils.MessageOK( self, 'Font change will take when the application is restarted.' )
+			config.WriteInt('fontSize', fontSize)  #try changing mainwin here?
 			config.Flush()
 		if event: #called by button
 			self.refresh()

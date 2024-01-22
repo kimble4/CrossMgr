@@ -51,7 +51,7 @@ class RaceAllocation( wx.Panel ):
 		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
 		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
-		self.showDetails.Bind( wx.EVT_CHECKBOX, self.refreshRaceTables )
+		self.showDetails.Bind( wx.EVT_CHECKBOX, self.onShowDetails )
 		hs.Add( self.showDetails, flag=wx.ALIGN_CENTER_VERTICAL )
 
 		vs.Add( hs, flag=wx.EXPAND )
@@ -108,6 +108,12 @@ class RaceAllocation( wx.Panel ):
 				grid.GetGridWindow().SetToolTip( wx.ToolTip(hinttext) )
 			evt.Skip()
 		grid.GetGridWindow().Bind( wx.EVT_MOTION, OnMouseMotion)
+		
+	def onShowDetails( self, event):
+		config = Utils.getMainWin().config
+		config.WriteBool( 'raceAllocationShowDetails', self.showDetails.GetValue() )
+		config.Flush()
+		self.refreshRaceTables()
 		
 	def onRacerRightClick( self, event, race ):
 		row = event.GetRow()
@@ -348,7 +354,6 @@ class RaceAllocation( wx.Panel ):
 				self.numberOfRaces.SetValue(self.nrRaces)
 				return
 			self.nrRaces = self.numberOfRaces.GetValue()
-			self.showDetails.SetValue(self.nrRaces < 3)
 			if self.season is not None and self.evt is not None and self.rnd is not None:
 				try:
 					with Model.LockDatabase() as db:
@@ -548,6 +553,7 @@ class RaceAllocation( wx.Panel ):
 		if database is None:
 			return
 		try:
+			config = Utils.getMainWin().config
 			#get current selection
 			self.season = database.curSeason
 			self.evt = database.curEvt
@@ -563,7 +569,7 @@ class RaceAllocation( wx.Panel ):
 				rnd = evt['rounds'][rndName]
 				self.nrRaces = len(rnd)
 				self.numberOfRaces.ChangeValue(self.nrRaces)
-				self.showDetails.SetValue(self.nrRaces < 3)
+				self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
 				self.refreshNumberOfRaces()
 				#process unallocated/missing Riders
 				self.addUnallocatedRiders()
