@@ -98,6 +98,7 @@ class Riders( wx.Panel ):
 		self.ridersGrid.DisableDragRowSize()
 		self.ridersGrid.EnableEditing(False)
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRightClick )
+		self.ridersGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onRightClick )
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.onDoubleClick )
 		self.ridersGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.doLabelClick )
 		
@@ -127,29 +128,41 @@ class Riders( wx.Panel ):
 	def onRightClick( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
-		try:
-			bib = int(self.ridersGrid.GetCellValue(row, 0))
-			name = self.ridersGrid.GetCellValue(row, 1)
-		except:
-			return
 		menu = wx.Menu()
-		menu.SetTitle('#' + str(bib) + ' ' + name)
-		ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
-		if not Model.database.isRider(bib-1):
-			adb = menu.Append( wx.ID_ANY, 'Add rider before', 'Add a new rider before...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib-1), adb )
-		if not Model.database.isRider(bib+1):
-			ada = menu.Append( wx.ID_ANY, 'Add rider after', 'Add a new rider after...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib+1), ada )
-		de = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), de )
+		if row == -1: # header row
+			menu.SetTitle('Riders')
+			add = menu.Append( wx.ID_ANY, 'Add new rider', 'Add a new rider...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, None), add )
+		else:
+			try:
+				bib = int(self.ridersGrid.GetCellValue(row, 0))
+				name = self.ridersGrid.GetCellValue(row, 1)
+			except:
+				return
+			menu.SetTitle('#' + str(bib) + ' ' + name)
+			ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
+			if not Model.database.isRider(bib-1):
+				adb = menu.Append( wx.ID_ANY, 'Add new rider before', 'Add a new rider before...' )
+				self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib-1), adb )
+			if not Model.database.isRider(bib+1):
+				ada = menu.Append( wx.ID_ANY, 'Add new rider after', 'Add a new rider after...' )
+				self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib+1), ada )
+			de = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), de )
+			add = menu.Append( wx.ID_ANY, 'Add new rider', 'Add a new rider...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, None), add )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 			
 	def addNewRider( self, event, bib ):
+		if bib is None:
+			with wx.NumberEntryDialog(self, 'Enter number for new rider:', 'Bib#:', 'New rider', 0, 1, 65535) as dlg:
+				if dlg.ShowModal():
+					bib = dlg.GetValue()
+					print(bib)
 		with Model.LockDatabase() as db:
 			db.addRider(int(bib))
 		self.refresh()
