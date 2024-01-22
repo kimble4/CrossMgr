@@ -96,7 +96,10 @@ class Events( wx.Panel ):
 		self.evt = None
 		self.rnd = None
 		
-		bigFont = wx.Font(15, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		
+		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
 		labelAlign = wx.ALIGN_RIGHT | wx.ALIGN_CENTRE_VERTICAL
 		vs = wx.BoxSizer(wx.VERTICAL)

@@ -122,6 +122,11 @@ class MainWin( wx.Frame ):
 		self.fileName = None
 		#self.numSelect = None
 		
+		defaultFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		self.defaultFontSize = self.config.ReadInt('fontSize') if self.config.ReadInt('fontSize') else defaultFont.GetFractionalPointSize()
+		defaultFont.SetFractionalPointSize(self.defaultFontSize)
+		self.SetFont(defaultFont)
+		
 		
 		#Configure the main menu.
 		self.menuBar = wx.MenuBar(wx.MB_DOCKABLE)
@@ -2518,7 +2523,7 @@ class MainWin( wx.Frame ):
 		with Model.LockDatabase() as db:
 			try:
 				with open(fileName, "r") as infile:
-					Utils.writeLog( 'Loading databse from: ' + str(fileName) )
+					Utils.writeLog( 'Loading database from: ' + str(fileName) )
 					Model.database = Model.Database( fileName, jsonDataFile=infile )
 					self.updateRecentFiles()
 					self.showPage(self.iRidersPage)
@@ -2904,6 +2909,10 @@ def MainLoop():
 				#raceLoaded = True
 		except (IndexError, AttributeError, ValueError):
 			pass
+	else:
+		db = mainWin.config.Read('dataFile', '')
+		if db:
+			mainWin.openDatabase(db, silent=True)
 
 	#Check for batchpublish.  If so, do the publish and exit.
 	#if args.batchpublish:
@@ -2939,9 +2948,6 @@ def MainLoop():
 	#if args.page:
 		#wx.CallAfter( mainWin.showPageName, args.page )
 		
-	db = mainWin.config.Read('dataFile', '')
-	if db:
-		mainWin.openDatabase(db, silent=True)
 	
 	# Start processing events.
 	app.MainLoop()

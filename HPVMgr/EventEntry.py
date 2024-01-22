@@ -99,14 +99,16 @@ class EventEntry( wx.Panel ):
 		self.evt = None
 		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Machine', 'Categories']
 		
-		bigFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
 		self.riderBibNames = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		self.currentSelection = wx.StaticText( self, label='No event selected' )
 		self.currentSelection.SetFont( bigFont )
-		vs.Add( self.currentSelection )
+		vs.Add( self.currentSelection, flag=wx.ALIGN_CENTRE )
 		
 		gbs = wx.GridBagSizer(5, 5)
 		

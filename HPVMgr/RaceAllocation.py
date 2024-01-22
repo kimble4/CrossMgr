@@ -27,14 +27,16 @@ class RaceAllocation( wx.Panel ):
 		self.nrRaces = 0
 		self.colnames = ['Bib', 'Name', 'Machine', 'Categories']
 		
-		bigFont = wx.Font(18, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
 		self.riderBibNames = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		self.currentSelection = wx.StaticText( self, label='No round selected' )
 		self.currentSelection.SetFont( bigFont )
-		vs.Add( self.currentSelection )
+		vs.Add( self.currentSelection, flag=wx.ALIGN_CENTRE )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		hs.Add( wx.StaticText( self, label='Number of races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )

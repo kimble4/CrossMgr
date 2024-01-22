@@ -18,6 +18,10 @@ class Categories( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
+		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		#bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
+		
 		self.season = None
 
 		self.colnames = ['Category', 'Abbreviation']
@@ -27,9 +31,11 @@ class Categories( wx.Panel ):
 		vs = wx.BoxSizer(wx.VERTICAL)
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
-		
-		hs.Add( wx.StaticText( self, label='Select season:' ), flag=wx.ALIGN_CENTER_VERTICAL )
+		selectSeasonLabel = wx.StaticText( self, label='Select season:' )
+		selectSeasonLabel.SetFont( bigFont )
+		hs.Add(selectSeasonLabel, flag=wx.ALIGN_CENTER_VERTICAL )
 		self.seasonSelection = wx.Choice( self, choices=[] )
+		self.seasonSelection.SetFont( bigFont )
 		self.seasonSelection.Bind( wx.EVT_CHOICE, self.onSelectSeason )
 		hs.Add( self.seasonSelection, flag=wx.ALIGN_CENTER_VERTICAL)
 		hs.AddStretchSpacer()

@@ -8,6 +8,7 @@ from collections import defaultdict
 #from Undo import undo
 import datetime
 import Model
+import wx.lib.intctrl as intctrl
 
 class Settings( wx.Panel ):
 
@@ -15,6 +16,13 @@ class Settings( wx.Panel ):
 		super().__init__(parent, id)
 		self.parent = parent
 		vs = wx.BoxSizer(wx.VERTICAL)
+		hs = wx.BoxSizer(wx.HORIZONTAL)
+		
+		hs.Add( wx.StaticText( self, label='Default font size:'), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.fontSize = intctrl.IntCtrl( self, value=10, name='Default font size', min=6, max=72, limited=0, allow_none=0 )
+		hs.Add( self.fontSize, flag=wx.ALIGN_CENTER_VERTICAL )
+		vs.Add( hs, flag=wx.EXPAND )
+		
 		hs = wx.BoxSizer(wx.HORIZONTAL)
 		self.dbFileNameLabel = wx.StaticText( self, label=_('Database filename:') )
 		hs.Add( self.dbFileNameLabel, flag=wx.ALIGN_CENTRE_VERTICAL)
@@ -118,6 +126,8 @@ class Settings( wx.Panel ):
 			db.setChanged()
 			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
+			fontSize = self.fontSize.GetValue()
+			config.WriteInt('fontSize', fontSize)
 			config.Flush()
 		if event: #called by button
 			self.refresh()
@@ -128,7 +138,9 @@ class Settings( wx.Panel ):
 		if database is None:
 			self.dbFileName.SetValue('')
 			return
+		config = Utils.getMainWin().config
 		fn = database.fileName
+		self.fontSize.SetValue(config.ReadInt('fontSize') if config.ReadInt('fontSize') else Utils.getMainWin().defaultFontSize)
 		self.dbFileName.SetValue( fn if fn else '' )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
