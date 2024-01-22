@@ -448,7 +448,7 @@ class Events( wx.Panel ):
 			return
 		seasonName = database.getSeasonsList()[self.season]
 		season = database.seasons[seasonName]
-		evtName = list(season)[row]
+		evtName = list(season['events'])[row]
 		if Utils.MessageOKCancel( self, 'Are you sure you want to delete ' + evtName + '?\nThis will also delete ALL associated rounds and races!', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
 			Utils.writeLog('Delete event: ' + evtName)
 			try:
