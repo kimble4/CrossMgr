@@ -347,7 +347,7 @@ class EventEntry( wx.Panel ):
 							found = True
 							break
 					if not found:
-						db.riders[bib]['Machines'].append((machine, categories))
+						db.riders[bib]['Machines'].append([machine, categories])
 					db.setChanged()
 					self.riderNameEntry.ChangeValue( '' )
 					self.updateMachinesChoices(None)
