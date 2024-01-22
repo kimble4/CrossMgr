@@ -88,13 +88,14 @@ class Database:
 		self.riders = {}
 		self.seasons = {}
 		self.tagTemplate = ''
-		#self.riders = {1:{'FirstName':'Testy', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253444}, 2:{'FirstName':'Ian', 'LastName':'Cress', 'Gender':'Men', 'NatCode':'IRL', 'LastEntered':1705153444}, 3:{'FirstName':'Arnold', 'LastName':'Rimmer', 'Gender':'Women', 'NatCode':'GER', 'LastEntered':1705053444}, 4:{'FirstName':'Junior', 'LastName':'McTestFace', 'Gender':'Open', 'NatCode':'GBR', 'LastEntered':1705253445}}
+		self.eventCategoryTemplate = 'Race{:d}'
 		if jsonDataFile:
 			try:
 				data = json.load(jsonDataFile)
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
+				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
 				#print(self.riders)
 				self.seasons = data['seasons'] if 'seasons' in data else {}
@@ -215,7 +216,7 @@ class Database:
 		styleMMSSLP				= formats['styleMMSSLP']
 		styleSSLP				= formats['styleSSLP']
 		
-		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'Machine', 'Team',
+		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'License', 'Machine', 'Team',
 					'Tag', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6', 'Tag7', 'Tag8', 'Tag9',
 					'EventCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
 					 'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
@@ -238,9 +239,8 @@ class Database:
 		rnd = evt['rounds'][rndName]
 		evtRacersDict = {}
 		if 'racers' in evt:
-			for bibMachineCategories in evt['racers']:
-				evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
-				
+			for bibMachineCategoriesTeam in evt['racers']:
+				evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2] if len(bibMachineCategoriesTeam) >=3 else None, bibMachineCategoriesTeam[3] if len(bibMachineCategoriesTeam) >=4 else None)
 		
 		for col, c in enumerate(colnames):
 			#write headers
@@ -250,12 +250,18 @@ class Database:
 			
 		#now the data
 		iRace = 0
+		#haveStartTime = False
+		haveGender = False
+		haveAge = False
+		haveNatCode = False
+		haveLicense = False
+		haveMachine = False
+		haveTeam = False
 		for race in rnd:
-			eventCategory = 'Race' + str(iRace+1)
-			#print(race)
+			eventCategory = self.eventCategoryTemplate.format(iRace+1)
 			for bibMachineCategories in sorted(race):
 				if bibMachineCategories[0] in evtRacersDict:
-					eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
+					eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
 					rider = self.riders[bibMachineCategories[0]]
 					row += 1
 					col = 0
@@ -271,22 +277,39 @@ class Database:
 					sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
 					col += 1
 					#gender
-					sheetFit.write( row, col, Genders[rider['Gender']] if 'Gender' in rider else '', styleAlignLeft )
+					if 'Gender' in rider:
+						sheetFit.write( row, col, Genders[rider['Gender']], styleAlignLeft )
+						haveGender = True
 					col += 1
 					#age
-					sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
+					if self.getRiderAge(bibMachineCategories[0]):
+						sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
+						haveAge = True
 					col += 1
 					#natcode
-					sheetFit.write( row, col, rider['NatCode'] if 'NatCode' in rider else '', styleAlignLeft )
+					if 'NatCode' in rider:
+						sheetFit.write( row, col, rider['NatCode'], styleAlignLeft )
+						haveNatCode = True
+					col += 1
+					#license
+					if 'License' in rider:
+						sheetFit.write( row, col, rider['License'], styleAlignRight )
+						haveLicense = True
 					col += 1
 					#machine
 					if bibMachineCategories[1] is None:
 						# machine has not been changed from event default
-						sheetFit.write( row, col, eventsMachineCategories[0], styleAlignLeft )
-					else:
+						if eventsMachineCategoriesTeam[0]:
+							sheetFit.write( row, col, eventsMachineCategoriesTeam[0], styleAlignLeft )
+							haveMachine = True
+					elif bibMachineCategories[1]:
 						sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
+						haveMachine = True
 					col += 1
 					#team
+					if eventsMachineCategoriesTeam[2]:
+						sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
+						haveTeam = True
 					col += 1
 					#tag
 					sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
@@ -301,14 +324,22 @@ class Database:
 					#customcategories
 					if bibMachineCategories[2] is None:
 						# categories have not been changed from event default
-						for i in range(len(eventsMachineCategories[1])):
-							sheetFit.write( row, col, eventsMachineCategories[1][i], styleAlignLeft )
+						for i in range(len(eventsMachineCategoriesTeam[1])):
+							sheetFit.write( row, col, eventsMachineCategoriesTeam[1][i], styleAlignLeft )
 							col += 1
 					else:
 						for i in range(len(bibMachineCategories[2])):
 							sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
 							col += 1
 			iRace += 1
+		#sheet.set_column(colnames.index('StartTime'), colnames.index('StartTime'), None, None, {'hidden': 0 if haveStartTime else 1})
+		sheet.set_column(colnames.index('Gender'), colnames.index('Gender'), None, None, {'hidden': 0 if haveGender else 1})
+		sheet.set_column(colnames.index('Age'), colnames.index('Age'), None, None, {'hidden': 0 if haveAge else 1})
+		sheet.set_column(colnames.index('NatCode'), colnames.index('NatCode'), None, None, {'hidden': 0 if haveNatCode else 1})
+		sheet.set_column(colnames.index('License'), colnames.index('License'), None, None, {'hidden': 0 if haveLicense else 1})
+		sheet.set_column(colnames.index('Machine'), colnames.index('Machine'), None, None, {'hidden': 0 if haveMachine else 1})
+		sheet.set_column(colnames.index('Team'), colnames.index('Team'), None, None, {'hidden': 0 if haveTeam else 1})
+		sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed
@@ -322,6 +353,7 @@ class Database:
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['tagTemplate'] = self.tagTemplate
+		db['eventCategoryTemplate'] = self.eventCategoryTemplate
 		db['currentSeason'] = self.curSeason
 		db['currentEvent'] = self.curEvt
 		db['currentRound'] = self.curRnd

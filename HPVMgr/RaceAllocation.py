@@ -221,6 +221,7 @@ class RaceAllocation( wx.Panel ):
 						wx.CallAfter( self.refresh )
 		except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+	
 	def editRacerMachine( self, event, bib, iRace ):
 		database = Model.database
 		if database is None:
@@ -286,8 +287,8 @@ class RaceAllocation( wx.Panel ):
 					rider = database.getRider(bib)
 					evtRacersDict = {}
 					if 'racers' in evt:
-						for bibMachineCategories in evt['racers']:
-							evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
+						for bibMachineCategoriesTeam in evt['racers']:
+							evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
 					editCategories = None
 					for bibMachineCategories in race:
 						if bibMachineCategories[0] == bib:
@@ -397,10 +398,10 @@ class RaceAllocation( wx.Panel ):
 			unallocatedBibs = []
 			enteredBibs = []
 			if 'racers' in evt: # build list of unallocated riders
-				for bibMachineCategories in sorted(evt['racers']):
-					enteredBibs.append(bibMachineCategories[0])
-					if bibMachineCategories[0] not in allocatedBibs:
-						unallocatedBibs.append(bibMachineCategories[0])
+				for bibMachineCategoriesTeam in sorted(evt['racers']):
+					enteredBibs.append(bibMachineCategoriesTeam[0])
+					if bibMachineCategoriesTeam[0] not in allocatedBibs:
+						unallocatedBibs.append(bibMachineCategoriesTeam[0])
 			missingBibs = [bib for bib in allocatedBibs if bib not in enteredBibs]
 			with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
@@ -445,8 +446,8 @@ class RaceAllocation( wx.Panel ):
 			rnd = evt['rounds'][rndName]
 			evtRacersDict = {}
 			if 'racers' in evt:
-				for bibMachineCategories in evt['racers']:
-					evtRacersDict[bibMachineCategories[0]] = (bibMachineCategories[1], bibMachineCategories[2])
+				for bibMachineCategoriesTeam in evt['racers']:
+					evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
 			iRace = 0
 			for race in rnd:
 				#print(race)
@@ -476,7 +477,6 @@ class RaceAllocation( wx.Panel ):
 						else:
 							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 							getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-							
 					else:
 						Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
 				if self.showDetails.IsChecked():

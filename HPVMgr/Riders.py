@@ -73,7 +73,7 @@ class Riders( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Last Entered']
+		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'License', 'Last Entered']
 		self.sortBy = 0
 		self.reverseSort = False
 		
@@ -202,10 +202,12 @@ class Riders( wx.Panel ):
 		elif self.sortBy == 2: # Gender
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Gender']) if 'Gender' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 3: # Age
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['DOB']) if 'DOB' in item[1] else '', reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['DOB']) if 'DOB' in item[1] else 0, reverse=self.reverseSort))
 		elif self.sortBy == 4: # Natcode
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['NatCode']) if 'NatCode' in item[1] else '', reverse=self.reverseSort))
-		elif self.sortBy == 5: # Last entered
+		elif self.sortBy == 5: # License
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['License']) if 'License' in item[1] else '', reverse=self.reverseSort))
+		elif self.sortBy == 6: # Last entered
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastEntered'], reverse=self.reverseSort))
 		else: #default (bib)
 			sortedRiders = dict(sorted(riders.items(), reverse=self.reverseSort))
@@ -228,6 +230,9 @@ class Riders( wx.Panel ):
 			col+=1
 			self.ridersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 			self.ridersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
+			col+=1
+			self.ridersGrid.SetCellValue(row, col, rider['License'] if 'License' in rider else '')
+			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			col+=1
 			if rider['LastEntered']:
 				dt = datetime.datetime.fromtimestamp(rider['LastEntered'])

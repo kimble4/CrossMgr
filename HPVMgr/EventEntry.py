@@ -97,7 +97,7 @@ class EventEntry( wx.Panel ):
 		super().__init__(parent, id)
 		self.season = None
 		self.evt = None
-		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Machine', 'Categories']
+		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Machine', 'Categories', 'Team']
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
@@ -129,6 +129,10 @@ class EventEntry( wx.Panel ):
 		self.riderMachine.Bind( wx.EVT_TEXT_ENTER, self.onSelectMachine )
 		self.riderMachine.Disable()
 		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
+		gbs.Add( wx.StaticText( self, label='Team:' ), pos=(1,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.riderTeam = wx.TextCtrl(self, value='', style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(200,-1 ) )
+		self.riderTeam.Disable()
+		gbs.Add( self.riderTeam, pos=(1,3), span=(1,1), flag=wx.EXPAND )
 		self.categoriesLabel = wx.StaticText( self, label='Categories:' )
 		gbs.Add( self.categoriesLabel, pos=(2,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		categoriesSizer = wx.GridBagSizer(2, 2)
@@ -188,6 +192,7 @@ class EventEntry( wx.Panel ):
 		self.updateMachinesChoices(bib)
 		self.updateCategorySelection(bib)
 		self.riderMachine.Enable()
+		self.riderTeam.Enable()
 		self.onSelectMachine()
 		
 	def onEnterRiderName( self, event ):
@@ -202,6 +207,7 @@ class EventEntry( wx.Panel ):
 				self.updateMachinesChoices(bib)
 				self.updateCategorySelection(bib)
 				self.riderMachine.Enable()
+				self.riderTeam.Enable()
 				return
 		self.riderBibEntry.SetSelection(wx.NOT_FOUND)
 	
@@ -276,9 +282,9 @@ class EventEntry( wx.Panel ):
 					season = db.seasons[seasonName]
 					evtName = list(season['events'])[self.evt]
 					evt = season['events'][evtName]
-					for bibMachineCategories in evt['racers']:
-						if bibMachineCategories[0] == bib:
-							evt['racers'].remove(bibMachineCategories)
+					for bibMachineCategoriesTeam in evt['racers']:
+						if bibMachineCategoriesTeam[0] == bib:
+							evt['racers'].remove(bibMachineCategoriesTeam)
 					db.setChanged()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
@@ -322,20 +328,21 @@ class EventEntry( wx.Panel ):
 					evt = season['events'][evtName]
 					if 'racers' not in evt:
 						evt['racers'] = []
-					for bibMachineCategories in evt['racers']:
-						if bibMachineCategories[0] == bib:
+					for bibMachineCategoriesTeam in evt['racers']:
+						if bibMachineCategoriesTeam[0] == bib:
 							Utils.writeLog( evtName + ': Not adding duplicate rider #: ' + str(bib) + ' ' + database.getRiderName(bib))
 							Utils.MessageOK( self, '#' + str(bib)  + ' ' + database.getRiderName(bib, True) + ' is already entered!', 'Duplicate entry' )
 							self.refreshCurrentSelection()
 							return
 					machine = self.riderMachine.GetValue()
+					team = self.riderTeam.GetValue()
 					categories = []
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
 							categories.append(season['categories'][i][0])
 					if len(categories) == 0:
 						Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' has no categories!', 'No categories' )
-					evt['racers'].append([bib, machine, categories])
+					evt['racers'].append([bib, machine, categories, team])
 					evt['racers'].sort(key=lambda a: a[0])
 					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
 					if 'Machines' not in db.riders[bib]:
@@ -348,6 +355,10 @@ class EventEntry( wx.Panel ):
 							break
 					if not found:
 						db.riders[bib]['Machines'].append([machine, categories])
+					if len(team) > 0:
+						db.riders[bib]['Team'] = team
+					elif 'Team' in db.riders[bib]:
+						del db.riders[bib]['Team']
 					db.setChanged()
 					self.riderNameEntry.ChangeValue( '' )
 					self.updateMachinesChoices(None)
@@ -371,8 +382,8 @@ class EventEntry( wx.Panel ):
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
 				if 'racers' in evt:
-					for bibMachineCategories in evt['racers']:
-						bib = bibMachineCategories[0]
+					for bibMachineCategoriesTeam in evt['racers']:
+						bib = bibMachineCategoriesTeam[0]
 						rider = database.getRider(bib)
 						self.racersGrid.AppendRows(1)
 						row = self.racersGrid.GetNumberRows() -1
@@ -391,12 +402,14 @@ class EventEntry( wx.Panel ):
 						self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 						self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
 						col += 1
-						self.racersGrid.SetCellValue(row, col, bibMachineCategories[1])
+						if len(bibMachineCategoriesTeam) >=2:
+							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[1])
 						col += 1
-						self.racersGrid.SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
+						if len(bibMachineCategoriesTeam) >=3:
+							self.racersGrid.SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategoriesTeam[2]))
 						col += 1
-					# fixme categories
-					
+						if len(bibMachineCategoriesTeam) >=4:
+							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[3])
 				self.racersGrid.AutoSize()
 				self.Layout()
 			except Exception as e:

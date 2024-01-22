@@ -47,6 +47,14 @@ class Settings( wx.Panel ):
 		hs.Add( self.tagTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs, flag=wx.EXPAND )
 		
+		hs =  wx.BoxSizer(wx.HORIZONTAL)
+		self.eventCategoryTemplateLabel = wx.StaticText( self, label=_('EventCategory template:') )
+		hs.Add( self.eventCategoryTemplateLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.eventCategoryTemplate = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(500,-1))
+		self.eventCategoryTemplate.SetToolTip( wx.ToolTip('Python format string for EventCategory names'))
+		hs.Add( self.eventCategoryTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
+		vs.Add( hs, flag=wx.EXPAND )
+		
 		self.commitButton = wx.Button( self, label='Commit')
 		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
@@ -123,6 +131,7 @@ class Settings( wx.Panel ):
 					db.fileName = fn
 			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
 			db.tagTemplate = self.tagTemplate.GetValue()
+			db.eventCategoryTemplate = self.eventCategoryTemplate.GetValue()
 			db.setChanged()
 			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
@@ -147,3 +156,4 @@ class Settings( wx.Panel ):
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.tagTemplate.SetValue( getattr(database, 'tagTemplate', '') )
+		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )

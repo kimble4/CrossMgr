@@ -65,6 +65,15 @@ class RiderDetail( wx.Panel ):
 		ncs.Add( self.riderFlag, flag=wx.ALIGN_CENTRE_VERTICAL)
 		gbs.Add( ncs, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		row += 1
+		gbs.Add( wx.StaticText( self, label='License:'), pos=(row,0), span=(1,1), flag=labelAlign )
+		self.riderLicense = wx.TextCtrl( self, size=(300,-1))
+		gbs.Add( self.riderLicense, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		row += 1
+		gbs.Add( wx.StaticText( self, label='Team:'), pos=(row,0), span=(1,1), flag=labelAlign )
+		self.riderTeam = wx.StaticText( self, label='')
+		self.riderTeam.SetToolTip( wx.ToolTip('The last team the rider was entered for'))
+		gbs.Add( self.riderTeam, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		row += 1
 		gbs.Add( wx.StaticText( self, label='Last entered:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderLastEntered = wx.StaticText( self, label='')
 		self.riderLastEntered.SetToolTip( wx.ToolTip('Date the rider was last entered in a race'))
@@ -181,6 +190,14 @@ class RiderDetail( wx.Panel ):
 			else:
 				self.riderNat.ChangeValue('')
 				self.riderFlag.SetBitmap(wx.NullBitmap)
+			if 'License' in rider:
+				self.riderLicense.ChangeValue(rider['License'])
+			else:
+				self.riderLicense.ChangeValue('')
+			if 'Team' in rider:
+				self.riderTeam.SetLabel(rider['Team'])
+			else:
+				self.riderTeam.SetLabel('')
 			if 'LastEntered' in rider:
 				self.riderLastEntered.SetLabel('{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered'])) if rider['LastEntered'] > 0 else '' )
 			else:
@@ -393,6 +410,10 @@ class RiderDetail( wx.Panel ):
 						if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
 							db.riders[bib]['DOB'] = dob.GetTicks()
 					db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
+					if 'License' in db.riders[bib]:
+						del db.riders[bib]['License']
+					if len(self.riderLicense.GetValue()) > 0:
+						db.riders[bib]['License'] = self.riderLicense.GetValue()
 					for i in range(10):
 						data = getattr(self, 'riderTag' + str(i), None).GetValue()
 						if data:
