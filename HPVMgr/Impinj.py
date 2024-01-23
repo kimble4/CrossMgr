@@ -85,6 +85,7 @@ class Impinj( wx.Panel ):
 		self.tagWriter = None
 		self.status = self.StatusIdle
 		self.destination = None
+		self.useAntenna = 0
 		
 		vsMain = wx.BoxSizer( wx.VERTICAL )
 		
@@ -195,6 +196,10 @@ class Impinj( wx.Panel ):
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
 		self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )
 		hs.Add( self.tagToWrite, flag=wx.ALIGN_CENTRE_VERTICAL)
+		self.antennaChoice = wx.Choice( self, choices=[], name='Antenna selection' )
+		self.antennaChoice.Bind( wx.EVT_CHOICE, self.onChooseAntenna )
+		hs.Add( self.antennaChoice, flag=wx.ALIGN_CENTRE_VERTICAL)
+		
 		self.writeButton = wx.Button( self, label = 'Write' )
 		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to ALL tags within range' ) )
 		self.writeButton.Enabled = False
@@ -250,6 +255,12 @@ class Impinj( wx.Panel ):
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vsMain)
 		vsMain.SetSizeHints(self)
+
+	def onChooseAntenna( self, event ):
+		self.useAntenna = self.antennaChoice.GetSelection()
+		config = Utils.getMainWin().config
+		config.WriteInt( 'useAntenna', self.useAntenna )
+		config.Flush()
 
 	def onTagsClick( self, event ):
 		row = event.GetRow()
@@ -312,6 +323,13 @@ class Impinj( wx.Panel ):
 		self.tagWriter = TagWriterCustom( self.getHost() )
 		try:
 			self.tagWriter.Connect( self.receiveSensitivity_dB.GetLabel(), self.transmitPower_dBm.GetLabel() )
+			print(self.tagWriter.general_capabilities)
+			for k, v in self.tagWriter.general_capabilities:
+				if k == 'MaxNumberOfAntennaSupported':
+					self.antennaChoice.Clear()
+					self.antennaChoice.Append( 'All' )
+					self.antennaChoice.AppendItems( [str(i) for i in range( 1, v+1 )] )
+					self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
 			self.writeOptions()
 		except Exception as e:
 			print("-"*60)
@@ -366,7 +384,6 @@ class Impinj( wx.Panel ):
 		config.Write( 'ImpinjHostName', ImpinjHostNamePrefix + self.impinjHostName.GetValue() + ImpinjHostNameSuffix )
 		config.Write( 'ImpinjAddr', self.impinjHost.GetAddress() )
 		config.Write( 'ImpinjPort', '{}'.format(ImpinjInboundPort) )
-
 		config.Write( 'ReceiveSensitivity_dB', '{}'.format(self.receiveSensitivity_dB.GetLabel()) )
 		config.Write( 'TransmitPower_dBm', '{}'.format(self.transmitPower_dBm.GetLabel()) )
 	
@@ -378,7 +395,7 @@ class Impinj( wx.Panel ):
 		self.useStaticAddress.SetValue( not useHostName )
 		self.impinjHostName.SetValue( config.Read('ImpinjHostName', ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix)[len(ImpinjHostNamePrefix):-len(ImpinjHostNameSuffix)] )
 		self.impinjHost.SetValue( config.Read('ImpinjAddr', '0.0.0.0') )
-		
+		self.useAntenna = config.ReadInt('useAntenna', 0)
 		self.receiveSensitivity_dB.SetLabel( config.Read('ReceiveSensitivity_dB', 'Max') )
 		self.transmitPower_dBm.SetLabel( config.Read('TransmitPower_dBm', 'Max') )
 	
@@ -413,12 +430,14 @@ class Impinj( wx.Panel ):
 		self.setWriteSuccess( False )
 		
 		writeValue = self.tagToWrite.GetValue()
+		antenna = self.useAntenna if self.useAntenna > 0 else None
+		print('using ant ' + str(antenna))
 		
 		with wx.BusyCursor():
 		
 			try:
 				Utils.writeLog('Impinj: Writing tag 0x' + writeValue)
-				self.tagWriter.WriteTag( self.destination, writeValue )
+				self.tagWriter.WriteTag( self.destination, writeValue, antenna )
 			except Exception as e:
 				Utils.MessageOK( self, 'Write Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Write Fails' )
@@ -434,20 +453,15 @@ class Impinj( wx.Panel ):
 									'Reader Not Connected' )
 			return
 		
-		#wx.CallAfter( self.writeOptions )
-		
-		#self.tags.SetBackgroundColour( wx.WHITE )
-		
 		tagInventory = None
 		
-		with wx.BusyCursor():
+		def tagInventoryKey( x ):
+			try:
+				return int(x, 16)
+			except ValueError:
+				return 0
 				
-			def tagInventoryKey( x ):
-				try:
-					return int(x, 16)
-				except ValueError:
-					return 0
-			
+		with wx.BusyCursor():
 			try:
 				tagInventory, otherMessages = self.tagWriter.GetTagInventory()
 				tagDetail = { t['Tag']:t for t in self.tagWriter.tagDetail }
@@ -457,6 +471,7 @@ class Impinj( wx.Panel ):
 				Utils.MessageOK( self, 'Read Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Fails' )
 			
+			success = False
 			for tag in tagInventory:
 				self.tagsGrid.AppendRows(1)
 				row = self.tagsGrid.GetNumberRows() -1
@@ -474,19 +489,22 @@ class Impinj( wx.Panel ):
 					if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue():
 						for c in range(col):
 							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
-						self.setWriteSuccess( True )
+						success = True
 						Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
 						self.destinationTag.SetLabel('')
 						self.destination = None
 						wx.Bell()
-					else:
+					elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
 						for c in range(col):
 							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRed)
+					else:
+						for c in range(col):
+							self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 				else:
 					for c in range(col):
 							self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 			self.tagsGrid.AutoSize()
-			
+			self.setWriteSuccess( success )
 		
 	def onTagToWriteChanged( self, event=None ):
 		data = self.tagToWrite.GetValue().upper()
