@@ -158,24 +158,36 @@ class Riders( wx.Panel ):
 			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 			
 	def addNewRider( self, event, bib ):
+		database = Model.database
+		if database is None:
+			return
 		if bib is None:
 			with wx.NumberEntryDialog(self, 'Enter number for new rider:', 'Bib#:', 'New rider', 0, 1, 65535) as dlg:
 				if dlg.ShowModal():
 					bib = dlg.GetValue()
-					print(bib)
-		with Model.LockDatabase() as db:
-			db.addRider(int(bib))
-		self.refresh()
+		if not database.isRider( bib ):
+			with Model.LockDatabase() as db:
+				db.addRider(int(bib))
+			wx.CallAfter( self.refresh )
+		else:
+			Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' already exists!', title='Failed to add rider')
 		
 	def deleteRider( self, event, bib ):
 		database = Model.database
 		if database is None:
 			return
-		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib) + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
-			Utils.writeLog('Delete rider: ' + str(bib))
-			with Model.LockDatabase() as db:
-				db.deleteRider(int(bib))
-			wx.CallAfter( self.refresh )
+		if bib is None:
+			with wx.NumberEntryDialog(self, 'Enter number for rider to delete:', 'Bib#:', 'Delete rider', 0, 1, 65535) as dlg:
+				if dlg.ShowModal():
+					bib = dlg.GetValue()
+		if database.isRider( bib ):
+			if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
+				Utils.writeLog('Delete rider: ' + str(bib))
+				with Model.LockDatabase() as db:
+					db.deleteRider(int(bib))
+				wx.CallAfter( self.refresh )
+		else:
+			Utils.MessageOK( self, 'Rider #' + str(bib) + ' does not exist!', title='Failed to delete rider')
 			
 	def editRiderDetails(self, event, bib):
 		mainwin = Utils.getMainWin()

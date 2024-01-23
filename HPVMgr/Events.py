@@ -231,7 +231,7 @@ class Events( wx.Panel ):
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
 		
-	def writeSignonSheet( self, event ):
+	def writeSignonSheet( self, event=None ):
 		database = Model.database
 		if database is None:
 			return
@@ -259,7 +259,7 @@ class Events( wx.Panel ):
 							# if self.launchExcelAfterPublishingResults:
 							# 	Utils.LaunchApplication( xlFName )
 							Utils.writeLog( '{}: {}'.format(_('Excel file written to'), xlFName) )
-							Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Excel file written to'), xlFName), _('Excel Write'))
+							Utils.MessageOK(self, '{}:\n\n   {}'.format(_('CrossMgr Excel file written to'), xlFName), _('Write sign-on sheet'))
 						except IOError as e:
 							logException( e, sys.exc_info() )
 							Utils.MessageOK(self,

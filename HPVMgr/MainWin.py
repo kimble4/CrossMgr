@@ -298,27 +298,25 @@ class MainWin( wx.Frame ):
 		
 		#-----------------------------------------------------------------------
 		self.editMenu = wx.Menu()
-		item = self.undoMenuButton = wx.MenuItem( self.editMenu, wx.ID_UNDO , _("&Undo\tCtrl+Z"), _("Undo the last edit") )
-		self.undoMenuButton.SetBitmap( Utils.GetPngBitmap('Undo-icon.png') )
-		self.editMenu.Append( self.undoMenuButton )
-		self.Bind(wx.EVT_MENU, self.menuUndo, item )
-		self.undoMenuButton.Enable( False )
+# 		item = self.undoMenuButton = wx.MenuItem( self.editMenu, wx.ID_UNDO , _("&Undo\tCtrl+Z"), _("Undo the last edit") )
+# 		self.undoMenuButton.SetBitmap( Utils.GetPngBitmap('Undo-icon.png') )
+# 		self.editMenu.Append( self.undoMenuButton )
+# 		self.Bind(wx.EVT_MENU, self.menuUndo, item )
+# 		self.undoMenuButton.Enable( False )
+# 		
+# 		self.redoMenuButton = wx.MenuItem( self.editMenu, wx.ID_REDO , _("&Redo\tCtrl+Y"), _("Redo the last edit") )
+# 		self.redoMenuButton.SetBitmap( Utils.GetPngBitmap('Redo-icon.png') )
+# 		item = self.editMenu.Append( self.redoMenuButton )
+# 		self.Bind(wx.EVT_MENU, self.menuRedo, item )
+# 		self.redoMenuButton.Enable( False )
+# 		self.editMenu.AppendSeparator()
 		
-		self.redoMenuButton = wx.MenuItem( self.editMenu, wx.ID_REDO , _("&Redo\tCtrl+Y"), _("Redo the last edit") )
-		self.redoMenuButton.SetBitmap( Utils.GetPngBitmap('Redo-icon.png') )
-		item = self.editMenu.Append( self.redoMenuButton )
-		self.Bind(wx.EVT_MENU, self.menuRedo, item )
-		self.redoMenuButton.Enable( False )
-		self.editMenu.AppendSeparator()
+		item = self.editMenu.Append( wx.ID_ANY, _("&Add Rider...\tCtrl+A"), _("Add a new Rider...") )
+		self.menuAddID = item.GetId()
+		self.Bind(wx.EVT_MENU, self.menuAddRider, item )
 		
-		#item = self.editMenu.Append( wx.ID_ANY, _("&Find...\tCtrl+F"), _("Find a Rider") )
-		#self.menuFindID = item.GetId()
-		#self.Bind(wx.EVT_MENU, self.menuFind, item )
-		
-		#self.editMenu.AppendSeparator()
-		
-		#item = self.editMenu.Append( wx.ID_ANY, _('&Delete Bib Number...'), _('Delete Bib Number...') )
-		#self.Bind( wx.EVT_MENU, self.menuDeleteBib, item )
+		item = self.editMenu.Append( wx.ID_ANY, _('&Delete Rider...\tCtrl+D'), _('Delete a rider...') )
+		self.Bind( wx.EVT_MENU, self.menuDeleteRider, item )
 		
 		#item = self.editMenu.Append( wx.ID_ANY, _('&Swap Bib Numbers...'), _('Swap Bib Numbers...') )
 		#self.Bind( wx.EVT_MENU, self.menuSwapBibs, item )
@@ -543,13 +541,8 @@ class MainWin( wx.Frame ):
 		
 		self.toolsMenu = wx.Menu()
 		
-# 		self.startRaceMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Start Recording"), _("Start the race") )
-# 		self.Bind(wx.EVT_MENU, self.menuStartRace, self.startRaceMenuItem )
-# 		self.startRaceMenuItem.Enable(False)
-# 		
-# 		self.finishRaceMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Finish Recording"), _("Finish the race.") )
-# 		self.Bind(wx.EVT_MENU, self.menuFinishRace, self.finishRaceMenuItem )
-# 		self.finishRaceMenuItem.Enable(False)
+		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Write Sign-on-sheet"), _("Write the CrossMgr sign-on sheet for current event.") )
+		self.Bind(wx.EVT_MENU, self.menuWriteSignon, self.writeSignonMenuItem )
 		
 		#self.toolsMenu.AppendSeparator()
 		
@@ -850,6 +843,15 @@ class MainWin( wx.Frame ):
 					#pass
 	
 	#--------------------------------------------------------------------------------------------
+	
+	def menuWriteSignon( self, event ):
+		self.events.writeSignonSheet()
+		
+	def menuAddRider( self, event ):
+		self.riders.addNewRider( None, None )
+	
+	def menuDeleteRider( self, event):
+		self.riders.deleteRider( None, None )
 	
 	def menuCopyLogFileToClipboard( self, event ):
 		try:
