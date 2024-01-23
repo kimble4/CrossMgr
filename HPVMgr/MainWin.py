@@ -541,7 +541,7 @@ class MainWin( wx.Frame ):
 		
 		self.toolsMenu = wx.Menu()
 		
-		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Write Sign-on-sheet"), _("Write the CrossMgr sign-on sheet for current event.") )
+		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Write Sign-on-sheet..."), _("Write the CrossMgr sign-on sheet for current event") )
 		self.Bind(wx.EVT_MENU, self.menuWriteSignon, self.writeSignonMenuItem )
 		
 		#self.toolsMenu.AppendSeparator()

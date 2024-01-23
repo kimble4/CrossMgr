@@ -10,6 +10,7 @@ import datetime
 import Model
 import xlsxwriter
 from AddExcelInfo import AddExcelInfo 
+import Version
 
 class Events( wx.Panel ):
 	
@@ -706,7 +707,7 @@ class Events( wx.Panel ):
 		if database is None:
 			return
 		selection = []
-		title = 'None'
+		title = None
 		if self.season is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
@@ -719,7 +720,8 @@ class Events( wx.Panel ):
 					rndName = list(evt['rounds'])[self.rnd]
 					selection.append( rndName )
 			title = ', '.join(n for n in selection)
-		self.currentSelection.SetLabel( title )
+		self.currentSelection.SetLabel( title if title else '')
+		Utils.getMainWin().SetTitle( ' — '.join( n for n in [title, Version.AppVerName] if n ) )
 		database.selection = selection
 		
 	def commit( self, event=None ):
