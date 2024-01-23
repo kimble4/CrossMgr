@@ -145,6 +145,7 @@ class Settings( wx.Panel ):
 			self.Layout()
 
 	def refresh( self ):
+		Utils.writeLog('Settings refresh')
 		database = Model.database
 		if database is None:
 			self.dbFileName.SetValue('')

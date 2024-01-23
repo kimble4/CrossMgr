@@ -207,7 +207,7 @@ class RiderDetail( wx.Panel ):
 					getattr(self, 'riderTag' + str(i), None).ChangeValue(rider['Tag' + (str(i) if i > 0 else '')])
 					getattr(self, 'riderTagDate' + str(i), None).SetLabel( '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['Tag' + (str(i) if i > 0 else '') + 'LastWritten'])) if 'Tag' + (str(i) if i > 0 else '') + 'LastWritten' in rider else '' )
 					getattr(self, 'btnTagCopy' + str(i), None).Enable()
-					#getattr(self, 'btnTagWrite' + str(i), None).Enable()  #fixme
+					getattr(self, 'btnTagWrite' + str(i), None).Enable()
 				else:
 					getattr(self, 'riderTag' + str(i), None).ChangeValue('')
 					getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
@@ -282,6 +282,20 @@ class RiderDetail( wx.Panel ):
 		else:
 			Utils.writeLog('Tag'+ str(tag) + ': Nothing to copy!')
 			
+	def writeTag( self, event, tag ):
+		database = Model.database
+		if database is None:
+			return
+		data = getattr(self, 'riderTag' + str(tag), None).GetValue()
+		if data:
+			mainwin = Utils.getMainWin()
+			mainwin.impinj.setTagToWrite( data )
+			with Model.LockDatabase() as db:
+				db.riders[int(self.bib)]['Tag' + (str(tag) if tag > 0 else '') + 'LastWritten'] = int(datetime.datetime.now().timestamp())
+				db.setChanged()
+			wx.CallAfter(mainwin.showPage, mainwin.iImpinjPage )
+
+			
 	def onMachinesRightClick( self, event ):
 		row = event.GetRow()
 		menu = wx.Menu()
@@ -332,10 +346,6 @@ class RiderDetail( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
-	def writeTag( self, event, tag ):
-		print(event)
-		print('write tag ' + str(tag))
-
 	def clearRiderData( self ):
 		self.riderFirstName.ChangeValue('')
 		self.riderLastName.ChangeValue('')

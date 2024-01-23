@@ -48,6 +48,7 @@ from Events				import Events
 from Categories			import Categories
 from EventEntry			import EventEntry
 from RaceAllocation		import RaceAllocation
+from Impinj				import Impinj
 from Settings			import Settings
 import Model
 
@@ -469,6 +470,7 @@ class MainWin( wx.Frame ):
 			[ 'categories',		Categories,			_('Categories') ],
 			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
 			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
+			[ 'impinj',			Impinj,				_('Impinj') ],
 			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],
@@ -2892,7 +2894,7 @@ def MainLoop():
 	Utils.writeLog( 'CWD is: {}'.format(os.getcwd()) )
 	
 	# Configure the main window.
-	mainWin = MainWin( None, title=Version.AppVerName, size=(1128,600) )
+	mainWin = MainWin( None, title=Version.AppVerName, size=(1400,768) )
 	
 	#Try to open a specified filename.
 	fileName = args.filename
