@@ -1,7 +1,13 @@
 import re
 import operator
 from pyllrp.pyllrp import *
-from pyllrp.TagWriter import TagWriter
+from pyllrp.TagWriter import TagWriter, getTagMask, padToWords, addLengthPrefix, hexToWords
+import codecs
+
+# overriding hexToBytes in pyllrp.TagWriter to fix bug
+def hexToBytes( epc ):
+	assert len(epc) % 2 == 0, 'epc must be a byte multiple'
+	return codecs.decode(epc, 'hex_codec')  # fixes typo in pyllrp.TagWriter
 
 def GetReceiveTransmitPowerGeneralCapabilities( connector ):
 	# Enable Impinj Extensions
@@ -61,6 +67,63 @@ def GetReceiveTransmitPowerGeneralCapabilities( connector ):
 	return receive_sensitivity_table, transmit_power_table, [(a,general_capabilities[a]) for a in sorted(device_fields.keys(), key=device_fields.__getitem__)]
 
 class TagWriterCustom( TagWriter ):
+	# GetAccessSpec copied from pyllrp.TagWriter to fix bug in hexToBytes
+	def GetAccessSpec(	self,
+						MessageID = None,			# If None, one will be assigned.
+						epcOld = '',				# Old EPC.  Empty matches anything.
+						epcNew = '0123456789',		# New EPC.
+						roSpecID = 0,				# ROSpec to trigger this ROSpec.  0 = run when any ROSpec runs.
+						opSpecID = 1,				# Something unique.
+						operationCount = 10,		# Number of times to execute.
+						antenna = None ):
+		
+		TagMask = hexToBytes( getTagMask(epcOld) ) if epcOld else b''
+		TagData = hexToBytes( addLengthPrefix(epcOld) ) if epcOld else b''
+		
+		accessSpecMessage = ADD_ACCESSSPEC_Message( MessageID = MessageID, Parameters = [
+			AccessSpec_Parameter(
+				AccessSpecID  = self.accessSpecID,
+				AntennaID = antenna if antenna else 0,	# Unspecified antenna: apply to all antennas
+				ProtocolID = AirProtocols.EPCGlobalClass1Gen2,
+				CurrentState = bool(AccessSpecState.Disabled),
+				ROSpecID = roSpecID,
+				
+				Parameters = [
+					AccessSpecStopTrigger_Parameter(
+						AccessSpecStopTrigger = AccessSpecStopTriggerType.Operation_Count,
+						OperationCountValue = operationCount
+					),
+					AccessCommand_Parameter(
+						Parameters = [
+							C1G2TagSpec_Parameter(
+								Parameters = [
+									C1G2TargetTag_Parameter(
+										MB = 1,						# Memory Bank 1 = EPC
+										Pointer = 16,				# 16 bits offset - skip CRC.
+										TagMask = TagMask,
+										TagData = TagData,
+										Match = True,
+									)
+								]
+							),
+							C1G2Write_Parameter(
+								MB = 1,
+								WordPointer = 1,					# Skip CRC, but include the length and flags.
+								WriteData = hexToWords( addLengthPrefix(epcNew) ),
+								OpSpecID = opSpecID,
+								AccessPassword = 0,
+							),
+						]
+					),
+					AccessReportSpec_Parameter(
+						AccessReportTrigger = AccessReportTriggerType.End_Of_AccessSpec
+					)
+				]
+			)
+		])	# ADD_ACCESS_SPEC_Message
+		
+		return accessSpecMessage
+	
 	def Connect( self, receivedB, transmitdBm ):
 		# In order to validate the parameters, we need to do two connects.
 		# The first call gets the tables, the second call sets the receive sensitivity and transmit power based on the available options.
