@@ -88,7 +88,7 @@ class Impinj( wx.Panel ):
 		self.destination = None
 		self.useAntenna = 0
 		
-		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
@@ -171,7 +171,7 @@ class Impinj( wx.Panel ):
 		
 		
 		row += 1
-		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1))
 		self.tagToWrite.SetToolTip( wx.ToolTip( 'Tag number (Hexadecimal)' ) )
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
@@ -263,6 +263,12 @@ class Impinj( wx.Panel ):
 		if self.writeAllTags.IsChecked():
 			Utils.MessageOK( self,  'All tags within range will be overwritten simultaneously!\nDo NOT use this at the trackside!', 'Warning', iconMask = wx.ICON_WARNING)
 			self.destinationTag.SetLabel('ALL visible tags')
+			boldFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+			boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
+			self.destinationTag.SetFont( boldFont )
+		else:
+			self.destinationTag.SetLabel('')
+			self.destinationTag.SetFont( wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT) )
 			
 	def onTagsClick( self, event ):
 		if not self.writeAllTags.IsChecked():
@@ -444,13 +450,16 @@ class Impinj( wx.Panel ):
 			self.writeSuccess.SetValue( 50 )
 		wx.CallLater( 100, self.onReadButton, None )
 		
-	def onReadButton( self, event=None ):
+	def onReadButton( self, event=None, justRead=False ):
 		self.clearGrid(self.tagsGrid)
 		
 		if not self.tagWriter:
 			Utils.MessageOK( self,  'Reader not connected.\n\nSet reader connection parameters and press "Reset Connection".',
 									'Reader Not Connected' )
 			return
+		
+		if event or justRead:
+			justRead = True
 		
 		tagInventory = None
 		
@@ -487,7 +496,7 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellValue(row, col, str(tag[2]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
 					col += 1
-					if event is None:
+					if not justRead:
 						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue():
 							for c in range(col):
 								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
@@ -552,4 +561,6 @@ class Impinj( wx.Panel ):
 	def refresh( self ):
 		Utils.writeLog('Impinj refresh')
 		self.readOptions()
+		if self.status == self.StatusSuccess:
+			wx.CallAfter( self.onReadButton, justRead=True)
 		
