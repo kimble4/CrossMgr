@@ -92,6 +92,8 @@ class Impinj( wx.Panel ):
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
+		vs = wx.BoxSizer( wx.VERTICAL )
+		
 		gbs = wx.GridBagSizer( 5, 5 )
 		
 		row = 0
@@ -193,39 +195,16 @@ class Impinj( wx.Panel ):
 		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to destination tag' ) )
 		self.writeButton.Enabled = False
 		self.writeButton.Bind( wx.EVT_BUTTON, self.onWriteButton )
-		gbs.Add( self.writeButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( self.writeButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.writeSuccess = wx.Gauge( self, style=wx.GA_HORIZONTAL, range = 100 )
 		self.writeSuccess.SetToolTip( wx.ToolTip( 'Write progress bar' ) )
 		gbs.Add( self.writeSuccess, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
-		row += 1
-		
-
-		self.colnames = ['Tag EPC (Hexadecimal)', 'Peak RSSI (dB)', 'Antenna' ]
-		
-		self.tagsGrid = wx.grid.Grid( self )
-		self.tagsGrid.CreateGrid(0, len(self.colnames))
-		for i, name in enumerate(self.colnames):
-			self.tagsGrid.SetColLabelValue(i, name)
-
-		self.tagsGrid.HideRowLabels()
-		self.tagsGrid.AutoSize()
-		
-		self.tagsGrid.SetRowLabelSize( 0 )
-		self.tagsGrid.SetMargins( 0, 0 )
-		self.tagsGrid.AutoSizeColumns( True )
-		self.tagsGrid.DisableDragColSize()
-		self.tagsGrid.DisableDragRowSize()
-		self.tagsGrid.EnableEditing(False)
-		self.tagsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onTagsClick )
-
-		gbs.Add( self.tagsGrid, pos=(row,0), span=(1,2), flag=wx.ALIGN_TOP )
-
 		self.readButton = wx.Button( self, label = 'Read Tags' )
 		self.readButton.SetToolTip( wx.ToolTip( 'Perform an inventory run') )
 		self.readButton.Enabled = False
 		self.readButton.Bind( wx.EVT_BUTTON, self.onReadButton )
-		gbs.Add( self.readButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_TOP )
+		gbs.Add( self.readButton, pos=(row,4), span=(1,1), flag=wx.ALIGN_TOP )
 		
 		
 		
@@ -247,6 +226,27 @@ class Impinj( wx.Panel ):
 		self.disconnectButton.Bind( wx.EVT_BUTTON, self.doDisconnect )
 		gbs.Add( self.disconnectButton, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
+		
+		vs.Add( gbs, flag=wx.EXPAND)
+		
+		self.colnames = ['Tag EPC (Hexadecimal)', 'Peak RSSI (dB)', 'Antenna' ]
+		
+		self.tagsGrid = wx.grid.Grid( self )
+		self.tagsGrid.CreateGrid(0, len(self.colnames))
+		for i, name in enumerate(self.colnames):
+			self.tagsGrid.SetColLabelValue(i, name)
+		self.tagsGrid.HideRowLabels()
+		self.tagsGrid.AutoSize()
+		
+		self.tagsGrid.SetRowLabelSize( 0 )
+		self.tagsGrid.SetMargins( 0, 0 )
+		self.tagsGrid.AutoSizeColumns( True )
+		self.tagsGrid.DisableDragColSize()
+		self.tagsGrid.DisableDragRowSize()
+		self.tagsGrid.EnableEditing(False)
+		self.tagsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onTagsClick )
+
+		vs.Add( self.tagsGrid, flag=wx.EXPAND )
 
 		self.setWriteSuccess( False )
 
@@ -256,8 +256,7 @@ class Impinj( wx.Panel ):
 		self.useStaticAddress.SetValue( False )
 		
 		self.SetDoubleBuffered( True )
-		self.SetSizer(gbs)
-		gbs.SetSizeHints(self)
+		self.SetSizer(vs)
 
 	def onChooseAntenna( self, event ):
 		self.useAntenna = self.antennaChoice.GetSelection()
@@ -545,6 +544,7 @@ class Impinj( wx.Panel ):
 						for c in range(col):
 							self.tagsGrid.SetCellTextColour(row, c, self.Grey)
 			self.tagsGrid.AutoSize()
+			totalWidth = 0
 			self.setWriteSuccess( success )
 			if success and not self.writeAllTags.IsChecked():
 				self.destinationTag.SetLabel('')
