@@ -303,8 +303,11 @@ class Events( wx.Panel ):
 		add = menu.Append( wx.ID_ANY, 'Add new season', 'Add a new season...' )
 		self.Bind( wx.EVT_MENU, self.addSeason, add )
 		if row >= 1 or (row == 0 and len(self.seasonsGrid.GetCellValue(row, 0).strip()) > 0):
+			rename = menu.Append( wx.ID_ANY, 'Rename ' + database.getSeasonsList()[row], 'Rename this season...' )
+			self.Bind( wx.EVT_MENU, lambda event, r=row: self.renameSeason(event, r), rename )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + database.getSeasonsList()[row] + ' from list', 'Delete this season...' )
 			self.Bind( wx.EVT_MENU, lambda event, r=row: self.deleteSeason(event, r), delete )
+			
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -333,7 +336,32 @@ class Events( wx.Panel ):
 					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
-						
+			
+	def renameSeason( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			with wx.TextEntryDialog(self, 'Enter the new name for this season:', caption='Rename season', value='New Season', style=wx.OK|wx.CANCEL) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					newSeason = dlg.GetValue()
+					with Model.LockDatabase() as db:
+						if newSeason not in db.seasons:
+							oldSeason = self.seasonsGrid.GetCellValue(row, 0)
+							db.seasons = {newSeason if k == oldSeason else k:v for k,v in db.seasons.items()}
+							db.setChanged()
+							self.season = len(db.seasons) - 1
+							self.commit()
+						else:
+							Utils.MessageOK( self, 'Season ' + newSeason +' already exists!', title = 'Season exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+					self.refreshSeasonsGrid()
+					self.refreshEventsGrid()
+					self.refreshRoundsGrid()
+					self.refreshCurrentSelection()
+					self.Layout()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+	
 	def deleteSeason( self, event, row ):
 		database = Model.database
 		if database is None:
@@ -410,6 +438,8 @@ class Events( wx.Panel ):
 			seasonName = database.getSeasonsList()[self.season]
 			season = database.seasons[seasonName]
 			evtName = list(season['events'])[row]
+			rename = menu.Append( wx.ID_ANY, 'Rename ' + evtName, 'Rename this event...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.renameEvent(event, row), rename )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + evtName + ' from list', 'Delete this event...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteEvent(event, row), delete )
 		try:
@@ -434,6 +464,35 @@ class Events( wx.Panel ):
 							season['events'] = {}
 						if newEvent not in season['events']:
 							season['events'][newEvent] = {}
+							db.setChanged()
+							self.evt = len(season['events']) - 1
+							self.editEntryButton.Enable()
+							wx.CallAfter( self.commit )
+						else:
+							Utils.MessageOK( self, 'Event ' + newEvent +' already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+				self.refreshEventsGrid()
+				self.refreshRoundsGrid()
+				self.refreshCurrentSelection()
+				self.Layout()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
+	def renameEvent( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is None:
+			return
+		try:
+			with wx.TextEntryDialog(self, 'Enter the new name for this event:', caption='Rename event', value='New Event', style=wx.OK|wx.CANCEL) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					newEvent = dlg.GetValue()
+					with Model.LockDatabase() as db:
+						seasonName = db.getSeasonsList()[self.season]
+						season = db.seasons[seasonName]
+						oldEvent = self.eventsGrid.GetCellValue(row, 0)
+						if newEvent not in season['events']:
+							season['events'] = {newEvent if k == oldEvent else k:v for k,v in season['events'].items()}
 							db.setChanged()
 							self.evt = len(season['events']) - 1
 							self.editEntryButton.Enable()
@@ -505,6 +564,8 @@ class Events( wx.Panel ):
 			evtName = list(season['events'])[self.evt]
 			evt = season['events'][evtName]
 			rndName = list(evt['rounds'])[row]
+			rename = menu.Append( wx.ID_ANY, 'Rename ' + rndName, 'Rename this round...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.renameRound(event, row), rename )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + rndName + ' from list', 'Delete this round...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteRound(event, row), delete )
 		try:
@@ -521,7 +582,7 @@ class Events( wx.Panel ):
 		try:
 			with wx.TextEntryDialog(self, 'Enter the name for the new round:', caption='Add round', value='New Round', style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
-					newRound = dlg.GetValue()
+					newRnd = dlg.GetValue()
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
@@ -530,8 +591,37 @@ class Events( wx.Panel ):
 						if 'rounds' not in evt:  # create rounds dict if it does not exist
 							evt['rounds'] = {}
 						#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
-						if newRound not in evt['rounds']:
-							evt['rounds'][newRound] = []
+						if newRnd not in evt['rounds']:
+							evt['rounds'][newRnd] = []
+							db.setChanged()
+							self.rnd = len(evt['rounds'])-1
+							self.commit()
+						else:
+							Utils.MessageOK( self, 'Round ' + newRound +' already exists!', title = 'Round exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+					self.refreshRoundsGrid()
+					self.refreshCurrentSelection()
+					self.Layout()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
+	def renameRound( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is None or self.evt is None:
+			return
+		try:
+			with wx.TextEntryDialog(self, 'Enter the new name for this round:', caption='Rename round', value='New Round', style=wx.OK|wx.CANCEL) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					newRnd = dlg.GetValue()
+					with Model.LockDatabase() as db:
+						seasonName = db.getSeasonsList()[self.season]
+						season = db.seasons[seasonName]
+						evtName = list(season['events'])[self.evt]
+						evt = season['events'][evtName]
+						oldRnd = self.roundsGrid.GetCellValue(row, 0)
+						if newRnd not in evt['rounds']:
+							evt['rounds'] = {newRnd if k == oldRnd else k:v for k,v in evt['rounds'].items()}
 							db.setChanged()
 							self.rnd = len(evt['rounds'])-1
 							self.commit()
