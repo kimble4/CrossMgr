@@ -134,6 +134,7 @@ class Impinj( wx.Panel ):
 		row += 1
 		
 		self.autoDetectButton = wx.Button(self, label='Auto Detect Reader')
+		self.autoDetectButton.SetToolTip( wx.ToolTip( 'Attempt to detect the tag reader automatically' ) )
 		self.autoDetectButton.Bind( wx.EVT_BUTTON, self.doAutoDetect )
 		gbs.Add( self.autoDetectButton, pos=(row,1), span=(1,2), flag=wx.ALIGN_LEFT )
 		row += 1
@@ -152,6 +153,7 @@ class Impinj( wx.Panel ):
 		gbs.Add( fgs, pos=(row, 0), span=(1, 2) )
 		
 		advancedButton = wx.Button( self, label="Advanced..." )
+		advancedButton.SetToolTip( wx.ToolTip( 'Adjust gain parameters and view reader info') )
 		advancedButton.Bind( wx.EVT_BUTTON, self.doAdvancedButton )
 		gbs.Add( advancedButton, pos=(row, 2), span=(1, 1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		gbs.Add(wx.StaticText(self, label='Write antenna:'), pos=(row, 3), span=(1, 1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
@@ -193,6 +195,7 @@ class Impinj( wx.Panel ):
 		self.writeButton.Bind( wx.EVT_BUTTON, self.onWriteButton )
 		gbs.Add( self.writeButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.writeSuccess = wx.Gauge( self, style=wx.GA_HORIZONTAL, range = 100 )
+		self.writeSuccess.SetToolTip( wx.ToolTip( 'Write progress bar' ) )
 		gbs.Add( self.writeSuccess, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		row += 1
@@ -219,6 +222,7 @@ class Impinj( wx.Panel ):
 		gbs.Add( self.tagsGrid, pos=(row,0), span=(1,2), flag=wx.ALIGN_TOP )
 
 		self.readButton = wx.Button( self, label = 'Read Tags' )
+		self.readButton.SetToolTip( wx.ToolTip( 'Perform an inventory run') )
 		self.readButton.Enabled = False
 		self.readButton.Bind( wx.EVT_BUTTON, self.onReadButton )
 		gbs.Add( self.readButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_TOP )
@@ -232,12 +236,14 @@ class Impinj( wx.Panel ):
 		gbs.Add( self.statusLabel, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		row += 1
-		self.resetButton = wx.Button( self, label = 'Reset Connection' )
+		self.resetButton = wx.Button( self, label = 'Connect' )
+		self.resetButton.SetToolTip( wx.ToolTip( 'Attempt to connect to the tag reader') )
 		self.resetButton.Bind( wx.EVT_BUTTON, self.doReset )
 		gbs.Add( self.resetButton, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		row += 1
 		self.disconnectButton = wx.Button(self, label='Disconnect')
+		self.disconnectButton.SetToolTip( wx.ToolTip( 'Disconnect from the tag reader') )
 		self.disconnectButton.Bind( wx.EVT_BUTTON, self.doDisconnect )
 		gbs.Add( self.disconnectButton, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		row += 1
@@ -261,7 +267,7 @@ class Impinj( wx.Panel ):
 
 	def onWriteAllTagsBox( self, event ):
 		if self.writeAllTags.IsChecked():
-			Utils.MessageOK( self,  'All tags within range will be overwritten simultaneously!\nDo NOT use this at the trackside!', 'Warning', iconMask = wx.ICON_WARNING)
+			Utils.MessageOK( self,  'All tags within range will be overwritten\nwith the same EPC simultaneously!\nDo NOT use this at the trackside!', 'Warning', iconMask = wx.ICON_WARNING)
 			self.destinationTag.SetLabel('ALL visible tags')
 			boldFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 			boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
@@ -326,33 +332,34 @@ class Impinj( wx.Panel ):
 		self.setStatus( self.StatusAttempt )
 
 	def doReset( self, event = None ):
-		self.shutdown()
-		self.setStatus( self.StatusAttempt )
-		
-		self.tagWriter = TagWriterCustom( self.getHost() )
-		try:
-			self.tagWriter.Connect( self.receiveSensitivity_dB.GetLabel(), self.transmitPower_dBm.GetLabel() )
-			for k, v in self.tagWriter.general_capabilities:
-				if k == 'MaxNumberOfAntennaSupported':
-					self.antennaChoice.Clear()
-					self.antennaChoice.Append( 'All' )
-					self.antennaChoice.AppendItems( [str(i) for i in range( 1, v+1 )] )
-					self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
-			self.writeOptions()
-		except Exception as e:
-			Utils.logException( e, sys.exc_info() )
+		with wx.BusyCursor():
+			self.shutdown()
+			self.setStatus( self.StatusAttempt )
 			
-			self.setStatus( self.StatusError )
-			
-			Utils.MessageOK( self, 'Reader Connection Fails to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Reset Connection"'.format(self.getHost(), e),
-							'Reader Connection Fails' )
-			self.tagWriter = None
-			self.readButton.Disable()
-			self.writeButton.Disable()
-			return
-		self.readButton.Enable()
-		self.writeButton.Enable()
-		self.setStatus( self.StatusSuccess )
+			self.tagWriter = TagWriterCustom( self.getHost() )
+			try:
+				self.tagWriter.Connect( self.receiveSensitivity_dB.GetLabel(), self.transmitPower_dBm.GetLabel() )
+				for k, v in self.tagWriter.general_capabilities:
+					if k == 'MaxNumberOfAntennaSupported':
+						self.antennaChoice.Clear()
+						self.antennaChoice.Append( 'All' )
+						self.antennaChoice.AppendItems( [str(i) for i in range( 1, v+1 )] )
+						self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
+				self.writeOptions()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
+				
+				self.setStatus( self.StatusError )
+				
+				Utils.MessageOK( self, 'Reader Connection Fails to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Reset Connection"'.format(self.getHost(), e),
+								'Reader Connection Fails' )
+				self.tagWriter = None
+				self.readButton.Disable()
+				self.writeButton.Disable()
+				return
+			self.readButton.Enable()
+			self.writeButton.Enable()
+			self.setStatus( self.StatusSuccess )
 	
 	def onTextChange( self, event ):
 		self.getWriteValue()
@@ -404,15 +411,23 @@ class Impinj( wx.Panel ):
 	
 	def setStatus( self, status ):
 		self.status = status
-		if status == self.StatusAttempt:
+		if status == self.StatusIdle:
 			self.statusLabel.SetLabel( 'Not Connected' )
+			self.resetButton.SetLabel( 'Connect' )
+			self.resetButton.SetToolTip( wx.ToolTip( 'Attempt to connect to the tag reader') )
+		elif status == self.StatusAttempt:
+			self.statusLabel.SetLabel( 'Not Connected' )
+			self.resetButton.SetLabel( 'Connect' )
+			self.resetButton.SetToolTip( wx.ToolTip( 'Attempt to connect to the tag reader') )
 		elif status == self.StatusSuccess:
 			self.statusLabel.SetLabel( 'Connected' )
+			self.resetButton.SetLabel( 'Reset Connection' )
+			self.resetButton.SetToolTip( wx.ToolTip( 'Reset the connection to the tag reader') )
 		else:
 			self.statusLabel.SetLabel( 'Connection Failed' )
-			
-		self.statusLabel.Hide()
-		self.statusLabel.Show()
+			self.resetButton.SetLabel( 'Retry Connection' )
+			self.resetButton.SetToolTip( wx.ToolTip( 'Attempt to connect to the tag reader') )
+		self.Layout()
 		
 	def getHost( self ):
 		if self.useHostName.GetValue():
