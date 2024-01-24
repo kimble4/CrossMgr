@@ -238,7 +238,7 @@ class Riders( wx.Panel ):
 			col+=1
 			age = ''
 			self.ridersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
-			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE, wx.ALIGN_CENTRE)
 			col+=1
 			self.ridersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 			self.ridersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
@@ -247,7 +247,8 @@ class Riders( wx.Panel ):
 			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			col+=1
 			if rider['LastEntered']:
-				dt = datetime.datetime.fromtimestamp(rider['LastEntered'])
+				dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered']))
+				self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			else:
 				dt = ''
 			self.ridersGrid.SetCellValue(row, col, str(dt))
