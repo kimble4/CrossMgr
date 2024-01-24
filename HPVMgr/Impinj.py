@@ -81,6 +81,7 @@ class Impinj( wx.Panel ):
 		
 		self.LightGreen = wx.Colour(153,255,153)
 		self.LightRed = wx.Colour(255,153,153)
+		self.Grey = wx.Colour(80,80,80)
 		
 		self.tagWriter = None
 		self.status = self.StatusIdle
@@ -160,6 +161,14 @@ class Impinj( wx.Panel ):
 		
 		row += 1
 		gbs.Add( wx.StaticLine(self, style=wx.LI_HORIZONTAL), pos=(row,0), span=(1,4) )
+		
+		row += 1
+		self.writeAllTags = wx.CheckBox(self, label='Write to ALL tags within range')
+		self.writeAllTags.SetToolTip(wx.ToolTip( 'If selected, all tags within range will be overwritten simultaneously' ) )
+		self.writeAllTags.Bind( wx.EVT_CHECKBOX, self.onWriteAllTagsBox )
+		self.writeAllTags.SetValue( False )
+		gbs.Add( self.writeAllTags, pos=(row, 3), span=(1,2), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
+		
 		
 		row += 1
 		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
@@ -250,11 +259,17 @@ class Impinj( wx.Panel ):
 		config.WriteInt( 'useAntenna', self.useAntenna )
 		config.Flush()
 
+	def onWriteAllTagsBox( self, event ):
+		if self.writeAllTags.IsChecked():
+			Utils.MessageOK( self,  'All tags within range will be overwritten simultaneously!\nDo NOT use this at the trackside!', 'Warning', iconMask = wx.ICON_WARNING)
+			self.destinationTag.SetLabel('ALL visible tags')
+			
 	def onTagsClick( self, event ):
-		row = event.GetRow()
-		data = self.tagsGrid.GetCellValue(row, 0)
-		self.destination = re.sub('[^0-9A-F]','', data).zfill(self.EPCHexCharsMax) #strip non-hex chars and fill with leading zeros
-		self.destinationTag.SetLabel(data)
+		if not self.writeAllTags.IsChecked():
+			row = event.GetRow()
+			data = self.tagsGrid.GetCellValue(row, 0)
+			self.destination = re.sub('[^0-9A-F]','', data).zfill(self.EPCHexCharsMax) #strip non-hex chars and fill with leading zeros
+			self.destinationTag.SetLabel(data)
 
 	def setWriteSuccess( self, success ):
 		self.writeSuccess.SetValue( 100 if success else 0 )
@@ -404,21 +419,23 @@ class Impinj( wx.Panel ):
 		if not self.tagWriter:
 			Utils.MessageOK( self, 'Reader not connected.\n\nSet reader connection parameters and press "Reset Connection".', 'Reader Not Connected' )
 			return
-		
-		if self.destination is None:
-			Utils.MessageOK( self,  'Please perform a read, then select a tag to overwrite.', 'No destination tag' )
-			return
-		
-		self.setWriteSuccess( False )
-		
+			
+		if self.writeAllTags.IsChecked():
+			destination = ''
+		else:
+			destination = self.destination
+			if destination is None:
+				Utils.MessageOK( self,  'Please perform a read, then select a tag to overwrite.', 'No destination tag' )
+				return
 		writeValue = self.tagToWrite.GetValue()
 		antenna = self.useAntenna if self.useAntenna > 0 else None
 		
+		self.setWriteSuccess( False )
 		with wx.BusyCursor():
 		
 			try:
 				#Utils.writeLog('Impinj: Writing tag 0x' + writeValue)
-				self.tagWriter.WriteTag( self.destination, writeValue, antenna )
+				self.tagWriter.WriteTag( destination, writeValue, antenna )
 			except Exception as e:
 				Utils.MessageOK( self, 'Write Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Write Fails' )
@@ -455,37 +472,57 @@ class Impinj( wx.Panel ):
 				Utils.logException( e, sys.exc_info() )
 			
 			success = False
-			for tag in tagInventory:
-				self.tagsGrid.AppendRows(1)
-				row = self.tagsGrid.GetNumberRows() -1
-				col = 0
-				self.tagsGrid.SetCellValue(row, col, str(tag[0]))
-				self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
-				col += 1
-				self.tagsGrid.SetCellValue(row, col, str(tag[1]))
-				self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
-				col += 1
-				self.tagsGrid.SetCellValue(row, col, str(tag[2]))
-				self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
-				col += 1
-				if event is None:
-					if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue():
-						for c in range(col):
-							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
-						success = True
-						Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
-					elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
-						for c in range(col):
-							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRed)
+			
+			for tag in tagInventory: #first pass
+				if self.useAntenna == 0 or tag[2] == self.useAntenna:
+					self.tagsGrid.AppendRows(1)
+					row = self.tagsGrid.GetNumberRows() -1
+					col = 0
+					self.tagsGrid.SetCellValue(row, col, str(tag[0]))
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					col += 1
+					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					col += 1
+					self.tagsGrid.SetCellValue(row, col, str(tag[2]))
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
+					col += 1
+					if event is None:
+						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue():
+							for c in range(col):
+								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
+							success = True
+							Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
+						elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
+							for c in range(col):
+								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRed)
+						else:
+							for c in range(col):
+								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 					else:
 						for c in range(col):
-							self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
-				else:
-					for c in range(col):
-							self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
+								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
+			
+			if self.useAntenna > 0: # second pass listing tags not on our antenna
+				for tag in tagInventory:
+					if tag[2] != self.useAntenna:
+						self.tagsGrid.AppendRows(1)
+						row = self.tagsGrid.GetNumberRows() -1
+						col = 0
+						self.tagsGrid.SetCellValue(row, col, str(tag[0]))
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						col += 1
+						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						col += 1
+						self.tagsGrid.SetCellValue(row, col, str(tag[2]))
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
+						col += 1
+						for c in range(col):
+							self.tagsGrid.SetCellTextColour(row, c, self.Grey)
 			self.tagsGrid.AutoSize()
 			self.setWriteSuccess( success )
-			if success:
+			if success and not self.writeAllTags.IsChecked():
 				self.destinationTag.SetLabel('')
 				self.destination = None
 			wx.Bell()
