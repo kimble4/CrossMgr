@@ -77,6 +77,8 @@ class RaceAllocation( wx.Panel ):
 			gbs.Add( getattr(self, 'raceGridTitle' + str(i), None), pos=(0,i), span=(1,1), flag=wx.ALIGN_CENTRE )
 			gbs.Add( getattr(self, 'raceGrid' + str(i), None), pos=(1,i), span=(1,1), flag=wx.EXPAND )
 			self.installGridHint( getattr(self, 'raceGrid' + str(i), None), self.getGridToolTip )
+			getattr(self, 'raceGrid' + str(i), None).Hide()
+			getattr(self, 'raceGridTitle' + str(i), None).Hide()
 		vs.Add( gbs,  flag=wx.EXPAND )
 		
 		self.SetDoubleBuffered( True )
@@ -194,33 +196,34 @@ class RaceAllocation( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		try:
-			seasonName = database.getSeasonsList()[self.season]
-			season = database.seasons[seasonName]
-			evtName = list(season['events'])[self.evt]
-			evt = season['events'][evtName]
-			rndName = list(evt['rounds'])[self.rnd]
-			rnd = evt['rounds'][rndName]
-			choices = list(evt['rounds'])
-			del choices[self.rnd]  # remove current round from list
-			with wx.SingleChoiceDialog(self, 'Select round to copy allocations from', 'Copy allocation', choices ) as dlg:
-				if dlg.ShowModal() == wx.ID_OK:
-					sourceRound = dlg.GetStringSelection()
-					if self.season is not None and self.evt is not None and self.rnd is not None:
-						with Model.LockDatabase() as db:
-							season = db.seasons[seasonName]
-							evt = season['events'][evtName]
-							rnd = evt['rounds'][rndName]
-							# delete all races from current round
-							rnd.clear()
-							# copy the allocations
-							for sourceRace in evt['rounds'][sourceRound]:
-								rnd.append(sourceRace)
-							db.setChanged()
-						Utils.writeLog( 'copyAllocation: Copied race allocation in event "' + evtName + '" from round "' + sourceRound + '" to round "' + rndName + '"' )
-						wx.CallAfter( self.refresh )
-		except Exception as e:
-				Utils.logException( e, sys.exc_info() )
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				rndName = list(evt['rounds'])[self.rnd]
+				rnd = evt['rounds'][rndName]
+				choices = list(evt['rounds'])
+				del choices[self.rnd]  # remove current round from list
+				with wx.SingleChoiceDialog(self, 'Select round to copy allocations from', 'Copy allocation', choices ) as dlg:
+					if dlg.ShowModal() == wx.ID_OK:
+						sourceRound = dlg.GetStringSelection()
+						if self.season is not None and self.evt is not None and self.rnd is not None:
+							with Model.LockDatabase() as db:
+								season = db.seasons[seasonName]
+								evt = season['events'][evtName]
+								rnd = evt['rounds'][rndName]
+								# delete all races from current round
+								rnd.clear()
+								# copy the allocations
+								for sourceRace in evt['rounds'][sourceRound]:
+									rnd.append(sourceRace)
+								db.setChanged()
+							Utils.writeLog( 'copyAllocation: Copied race allocation in event "' + evtName + '" from round "' + sourceRound + '" to round "' + rndName + '"' )
+							wx.CallAfter( self.refresh )
+			except Exception as e:
+					Utils.logException( e, sys.exc_info() )
 	
 	def editRacerMachine( self, event, bib, iRace ):
 		database = Model.database
@@ -437,59 +440,60 @@ class RaceAllocation( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		try:
-			seasonName = database.getSeasonsList()[self.season]
-			season = database.seasons[seasonName]
-			evtName = list(season['events'])[self.evt]
-			evt = season['events'][evtName]
-			rndName = list(evt['rounds'])[self.rnd]
-			rnd = evt['rounds'][rndName]
-			evtRacersDict = {}
-			if 'racers' in evt:
-				for bibMachineCategoriesTeam in evt['racers']:
-					evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
-			iRace = 0
-			for race in rnd:
-				#print(race)
-				for bibMachineCategories in sorted(race):
-					if bibMachineCategories[0] in evtRacersDict:
-						eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
-						getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
-						row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
-						col = 0
-						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[0]))
-						getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-						col += 1
-						getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
-						col += 1
-						if bibMachineCategories[1] is None:
-							# machine has not been changed from event default
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				rndName = list(evt['rounds'])[self.rnd]
+				rnd = evt['rounds'][rndName]
+				evtRacersDict = {}
+				if 'racers' in evt:
+					for bibMachineCategoriesTeam in evt['racers']:
+						evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
+				iRace = 0
+				for race in rnd:
+					#print(race)
+					for bibMachineCategories in sorted(race):
+						if bibMachineCategories[0] in evtRacersDict:
+							eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
+							getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
+							row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
+							col = 0
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[0]))
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+							col += 1
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
+							col += 1
+							if bibMachineCategories[1] is None:
+								# machine has not been changed from event default
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+							else:
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[1]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+							col += 1
+							if bibMachineCategories[2] is None:
+								# categories have not been changed from event default
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+							else:
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
 						else:
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[1]))
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-						col += 1
-						if bibMachineCategories[2] is None:
-							# categories have not been changed from event default
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
-						else:
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+							Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
+					if self.showDetails.IsChecked():
+						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
 					else:
-						Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
-				if self.showDetails.IsChecked():
-					getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
-					getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
-				else:
-					getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
-					getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
-				getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
-				iRace += 1
-			self.Layout()
-		except Exception as e:
-			Utils.logException( e, sys.exc_info() )
+						getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
+						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
+					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
+					iRace += 1
+				self.Layout()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 		
 	def refreshNumberOfRaces( self ):
 		self.numberOfRaces.SetValue(self.nrRaces)
