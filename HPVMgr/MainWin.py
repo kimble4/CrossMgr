@@ -470,7 +470,7 @@ class MainWin( wx.Frame ):
 			[ 'categories',		Categories,			_('Categories') ],
 			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
 			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
-			[ 'impinj',			Impinj,				_('Impinj') ],
+			[ 'impinj',			Impinj,				_('WriteTags') ],
 			[ 'settings',		Settings,			_('Settings') ],
 			#[ 'data',			Data,				_('Data') ],
 			#[ 'actions',		Actions,			_('Actions') ],

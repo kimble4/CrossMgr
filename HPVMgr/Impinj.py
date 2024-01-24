@@ -87,57 +87,56 @@ class Impinj( wx.Panel ):
 		self.destination = None
 		self.useAntenna = 0
 		
-		vsMain = wx.BoxSizer( wx.VERTICAL )
+		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
-		impinjConfiguration = wx.StaticBox( self, label = 'Impinj Configuration' )
-		impinjConfigurationSizer = wx.StaticBoxSizer( impinjConfiguration, wx.HORIZONTAL )
-		gbs = wx.GridBagSizer( 4, 4 )
-		impinjConfigurationSizer.Add( gbs, flag=wx.ALL, border = 4 )
+		gbs = wx.GridBagSizer( 5, 5 )
 		
-		iRow = 0
+		row = 0
+		title = wx.StaticText(self, label='Impinj RFID tag Reading and Writing')
+		title.SetFont(bigFont)
+		gbs.Add(title, pos=(row,0), span=(1,4), flag=wx.ALIGN_CENTRE|wx.ALIGN_TOP )
 		
+		row += 1
 		self.useHostName = wx.RadioButton( self, label = 'Host Name:', style=wx.RB_GROUP )
-		gbs.Add( self.useHostName, pos=(iRow,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs.Add( self.useHostName, pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb = wx.BoxSizer( wx.HORIZONTAL )
 		hb.Add( wx.StaticText(self, label = ImpinjHostNamePrefix), flag=wx.ALIGN_CENTER_VERTICAL )
 		if 'WXMAC' in wx.Platform:
 			self.impinjHostName = masked.TextCtrl( self,
 								defaultValue = '00-00-00',
 								useFixedWidthFont = True,
-								size=(100,-1),
+								size=(120,-1),
 							)
 		else:
 			self.impinjHostName = masked.TextCtrl( self,
 								mask         = 'NN-NN-NN',
 								defaultValue = '00-00-00',
 								useFixedWidthFont = True,
-								size=(100,-1),
+								size=(120,-1),
 							)
 		hb.Add( self.impinjHostName )
 		hb.Add( wx.StaticText(self, label = ImpinjHostNameSuffix), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb.Add( wx.StaticText(self, label = ' : ' + '{}'.format(ImpinjInboundPort)), flag=wx.ALIGN_CENTER_VERTICAL )
-		gbs.Add( hb, pos=(iRow,1), span=(1,1), flag=wx.ALIGN_LEFT )
+		gbs.Add( hb, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
 		
-		iRow += 1
+		row += 1
 		self.useStaticAddress = wx.RadioButton( self, label='IP:' )
-		gbs.Add( self.useStaticAddress, pos=(iRow,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs.Add( self.useStaticAddress, pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb = wx.BoxSizer( wx.HORIZONTAL )
-		self.impinjHost = IpAddrCtrl( self, style=wx.TE_PROCESS_TAB, size=(120,-1) )
+		self.impinjHost = IpAddrCtrl( self, style=wx.TE_PROCESS_TAB, size=(175,-1) )
 		hb.Add( self.impinjHost )
 		hb.Add( wx.StaticText(self, label = ' : ' + '{}'.format(ImpinjInboundPort)), flag=wx.ALIGN_CENTER_VERTICAL )
 
-		gbs.Add( hb, pos=(iRow,1), span=(1,1), flag=wx.ALIGN_LEFT )
-		iRow += 1
-		
-		gbs.Add( wx.StaticLine(self, style=wx.LI_HORIZONTAL), pos=(iRow,0), span=(1,2) )
-		iRow += 1
+		gbs.Add( hb, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
+		row += 1
 		
 		self.autoDetectButton = wx.Button(self, label='Auto Detect Reader')
 		self.autoDetectButton.Bind( wx.EVT_BUTTON, self.doAutoDetect )
-		gbs.Add( self.autoDetectButton, pos=(iRow,0), span=(1,2), flag=wx.ALIGN_LEFT )
-		iRow += 1
+		gbs.Add( self.autoDetectButton, pos=(row,1), span=(1,2), flag=wx.ALIGN_LEFT )
+		row += 1
 
-		hh = wx.BoxSizer( wx.HORIZONTAL )
 		fgs = wx.FlexGridSizer( 2, 3, 2, 2 )
 		fgs.AddGrowableCol( 1 )
 		fgs.Add( wx.StaticText(self, label='Transmit Power:') )
@@ -149,78 +148,47 @@ class Impinj( wx.Panel ):
 		self.receiveSensitivity_dB = wx.StaticText( self, label='Max', size=(75,-1), style=wx.ALIGN_RIGHT )
 		fgs.Add( self.receiveSensitivity_dB, flag=wx.LEFT, border=2 )
 		fgs.Add( wx.StaticText(self, label='dB'), flag=wx.LEFT, border=2 )		
+		gbs.Add( fgs, pos=(row, 0), span=(1, 2) )
 		
-		hh.Add( fgs )
-
 		advancedButton = wx.Button( self, label="Advanced..." )
 		advancedButton.Bind( wx.EVT_BUTTON, self.doAdvancedButton )
-		hh.Add( advancedButton, flag=wx.LEFT, border=4 )
-
-		gbs.Add( hh, pos=(iRow, 0), span=(1, 2) )
-
-		iRow += 1
+		gbs.Add( advancedButton, pos=(row, 2), span=(1, 1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add(wx.StaticText(self, label='Write antenna:'), pos=(row, 3), span=(1, 1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
+		self.antennaChoice = wx.Choice( self, choices=[], name='Antenna selection' )
+		self.antennaChoice.Bind( wx.EVT_CHOICE, self.onChooseAntenna )
+		gbs.Add( self.antennaChoice, pos=(row, 4), span=(1, 1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
 		
-		self.useHostName.SetValue( True )
-		self.useStaticAddress.SetValue( False )
+		row += 1
+		gbs.Add( wx.StaticLine(self, style=wx.LI_HORIZONTAL), pos=(row,0), span=(1,4) )
 		
-		statusVS = wx.BoxSizer( wx.VERTICAL )
-		hs = wx.BoxSizer( wx.HORIZONTAL )
-		self.statusLabel = wx.StaticText( self, label = 'Not Connected' )
-		hs.Add( self.statusLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
-
-		self.resetButton = wx.Button( self, label = 'Reset Connection' )
-		self.resetButton.Bind( wx.EVT_BUTTON, self.doReset )
-		
-		self.disconnectButton = wx.Button(self, label='Disconnect')
-		self.disconnectButton.Bind( wx.EVT_BUTTON, self.doDisconnect )
-		iRow += 1
-		
-		statusVS.Add( hs, flag=wx.ALL|wx.ALIGN_CENTRE, border = 4 )
-		statusVS.Add( self.resetButton, flag=wx.ALL|wx.ALIGN_CENTRE, border = 4 )
-		statusVS.Add( self.disconnectButton, flag=wx.ALL|wx.ALIGN_CENTRE, border = 4 )
-		
-		impinjConfigurationSizer.Add( statusVS, 1, flag=wx.EXPAND|wx.ALL, border = 4 )
-
-		readTags = wx.StaticBox( self, label = '' )
-		vs2 = wx.StaticBoxSizer( readTags, wx.VERTICAL )
-		self.destinationTag = wx.StaticText( self, label= 'None' )
-		self.destinationTag.SetToolTip( wx.ToolTip( 'Tag that will be overwritten' ) )
-		
-		
-		
-		hs = wx.BoxSizer( wx.HORIZONTAL )
-		
-		hs.Add( wx.StaticText( self, label='EPC to write:' ), flag=wx.ALIGN_CENTRE_VERTICAL )
+		row += 1
+		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1))
 		self.tagToWrite.SetToolTip( wx.ToolTip( 'Tag number (Hexadecimal)' ) )
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
 		self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )
-		hs.Add( self.tagToWrite, flag=wx.ALIGN_CENTRE_VERTICAL)
-		self.antennaChoice = wx.Choice( self, choices=[], name='Antenna selection' )
-		self.antennaChoice.Bind( wx.EVT_CHOICE, self.onChooseAntenna )
-		hs.Add( self.antennaChoice, flag=wx.ALIGN_CENTRE_VERTICAL)
+		gbs.Add( self.tagToWrite, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
+		self.epcInfo = wx.StaticText( self, label='' )
+		self.epcInfo.SetToolTip( wx.ToolTip( 'Rider associated with this tag' ))
+		gbs.Add( self.epcInfo, pos=(row,2), span=(1,2), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL )
+		
+		row += 1
+		gbs.Add( wx.StaticText(self, label='Destination tag:'), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.destinationTag = wx.StaticText( self, label= 'None' )
+		self.destinationTag.SetToolTip( wx.ToolTip( 'Tag that will be overwritten' ) )
+		gbs.Add( self.destinationTag, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL )
 		
 		self.writeButton = wx.Button( self, label = 'Write' )
-		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to ALL tags within range' ) )
+		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to destination tag' ) )
 		self.writeButton.Enabled = False
 		self.writeButton.Bind( wx.EVT_BUTTON, self.onWriteButton )
-		hs.Add( self.writeButton, flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( self.writeButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.writeSuccess = wx.Gauge( self, style=wx.GA_HORIZONTAL, range = 100 )
-		hs.Add( self.writeSuccess, flag=wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( self.writeSuccess, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
-		vs2.Add( hs )
-		hs = wx.BoxSizer( wx.HORIZONTAL )
+		row += 1
 		
-		hs.Add( wx.StaticText(self, label='Destination tag:'), flag=wx.ALIGN_CENTRE_VERTICAL )
-		hs.Add( self.destinationTag, flag=wx.ALIGN_CENTRE_VERTICAL )
-		
-		self.readButton = wx.Button( self, label = 'Read Tags' )
-		self.readButton.Enabled = False
-		self.readButton.Bind( wx.EVT_BUTTON, self.onReadButton )
-		hs.Add( self.readButton, flag=wx.ALIGN_TOP )
-		vs2.Add( hs )
-		
-		
+
 		self.colnames = ['Tag EPC (Hexadecimal)', 'Peak RSSI (dB)', 'Antenna' ]
 		
 		self.tagsGrid = wx.grid.Grid( self )
@@ -238,23 +206,43 @@ class Impinj( wx.Panel ):
 		self.tagsGrid.DisableDragRowSize()
 		self.tagsGrid.EnableEditing(False)
 		self.tagsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onTagsClick )
-		
-		
-		
-		border = 4
 
-		vs2.Add( self.tagsGrid, 1, flag=wx.EXPAND|wx.ALL, border=border )
+		gbs.Add( self.tagsGrid, pos=(row,0), span=(1,2), flag=wx.ALIGN_TOP )
 
-		vsMain.Add( impinjConfigurationSizer, flag=wx.ALL|wx.EXPAND, border=border )
-		vsMain.Add( vs2, 1, flag=wx.EXPAND )
+		self.readButton = wx.Button( self, label = 'Read Tags' )
+		self.readButton.Enabled = False
+		self.readButton.Bind( wx.EVT_BUTTON, self.onReadButton )
+		gbs.Add( self.readButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_TOP )
+		
+		
+		
+		row = 1
+		gbs.Add( wx.StaticText(self, label='Reader status:'), pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
+		self.statusLabel = wx.StaticText( self, label = 'Not Connected' )
+		self.statusLabel.SetFont(bigFont)
+		gbs.Add( self.statusLabel, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		
+		row += 1
+		self.resetButton = wx.Button( self, label = 'Reset Connection' )
+		self.resetButton.Bind( wx.EVT_BUTTON, self.doReset )
+		gbs.Add( self.resetButton, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		
+		row += 1
+		self.disconnectButton = wx.Button(self, label='Disconnect')
+		self.disconnectButton.Bind( wx.EVT_BUTTON, self.doDisconnect )
+		gbs.Add( self.disconnectButton, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
+		row += 1
 
 		self.setWriteSuccess( False )
 
-		#wx.CallAfter( self.doReset )
+		#wx.CallAfter( self.doReset )  # hangs on startup without tag reader
+		
+		self.useHostName.SetValue( True )
+		self.useStaticAddress.SetValue( False )
 		
 		self.SetDoubleBuffered( True )
-		self.SetSizer(vsMain)
-		vsMain.SetSizeHints(self)
+		self.SetSizer(gbs)
+		gbs.SetSizeHints(self)
 
 	def onChooseAntenna( self, event ):
 		self.useAntenna = self.antennaChoice.GetSelection()
@@ -323,7 +311,6 @@ class Impinj( wx.Panel ):
 		self.tagWriter = TagWriterCustom( self.getHost() )
 		try:
 			self.tagWriter.Connect( self.receiveSensitivity_dB.GetLabel(), self.transmitPower_dBm.GetLabel() )
-			print(self.tagWriter.general_capabilities)
 			for k, v in self.tagWriter.general_capabilities:
 				if k == 'MaxNumberOfAntennaSupported':
 					self.antennaChoice.Clear()
@@ -332,12 +319,8 @@ class Impinj( wx.Panel ):
 					self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
 			self.writeOptions()
 		except Exception as e:
-			print("-"*60)
-			print( "Handing exception..." )
-			traceback.print_exc(file=sys.stdout)
-			print("-"*60)
+			Utils.logException( e, sys.exc_info() )
 			
-			#self.DisableAccelerator()
 			self.setStatus( self.StatusError )
 			
 			Utils.MessageOK( self, 'Reader Connection Fails to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Reset Connection"'.format(self.getHost(), e),
@@ -346,7 +329,6 @@ class Impinj( wx.Panel ):
 			self.readButton.Disable()
 			self.writeButton.Disable()
 			return
-		
 		self.readButton.Enable()
 		self.writeButton.Enable()
 		self.setStatus( self.StatusSuccess )
@@ -431,17 +413,17 @@ class Impinj( wx.Panel ):
 		
 		writeValue = self.tagToWrite.GetValue()
 		antenna = self.useAntenna if self.useAntenna > 0 else None
-		print('using ant ' + str(antenna))
 		
 		with wx.BusyCursor():
 		
 			try:
-				Utils.writeLog('Impinj: Writing tag 0x' + writeValue)
+				#Utils.writeLog('Impinj: Writing tag 0x' + writeValue)
 				self.tagWriter.WriteTag( self.destination, writeValue, antenna )
 			except Exception as e:
 				Utils.MessageOK( self, 'Write Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Write Fails' )
-			
+				Utils.writeLog('Impinj:Failed writing tag 0x' + writeValue)
+				Utils.logException( e, sys.exc_info() )
 			self.writeSuccess.SetValue( 50 )
 		wx.CallLater( 100, self.onReadButton, None )
 		
@@ -470,6 +452,7 @@ class Impinj( wx.Panel ):
 			except Exception as e:
 				Utils.MessageOK( self, 'Read Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Fails' )
+				Utils.logException( e, sys.exc_info() )
 			
 			success = False
 			for tag in tagInventory:
@@ -491,9 +474,6 @@ class Impinj( wx.Panel ):
 							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
 						success = True
 						Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
-						self.destinationTag.SetLabel('')
-						self.destination = None
-						wx.Bell()
 					elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
 						for c in range(col):
 							self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRed)
@@ -505,21 +485,27 @@ class Impinj( wx.Panel ):
 							self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 			self.tagsGrid.AutoSize()
 			self.setWriteSuccess( success )
+			if success:
+				self.destinationTag.SetLabel('')
+				self.destination = None
+			wx.Bell()
+			self.Layout()
 		
 	def onTagToWriteChanged( self, event=None ):
 		data = self.tagToWrite.GetValue().upper()
 		self.tagToWrite.ChangeValue(re.sub('[^0-9A-F]','', data).zfill(self.EPCHexCharsMax)) #strip non-hex chars and fill with leading zeros
+		self.epcInfo.SetLabel('')
 				
-	def setTagToWrite( self, tag ):
+	def setTagToWrite( self, tag, info=None ):
 		Utils.writeLog('Impinj set tag to: ' + str(tag))
 		self.tagToWrite.ChangeValue(str(tag))
 		self.onTagToWriteChanged()
+		self.epcInfo.SetLabel( info if info else '')
 		if self.status == self.StatusSuccess:
 			self.writeButton.Enable()
 			
 	def clearGrid( self, grid ):
 		rows = grid.GetNumberRows()
-		#print('clearGrid deleting rows: ' + str(rows))
 		if rows:
 			grid.DeleteRows( 0, rows )
 				

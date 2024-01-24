@@ -287,9 +287,10 @@ class RiderDetail( wx.Panel ):
 		if database is None:
 			return
 		data = getattr(self, 'riderTag' + str(tag), None).GetValue()
+		info = '#' + self.bib + ' ' + database.getRiderName(int(self.bib), True)
 		if data:
 			mainwin = Utils.getMainWin()
-			mainwin.impinj.setTagToWrite( data )
+			mainwin.impinj.setTagToWrite( data, info )
 			with Model.LockDatabase() as db:
 				db.riders[int(self.bib)]['Tag' + (str(tag) if tag > 0 else '') + 'LastWritten'] = int(datetime.datetime.now().timestamp())
 				db.setChanged()
