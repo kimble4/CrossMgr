@@ -531,9 +531,9 @@ do
 	case ${option} in
 		h) doHelp
 		;;
-		a) 
- 		    PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer HPVMgr CrossMgr"
-		;;
+#		a) PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer HPVMgr CrossMgr"
+		a) PROGRAMS="CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrVideo SprintTimer HPVMgr CrossMgr"
+;;
 		c) PROGRAMS="$PROGRAMS CrossMgr"
 		;;
 		i) PROGRAMS="$PROGRAMS CrossMgrImpinj"
