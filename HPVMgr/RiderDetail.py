@@ -58,7 +58,6 @@ class RiderDetail( wx.Panel ):
 		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
 		self.riderNat.SetToolTip( wx.ToolTip('IOC country code'))
 		self.Bind( wx.EVT_TEXT_ENTER, self.onNatCodeChanged, self.riderNat )
-		self.riderNat.Bind( wx.EVT_KILL_FOCUS, self.onNatCodeChanged, self.riderNat )
 		ncs.Add( self.riderNat )
 		self.riderFlag = wx.StaticBitmap(self, -1, wx.NullBitmap, size=(44,28))
 		ncs.AddSpacer(10)
@@ -231,19 +230,20 @@ class RiderDetail( wx.Panel ):
 		self.riderAge.SetLabel( age )
 		self.onEdited()
 			
-	def onNatCodeChanged( self, event ):
+	def onNatCodeChanged( self, event=None ):
 		database = Model.database
 		if database is None:
 			return
 		try:
 			nat = self.riderNat.GetValue().upper()
 			self.riderNat.ChangeValue(nat)
-			self.onEdited()
 			image = Flags.GetFlagImage( nat )
 			if image:
 				self.riderFlag.SetBitmap(image.Scale(44, 28, wx.IMAGE_QUALITY_HIGH))
 			else:
 				self.riderFlag.SetBitmap(wx.NullBitmap)
+			if event: 
+				self.onEdited()
 		except ValueError:
 			pass
 			
@@ -410,6 +410,7 @@ class RiderDetail( wx.Panel ):
 		try:
 			bib = int(self.bib)
 			if database.isRider(bib):
+				self.onNatCodeChanged()
 				with Model.LockDatabase() as db:
 					db.riders[bib]['FirstName'] = self.riderFirstName.GetValue()
 					db.riders[bib]['LastName'] = self.riderLastName.GetValue()
