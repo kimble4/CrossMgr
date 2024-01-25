@@ -123,37 +123,45 @@ class Database:
 		return self.riders
 	
 	def getRider( self, bib ):
-		return self.riders[bib]
+		if bib in self.riders:
+			return self.riders[bib]
+		else:
+			return None
 	
 	@memoize
 	def getRiderName( self, bib, firstNameFirst=False):
-		rider = self.riders[bib]
 		name = ''
-		if rider:
-			if firstNameFirst:
-				name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
-			else:
-				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+		if bib in self.riders:
+			rider = self.riders[bib]
+			if rider:
+				if firstNameFirst:
+					name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
+				else:
+					name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 		return name
 		
 	@memoize
 	def getRiderFirstName( self, bib):
-		rider = self.riders[bib]
-		return rider['FirstName']
+		if bib in self.riders:
+			rider = self.riders[bib]
+			return rider['FirstName']
+		return ''
 		
 	@memoize
 	def getRiderLastName( self, bib):
-		rider = self.riders[bib]
-		return rider['LastName']
+		if bib in self.riders:
+			rider = self.riders[bib]
+			return rider['LastName']
+		return ''
 		
 	@memoize
 	def getRiderAge( self, bib ):
-		rider = self.riders[bib]
-		if 'DOB' in rider:
-			dob = datetime.datetime.fromtimestamp(rider['DOB'])
-			return int((datetime.datetime.now() - dob).days/365)
-		else:
-			return None
+		if bib in self.riders:
+			rider = self.riders[bib]
+			if 'DOB' in rider:
+				dob = datetime.datetime.fromtimestamp(rider['DOB'])
+				return int((datetime.datetime.now() - dob).days/365)
+		return None
 	
 	def addRider( self, bib ):
 		if bib in self.riders:
@@ -263,8 +271,10 @@ class Database:
 				eventCategory = self.eventCategoryTemplate.format(iRace+1) if len(rnd) > 1 else self.eventCategoryTemplate.format(iRace+1)[:-len(str(iRace+1))] # strip the race number if there's only a single race
 				for bibMachineCategories in sorted(race):
 					if bibMachineCategories[0] in evtRacersDict:
+						rider = self.getRider(bibMachineCategories[0])
+						if rider is None:  #skip deleted riders, even if they're in the race
+							continue
 						eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
-						rider = self.riders[bibMachineCategories[0]]
 						row += 1
 						col = 0
 						#StartTime

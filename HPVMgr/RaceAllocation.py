@@ -16,6 +16,7 @@ class RaceAllocation( wx.Panel ):
 	maxRaces = 5
 	whiteColour = wx.Colour( 255, 255, 255 )
 	orangeColour = wx.Colour( 255, 165, 0 )
+	yellowColour = wx.Colour( 255, 255, 0 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -30,6 +31,9 @@ class RaceAllocation( wx.Panel ):
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
+		
+		boldFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
 		self.riderBibNames = []
 		
@@ -59,6 +63,7 @@ class RaceAllocation( wx.Panel ):
 		gbs = wx.GridBagSizer(5, 5)
 		for i in range(RaceAllocation.maxRaces):
 			setattr(self, 'raceGridTitle' + str(i), wx.StaticText(self, label='Race ' + str(i+1)) )
+			getattr(self, 'raceGridTitle' + str(i), None).SetFont( boldFont )
 			setattr(self, 'raceGrid' + str(i), wx.grid.Grid( self ) )
 			getattr(self, 'raceGrid' + str(i), None).CreateGrid(0, len(self.colnames) )
 			for col, name in enumerate(self.colnames):
@@ -453,6 +458,7 @@ class RaceAllocation( wx.Panel ):
 					for bibMachineCategoriesTeam in evt['racers']:
 						evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
 				iRace = 0
+				deletedRiders = []
 				for race in rnd:
 					#print(race)
 					for bibMachineCategories in sorted(race):
@@ -464,7 +470,7 @@ class RaceAllocation( wx.Panel ):
 							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[0]))
 							getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 							col += 1
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) )
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) if database.isRider(bibMachineCategories[0]) else '[DELETED RIDER]' )
 							col += 1
 							if bibMachineCategories[1] is None:
 								# machine has not been changed from event default
@@ -481,6 +487,11 @@ class RaceAllocation( wx.Panel ):
 							else:
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+							col += 1
+							if not database.isRider(bibMachineCategories[0]):
+								deletedRiders.append(bibMachineCategories[0])
+								for c in range(col):
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
 						else:
 							Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
 					if self.showDetails.IsChecked():
@@ -491,6 +502,9 @@ class RaceAllocation( wx.Panel ):
 						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
 					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 					iRace += 1
+				if len(deletedRiders) > 0:
+					Utils.writeLog('Racer(s): ' + ', '.join([str(r) for r in deletedRiders if r]) + ' do not exist in Riders database!')
+					Utils.MessageOK( self, 'Racer(s) do not exist in Riders database:\n' + ', '.join([str(r) for r in deletedRiders if r]) + '\nThey will not be added to the sign-on sheet.', 'Riders do not exist')
 				self.Layout()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )

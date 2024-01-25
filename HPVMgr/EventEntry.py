@@ -92,6 +92,7 @@ class riderNameCompleter(wx.TextCompleter):
 class EventEntry( wx.Panel ):
 	
 	numCategories = 18
+	yellowColour = wx.Colour( 255, 255, 0 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -382,6 +383,7 @@ class EventEntry( wx.Panel ):
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
 				if 'racers' in evt:
+					deletedRiders = []
 					for bibMachineCategoriesTeam in evt['racers']:
 						bib = bibMachineCategoriesTeam[0]
 						rider = database.getRider(bib)
@@ -391,17 +393,22 @@ class EventEntry( wx.Panel ):
 						self.racersGrid.SetCellValue(row, col, str(bib))
 						self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 						col += 1
-						self.racersGrid.SetCellValue(row, col, database.getRiderName(bib))
-						col += 1
-						self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
-						col += 1
-						age = ''
-						self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
-						self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-						col += 1
-						self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
-						self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
-						col += 1
+						if rider is not None:
+							self.racersGrid.SetCellValue(row, col, database.getRiderName(bib))
+							col += 1
+							self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
+							col += 1
+							age = ''
+							self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
+							self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+							col += 1
+							self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
+							self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
+							col += 1
+						else:
+							deletedRiders.append(bib)
+							self.racersGrid.SetCellValue(row, col, '[DELETED RIDER]')
+							col += 4
 						if len(bibMachineCategoriesTeam) >=2:
 							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[1])
 						col += 1
@@ -410,10 +417,16 @@ class EventEntry( wx.Panel ):
 						col += 1
 						if len(bibMachineCategoriesTeam) >=4:
 							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[3])
+						col += 1
+						if rider is None:
+							for c in range(col):
+								self.racersGrid.SetCellBackgroundColour(row, c, self.yellowColour)
 				self.racersGrid.AutoSize()
 				self.Layout()
+				if len(deletedRiders) > 0:
+					Utils.MessageOK( self, 'Racer(s) do not exist in Riders database:\n' + ', '.join([str(r) for r in deletedRiders if r]) + '\nThey will not be added to the sign-on sheet.', 'Riders do not exist')
 			except Exception as e:
-				Utils.logException( e, sys.exc_info() )		
+				Utils.logException( e, sys.exc_info() )
 
 	def refreshCurrentSelection( self ):
 		database = Model.database

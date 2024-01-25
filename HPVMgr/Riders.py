@@ -181,7 +181,7 @@ class Riders( wx.Panel ):
 				if dlg.ShowModal():
 					bib = dlg.GetValue()
 		if database.isRider( bib ):
-			if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
+			if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + '?\nThis deletes their tag data!\nThey will no longer be included in sign-on sheets for existing events.', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
 				Utils.writeLog('Delete rider: ' + str(bib))
 				with Model.LockDatabase() as db:
 					db.deleteRider(int(bib))
