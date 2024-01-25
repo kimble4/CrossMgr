@@ -229,7 +229,7 @@ class Impinj( wx.Panel ):
 		
 		vs.Add( gbs, flag=wx.EXPAND)
 		
-		self.colnames = ['Tag EPC (Hexadecimal)', 'Peak RSSI (dB)', 'Antenna' ]
+		self.colnames = ['Tag EPC (Hexadecimal)', 'Tag EPC (ASCII printable)', 'Peak RSSI (dB)', 'Antenna' ]
 		
 		self.tagsGrid = wx.grid.Grid( self )
 		self.tagsGrid.CreateGrid(0, len(self.colnames))
@@ -501,11 +501,16 @@ class Impinj( wx.Panel ):
 			success = False
 			
 			for tag in tagInventory: #first pass
+				asciiValue=bytes.fromhex(tag[0]).decode(encoding="Latin1")
+				asciiValue= ''.join([c for c in asciiValue if c.isprintable()])
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
 					col = 0
 					self.tagsGrid.SetCellValue(row, col, str(tag[0]))
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					col += 1
+					self.tagsGrid.SetCellValue(row, col, '"' + asciiValue + '"' )
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
@@ -537,6 +542,9 @@ class Impinj( wx.Panel ):
 						row = self.tagsGrid.GetNumberRows() -1
 						col = 0
 						self.tagsGrid.SetCellValue(row, col, str(tag[0]))
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						col += 1
+						self.tagsGrid.SetCellValue(row, col, '"' + asciiValue + '"')
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
