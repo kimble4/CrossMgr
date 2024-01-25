@@ -200,7 +200,7 @@ class Database:
 		except KeyError:
 			return []
 			
-	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet ):
+	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet, raceNr=None ):
 		''' Write a round to an xlwt excel sheet. '''
 		titleStyle				= formats['titleStyle']
 		headerStyleAlignLeft	= formats['headerStyleAlignLeft']
@@ -250,7 +250,7 @@ class Database:
 			
 		#now the data
 		iRace = 0
-		#haveStartTime = False
+		haveStartTime = True # always show the StartTime column
 		haveGender = False
 		haveAge = False
 		haveNatCode = False
@@ -258,81 +258,82 @@ class Database:
 		haveMachine = False
 		haveTeam = False
 		for race in rnd:
-			eventCategory = self.eventCategoryTemplate.format(iRace+1)
-			for bibMachineCategories in sorted(race):
-				if bibMachineCategories[0] in evtRacersDict:
-					eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
-					rider = self.riders[bibMachineCategories[0]]
-					row += 1
-					col = 0
-					#StartTime
-					col += 1
-					#bib
-					sheetFit.write( row, col, bibMachineCategories[0],styleAlignRight )
-					col += 1
-					#first name
-					sheetFit.write( row, col, rider['FirstName'] if 'FirstName' in rider else '', styleAlignLeft )
-					col += 1
-					#last name
-					sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
-					col += 1
-					#gender
-					if 'Gender' in rider:
-						sheetFit.write( row, col, Genders[rider['Gender']], styleAlignLeft )
-						haveGender = True
-					col += 1
-					#age
-					if self.getRiderAge(bibMachineCategories[0]):
-						sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
-						haveAge = True
-					col += 1
-					#natcode
-					if 'NatCode' in rider:
-						sheetFit.write( row, col, rider['NatCode'], styleAlignLeft )
-						haveNatCode = True
-					col += 1
-					#license
-					if 'License' in rider:
-						sheetFit.write( row, col, rider['License'], styleAlignRight )
-						haveLicense = True
-					col += 1
-					#machine
-					if bibMachineCategories[1] is None:
-						# machine has not been changed from event default
-						if eventsMachineCategoriesTeam[0]:
-							sheetFit.write( row, col, eventsMachineCategoriesTeam[0], styleAlignLeft )
-							haveMachine = True
-					elif bibMachineCategories[1]:
-						sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
-						haveMachine = True
-					col += 1
-					#team
-					if eventsMachineCategoriesTeam[2]:
-						sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
-						haveTeam = True
-					col += 1
-					#tag
-					sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
-					col += 1
-					#tag1-9
-					for i in range(1, 10):
-						sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+			if raceNr is None or raceNr == iRace + 1: # only the selected race
+				eventCategory = self.eventCategoryTemplate.format(iRace+1) if len(rnd) > 1 else self.eventCategoryTemplate.format(iRace+1)[:-len(str(iRace+1))] # strip the race number if there's only a single race
+				for bibMachineCategories in sorted(race):
+					if bibMachineCategories[0] in evtRacersDict:
+						eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
+						rider = self.riders[bibMachineCategories[0]]
+						row += 1
+						col = 0
+						#StartTime
 						col += 1
-					#eventcategory
-					sheetFit.write( row, col, eventCategory, styleAlignLeft )
-					col += 1
-					#customcategories
-					if bibMachineCategories[2] is None:
-						# categories have not been changed from event default
-						for i in range(len(eventsMachineCategoriesTeam[1])):
-							sheetFit.write( row, col, eventsMachineCategoriesTeam[1][i], styleAlignLeft )
+						#bib
+						sheetFit.write( row, col, bibMachineCategories[0],styleAlignRight )
+						col += 1
+						#first name
+						sheetFit.write( row, col, rider['FirstName'] if 'FirstName' in rider else '', styleAlignLeft )
+						col += 1
+						#last name
+						sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
+						col += 1
+						#gender
+						if 'Gender' in rider:
+							sheetFit.write( row, col, Genders[rider['Gender']], styleAlignLeft )
+							haveGender = True
+						col += 1
+						#age
+						if self.getRiderAge(bibMachineCategories[0]):
+							sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
+							haveAge = True
+						col += 1
+						#natcode
+						if 'NatCode' in rider:
+							sheetFit.write( row, col, rider['NatCode'], styleAlignLeft )
+							haveNatCode = True
+						col += 1
+						#license
+						if 'License' in rider:
+							sheetFit.write( row, col, rider['License'], styleAlignRight )
+							haveLicense = True
+						col += 1
+						#machine
+						if bibMachineCategories[1] is None:
+							# machine has not been changed from event default
+							if eventsMachineCategoriesTeam[0]:
+								sheetFit.write( row, col, eventsMachineCategoriesTeam[0], styleAlignLeft )
+								haveMachine = True
+						elif bibMachineCategories[1]:
+							sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
+							haveMachine = True
+						col += 1
+						#team
+						if eventsMachineCategoriesTeam[2]:
+							sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
+							haveTeam = True
+						col += 1
+						#tag
+						sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
+						col += 1
+						#tag1-9
+						for i in range(1, 10):
+							sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
 							col += 1
-					else:
-						for i in range(len(bibMachineCategories[2])):
-							sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
-							col += 1
+						#eventcategory
+						sheetFit.write( row, col, eventCategory, styleAlignLeft )
+						col += 1
+						#customcategories
+						if bibMachineCategories[2] is None:
+							# categories have not been changed from event default
+							for i in range(len(eventsMachineCategoriesTeam[1])):
+								sheetFit.write( row, col, eventsMachineCategoriesTeam[1][i], styleAlignLeft )
+								col += 1
+						else:
+							for i in range(len(bibMachineCategories[2])):
+								sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
+								col += 1
 			iRace += 1
-		#sheet.set_column(colnames.index('StartTime'), colnames.index('StartTime'), None, None, {'hidden': 0 if haveStartTime else 1})
+		sheet.set_column(colnames.index('StartTime'), colnames.index('StartTime'), None, None, {'hidden': 0 if haveStartTime else 1})
 		sheet.set_column(colnames.index('Gender'), colnames.index('Gender'), None, None, {'hidden': 0 if haveGender else 1})
 		sheet.set_column(colnames.index('Age'), colnames.index('Age'), None, None, {'hidden': 0 if haveAge else 1})
 		sheet.set_column(colnames.index('NatCode'), colnames.index('NatCode'), None, None, {'hidden': 0 if haveNatCode else 1})

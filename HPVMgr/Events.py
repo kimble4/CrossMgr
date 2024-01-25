@@ -251,8 +251,19 @@ class Events( wx.Panel ):
 						ues = Utils.UniqueExcelSheetName()
 						
 						for rndName in evt['rounds']:
-							sheetCur = wb.add_worksheet( ues.getSheetName(rndName) )
-							database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
+							nrRaces = len(evt['rounds'][rndName])
+							if nrRaces > 1:
+								#first, individual sheets for each race
+								for i in range(nrRaces):
+									sheetCur = wb.add_worksheet( ues.getSheetName(rndName + ' Race' + str(i+1))  )
+									database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur, raceNr=i+1 )
+								#now, a combined sheet for the round (for use after merging races)
+								sheetCur = wb.add_worksheet( ues.getSheetName(rndName + ' Combined') )
+								database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
+							else:
+								#everyone in one race, only need a single sheet
+								sheetCur = wb.add_worksheet( ues.getSheetName(rndName) )
+								database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
 							
 						AddExcelInfo( wb )
 						try:
