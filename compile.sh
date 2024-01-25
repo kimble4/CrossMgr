@@ -1,7 +1,7 @@
 #!/bin/bash
 
 OSNAME=$(uname -s)
-PYTHONVER=python3.11
+PYTHONVER=python3.10
 ENVDIR=env
 LINUXDEPLOY=linuxdeploy-plugin-appimage-x86_64.AppImage
 
