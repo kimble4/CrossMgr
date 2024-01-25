@@ -287,7 +287,7 @@ class RiderDetail( wx.Panel ):
 		if database is None:
 			return
 		data = getattr(self, 'riderTag' + str(tag), None).GetValue()
-		info = '#' + self.bib + ' ' + database.getRiderName(int(self.bib), True)
+		info = '#' + self.bib + ' ' + database.getRiderName(int(self.bib), True) + ' (Tag' + str(tag) + ')'
 		if data:
 			mainwin = Utils.getMainWin()
 			mainwin.impinj.setTagToWrite( data, info )
