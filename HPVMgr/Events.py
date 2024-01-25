@@ -342,12 +342,12 @@ class Events( wx.Panel ):
 		if database is None:
 			return
 		try:
-			with wx.TextEntryDialog(self, 'Enter the new name for this season:', caption='Rename season', value='New Season', style=wx.OK|wx.CANCEL) as dlg:
+			oldSeason = self.seasonsGrid.GetCellValue(row, 0)
+			with wx.TextEntryDialog(self, 'Enter the new name for this season:', caption='Rename season', value=oldSeason, style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newSeason = dlg.GetValue()
 					with Model.LockDatabase() as db:
 						if newSeason not in db.seasons:
-							oldSeason = self.seasonsGrid.GetCellValue(row, 0)
 							db.seasons = {newSeason if k == oldSeason else k:v for k,v in db.seasons.items()}
 							db.setChanged()
 							self.season = len(db.seasons) - 1
@@ -484,13 +484,13 @@ class Events( wx.Panel ):
 		if self.season is None:
 			return
 		try:
-			with wx.TextEntryDialog(self, 'Enter the new name for this event:', caption='Rename event', value='New Event', style=wx.OK|wx.CANCEL) as dlg:
+			oldEvent = self.eventsGrid.GetCellValue(row, 0)
+			with wx.TextEntryDialog(self, 'Enter the new name for this event:', caption='Rename event', value=oldEvent, style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newEvent = dlg.GetValue()
 					with Model.LockDatabase() as db:
 						seasonName = db.getSeasonsList()[self.season]
 						season = db.seasons[seasonName]
-						oldEvent = self.eventsGrid.GetCellValue(row, 0)
 						if newEvent not in season['events']:
 							season['events'] = {newEvent if k == oldEvent else k:v for k,v in season['events'].items()}
 							db.setChanged()
@@ -611,7 +611,8 @@ class Events( wx.Panel ):
 		if self.season is None or self.evt is None:
 			return
 		try:
-			with wx.TextEntryDialog(self, 'Enter the new name for this round:', caption='Rename round', value='New Round', style=wx.OK|wx.CANCEL) as dlg:
+			oldRnd = self.roundsGrid.GetCellValue(row, 0)
+			with wx.TextEntryDialog(self, 'Enter the new name for this round:', caption='Rename round', value=oldRnd, style=wx.OK|wx.CANCEL) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					newRnd = dlg.GetValue()
 					with Model.LockDatabase() as db:
@@ -619,7 +620,6 @@ class Events( wx.Panel ):
 						season = db.seasons[seasonName]
 						evtName = list(season['events'])[self.evt]
 						evt = season['events'][evtName]
-						oldRnd = self.roundsGrid.GetCellValue(row, 0)
 						if newRnd not in evt['rounds']:
 							evt['rounds'] = {newRnd if k == oldRnd else k:v for k,v in evt['rounds'].items()}
 							db.setChanged()
