@@ -176,10 +176,10 @@ class Impinj( wx.Panel ):
 		
 		row += 1
 		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
-		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(360,-1))
+		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_RIGHT|wx.TE_PROCESS_ENTER, size=(360,-1))
 		self.tagToWrite.SetToolTip( wx.ToolTip( 'Tag number (Hexadecimal)' ) )
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
-		#self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )
+		self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )
 		gbs.Add( self.tagToWrite, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
 		self.epcInfo = wx.StaticText( self, label='' )
 		self.epcInfo.SetToolTip( wx.ToolTip( 'Rider associated with this tag' ))
@@ -513,7 +513,7 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
 					col += 1
 					if not justRead:
-						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue():
+						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue().zfill(self.EPCHexCharsMax):
 							for c in range(col):
 								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
 							success = True
