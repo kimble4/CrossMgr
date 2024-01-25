@@ -2521,7 +2521,7 @@ class MainWin( wx.Frame ):
 
 
 	@logCall
-	def openDatabase( self, fileName, silent=False ):
+	def openDatabase( self, fileName, silent=False, backup=True ):
 		busy = wx.BusyCursor()
 		with Model.LockDatabase() as db:
 			try:
@@ -2531,6 +2531,14 @@ class MainWin( wx.Frame ):
 					self.updateRecentFiles()
 					self.showPage(self.iRidersPage)
 					self.refreshAll()
+				if backup:
+					backupFileName = fileName.rsplit('.', 1)[0] + '_backup_{:%Y-%m-%d}.hdb'.format(datetime.datetime.now())
+					if not os.path.isfile(backupFileName):
+						Utils.writeLog('Saving database backup to: ' + backupFileName )
+						with Model.LockDatabase() as db:
+							with open(backupFileName, "w") as outfile:
+								outfile.write(db.getDatabaseAsJSON())
+								db.setChanged( False )
 			except Exception as e:
 				if silent:
 					return
