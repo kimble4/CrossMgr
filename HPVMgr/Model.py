@@ -216,13 +216,13 @@ class Database:
 		styleMMSSLP				= formats['styleMMSSLP']
 		styleSSLP				= formats['styleSSLP']
 		
-		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'License', 'Machine', 'Team',
+		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'License', 'Machine', 'Team', 'TeamCode',
 					'Tag', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6', 'Tag7', 'Tag8', 'Tag9',
-					'EventCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
+					'EventCategory', 'CustomCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
 					 'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
 					  'CustomCategory8', 'CustomCategory9' ]
-		leftJustifyCols = ['FirstName', 'LastName', 'Gender', 'NatCode', 'Machine', 'Team',
-						'EventCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
+		leftJustifyCols = ['FirstName', 'LastName', 'Gender', 'NatCode', 'Machine', 'Team', 'TeamCode',
+						'EventCategory', 'CustomCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
 						'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
 						'CustomCategory8', 'CustomCategory9' ]
 		timeCols = ['StartTime']
@@ -255,6 +255,7 @@ class Database:
 		haveAge = False
 		haveNatCode = False
 		haveLicense = False
+		#haveFactor = False
 		haveMachine = False
 		haveTeam = False
 		for race in rnd:
@@ -297,6 +298,11 @@ class Database:
 							sheetFit.write( row, col, rider['License'], styleAlignRight )
 							haveLicense = True
 						col += 1
+						#factor
+						# if 'Factor' in rider:
+						# 	sheetFit.write( row, col, rider['Factor'], styleAlignRight )
+						# 	haveFactor = True
+						# col += 1
 						#machine
 						if bibMachineCategories[1] is None:
 							# machine has not been changed from event default
@@ -311,6 +317,8 @@ class Database:
 						if eventsMachineCategoriesTeam[2]:
 							sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
 							haveTeam = True
+						col += 1
+						#teamcode
 						col += 1
 						#tag
 						sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
@@ -338,8 +346,10 @@ class Database:
 		sheet.set_column(colnames.index('Age'), colnames.index('Age'), None, None, {'hidden': 0 if haveAge else 1})
 		sheet.set_column(colnames.index('NatCode'), colnames.index('NatCode'), None, None, {'hidden': 0 if haveNatCode else 1})
 		sheet.set_column(colnames.index('License'), colnames.index('License'), None, None, {'hidden': 0 if haveLicense else 1})
+		#sheet.set_column(colnames.index('Factor'), colnames.index('Factor'), None, None, {'hidden': 0 if haveFactor else 1})
 		sheet.set_column(colnames.index('Machine'), colnames.index('Machine'), None, None, {'hidden': 0 if haveMachine else 1})
 		sheet.set_column(colnames.index('Team'), colnames.index('Team'), None, None, {'hidden': 0 if haveTeam else 1})
+		sheet.set_column(colnames.index('TeamCode'), colnames.index('TeamCode'), None, None, {'hidden': 1}) # always hide the TeamCode column
 		sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
 	
 	def setChanged( self, changed=True ):
