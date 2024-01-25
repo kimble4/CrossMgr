@@ -502,7 +502,7 @@ class Impinj( wx.Panel ):
 			
 			for tag in tagInventory: #first pass
 				asciiValue=bytes.fromhex(tag[0]).decode(encoding="Latin1")
-				asciiValue= ''.join([c for c in asciiValue if c.isprintable()])
+				asciiValue= ''.join([c if c.isprintable() else '?' for c in asciiValue])
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
