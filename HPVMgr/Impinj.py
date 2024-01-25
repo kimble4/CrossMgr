@@ -179,7 +179,7 @@ class Impinj( wx.Panel ):
 		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_RIGHT|wx.TE_PROCESS_ENTER, size=(360,-1))
 		self.tagToWrite.SetToolTip( wx.ToolTip( 'Tag number (Hexadecimal)' ) )
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
-		self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )
+		#self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )  #seems to become uneditable under windows?
 		gbs.Add( self.tagToWrite, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
 		self.epcInfo = wx.StaticText( self, label='' )
 		self.epcInfo.SetToolTip( wx.ToolTip( 'Rider associated with this tag' ))
@@ -446,9 +446,11 @@ class Impinj( wx.Panel ):
 			if destination is None:
 				Utils.MessageOK( self,  'Please perform a read, then select a tag to overwrite.', 'No destination tag' )
 				return
-		
-		data = self.tagToWrite.GetValue().upper()
-		writeValue = (re.sub('[^0-9A-F]','', data).zfill(self.EPCHexCharsMax)) #strip non-hex chars and fill with leading zeros
+				
+		#strip non-hex chars and fill with leading zeros
+		data = re.sub('[^0-9A-F]','', self.tagToWrite.GetValue().upper())
+		self.tagToWrite.ChangeValue(data)
+		writeValue = data.zfill(self.EPCHexCharsMax)
 		
 		antenna = self.useAntenna if self.useAntenna > 0 else None
 		
