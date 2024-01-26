@@ -413,7 +413,7 @@ class EventEntry( wx.Panel ):
 							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[1])
 						col += 1
 						if len(bibMachineCategoriesTeam) >=3:
-							self.racersGrid.SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategoriesTeam[2]))
+							self.racersGrid.SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in bibMachineCategoriesTeam[2]))
 						col += 1
 						if len(bibMachineCategoriesTeam) >=4:
 							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[3])
@@ -446,20 +446,6 @@ class EventEntry( wx.Panel ):
 				title += ': ' + str(len(evt['racers'])) + ' racers'
 		self.currentSelection.SetLabel( title )
 		database.selection = selection
-		
-	def getAbbreviatedCategory( self, categoryName ):
-		database = Model.database
-		if database is None:
-			return
-		if self.season is not None:
-				seasonName = database.getSeasonsList()[self.season]
-				season = database.seasons[seasonName]
-				catCount = 0
-				if 'categories' in season:
-					for categoryAbbrev in season['categories']:
-						if categoryName.lower() == categoryAbbrev[0].lower():
-							return categoryAbbrev[1]
-		return ''
 		
 	def updateMachinesChoices( self, bib ):
 		self.riderMachine.Clear()

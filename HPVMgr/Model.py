@@ -180,6 +180,18 @@ class Database:
 		self.setChanged()
 	
 	@memoize
+	def getAbbreviatedCategory( self, categoryName ):
+		if self.curSeason is not None:
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			catCount = 0
+			if 'categories' in season:
+				for categoryAbbrev in season['categories']:
+					if categoryName.lower() == categoryAbbrev[0].lower():
+						return categoryAbbrev[1]
+		return ''
+	
+	@memoize
 	def getSeasonsList( self ):
 		seasons = list(self.seasons.keys())
 		return sorted(seasons)

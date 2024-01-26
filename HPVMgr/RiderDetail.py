@@ -111,9 +111,9 @@ class RiderDetail( wx.Panel ):
 		
 		#machines list
 		self.machinesGrid = wx.grid.Grid( self )
-		self.machinesGrid.CreateGrid(0, 1)
+		self.machinesGrid.CreateGrid(0, 2)
 		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
-		#self.machinesGrid.SetColLabelValue(1, 'Categories')
+		self.machinesGrid.SetColLabelValue(1, 'Categories')
 		self.machinesGrid.HideRowLabels()
 		self.machinesGrid.SetRowLabelSize( 0 )
 		self.machinesGrid.SetMargins( 0, 0 )
@@ -387,12 +387,13 @@ class RiderDetail( wx.Panel ):
 						self.machinesGrid.AppendRows(1)
 						row = self.machinesGrid.GetNumberRows() -1
 						self.machinesGrid.SetCellValue(row, 0, str(machineCategories[0]))
-						#self.machinesGrid.SetCellValue(row, 1, ','.join(c for c in machineCategories[1]))
+						self.machinesGrid.SetCellValue(row, 1, ','.join(database.getAbbreviatedCategory(c) for c in machineCategories[1]))
 			else:
 				self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
 			if self.machinesGrid.GetNumberRows() == 0:
 				self.machinesGrid.AppendRows(1)
-			self.machinesGrid.SetColSize( 0, self.machinesGrid.GetGridWindow().GetSize()[0] )
+			self.machinesGrid.AutoSize()
+			self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	

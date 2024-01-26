@@ -482,10 +482,10 @@ class RaceAllocation( wx.Panel ):
 							col += 1
 							if bibMachineCategories[2] is None:
 								# categories have not been changed from event default
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
 							else:
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(self.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
 							col += 1
 							if not database.isRider(bibMachineCategories[0]):
@@ -537,20 +537,6 @@ class RaceAllocation( wx.Panel ):
 			title = ', '.join(n for n in selection)
 		self.currentSelection.SetLabel( title )
 		database.selection = selection
-		
-	def getAbbreviatedCategory( self, categoryName ):
-		database = Model.database
-		if database is None:
-			return
-		if self.season is not None:
-				seasonName = database.getSeasonsList()[self.season]
-				season = database.seasons[seasonName]
-				catCount = 0
-				if 'categories' in season:
-					for categoryAbbrev in season['categories']:
-						if categoryName.lower() == categoryAbbrev[0].lower():
-							return categoryAbbrev[1]
-		return ''
 		
 	def clearGrid( self, grid ):
 		if grid is None:
