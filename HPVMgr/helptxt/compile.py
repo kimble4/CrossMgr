@@ -9,7 +9,7 @@ import datetime
 import markdown
 from contextlib import contextmanager
 
-HtmlDocFolder = 'SprintTimerHtmlDoc'
+HtmlDocFolder = 'HPVMgrHtmlDoc'
 
 @contextmanager 
 def working_directory(directory): 
@@ -90,7 +90,7 @@ def CompileHelp( dir = '.' ):
 			md.reset()
 
 		# Put all the html files into a zipfile.
-		ZipFileName = 'CrossMgrDocHtml.zip'
+		ZipFileName = 'HPVMgrDocHtml.zip'
 		zf = zipfile.ZipFile( ZipFileName, 'w' )
 		for fname in glob.glob("./*.html"):
 			if not ('prolog' in fname or 'epilog' in fname):

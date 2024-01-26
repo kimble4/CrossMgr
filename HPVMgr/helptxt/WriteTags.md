@@ -1,0 +1,41 @@
+[TOC]
+
+## Impinj RFID tag Reading and Writing
+
+HPVMgr can read and write the EPC of RFID tags directly using a suitable tag reader, without any additional software.  This should greatly streamline the process of issuing tags for racers, as tag numbers can be taken directly from the rider database without having to enter them by hand.
+
+### Configuring the RFID reader
+
+These settings are similar to the CrossMgrImpinj and TagReadWrite applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically.
+
+Once the details are entered, click the "**Connect**" button to attempt to connect to the tag reader.  If this is successful, you should see the **Reader status** change to "**Connected**".
+
+If you need to adjust the transmit power or receiver gain, these settings can be accessed via the "**Advanced**" button.  Click "**Reset Connection**" after making changes.
+
+Select the antenna you want to use for writing tags with the "**Write antenna**" dropdown.
+
+### Reading tags
+
+To perform a tag inventory, click the "**Read Tags**" button.  The list at the bottom of the screen should be populated with the details of any tags found.  This can be refreshed at any time by clicking "**Read Tags**" again.
+
+Tags will be read using all antennas, but those found using the antenna selected for writing will be listed first.
+
+### Writing tags
+
+#### Writing to a specific tags:
+
+1. Ensure that "**Write to ALL tags with range**" is disabled.
+1. Perform a tag inventory, and ensure the tag you want to overwrite appears in the list.
+1. Click on the row of the desired tag.  It should be highlighted in orange, and the "**Destination tag**" field will be populated with its EPC.
+1. Enter the new EPC in the "**EPC to write**" field as a hexadecimal number of up to 24 characters.  Alternatively, this may be automatically populated by clicking on one of the "**Write**" buttons on the [RiderDetail][] screen.
+1. Click the "**Write**" button.  The reader will attempt to change the EPC of the tag, and then perform another inventry.
+1. If the write was successful, the tag will be highlighted in **green** and the "**Destination tag**" field will be cleared.
+1. If the write was unsuccessful, the tag will be highlighted in **red**.  Try moving the tag with respect to the aerial and try writing again.  Some tags embedded in items for retail tracking are read-only and cannot be re-written - you may come across one of these in a cycle helmet or similar.
+1. If it still doesn't work, try writing the tag manually using the Impinj *MultiReader* application.
+
+#### Writing to all tags within range:
+
+It is possible to write tags without specifying the EPC of the tag you want to write to.  This simplifies the workflow, but it is dangerous to do this unless you can guarantee that **only** the desired tag is in range.
+
+* Enable the "**Write to ALL tags with range**" setting, and perform the write as detailed above, skipping the step where you select a destination tag.
+

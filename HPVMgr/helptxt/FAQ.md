@@ -2,4 +2,4 @@
 
 ## Frequently Asked Questions
 
-There are no questions, everything is fine!  (fixme)
+There are no questions, everything is fine!

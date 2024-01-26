@@ -3,12 +3,17 @@
 
 # Edit
 
-## Undo (Ctrl-Z)
-Undo the last change.  Undo can be called repeatedly to keep undoing the changes in sequence.
+## Add rider
 
-Undo is not enabled while an event is running.  This is so that you do not undo race entries.
+Adds a new rider to the database.  You will be prompted for their bib number.
 
-## Redo (Ctrl-Y)
-Redo the last change.  Redo can be called repeatedly to keep redoing the last changes that were undo'ed.
+New riders' tag numbers will be initialised using the templates defined in [Settings][].
 
-Redo is not enabled while an event is running.  This is so that you do not redo race entries.
+Proceed to [RiderDetail][] to edit the details of the new rider.
+
+
+## Delete rider
+
+Deletes a rider from the database.  You will be prompted for their bib number.
+
+If the rider has previously been added to the sign-on list for an [Event][Events] this will break the link to their details, including RFID tag numbers.  Use with caution during a race season unless you've just created a new rider in error.

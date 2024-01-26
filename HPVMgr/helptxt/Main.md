@@ -1,28 +1,25 @@
 ## [Quick Start][]
-Get started with SprintTimer now!
+Get started with HPVMgr now!
 
 ## Main Menu
 
 * [File][]
-* [Publish][]
 * [Edit][]
-* [DataMgmt][]
 * [Tools][]
-* [Options][]
 * [JumpTo][]
-* [Web][]
 * [Help][]
 
 ## Screens
 
-* [Main Screen][]
-* [Data][]
-* [Results][]
+* [Riders][]
+* [RiderDetail][]
+* [Events][]
 * [Categories][]
-* [Properties][]
+* [EventEntry][]
+* [RaceAllocation][]
+* [WriteTags][]
+* [Settings][]
 
-## [Sprint Timer Unit][Hardware]
-Hardware manual
 
 ## [FAQ][]
 Frequently asked questions

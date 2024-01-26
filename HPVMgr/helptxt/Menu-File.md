@@ -4,17 +4,16 @@
 # File
 
 ## New...
-Creates a new sprint event.  Opens the Property dialog to configure the new event.
+Creates a new, empty database.
 
-## New Next...
-Creates a new event based on an existing one.  New Next... will keep the same properties and increment the race number.
-This feature allows you to create the next race in the day very quickly.
+## Save...
+Writes the current database to disk.  The filename is defined in [Settings][]
 
 ## Open...
-Open an existing race.
+Open a database from disk.  A backup file will be created automatically the first time a file is opened on a new day.
 
 ## Recent Files
 Keeps track of the last few files opened so then can be opened again quickly.
 
 ## Exit
-Saves data and shuts down SprintTimer.  If recording is in progress, it will pick up exactly where it left off when the sprint file is opened again.
+Quits the application.  Will warn if there are unsaved changes to the database.
