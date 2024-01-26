@@ -27,10 +27,10 @@ Tag numbers can be copied to the clipboard by right-clicking on the tag table.
 #### Writing to a specific tags:
 
 1. Ensure that "**Write to ALL tags with range**" is disabled.
-1. Perform a tag inventory, and ensure the tag you want to overwrite appears in the list.
+1. Perform a tag inventory using the "**Read Tags**" button, and ensure the tag you want to overwrite appears in the list.
 1. Click on the row of the desired tag.  It should be highlighted in orange, and the "**Destination tag**" field will be populated with its EPC.
 1. Enter the new EPC in the "**EPC to write**" field as a hexadecimal number of up to 24 characters.  Alternatively, this may be automatically populated by clicking on one of the "**Write**" buttons on the [RiderDetail][] screen.
-1. Click the "**Write**" button.  The reader will attempt to change the EPC of the tag, and then perform another inventry.
+1. Click the "**Write**" button.  The reader will attempt to change the EPC of the tag, and then perform another inventory.
 1. If the write was successful, the tag will be highlighted in **green** and the "**Destination tag**" field will be cleared.
 1. If the write was unsuccessful, the tag will be highlighted in **red**.  Try moving the tag with respect to the aerial and try writing again.  Some tags embedded in items for retail tracking are read-only and cannot be re-written - you may come across one of these in a cycle helmet or similar.
 1. If it still doesn't work, try writing the tag manually using the Impinj *MultiReader* application.
@@ -39,5 +39,8 @@ Tag numbers can be copied to the clipboard by right-clicking on the tag table.
 
 It is possible to write tags without specifying the EPC of the tag you want to write to.  This simplifies the workflow, but it is dangerous to do this unless you can guarantee that **only** the desired tag is in range.
 
-* Enable the "**Write to ALL tags with range**" setting, and perform the write as detailed above, skipping the step where you select a destination tag.
+1. Enable the "**Write to ALL tags with range**" setting
+1. Enter the new EPC in the "**EPC to write**" field as a hexadecimal number of up to 24 characters.  Alternatively, this may be automatically populated by clicking on one of the "**Write**" buttons on the [RiderDetail][] screen.
+1. Click the "**Write**" button.  The reader will attempt to change the EPC of the tag(s), and then perform an inventory.
+
 

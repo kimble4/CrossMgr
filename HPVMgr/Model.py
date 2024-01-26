@@ -392,7 +392,7 @@ class Database:
 		db['currentRound'] = self.curRnd
 		db['riders'] = dict(sorted(self.riders.items()))
 		db['seasons'] = dict(sorted(self.seasons.items()))
-		return json.dumps(db, indent=2)
+		return json.dumps(db, indent=4)
 
 	def resetCache( self ):
 		memoize.clear()
