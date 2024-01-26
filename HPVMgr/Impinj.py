@@ -71,17 +71,17 @@ class TemplateValidator(wx.Validator):
 class Impinj( wx.Panel ):
 	
 	EPCHexCharsMax = 24
-	
 	StatusIdle, StatusError, StatusSuccess, StatusAttempt = [0, 1, 2, 3]
-	
+	LightGreenColour = wx.Colour(153,255,153)
+	LightRedColour = wx.Colour(255,153,153)
+	GreyColour = wx.Colour(127,127,127)
+	OrangeColour = wx.Colour( 255, 165, 0 )
+		
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		self.parent = parent
 		
-		self.LightGreen = wx.Colour(153,255,153)
-		self.LightRed = wx.Colour(255,153,153)
-		self.Grey = wx.Colour(80,80,80)
 		
 		self.tagWriter = None
 		self.status = self.StatusIdle
@@ -91,6 +91,9 @@ class Impinj( wx.Panel ):
 		bigFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
+		
+		self.teletypeFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		self.teletypeFont.SetFamily( wx.FONTFAMILY_TELETYPE )
 		
 		vs = wx.BoxSizer( wx.VERTICAL )
 		
@@ -177,6 +180,7 @@ class Impinj( wx.Panel ):
 		row += 1
 		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.tagToWrite = wx.TextCtrl( self, style=wx.TE_RIGHT|wx.TE_PROCESS_ENTER, size=(360,-1))
+		self.tagToWrite.SetFont( self.teletypeFont )
 		self.tagToWrite.SetToolTip( wx.ToolTip( 'Tag number (Hexadecimal)' ) )
 		self.tagToWrite.Bind( wx.EVT_TEXT_ENTER, self.onTagToWriteChanged )
 		#self.tagToWrite.Bind( wx.EVT_KILL_FOCUS, self.onTagToWriteChanged )  #seems to become uneditable under windows?
@@ -188,6 +192,7 @@ class Impinj( wx.Panel ):
 		row += 1
 		gbs.Add( wx.StaticText(self, label='Destination tag:'), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.destinationTag = wx.StaticText( self, label= 'None' )
+		self.destinationTag.SetFont( self.teletypeFont )
 		self.destinationTag.SetToolTip( wx.ToolTip( 'Tag that will be overwritten' ) )
 		gbs.Add( self.destinationTag, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL )
 		
@@ -278,14 +283,19 @@ class Impinj( wx.Panel ):
 			self.destinationTag.SetFont( boldFont )
 		else:
 			self.destinationTag.SetLabel('')
-			self.destinationTag.SetFont( wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT) )
+			self.destinationTag.SetFont( self.teletypeFont )
 			
 	def onTagsClick( self, event ):
 		if not self.writeAllTags.IsChecked():
 			row = event.GetRow()
-			data = self.tagsGrid.GetCellValue(row, 0)
-			self.destination = re.sub('[^0-9A-F]','', data).zfill(self.EPCHexCharsMax) #strip non-hex chars and fill with leading zeros
+			data = re.sub('[^0-9A-F]','', self.tagsGrid.GetCellValue(row, 0).upper())
 			self.destinationTag.SetLabel(data)
+			self.destination = data.zfill(self.EPCHexCharsMax) #strip non-hex chars and fill with leading zeros
+			for r in range(self.tagsGrid.GetNumberRows()):
+				for col in range(self.tagsGrid.GetNumberCols()):
+					self.tagsGrid.SetCellBackgroundColour(r, col, self.OrangeColour if r == row else wx.WHITE)
+			self.tagsGrid.AutoSize()
+			self.Layout()
 
 	def setWriteSuccess( self, success ):
 		self.writeSuccess.SetValue( 100 if success else 0 )
@@ -364,6 +374,7 @@ class Impinj( wx.Panel ):
 			self.readButton.Enable()
 			self.writeButton.Enable()
 			self.setStatus( self.StatusSuccess )
+			self.onReadButton(justRead=True)
 	
 	def doAutoDetect( self, event ):
 		wx.BeginBusyCursor()
@@ -492,7 +503,8 @@ class Impinj( wx.Panel ):
 				tagInventory, otherMessages = self.tagWriter.GetTagInventory()
 				tagDetail = { t['Tag']:t for t in self.tagWriter.tagDetail }
 				tagInventory = [(t, tagDetail[t].get('PeakRSSI',''), tagDetail[t].get('AntennaID','')) for t in sorted(tagInventory, key = tagInventoryKey)]
-				Utils.writeLog('Impinj: Read tag inventory: ' + str(tagInventory))
+				#Utils.writeLog('Impinj: Read tag inventory: ' + str(tagInventory))
+				Utils.writeLog('Impinj: Read tag inventory.')
 			except Exception as e:
 				Utils.MessageOK( self, 'Read Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Fails' )
@@ -502,16 +514,18 @@ class Impinj( wx.Panel ):
 			
 			for tag in tagInventory: #first pass
 				asciiValue=bytes.fromhex(tag[0]).decode(encoding="Latin1")
-				asciiValue= ''.join([c if c.isprintable() else '?' for c in asciiValue])
+				asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
 					col = 0
 					self.tagsGrid.SetCellValue(row, col, str(tag[0]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, '"' + asciiValue + '"' )
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
@@ -522,12 +536,12 @@ class Impinj( wx.Panel ):
 					if not justRead:
 						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue().zfill(self.EPCHexCharsMax):
 							for c in range(col):
-								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreen)
+								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreenColour)
 							success = True
 							Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
 						elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
 							for c in range(col):
-								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRed)
+								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRedColour)
 						else:
 							for c in range(col):
 								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
@@ -554,7 +568,7 @@ class Impinj( wx.Panel ):
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
 						col += 1
 						for c in range(col):
-							self.tagsGrid.SetCellTextColour(row, c, self.Grey)
+							self.tagsGrid.SetCellTextColour(row, c, self.GreyColour)
 			self.tagsGrid.AutoSize()
 			totalWidth = 0
 			self.setWriteSuccess( success )
