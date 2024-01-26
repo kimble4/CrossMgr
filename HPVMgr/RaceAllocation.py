@@ -53,6 +53,11 @@ class RaceAllocation( wx.Panel ):
 		self.copyAllocationButton.SetToolTip( wx.ToolTip('Copy the race allocations from another round'))
 		self.copyAllocationButton.Bind( wx.EVT_BUTTON, self.copyAllocation )
 		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
+		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
+		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
+		self.writeSignonButton.Bind( wx.EVT_BUTTON, self.writeSignonSheet )
+		hs.AddStretchSpacer()
+		hs.Add( self.writeSignonButton,  flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
 		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
 		self.showDetails.Bind( wx.EVT_CHECKBOX, self.onShowDetails )
@@ -229,6 +234,9 @@ class RaceAllocation( wx.Panel ):
 							wx.CallAfter( self.refresh )
 			except Exception as e:
 					Utils.logException( e, sys.exc_info() )
+					
+	def writeSignonSheet( self, event ):
+		Utils.getMainWin().events.writeSignonSheet()
 	
 	def editRacerMachine( self, event, bib, iRace ):
 		database = Model.database
