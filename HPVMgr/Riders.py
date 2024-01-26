@@ -163,8 +163,10 @@ class Riders( wx.Panel ):
 			return
 		if bib is None:
 			with wx.NumberEntryDialog(self, 'Enter number for new rider:', 'Bib#:', 'New rider', 0, 1, 65535) as dlg:
-				if dlg.ShowModal():
+				if dlg.ShowModal() == wx.ID_OK:
 					bib = dlg.GetValue()
+				else:
+					return
 		if not database.isRider( bib ):
 			with Model.LockDatabase() as db:
 				db.addRider(int(bib))
@@ -178,8 +180,10 @@ class Riders( wx.Panel ):
 			return
 		if bib is None:
 			with wx.NumberEntryDialog(self, 'Enter number for rider to delete:', 'Bib#:', 'Delete rider', 0, 1, 65535) as dlg:
-				if dlg.ShowModal():
+				if dlg.ShowModal() == wx.ID_OK:
 					bib = dlg.GetValue()
+				else:
+					return
 		if database.isRider( bib ):
 			if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + '?\nThis deletes their tag data!\nThey will no longer be included in sign-on sheets for existing events.', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
 				Utils.writeLog('Delete rider: ' + str(bib))
