@@ -172,52 +172,54 @@ class RiderDetail( wx.Panel ):
 			self.bib = self.riderBib.GetValue()
 			bib = int(self.bib)
 			rider = database.getRider(bib)
-			self.riderFirstName.ChangeValue(rider['FirstName'])
-			self.riderLastName.ChangeValue(rider['LastName'])
-			self.riderGender.SetSelection(rider['Gender'])
-			if 'DOB' in rider:
-				self.riderDOB.SetValue(wx.DateTime.FromTimeT(rider['DOB']) )
-			else:
-				self.riderDOB.SetValue( wx.InvalidDateTime )
-			self.riderAge.SetLabel((' Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
-			if 'NatCode' in rider:
-				self.riderNat.ChangeValue(rider['NatCode'])
-				image = Flags.GetFlagImage( rider['NatCode'])
-				if image:
-					self.riderFlag.SetBitmap(image.Scale(44, 28, wx.IMAGE_QUALITY_HIGH) )
+			if rider is not None:
+				self.riderFirstName.ChangeValue(rider['FirstName'])
+				self.riderLastName.ChangeValue(rider['LastName'])
+				self.riderGender.SetSelection(rider['Gender'])
+				if 'DOB' in rider:
+					self.riderDOB.SetValue(wx.DateTime.FromTimeT(rider['DOB']) )
 				else:
+					self.riderDOB.SetValue( wx.InvalidDateTime )
+				self.riderAge.SetLabel((' Age=' + str(database.getRiderAge(bib))) if database.getRiderAge(bib) else '')
+				if 'NatCode' in rider:
+					self.riderNat.ChangeValue(rider['NatCode'])
+					image = Flags.GetFlagImage( rider['NatCode'])
+					if image:
+						self.riderFlag.SetBitmap(image.Scale(44, 28, wx.IMAGE_QUALITY_HIGH) )
+					else:
+						self.riderFlag.SetBitmap(wx.NullBitmap)
+				else:
+					self.riderNat.ChangeValue('')
 					self.riderFlag.SetBitmap(wx.NullBitmap)
-			else:
-				self.riderNat.ChangeValue('')
-				self.riderFlag.SetBitmap(wx.NullBitmap)
-			if 'License' in rider:
-				self.riderLicense.ChangeValue(rider['License'])
-			else:
-				self.riderLicense.ChangeValue('')
-			if 'Team' in rider:
-				self.riderTeam.SetLabel(rider['Team'])
-			else:
-				self.riderTeam.SetLabel('')
-			if 'LastEntered' in rider:
-				self.riderLastEntered.SetLabel('{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered'])) if rider['LastEntered'] > 0 else '' )
-			else:
-				self.riderLastEntered.SetLabel('')
-			for i in range(10):
-				if 'Tag' + (str(i) if i > 0 else '') in rider:
-					getattr(self, 'riderTag' + str(i), None).ChangeValue(rider['Tag' + (str(i) if i > 0 else '')])
-					getattr(self, 'riderTagDate' + str(i), None).SetLabel( '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['Tag' + (str(i) if i > 0 else '') + 'LastWritten'])) if 'Tag' + (str(i) if i > 0 else '') + 'LastWritten' in rider else '' )
-					getattr(self, 'btnTagCopy' + str(i), None).Enable()
-					getattr(self, 'btnTagWrite' + str(i), None).Enable()
+				if 'License' in rider:
+					self.riderLicense.ChangeValue(rider['License'])
 				else:
-					getattr(self, 'riderTag' + str(i), None).ChangeValue('')
-					getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
-					getattr(self, 'btnTagCopy' + str(i), None).Disable()
-					getattr(self, 'btnTagWrite' + str(i), None).Disable()
-			self.refreshMachinesGrid()
-			self.deleteButton.Enable()
-			self.onEdited( warn=False)
-		except KeyError: # rider does not exist
-			self.clearRiderData()
+					self.riderLicense.ChangeValue('')
+				if 'Team' in rider:
+					self.riderTeam.SetLabel(rider['Team'])
+				else:
+					self.riderTeam.SetLabel('')
+				if 'LastEntered' in rider:
+					self.riderLastEntered.SetLabel('{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered'])) if rider['LastEntered'] > 0 else '' )
+				else:
+					self.riderLastEntered.SetLabel('')
+				for i in range(10):
+					if 'Tag' + (str(i) if i > 0 else '') in rider:
+						getattr(self, 'riderTag' + str(i), None).ChangeValue(rider['Tag' + (str(i) if i > 0 else '')])
+						getattr(self, 'riderTagDate' + str(i), None).SetLabel( '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['Tag' + (str(i) if i > 0 else '') + 'LastWritten'])) if 'Tag' + (str(i) if i > 0 else '') + 'LastWritten' in rider else '' )
+						getattr(self, 'btnTagCopy' + str(i), None).Enable()
+						getattr(self, 'btnTagWrite' + str(i), None).Enable()
+					else:
+						getattr(self, 'riderTag' + str(i), None).ChangeValue('')
+						getattr(self, 'riderTagDate' + str(i), None).SetLabel('')
+						getattr(self, 'btnTagCopy' + str(i), None).Disable()
+						getattr(self, 'btnTagWrite' + str(i), None).Disable()
+				self.refreshMachinesGrid()
+				self.deleteButton.Enable()
+				self.onEdited( warn=False)
+			else: # rider does not exist
+				self.refreshMachinesGrid()
+				self.clearRiderData()
 		except ValueError:  #invalid int
 			self.clearRiderData()
 		self.Layout()
@@ -378,13 +380,16 @@ class RiderDetail( wx.Panel ):
 			self.bib = self.riderBib.GetValue()
 			bib = int(self.bib)
 			rider = database.getRider(bib)
-			self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
-			if 'Machines' in rider:
-				for machineCategories in rider['Machines']:
-					self.machinesGrid.AppendRows(1)
-					row = self.machinesGrid.GetNumberRows() -1
-					self.machinesGrid.SetCellValue(row, 0, str(machineCategories[0]))
-					#self.machinesGrid.SetCellValue(row, 1, ','.join(c for c in machineCategories[1]))
+			if rider is not None:
+				self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
+				if 'Machines' in rider:
+					for machineCategories in rider['Machines']:
+						self.machinesGrid.AppendRows(1)
+						row = self.machinesGrid.GetNumberRows() -1
+						self.machinesGrid.SetCellValue(row, 0, str(machineCategories[0]))
+						#self.machinesGrid.SetCellValue(row, 1, ','.join(c for c in machineCategories[1]))
+			else:
+				self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
 			if self.machinesGrid.GetNumberRows() == 0:
 				self.machinesGrid.AppendRows(1)
 			self.machinesGrid.SetColSize( 0, self.machinesGrid.GetGridWindow().GetSize()[0] )
