@@ -14,6 +14,8 @@ import Version
 
 class Events( wx.Panel ):
 	
+	OrangeColour = wx.Colour( 255, 165, 0 )
+	
 	def getExcelFormatsXLSX( workbook ):
 		titleStyle = workbook.add_format({
 			'bold': True,
@@ -145,7 +147,7 @@ class Events( wx.Panel ):
 		self.eventsGrid.DisableDragColSize()
 		self.eventsGrid.DisableDragRowSize()
 		self.eventsGrid.EnableEditing(False)
-		self.seasonsGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
+		self.eventsGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 		self.eventsGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onEventsRightClick )
 		self.eventsGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onEventsRightClick )
 		self.eventsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectEvt )
@@ -212,7 +214,7 @@ class Events( wx.Panel ):
 		self.roundsGrid.DisableDragColSize()
 		self.roundsGrid.DisableDragRowSize()
 		self.roundsGrid.EnableEditing(False)
-		self.seasonsGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
+		self.roundsGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 		self.roundsGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRoundsRightClick )
 		self.roundsGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onRoundsRightClick )
 		self.roundsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectRnd )
@@ -747,9 +749,13 @@ class Events( wx.Panel ):
 		for seasonName in seasons:
 			self.seasonsGrid.AppendRows(1)
 			row = self.seasonsGrid.GetNumberRows() -1
-			self.seasonsGrid.SetCellValue(row, 0, str(seasonName))
-			self.seasonsGrid.SetCellValue(row, 1, str(len(database.seasons[seasonName]['events'])) if 'events' in database.seasons[seasonName] else '')
-			self.seasonsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+			col = 0
+			self.seasonsGrid.SetCellValue(row, col, str(seasonName))
+			self.seasonsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curSeason else wx.WHITE)
+			col += 1
+			self.seasonsGrid.SetCellValue(row, col, str(len(database.seasons[seasonName]['events'])) if 'events' in database.seasons[seasonName] else '')
+			self.seasonsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+			self.seasonsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curSeason else wx.WHITE)
 		self.seasonsGrid.AutoSize()
 	
 	def refreshEventsGrid( self ):
@@ -766,9 +772,13 @@ class Events( wx.Panel ):
 				for eventName in season['events']:
 					self.eventsGrid.AppendRows(1)
 					row = self.eventsGrid.GetNumberRows() -1
-					self.eventsGrid.SetCellValue(row, 0, eventName )
-					self.eventsGrid.SetCellValue(row, 1, str(len(season['events'][eventName]['rounds'])) if 'rounds' in season['events'][eventName] else '')
-					self.eventsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+					col = 0
+					self.eventsGrid.SetCellValue(row, col, eventName )
+					self.eventsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curEvt else wx.WHITE)
+					col += 1
+					self.eventsGrid.SetCellValue(row, col, str(len(season['events'][eventName]['rounds'])) if 'rounds' in season['events'][eventName] else '')
+					self.eventsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+					self.eventsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curEvt else wx.WHITE)
 		else:
 			self.eventsGrid.SetColLabelValue(0, 'Season\'s events')
 		self.eventsGrid.AutoSize()
@@ -790,9 +800,13 @@ class Events( wx.Panel ):
 					for rndName in evt['rounds']:
 						self.roundsGrid.AppendRows(1)
 						row = self.roundsGrid.GetNumberRows() -1
-						self.roundsGrid.SetCellValue(row, 0, rndName)
-						self.roundsGrid.SetCellValue(row, 1, str(len(evt['rounds'][rndName])) if 'rounds' in evt else '')
-						self.roundsGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
+						col = 0
+						self.roundsGrid.SetCellValue(row, col, rndName)
+						self.roundsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curRnd else wx.WHITE)
+						col += 1
+						self.roundsGrid.SetCellValue(row, col, str(len(evt['rounds'][rndName])) if 'rounds' in evt else '')
+						self.roundsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+						self.roundsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curRnd else wx.WHITE)
 			else:
 				self.roundsGrid.SetColLabelValue(0, 'Event\'s rounds')
 		self.roundsGrid.AutoSize()
