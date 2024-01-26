@@ -10,6 +10,7 @@ import time
 import datetime
 import traceback
 import secrets
+import Model
 
 import Utils
 
@@ -250,6 +251,7 @@ class Impinj( wx.Panel ):
 		self.tagsGrid.DisableDragRowSize()
 		self.tagsGrid.EnableEditing(False)
 		self.tagsGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onTagsClick )
+		self.tagsGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onTagsRightClick )
 
 		vs.Add( self.tagsGrid, flag=wx.EXPAND )
 
@@ -296,6 +298,19 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellBackgroundColour(r, col, self.OrangeColour if r == row else wx.WHITE)
 			self.tagsGrid.AutoSize()
 			self.Layout()
+			
+	def onTagsRightClick( self, event ):
+		row = event.GetRow()
+		menu = wx.Menu()
+		menu.SetTitle('Tag ' + self.tagsGrid.GetCellValue( row, 0 ) )
+		copy = menu.Append( wx.ID_ANY, 'Copy EPC as hex', 'Copy the EPC as hexadecimal...' )
+		self.Bind( wx.EVT_MENU, lambda event, r=row: self.copyTag(r, asAscii=False), copy )
+		asc = menu.Append( wx.ID_ANY, 'Copy EPC as ASCII', 'Copy the EPC as ASCII...' )
+		self.Bind( wx.EVT_MENU, lambda event, r=row: self.copyTag(r, asAscii=True), asc )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 
 	def setWriteSuccess( self, success ):
 		self.writeSuccess.SetValue( 100 if success else 0 )
@@ -577,6 +592,29 @@ class Impinj( wx.Panel ):
 				self.destination = None
 				wx.Bell()
 			self.Layout()
+			
+	def copyTag( self, row, asAscii=False):
+		database = Model.database
+		if database is None:
+			return
+		if asAscii:
+			data = self.tagsGrid.GetCellValue( row, 1 )[1:-1]
+		else:
+			data = self.tagsGrid.GetCellValue( row, 0 )
+		if data:
+			if not asAscii and getattr(database, 'copyTagsWithDelim', False):
+				out = []
+				for i in range(len(data), 0, -4):
+					if i-4 < 0:
+						out.insert(0, '0' * (4 - len(data)%4) +  data[0:i])
+					else:
+						out.insert(0, data[i-4:i])
+				data = '-'.join(out)
+			if wx.TheClipboard.Open():
+				wx.TheClipboard.SetData(wx.TextDataObject(data))
+				wx.TheClipboard.Close()
+		else:
+			Utils.writeLog('Impinj: No tag to copy!')
 				
 	def setTagToWrite( self, tag, info=None ):
 		Utils.writeLog('Impinj set tag to: ' + str(tag))

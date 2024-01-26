@@ -20,6 +20,8 @@ To perform a tag inventory, click the "**Read Tags**" button.  The list at the b
 
 Tags will be read using all antennas, but those found using the antenna selected for writing will be listed first.
 
+Tag numbers can be copied to the clipboard by right-clicking on the tag table.
+
 ### Writing tags
 
 #### Writing to a specific tags:
