@@ -58,6 +58,7 @@ class RiderDetail( wx.Panel ):
 		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
 		self.riderNat.SetToolTip( wx.ToolTip('IOC country code'))
 		self.Bind( wx.EVT_TEXT_ENTER, self.onNatCodeChanged, self.riderNat )
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderNat )
 		ncs.Add( self.riderNat )
 		self.riderFlag = wx.StaticBitmap(self, -1, wx.NullBitmap, size=(44,28))
 		ncs.AddSpacer(10)

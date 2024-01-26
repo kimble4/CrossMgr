@@ -87,14 +87,14 @@ class Database:
 		self.curRnd = None
 		self.riders = {}
 		self.seasons = {}
-		self.tagTemplate = ''
+		self.tagTemplates = {}
 		self.eventCategoryTemplate = 'Race{:d}'
 		if jsonDataFile:
 			try:
 				data = json.load(jsonDataFile)
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
-				self.tagTemplate = data['tagTemplate'] if 'tagTemplate' in data else ''
+				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
 				#print(self.riders)
@@ -169,7 +169,7 @@ class Database:
 			return
 		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
 		for i in range(10):
-			self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplate.format(i,bib)
+			self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplates[i].format(bib)
 		self.setChanged()
 		
 	def deleteRider( self, bib ):
@@ -373,7 +373,7 @@ class Database:
 		self.resetCache()
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
-		db['tagTemplate'] = self.tagTemplate
+		db['tagTemplates'] = self.tagTemplates
 		db['eventCategoryTemplate'] = self.eventCategoryTemplate
 		db['currentSeason'] = self.curSeason
 		db['currentEvent'] = self.curEvt

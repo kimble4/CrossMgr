@@ -40,7 +40,11 @@ class Settings( wx.Panel ):
 		vs.Add( self.copyTagsWithDelim )
 		
 		hs =  wx.BoxSizer(wx.HORIZONTAL)
-		self.tagTemplateLabel = wx.StaticText( self, label=_('Tag template:') )
+		self.tagTemplateNr = wx.Choice( self, choices=['Tag'+str(n) for n in range(10)] )
+		self.tagTemplateNr.SetSelection(0)
+		self.Bind( wx.EVT_CHOICE, self.onChangeTagTemplateNr, self.tagTemplateNr )
+		hs.Add( self.tagTemplateNr, flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.tagTemplateLabel = wx.StaticText( self, label=_(' template: ') )
 		hs.Add( self.tagTemplateLabel, flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.tagTemplate = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(500,-1))
 		self.tagTemplate.SetToolTip( wx.ToolTip('Python format string to init tags of new riders'))
@@ -104,6 +108,16 @@ class Settings( wx.Panel ):
 						database.fileName = fn
 						database.setChanged()
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
+		
+	def onChangeTagTemplateNr( self, event=None ):
+		database = Model.database
+		if database is None:
+			return
+		n = self.tagTemplateNr.GetSelection()
+		if n is not wx.NOT_FOUND:
+			self.tagTemplate.ChangeValue(database.tagTemplates[n] if n in database.tagTemplates else '')
+		else:
+			self.tagTemplate.ChangeValue('')
 
 	def commit( self, event=None ):
 		Utils.writeLog('Settings commit: ' + str(event))
@@ -130,7 +144,9 @@ class Settings( wx.Panel ):
 					Utils.writeLog('filename is now: ' + str(fn))
 					db.fileName = fn
 			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
-			db.tagTemplate = self.tagTemplate.GetValue()
+			n = self.tagTemplateNr.GetSelection()
+			if n is not wx.NOT_FOUND:
+				db.tagTemplates[n] = self.tagTemplate.GetValue()
 			db.eventCategoryTemplate = self.eventCategoryTemplate.GetValue()
 			db.setChanged()
 			config = Utils.getMainWin().config
@@ -156,5 +172,5 @@ class Settings( wx.Panel ):
 		self.dbFileName.SetValue( fn if fn else '' )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
-		self.tagTemplate.SetValue( getattr(database, 'tagTemplate', '') )
+		self.onChangeTagTemplateNr()
 		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )
