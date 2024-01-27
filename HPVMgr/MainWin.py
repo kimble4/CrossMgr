@@ -257,7 +257,7 @@ class MainWin( wx.Frame ):
 		#item = self.helpMenu.Append( wx.ID_ANY, _("&QuickStart..."), _("Get started with CrossMgr Now...") )
 		#self.Bind(wx.EVT_MENU, self.menuHelpQuickStart, item )
 		
-		#self.helpMenu.AppendSeparator()
+		self.helpMenu.AppendSeparator()
 
 		item = self.helpMenu.Append( wx.ID_ABOUT , _("&About..."), _("About HPVMgr...") )
 		self.Bind(wx.EVT_MENU, self.menuAbout, item )
@@ -276,10 +276,10 @@ class MainWin( wx.Frame ):
 		#------------------------------------------------------------------------------
 		#Set the accelerator table so we can switch windows with the function keys.
 		accTable = [(wx.ACCEL_NORMAL, wx.WXK_F1 + i, jumpToIds[i]) for i in range(min(11,len(jumpToIds)))]
-		#self.contextHelpID = wx.ID_HELP
-		#self.Bind(wx.EVT_MENU, self.onContextHelp, id=self.contextHelpID )
-		#accTable.append( (wx.ACCEL_CTRL, ord('H'), self.contextHelpID) )
-		#accTable.append( (wx.ACCEL_SHIFT, wx.WXK_F1, self.contextHelpID) )
+		self.contextHelpID = wx.ID_HELP
+		self.Bind(wx.EVT_MENU, self.onContextHelp, id=self.contextHelpID )
+		accTable.append( (wx.ACCEL_CTRL, ord('H'), self.contextHelpID) )
+		accTable.append( (wx.ACCEL_SHIFT, wx.WXK_F1, self.contextHelpID) )
 		#accTable.append( (wx.ACCEL_CTRL, ord('F'), self.menuFindID) )
 		aTable = wx.AcceleratorTable( accTable )
 		self.SetAcceleratorTable(aTable)
@@ -570,12 +570,12 @@ class MainWin( wx.Frame ):
 		except Exception as e:
 			logException( e, sys.exc_info() )
 	
-	#@logCall
-	#def onContextHelp( self, event ):
-		#try:
-			#webbrowser.open( getHelpURL(self.attrClassName[self.notebook.GetSelection()][2] + '.html') )
-		#except Exception as e:
-			#logException( e, sys.exc_info() )
+	@logCall
+	def onContextHelp( self, event ):
+		try:
+			webbrowser.open( getHelpURL(self.attrClassName[self.notebook.GetSelection()][2] + '.html') )
+		except Exception as e:
+			logException( e, sys.exc_info() )
 	
 	@logCall
 	def menuAbout( self, event ):

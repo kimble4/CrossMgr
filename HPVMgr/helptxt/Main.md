@@ -1,7 +1,9 @@
 ## [Quick Start][]
 Get started with HPVMgr now!
 
-## Main Menu
+## [Main Screen][MainScreen]
+
+## Menus
 
 * [File][]
 * [Edit][]

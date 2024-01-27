@@ -1,5 +1,7 @@
 [Quick Start]:		QuickStart.html
 
+[MainScreen]:		MainScreen.html
+
 [File]: 			Menu-File.html
 [Publish]:			Menu-Publish.html
 [Edit]: 			Menu-Edit.html

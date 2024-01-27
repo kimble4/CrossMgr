@@ -4,10 +4,13 @@
 
 The HPVMgr application is designed to simplfy the BHPC's sign-on and tag management workflow, by dispensing with the need to manually edit sign-on sheets, and integrating the RFID tag writer so that tag numbers do not need to be tediously copied by hand.
 
+We do not fully automate the sign-on process, as it is felt that BHPC members make enough errors when entering their details at sign-on that some human oversight is needed.  Instead, this application is intended to make the generation of CrossMgr sign-on sheets and writing of RFID tags as smooth as possible.
+
+
 ### Setting up a new season
 
-1. At the start of a new season, it is best to **make a copy of the existing database file**, preserving the previous season's sign-on data for reference.
-1. Working on your new copy, switch to the [Events][] screen, and add the new **Season** to the seasons list.
+1. At the start of a new season, it is best to **make a copy of the existing database file**, preserving the previous season's sign-on data for reference.  (If you do not have an existing database file, create a new one by selecting [File/New][File] and then setting the filename on the [Settings][] screen.)
+1. With your new database, switch to the [Events][] screen, and add the new **Season** to the seasons list.
 1. Switch to the [Categories][] screen and set up the **Categories** for the new season.  (You may want to copy the categories from the previous season.)
 1. Optionally delete previous seasons at this point.
 1. Switch to the [Riders][] screen, and optionally delete any old riders who have not raced for a while.
