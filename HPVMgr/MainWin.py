@@ -576,25 +576,6 @@ class MainWin( wx.Frame ):
 			#webbrowser.open( getHelpURL(self.attrClassName[self.notebook.GetSelection()][2] + '.html') )
 		#except Exception as e:
 			#logException( e, sys.exc_info() )
-		
-	@logCall
-	def menuWebIndexPage( self, event ):
-		if not Model.race:
-			return
-		try:
-			Utils.writeLog('Opening {} in browser'.format(WebServer.GetCrossMgrHomePage()) )
-			webbrowser.open( WebServer.GetCrossMgrHomePage(), new = 2, autoraise = True )
-		except Exception as e:
-			logException( e, sys.exc_info() )
-	
-	@logCall
-	def menuWebQRCodePage( self, event ):
-		if not Model.race:
-			return
-		try:
-			webbrowser.open( WebServer.GetCrossMgrHomePage() + '/qrcode.html' , new = 2, autoraise = True )
-		except Exception as e:
-			logException( e, sys.exc_info() )
 	
 	@logCall
 	def menuAbout( self, event ):

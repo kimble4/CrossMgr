@@ -13,6 +13,7 @@ ChangesAssociations=yes
 [Registry]
 ; Automatically configure CrossMgr to launch .cmn files.
 Root: HKCR; Subkey: ".hdb"; ValueType: string; ValueName: ""; ValueData: "HPVMgr"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".hdz"; ValueType: string; ValueName: ""; ValueData: "HPVMgr"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "HPVMgr"; ValueType: string; ValueName: ""; ValueData: "HPVMgr database File"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "HPVMgr\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\HPVMgr.exe,0"
 Root: HKCR; Subkey: "HPVMgr\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\HPVMgr.exe"" ""%1"""

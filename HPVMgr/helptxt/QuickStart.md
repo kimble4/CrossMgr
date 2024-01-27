@@ -39,7 +39,7 @@ The HPVMgr application is designed to simplfy the BHPC's sign-on and tag managem
 1. Using the right-click context menu options, move racers between races until you are happy with the allocation.  Usually slower and inexperienced racers are allocated to the first group (but exceptions may be made for logistical reasons).
 1. Return to the [Events][] screen and select the next round.  Go to [RaceAllocation][] again.
 1. You can use the "**Copy allocation**" button to copy the allocation you made for the previous round.  Otherwise, make whatever changes are needed to the number of races and allocations as described above.
-1. When you are happy with all the allocations, click "**Write sign-on sheet**" to write the .xlsx file to disk for CrossMgr.
+1. When you are happy with all the allocations, click "**Write sign-on sheet**" to write the `.xlsx` file to disk for CrossMgr.
 
 ### Writing RFID tags
 
