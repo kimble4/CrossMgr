@@ -15,6 +15,7 @@ Get started with HPVMgr now!
 
 * [Riders][]
 * [RiderDetail][]
+* [Teams][]
 * [Events][]
 * [Categories][]
 * [EventEntry][]

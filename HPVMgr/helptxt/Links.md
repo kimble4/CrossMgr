@@ -15,6 +15,7 @@
 
 [Riders]:			Riders.html
 [RiderDetail]:		RiderDetail.html
+[Teams]:			Teams.html
 [Events]:			Events.html
 [Categories]:		Categories.html
 [EventEntry]:		EventEntry.html
