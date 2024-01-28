@@ -131,7 +131,7 @@ class EventEntry( wx.Panel ):
 		self.riderMachine.Disable()
 		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
 		gbs.Add( wx.StaticText( self, label='Team:' ), pos=(1,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
-		self.riderTeam = wx.ComboBox(self, value='', choices=[], name='Rider Team', style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(200,-1 ) )
+		self.riderTeam = wx.ComboBox(self, value='', choices=[], name='Rider Team', size=(300,-1 ), style=wx.TE_PROCESS_ENTER|wx.TE_LEFT )
 		self.riderTeam.Disable()
 		gbs.Add( self.riderTeam, pos=(1,3), span=(1,1), flag=wx.EXPAND )
 		self.categoriesLabel = wx.StaticText( self, label='Categories:' )
@@ -174,8 +174,6 @@ class EventEntry( wx.Panel ):
 		self.racersGrid.EnableEditing(False)
 		self.racersGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 		self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRacerRightClick )
-		# self.racersGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.onSeasonsRightClick )
-		# self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.selectSeason )
 		vs.Add( self.racersGrid, flag=wx.EXPAND )
 		
 		self.SetDoubleBuffered( True )
@@ -191,6 +189,7 @@ class EventEntry( wx.Panel ):
 		riderName = dict(self.riderBibNames)[bib]
 		self.riderNameEntry.ChangeValue( riderName )
 		self.updateMachinesChoices(bib)
+		self.updateTeamSelection(bib)
 		self.updateCategorySelection(bib)
 		self.riderMachine.Enable()
 		self.riderTeam.Enable()
@@ -206,6 +205,7 @@ class EventEntry( wx.Panel ):
 				self.riderBibEntry.SetSelection(iBib)
 				self.riderNameEntry.ChangeValue( bibName[1] )
 				self.updateMachinesChoices(bib)
+				self.updateTeamSelection(bib)
 				self.updateCategorySelection(bib)
 				self.riderMachine.Enable()
 				self.riderTeam.Enable()
@@ -340,7 +340,7 @@ class EventEntry( wx.Panel ):
 					if self.riderTeam.GetSelection() is wx.NOT_FOUND:
 						db.teams.append([team, team[0:6].strip().upper(), datetime.datetime.now().timestamp()])
 					else:
-						db.teams[self.riderTeam.GetSelection()][2] = datetime.datetime.now().timestamp()
+						db.teams[self.riderTeam.GetSelection()][2] = int(datetime.datetime.now().timestamp())
 					categories = []
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
@@ -359,7 +359,8 @@ class EventEntry( wx.Panel ):
 							found = True
 							break
 					if not found:
-						db.riders[bib]['Machines'].append([machine, categories])
+						if len(machine) > 0:
+							db.riders[bib]['Machines'].append([machine, categories])
 					if len(team) > 0:
 						db.riders[bib]['Team'] = team
 					elif 'Team' in db.riders[bib]:
@@ -470,6 +471,18 @@ class EventEntry( wx.Panel ):
 				self.riderMachine.SetValue(machines[-1])
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
+			
+	def updateTeamSelection( self, bib ):
+		database = Model.database
+		if database is None:
+			return
+		rider = database.getRider(bib)
+		if rider is not None:
+			if 'Team' in rider:
+				self.riderTeam.SetValue(rider['Team'])
+				return
+		self.riderTeam.SetValue('')
+			
 			
 	def updateCategorySelection( self, bib ):
 		for i in range(EventEntry.numCategories):

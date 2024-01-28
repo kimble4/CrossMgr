@@ -306,13 +306,12 @@ class RiderDetail( wx.Panel ):
 		menu.SetTitle('#' + str(self.bib) + ' Machines')
 		# add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
 		# self.Bind( wx.EVT_MENU, self.addMachine, add )
-		if row >= 1 or (row == 0 and len(self.machinesGrid.GetCellValue(row, 0).strip()) > 0):
-			delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
-			try:
-				self.PopupMenu( menu )
-			except Exception as e:
-				Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
+		delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
+		try:
+			self.PopupMenu( menu )
+		except Exception as e:
+			Utils.writeLog( 'Results:doRightClick: {}'.format(e) )
 		
 	def addMachine( self, event ):
 		database = Model.database
@@ -343,10 +342,11 @@ class RiderDetail( wx.Panel ):
 			bib = int(self.bib)
 			with Model.LockDatabase() as db:
 				rider = db.getRider(bib)
-				del rider['Machines'][row]
-				db.setChanged()
-			self.refreshMachinesGrid()
-			self.Layout()
+				if 'Machines' in rider and len (rider['Machines']) >= row:
+					del rider['Machines'][row]
+					db.setChanged()
+					self.refreshMachinesGrid()
+					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
@@ -390,8 +390,6 @@ class RiderDetail( wx.Panel ):
 						self.machinesGrid.SetCellValue(row, 1, ','.join(database.getAbbreviatedCategory(c) for c in machineCategories[1]))
 			else:
 				self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
-			if self.machinesGrid.GetNumberRows() == 0:
-				self.machinesGrid.AppendRows(1)
 			self.machinesGrid.AutoSize()
 			self.Layout()
 		except Exception as e:
