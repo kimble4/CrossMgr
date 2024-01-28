@@ -86,6 +86,7 @@ class Database:
 		self.curEvt = None
 		self.curRnd = None
 		self.riders = {}
+		self.teams = []
 		self.seasons = {}
 		self.tagTemplates = {}
 		self.eventCategoryTemplate = 'Race{:d}'
@@ -97,7 +98,7 @@ class Database:
 				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
-				#print(self.riders)
+				self.teams = data['teams'] if 'teams' in data else []
 				self.seasons = data['seasons'] if 'seasons' in data else {}
 				self.curSeason = data['currentSeason'] if 'currentSeason' in data else None
 				self.curEvt = data['currentEvent'] if 'currentEvent' in data else None
@@ -391,6 +392,7 @@ class Database:
 		db['currentEvent'] = self.curEvt
 		db['currentRound'] = self.curRnd
 		db['riders'] = dict(sorted(self.riders.items()))
+		db['teams'] = sorted(self.teams)
 		db['seasons'] = dict(sorted(self.seasons.items()))
 		return json.dumps(db, indent=4)
 

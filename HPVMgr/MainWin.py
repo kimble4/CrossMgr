@@ -31,6 +31,7 @@ from Utils				import logCall, logException
 import Version
 from Riders 			import Riders
 from RiderDetail		import RiderDetail
+from Teams				import Teams
 from Events				import Events
 from Categories			import Categories
 from EventEntry			import EventEntry
@@ -194,6 +195,7 @@ class MainWin( wx.Frame ):
 		self.attrClassName = [
 			[ 'riders',			Riders,				_('Riders') ],
 			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
+			[ 'teams',			Teams,				_('Teams') ],
 			[ 'events',			Events,				_('Events') ],
 			[ 'categories',		Categories,			_('Categories') ],
 			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
