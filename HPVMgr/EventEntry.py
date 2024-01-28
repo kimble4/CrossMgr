@@ -131,7 +131,7 @@ class EventEntry( wx.Panel ):
 		self.riderMachine.Disable()
 		gbs.Add( self.riderMachine, pos=(1,1), span=(1,1), flag=wx.EXPAND )
 		gbs.Add( wx.StaticText( self, label='Team:' ), pos=(1,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
-		self.riderTeam = wx.TextCtrl(self, value='', style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(200,-1 ) )
+		self.riderTeam = wx.ComboBox(self, value='', choices=[], name='Rider Team', style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(200,-1 ) )
 		self.riderTeam.Disable()
 		gbs.Add( self.riderTeam, pos=(1,3), span=(1,1), flag=wx.EXPAND )
 		self.categoriesLabel = wx.StaticText( self, label='Categories:' )
@@ -311,7 +311,7 @@ class EventEntry( wx.Panel ):
 				except Exception as e:
 					Utils.logException( e, sys.exc_info() )
 		
-	def onAddToRaceButton( self, event ):  #fixme sanity check at least one categories
+	def onAddToRaceButton( self, event ):
 		database = Model.database
 		if database is None:
 			return
@@ -337,6 +337,10 @@ class EventEntry( wx.Panel ):
 							return
 					machine = self.riderMachine.GetValue()
 					team = self.riderTeam.GetValue()
+					if self.riderTeam.GetSelection() is wx.NOT_FOUND:
+						db.teams.append([team, team[0:6].strip().upper(), datetime.datetime.now().timestamp()])
+					else:
+						db.teams[self.riderTeam.GetSelection()][2] = datetime.datetime.now().timestamp()
 					categories = []
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
@@ -506,7 +510,9 @@ class EventEntry( wx.Panel ):
 			self.riderBibEntry.Clear()
 			self.riderBibEntry.AppendItems( list(map(str ,sorted([bibName[0] for bibName in self.riderBibNames]))) )
 			self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] for bibName in self.riderBibNames]))
-			# enable the categories checkboxes
+			#get the teams database, populate the ComboBox
+			self.riderTeam.Set( [teamAbbrevEntered[0] for teamAbbrevEntered in database.teams] )
+			#enable the categories checkboxes
 			if self.season is not None:
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]

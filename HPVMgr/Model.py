@@ -82,6 +82,7 @@ class Database:
 	def __init__( self, fileName=None, jsonDataFile=None):
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
+		self.writeAbbreviatedTeams = False
 		self.curSeason = None
 		self.curEvt = None
 		self.curRnd = None
@@ -95,6 +96,7 @@ class Database:
 				data = json.load(jsonDataFile)
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
+				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
 				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
@@ -191,6 +193,14 @@ class Database:
 					if categoryName.lower() == categoryAbbrev[0].lower():
 						return categoryAbbrev[1]
 		return ''
+	
+	@memoize
+	def getAbbreviatedTeam( self, teamName ):
+		if self.teams is not None:
+			for teamAbbrevEntered in self.teams:
+				if teamAbbrevEntered[0].lower() == teamName.lower():
+					return teamAbbrevEntered[1] if len(teamAbbrevEntered[1]) > 0 else teamName
+		return teamName
 	
 	@memoize
 	def getSeasonsList( self ):
@@ -338,10 +348,14 @@ class Database:
 						col += 1
 						#team
 						if eventsMachineCategoriesTeam[2]:
-							sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
+							if self.writeAbbreviatedTeams:
+								sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
+							else:
+								sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
 							haveTeam = True
 						col += 1
 						#teamcode
+						#sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
 						col += 1
 						#tag
 						sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
@@ -386,6 +400,7 @@ class Database:
 		self.resetCache()
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
+		db['writeAbbreviatedTeams'] = self.writeAbbreviatedTeams
 		db['tagTemplates'] = self.tagTemplates
 		db['eventCategoryTemplate'] = self.eventCategoryTemplate
 		db['currentSeason'] = self.curSeason

@@ -73,7 +73,7 @@ class Riders( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'License', 'Last Entered']
+		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'License', 'Team', 'Last Entered']
 		self.sortBy = 0
 		self.reverseSort = False
 		
@@ -223,7 +223,9 @@ class Riders( wx.Panel ):
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['NatCode']) if 'NatCode' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 5: # License
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['License']) if 'License' in item[1] else '', reverse=self.reverseSort))
-		elif self.sortBy == 6: # Last entered
+		elif self.sortBy == 6: # Team
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Team']) if 'Team' in item[1] else '', reverse=self.reverseSort))
+		elif self.sortBy == 7: # Last entered
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastEntered'], reverse=self.reverseSort))
 		else: #default (bib)
 			sortedRiders = dict(sorted(riders.items(), reverse=self.reverseSort))
@@ -249,6 +251,9 @@ class Riders( wx.Panel ):
 			col+=1
 			self.ridersGrid.SetCellValue(row, col, rider['License'] if 'License' in rider else '')
 			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+			col+=1
+			self.ridersGrid.SetCellValue(row, col, rider['Team'] if 'Team' in rider else '')
+			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
 			col+=1
 			if rider['LastEntered']:
 				dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered']))

@@ -59,6 +59,9 @@ class Settings( wx.Panel ):
 		hs.Add( self.eventCategoryTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs, flag=wx.EXPAND )
 		
+		self.writeAbbreviatedTeams = wx.CheckBox( self, label='Use abbreviated team names in sign-on sheet' )
+		vs.Add( self.writeAbbreviatedTeams )
+		
 		self.commitButton = wx.Button( self, label='Commit')
 		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
@@ -148,13 +151,14 @@ class Settings( wx.Panel ):
 			if n is not wx.NOT_FOUND:
 				db.tagTemplates[n] = self.tagTemplate.GetValue()
 			db.eventCategoryTemplate = self.eventCategoryTemplate.GetValue()
+			db.writeAbbreviatedTeams = self.writeAbbreviatedTeams.IsChecked()
 			db.setChanged()
 			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
 			fontSize = self.fontSize.GetValue()
 			if fontSize != Utils.getMainWin().defaultFontSize:
 				Utils.MessageOK( self, 'Font change will take when the application is restarted.' )
-			config.WriteInt('fontSize', fontSize)  #try changing mainwin here?
+			config.WriteInt('fontSize', fontSize)
 			config.Flush()
 		if event: #called by button
 			self.refresh()
@@ -174,3 +178,4 @@ class Settings( wx.Panel ):
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.onChangeTagTemplateNr()
 		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )
+		self.writeAbbreviatedTeams.SetValue( getattr(database, 'writeAbbreviatedTeams', False) )
