@@ -4,7 +4,7 @@
 
 ### Write sign-on sheet...
 
-Writes the currently selected sign-on sheet to disk.  See [Events][] for details.
+Writes the sign-on sheet for the currently selected **Event** to disk.  See [Events][] for details.
 
 ### Copy Log File to Clipboard
 Copies the last 1,000 lines of the HPVMgr log file to the clipboard.

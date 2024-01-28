@@ -2,18 +2,18 @@
 
 ## Events
 
-This screen displays a list of all seasons, events and rounds:
+This screen displays a list of all **Seasons**, **Events** and **Rounds**:
 
 #### Seasons
-A **season** represents a championship series, which consiststs of a number of individual **Events**.  A season will have a common set of [Categories][].
+A **Season** represents a championship series, which consiststs of a number of individual **Events**.  A season will have a common set of [Categories][].
 
 If you will be recycling bib numbers, it is not recommended to have more than one or two seasons per HPVMgr database file, as older sign-on sheets will become out of sync with the bib numbers in Riders list.
 
 #### Events
-An **Event** typically represents a day of racing.  It may consist of several **Rounds**.  There will be a number of **Events** in a **Season**.
+An **Event** typically represents a day of racing.  It will contain at least one **Round**.  There will be a number of **Events** in a **Season**.
 
 #### Rounds
-A **Round** is an individual competition, for example a *30 minute race* or a *1-lap time trial*.  A **Round** may optionally be split into more than one **Race** to reduce the number of riders on the track simultaneously.
+A **Round** is an individual competition, for example a *30 minute criterium* or a *1-lap time trial*.  A **Round** may optionally be split into more than one **Race** to reduce the number of riders on the track simultaneously.
 
 ### Seasons/Events/Rounds tables
 Click on table items to select a current **Season**, **Event** and **Round**, which will be highlighted in orange and displayed below the tables as the **Current selection**.  This will be used by the [EventEntry][] and [RaceAllocation][] screens.
