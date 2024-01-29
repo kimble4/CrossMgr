@@ -4,7 +4,7 @@
 
 A **Round** may be split into more than one **Race** in order to limit the numbers of riders on the track at once for safety reasons.  This screen allows you to allocate riders to specific races on a round-by-round basis.
 
-The currently selected **Round** will be displayed at the top of the screen.  To change this, go to the [Events][] screen.
+The currently selected **Round** can be changed at the top of the screen.  To change the **Season** or **Event**, go to the [Events][] screen.
 
 To allocate racers to races:
 

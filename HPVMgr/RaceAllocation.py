@@ -38,11 +38,19 @@ class RaceAllocation( wx.Panel ):
 		self.riderBibNames = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
+		hs = wx.BoxSizer( wx.HORIZONTAL )
 		self.currentSelection = wx.StaticText( self, label='No round selected' )
 		self.currentSelection.SetFont( bigFont )
-		vs.Add( self.currentSelection, flag=wx.ALIGN_CENTRE )
+		hs.Add( self.currentSelection, flag=wx.ALIGN_CENTRE )
+		self.chooseRound = wx.Choice( self, choices=[], name='Select round' )
+		self.chooseRound.SetFont( bigFont )
+		hs.Add( self.chooseRound, flag=wx.ALIGN_CENTER_VERTICAL )
+		vs.Add( hs, flag=wx.ALIGN_CENTRE )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.chooseRound.Bind( wx.EVT_CHOICE, self.onChooseRound )
+		
 		hs.Add( wx.StaticText( self, label='Number of races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		self.numberOfRaces = intctrl.IntCtrl( self, value=self.nrRaces, name='Number of races', min=0, max=RaceAllocation.maxRaces, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
@@ -201,6 +209,15 @@ class RaceAllocation( wx.Panel ):
 				self.refreshRaceTables()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				
+	def onChooseRound( self, event ):
+		self.rnd = self.chooseRound.GetSelection()
+		self.refreshCurrentSelection()
+		self.refreshRaceTables()
+		with Model.LockDatabase() as db:
+			db.curRnd = self.rnd
+			db.setChanged()
+		self.Layout()
 		
 	def copyAllocation( self, event ):
 		database = Model.database
@@ -533,17 +550,18 @@ class RaceAllocation( wx.Panel ):
 			return
 		selection = []
 		title = 'No round selected'
-		if self.season is not None and self.evt is not None and self.rnd is not None:
+		#if self.season is not None and self.evt is not None and self.rnd is not None:
+		if self.season is not None and self.evt is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
 			season = database.seasons[seasonName]
 			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
-			evt = season['events'][evtName]
-			rndName = list(evt['rounds'])[self.rnd]
-			selection.append( rndName )
+			# evt = season['events'][evtName]
+			# rndName = list(evt['rounds'])[self.rnd]
+			# selection.append( rndName )
 			title = ', '.join(n for n in selection)
-		self.currentSelection.SetLabel( title )
+		self.currentSelection.SetLabel( title + ', ' )
 		database.selection = selection
 		
 	def clearGrid( self, grid ):
@@ -571,21 +589,28 @@ class RaceAllocation( wx.Panel ):
 			self.evt = database.curEvt
 			self.rnd = database.curRnd
 			self.refreshCurrentSelection()
+			self.chooseRound.Clear()
 			#number of races
-			if self.season is not None and self.evt is not None and self.rnd is not None:
+			if self.season is not None and self.evt is not None:
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
-				rndName = list(evt['rounds'])[self.rnd]
-				rnd = evt['rounds'][rndName]
-				self.nrRaces = len(rnd)
-				self.numberOfRaces.ChangeValue(self.nrRaces)
-				self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
-				self.refreshNumberOfRaces()
-				#process unallocated/missing Riders
-				self.addUnallocatedRiders()
-				self.refreshRaceTables()
+				rounds = list(evt['rounds'])
+				#update round choice
+				self.chooseRound.AppendItems( rounds  )
+				self.chooseRound.SetSelection(self.rnd if self.rnd is not None else wx.NOT_FOUND)
+				if self.rnd is not None:
+					#update tables
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					self.nrRaces = len(rnd)
+					self.numberOfRaces.ChangeValue(self.nrRaces)
+					self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
+					self.refreshNumberOfRaces()
+					#process unallocated/missing Riders
+					self.addUnallocatedRiders()
+			self.refreshRaceTables()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			self.nrRaces = 0
