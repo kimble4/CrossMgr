@@ -527,10 +527,10 @@ class RaceAllocation( wx.Panel ):
 						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
 					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 					iRace += 1
+				self.Layout()
 				if len(deletedRiders) > 0:
 					Utils.writeLog('Racer(s): ' + ', '.join([str(r) for r in deletedRiders if r]) + ' do not exist in Riders database!')
 					Utils.MessageOK( self, 'Racer(s) do not exist in Riders database:\n' + ', '.join([str(r) for r in deletedRiders if r]) + '\nThey will not be added to the sign-on sheet.', 'Riders do not exist')
-				self.Layout()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		
