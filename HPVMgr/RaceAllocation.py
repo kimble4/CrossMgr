@@ -221,12 +221,10 @@ class RaceAllocation( wx.Panel ):
 				
 	def onChooseRound( self, event ):
 		self.rnd = self.chooseRound.GetSelection()
-		self.refreshCurrentSelection()
-		self.refreshRaceTables()
 		with Model.LockDatabase() as db:
 			db.curRnd = self.rnd
 			db.setChanged()
-		self.Layout()
+		wx.CallAfter( self.refresh )
 		
 	def copyAllocation( self, event ):
 		database = Model.database

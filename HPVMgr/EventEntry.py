@@ -370,7 +370,6 @@ class EventEntry( wx.Panel ):
 					if len(categories) == 0:
 						Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' has no categories!', 'No categories' )
 					evt['racers'].append([bib, machine, categories, team])
-					evt['racers'].sort(key=lambda a: a[0])
 					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
 					if 'Machines' not in db.riders[bib]:
 						db.riders[bib]['Machines'] = []
@@ -394,11 +393,11 @@ class EventEntry( wx.Panel ):
 					self.riderMachine.Disable()
 					self.clearCategorySelections()
 					self.refreshCurrentSelection()
-					self.refreshRaceAllocationTable()
+					self.refreshRaceAllocationTable(makeLastRowVisible=True)
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 					
-	def refreshRaceAllocationTable( self ):
+	def refreshRaceAllocationTable( self, makeLastRowVisible=False ):
 		self.clearGrid(self.racersGrid)
 		database = Model.database
 		if database is None:
@@ -450,6 +449,8 @@ class EventEntry( wx.Panel ):
 								self.racersGrid.SetCellBackgroundColour(row, c, self.yellowColour)
 				self.racersGrid.AutoSize()
 				self.Layout()
+				if makeLastRowVisible:
+					self.racersGrid.MakeCellVisible(self.racersGrid.GetNumberRows()-1, 0)
 				if len(deletedRiders) > 0:
 					Utils.MessageOK( self, 'Racer(s) do not exist in Riders database:\n' + ', '.join([str(r) for r in deletedRiders if r]) + '\nThey will not be added to the sign-on sheet.', 'Riders do not exist')
 			except Exception as e:
@@ -520,6 +521,14 @@ class EventEntry( wx.Panel ):
 
 	def commit( self, event=None ):
 		Utils.writeLog('EventEntry commit: ' + str(event))
+		if self.season is not None and self.evt is not None:
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				if 'racers' in evt:
+					evt['racers'].sort(key=lambda a: a[0])  # Sort the racers list
 		if event: #called by button
 			wx.CallAfter( self.refresh )
 	
