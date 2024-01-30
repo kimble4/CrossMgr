@@ -47,6 +47,9 @@ class RaceAllocation( wx.Panel ):
 		self.chooseRound = wx.Choice( self, choices=[], name='Select round' )
 		self.chooseRound.SetFont( bigFont )
 		hs.Add( self.chooseRound, flag=wx.ALIGN_CENTER_VERTICAL )
+		self.totalRacers = wx.StaticText( self, label='' )
+		self.totalRacers.SetFont( bigFont )
+		hs.Add( self.totalRacers, flag=wx.ALIGN_CENTER_VERTICAL )
 		vs.Add( hs, flag=wx.ALIGN_CENTRE )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
@@ -183,6 +186,8 @@ class RaceAllocation( wx.Panel ):
 							newRace.append(bibMachineCategories)
 							db.setChanged()
 							break
+				if bib in self.unallocatedBibs:
+					self.unallocatedBibs.remove(bib)
 				self.refreshRaceTables()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
@@ -208,6 +213,8 @@ class RaceAllocation( wx.Panel ):
 							newRace.append(bibMachineCategories)
 							db.setChanged()
 							break
+				if bib in self.unallocatedBibs:
+					self.unallocatedBibs.remove(bib)
 				self.refreshRaceTables()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
@@ -486,6 +493,7 @@ class RaceAllocation( wx.Panel ):
 						evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
 				iRace = 0
 				deletedRiders = []
+				totalRacers = 0
 				for race in rnd:
 					#print(race)
 					for bibMachineCategories in sorted(race):
@@ -524,7 +532,9 @@ class RaceAllocation( wx.Panel ):
 									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
 						else:
 							Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
-					getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()) + ' racers)')
+					nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
+					getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
+					totalRacers += nrRacers
 					if self.showDetails.IsChecked():
 						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
 						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
@@ -533,6 +543,7 @@ class RaceAllocation( wx.Panel ):
 						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
 					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 					iRace += 1
+				self.totalRacers.SetLabel(' (' + str(totalRacers) + ' racers)')
 				self.Layout()
 				if len(deletedRiders) > 0:
 					Utils.writeLog('Racer(s): ' + ', '.join([str(r) for r in deletedRiders if r]) + ' do not exist in Riders database!')
@@ -559,16 +570,12 @@ class RaceAllocation( wx.Panel ):
 			return
 		selection = []
 		title = 'No round selected'
-		#if self.season is not None and self.evt is not None and self.rnd is not None:
 		if self.season is not None and self.evt is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
 			season = database.seasons[seasonName]
 			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
-			# evt = season['events'][evtName]
-			# rndName = list(evt['rounds'])[self.rnd]
-			# selection.append( rndName )
 			title = ', '.join(n for n in selection)
 		self.currentSelection.SetLabel( title + ', ' )
 		database.selection = selection
