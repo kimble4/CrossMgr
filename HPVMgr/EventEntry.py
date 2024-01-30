@@ -121,8 +121,10 @@ class EventEntry( wx.Panel ):
 		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRiderName )
 		gbs.Add( self.riderNameEntry, pos=(0,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( wx.StaticText( self, label='Bib:' ), pos=(0,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
-		self.riderBibEntry = wx.Choice( self, choices=[] )
-		self.riderBibEntry.Bind( wx.EVT_CHOICE, self.onSelectBib )
+		
+		self.riderBibEntry = wx.ComboBox( self, value='', choices=[], name='Rider Bib', size=(100,-1), style=wx.TE_PROCESS_ENTER )
+		self.riderBibEntry.Bind( wx.EVT_COMBOBOX, self.onSelectBib )
+		self.riderBibEntry.Bind( wx.EVT_TEXT_ENTER, self.onSelectBib )
 		gbs.Add( self.riderBibEntry, pos=(0,3), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( wx.StaticText( self, label='Machine:' ), pos=(1,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.riderMachine = wx.ComboBox(self, value='', choices=[], name='Rider Machine', size=(300,-1), style=wx.TE_PROCESS_ENTER)
@@ -184,29 +186,29 @@ class EventEntry( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		iBib = self.riderBibEntry.GetSelection()
-		bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
-		riderName = dict(self.riderBibNames)[bib]
+		try:
+			bib = int(self.riderBibEntry.GetValue())
+			riderName = dict(self.riderBibNames)[bib]
+			self.riderMachine.Enable()
+			self.riderTeam.Enable()
+		except (ValueError, KeyError):
+			bib = None
+			riderName = ''
+			self.riderMachine.Disable()
+			self.riderTeam.Disable()
 		self.riderNameEntry.ChangeValue( riderName )
 		self.updateMachinesChoices(bib)
 		self.updateTeamSelection(bib)
-		self.updateCategorySelection(bib)
-		self.riderMachine.Enable()
-		self.riderTeam.Enable()
 		self.onSelectMachine()
 		
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
-		sortedBibNames = sorted([bibName[0] for bibName in self.riderBibNames])
 		for bibName in self.riderBibNames:
 			if name == re.sub("[^a-z ]", "", bibName[1].lower()):
-				iBib = sortedBibNames.index(bibName[0])
-				bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
-				self.riderBibEntry.SetSelection(iBib)
+				self.riderBibEntry.SetValue(str(bibName[0]))
 				self.riderNameEntry.ChangeValue( bibName[1] )
-				self.updateMachinesChoices(bib)
-				self.updateTeamSelection(bib)
-				self.updateCategorySelection(bib)
+				self.updateMachinesChoices(bibName[0])
+				self.updateTeamSelection(bibName[0])
 				self.riderMachine.Enable()
 				self.riderTeam.Enable()
 				return
@@ -227,8 +229,7 @@ class EventEntry( wx.Panel ):
 		if database is None:
 			return
 		try:
-			iBib = self.riderBibEntry.GetSelection()
-			bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
+			bib = int(self.riderBibEntry.GetValue())
 			categories = []
 			if 'Machines' not in database.riders[bib]:
 				return
@@ -315,13 +316,15 @@ class EventEntry( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		iBib = self.riderBibEntry.GetSelection()
-		if iBib == wx.NOT_FOUND:
-		 	return
-		bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
-		riderName = dict(self.riderBibNames)[bib]
+		# iBib = self.riderBibEntry.GetSelection()
+		# if iBib == wx.NOT_FOUND:
+		#  	return
+		# bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
+		# riderName = dict(self.riderBibNames)[bib]
 		if self.season is not None and self.evt is not None:
 			try:
+				bib = int(self.riderBibEntry.GetValue())
+				
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
@@ -368,9 +371,9 @@ class EventEntry( wx.Panel ):
 					db.setChanged()
 					self.riderNameEntry.ChangeValue( '' )
 					self.updateMachinesChoices(None)
-					self.riderBibEntry.SetSelection(wx.NOT_FOUND)
+					self.riderBibEntry.ChangeValue('')
 					self.riderMachine.Disable()
-					self.updateCategorySelection(None)
+					self.clearCategorySelections()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable()
 			except Exception as e:
@@ -468,7 +471,8 @@ class EventEntry( wx.Panel ):
 					machines.append(machineCategories[0])
 				self.riderMachine.Clear()
 				self.riderMachine.Set( machines )
-				self.riderMachine.SetValue(machines[-1])
+				self.riderMachine.ChangeValue(machines[-1])
+				self.onSelectMachine()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
@@ -484,9 +488,8 @@ class EventEntry( wx.Panel ):
 		self.riderTeam.SetValue('')
 			
 			
-	def updateCategorySelection( self, bib ):
+	def clearCategorySelections( self ):
 		for i in range(EventEntry.numCategories):
-			#if bib is None:
 			getattr(self, 'riderCategory' + str(i), None).SetValue(False)
 
 	def clearGrid( self, grid ):
@@ -506,22 +509,30 @@ class EventEntry( wx.Panel ):
 		if database is None:
 			return
 		try:
+			self.riderBibEntry.Clear()
+			self.riderBibNames.clear()
 			#get current selection
 			self.season = database.curSeason
 			self.evt = database.curEvt
 			self.refreshCurrentSelection()
-			#get the riders database, populate the bib selection drop-down and the rider name AutoComplete
+			#get the riders database, populate the bib selection drop-down
 			riders = database.getRiders()
 			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
 			sortedRiders = dict(sorted(firstNameSortedRiders.items(), key=lambda item: item[1]['LastName'], reverse=False))
-			self.riderBibNames.clear()
 			for bib in sortedRiders:
 				rider = riders[bib]
 				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
 				if name:
 					self.riderBibNames.append((bib, name))
-			self.riderBibEntry.Clear()
 			self.riderBibEntry.AppendItems( list(map(str ,sorted([bibName[0] for bibName in self.riderBibNames]))) )
+			#add the riders again in firstname latname order, populate the AutoComplete
+			lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=False))
+			sortedRiders = dict(sorted(lastNameSortedRiders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
+			for bib in sortedRiders:
+				rider = riders[bib]
+				name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
+				if name:
+					self.riderBibNames.append((bib, name))
 			self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] for bibName in self.riderBibNames]))
 			#get the teams database, populate the ComboBox
 			self.riderTeam.Set( [teamAbbrevEntered[0] for teamAbbrevEntered in database.teams] )
