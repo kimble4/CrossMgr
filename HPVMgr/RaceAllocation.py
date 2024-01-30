@@ -519,6 +519,7 @@ class RaceAllocation( wx.Panel ):
 									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
 						else:
 							Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
+					getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()) + ' racers)')
 					if self.showDetails.IsChecked():
 						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
 						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
@@ -533,6 +534,9 @@ class RaceAllocation( wx.Panel ):
 					Utils.MessageOK( self, 'Racer(s) do not exist in Riders database:\n' + ', '.join([str(r) for r in deletedRiders if r]) + '\nThey will not be added to the sign-on sheet.', 'Riders do not exist')
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+		else:
+			for iRace in range(RaceAllocation.maxRaces):
+				getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1))
 		
 	def refreshNumberOfRaces( self ):
 		self.numberOfRaces.SetValue(self.nrRaces)
