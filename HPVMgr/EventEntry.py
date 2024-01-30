@@ -354,11 +354,15 @@ class EventEntry( wx.Panel ):
 							self.refreshCurrentSelection()
 							return
 					machine = self.riderMachine.GetValue()
-					team = self.riderTeam.GetValue()
-					if self.riderTeam.GetSelection() is wx.NOT_FOUND:
-						db.teams.append([team, team[0:6].strip().upper(), datetime.datetime.now().timestamp()])
-					else:
-						db.teams[self.riderTeam.GetSelection()][2] = int(datetime.datetime.now().timestamp())
+					team = self.riderTeam.GetValue().strip()
+					foundTeam = False
+					for teamAbbrevEntered in db.teams:
+						if teamAbbrevEntered[0] == team:  #update entered date for team
+							teamAbbrevEntered[2] = int(datetime.datetime.now().timestamp())
+							foundTeam = True
+							break
+					if not foundTeam and len(team) > 0:  #add a new team
+						db.teams.append([team, team[0:6].strip().upper(), int(datetime.datetime.now().timestamp())])
 					categories = []
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():

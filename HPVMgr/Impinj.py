@@ -380,7 +380,7 @@ class Impinj( wx.Panel ):
 				
 				self.setStatus( self.StatusError )
 				
-				Utils.MessageOK( self, 'Reader Connection Fails to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Reset Connection"'.format(self.getHost(), e),
+				Utils.MessageOK( self, 'Reader Connection Fails to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost(), e),
 								'Reader Connection Fails' )
 				self.tagWriter = None
 				self.readButton.Disable()
