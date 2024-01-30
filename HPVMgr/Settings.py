@@ -91,6 +91,8 @@ class Settings( wx.Panel ):
 							style=wx.FD_SAVE ) as dlg:
 			if dlg.ShowModal() == wx.ID_OK:
 				fn = dlg.GetPath()
+				if not fn.lower().endswith('.hdb'):
+					fn += '.hdb'
 				oldfn = database.fileName
 				self.dbFileName.SetValue( fn )
 				if fn != oldfn:
