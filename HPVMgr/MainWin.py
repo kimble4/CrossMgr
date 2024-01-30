@@ -460,6 +460,7 @@ class MainWin( wx.Frame ):
 	def menuNew( self, event ):
 		self.showPage(self.iRidersPage)
 		Model.database = Model.Database()
+		self.refreshAll()
 		
 		
 	def updateRecentFiles( self ):
