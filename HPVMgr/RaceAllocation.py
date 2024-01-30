@@ -17,6 +17,7 @@ class RaceAllocation( wx.Panel ):
 	whiteColour = wx.Colour( 255, 255, 255 )
 	orangeColour = wx.Colour( 255, 165, 0 )
 	yellowColour = wx.Colour( 255, 255, 0 )
+	lightBlueColour = wx.Colour( 153, 205, 255 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -36,6 +37,7 @@ class RaceAllocation( wx.Panel ):
 		boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
 		self.riderBibNames = []
+		self.unallocatedBibs = []
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		hs = wx.BoxSizer( wx.HORIZONTAL )
@@ -428,13 +430,13 @@ class RaceAllocation( wx.Panel ):
 			for race in rnd:  # first pass to see what's allocated
 				for bibMachineCategories in sorted(race):
 					allocatedBibs.append(bibMachineCategories[0])
-			unallocatedBibs = []
+			self.unallocatedBibs.clear()
 			enteredBibs = []
 			if 'racers' in evt: # build list of unallocated riders
 				for bibMachineCategoriesTeam in sorted(evt['racers']):
 					enteredBibs.append(bibMachineCategoriesTeam[0])
 					if bibMachineCategoriesTeam[0] not in allocatedBibs:
-						unallocatedBibs.append(bibMachineCategoriesTeam[0])
+						self.unallocatedBibs.append(bibMachineCategoriesTeam[0])
 			missingBibs = [bib for bib in allocatedBibs if bib not in enteredBibs]
 			with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
@@ -454,10 +456,10 @@ class RaceAllocation( wx.Panel ):
 							iRace += 1
 						db.setChanged()
 					# now add the unallocated racers to the first race
-					if len(unallocatedBibs) > 0:
+					if len(self.unallocatedBibs) > 0:
 						if len(rnd) > 0:
 							race = rnd[0] # first race
-							for bib in unallocatedBibs:
+							for bib in self.unallocatedBibs:
 								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race 1.' )
 								race.append([bib, None, None])
 							db.setChanged()
@@ -515,6 +517,9 @@ class RaceAllocation( wx.Panel ):
 							col += 1
 							if not database.isRider(bibMachineCategories[0]):
 								deletedRiders.append(bibMachineCategories[0])
+								for c in range(col):
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.lightBlueColour)
+							if bibMachineCategories[0] in self.unallocatedBibs:
 								for c in range(col):
 									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
 						else:
