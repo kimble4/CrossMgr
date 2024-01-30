@@ -171,8 +171,14 @@ class Database:
 			Utils.writeLog( 'Tried to add existing rider!' )
 			return
 		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
+		tagsNoInit = []
 		for i in range(10):
-			self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplates[i].format(bib)
+			try:
+				self.riders[bib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplates[i].format(bib)
+			except KeyError:
+				tagsNoInit.append(i)
+		if len(tagsNoInit) > 0:
+			Utils.writeLog('Not initialising ' + ', '.join(['Tag' + str(tag) for tag in tagsNoInit]) + ' for rider #' + str(bib) + ': no Tag Template defined.')
 		self.setChanged()
 		
 	def deleteRider( self, bib ):
