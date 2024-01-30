@@ -445,7 +445,7 @@ class RiderDetail( wx.Panel ):
 			else:
 				if Utils.MessageOKCancel( self, 'Rider #' + self.bib + ' does not exist, do you want to add them?', title = 'Add new rider?', iconMask = wx.ICON_QUESTION):
 					with Model.LockDatabase() as db:
-						db.addRider(bib)
+						db.addRider(bib, firstName=self.riderFirstName.GetValue() if self.riderFirstName.GetValue() else None, lastName=self.riderLastName.GetValue() if self.riderLastName.GetValue() else None, gender=self.riderGender.GetSelection())
 					wx.CallAfter( self.refresh )
 				else:
 					self.bib=''

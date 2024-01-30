@@ -518,6 +518,7 @@ class MainWin( wx.Frame ):
 	
 	@logCall
 	def menuSave( self, event ):
+		self.commit()
 		self.saveDatabase()
 		
 	def saveDatabase( self ):

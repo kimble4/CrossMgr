@@ -32,9 +32,13 @@ class Settings( wx.Panel ):
 		self.btn = wx.Button( self, label='{}...'.format(_('Browse')) )
 		self.btn.Bind( wx.EVT_BUTTON, self.onBrowseDatabase )
 		hs.Add( self.btn, flag=wx.ALIGN_CENTER_VERTICAL )
-		
-		
 		vs.Add( hs, flag=wx.EXPAND)
+		
+		hs = wx.BoxSizer(wx.HORIZONTAL)
+		hs.Add( wx.StaticText(self, label='Allocate bib numbers start from: '), flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.allocateBibsFrom = intctrl.IntCtrl( self, value=1, name='Allocate bibs from', min=0, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
+		hs.Add( self.allocateBibsFrom, flag=wx.ALIGN_CENTRE_VERTICAL )
+		vs.Add( hs )
 		
 		self.copyTagsWithDelim = wx.CheckBox( self, label='Copy tags with delmiters (for MultiReader)' )
 		vs.Add( self.copyTagsWithDelim )
@@ -148,6 +152,7 @@ class Settings( wx.Panel ):
 							return
 					Utils.writeLog('filename is now: ' + str(fn))
 					db.fileName = fn
+			db.allocateBibsFrom = self.allocateBibsFrom.GetValue()
 			db.copyTagsWithDelim = self.copyTagsWithDelim.IsChecked()
 			n = self.tagTemplateNr.GetSelection()
 			if n is not wx.NOT_FOUND:
@@ -177,6 +182,7 @@ class Settings( wx.Panel ):
 		self.fontSize.SetValue(config.ReadInt('fontSize') if config.ReadInt('fontSize') else Utils.getMainWin().defaultFontSize)
 		self.dbFileName.SetValue( fn if fn else '' )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
+		self.allocateBibsFrom.SetValue( getattr(database, 'allocateBibsFrom', '1') )
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.onChangeTagTemplateNr()
 		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )

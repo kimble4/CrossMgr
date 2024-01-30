@@ -162,7 +162,9 @@ class Riders( wx.Panel ):
 		if database is None:
 			return
 		if bib is None:
-			with wx.NumberEntryDialog(self, 'Enter number for new rider:', 'Bib#:', 'New rider', 0, 1, 65535) as dlg:
+			bib = database.getNextUnusedBib()
+			print('next unusued:' + str(bib))
+			with wx.NumberEntryDialog(self, 'Enter number for new rider:', 'Bib#:', 'New rider', bib, 1, 65535) as dlg:
 				if dlg.ShowModal() == wx.ID_OK:
 					bib = dlg.GetValue()
 				else:

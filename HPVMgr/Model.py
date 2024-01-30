@@ -83,6 +83,7 @@ class Database:
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
 		self.writeAbbreviatedTeams = False
+		self.allocateBibsFrom = 1
 		self.curSeason = None
 		self.curEvt = None
 		self.curRnd = None
@@ -97,6 +98,7 @@ class Database:
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
+				self.allocateBibsFrom = data['allocateBibsFrom'] if 'allocateBibsFrom' in data else 1
 				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
@@ -121,6 +123,17 @@ class Database:
 	def getBibs( self ):
 		bibs = list(self.riders.keys())
 		return sorted(bibs)
+	
+	def getNextUnusedBib( self, startBib=None ):
+		bibs = self.getBibs()
+		if startBib is not None:
+			bib = startBib
+		else:
+			bib = self.allocateBibsFrom
+		print(bib)
+		while bib in bibs:
+			bib += 1
+		return bib
 	
 	def getRiders( self ):
 		return self.riders
@@ -166,11 +179,11 @@ class Database:
 				return int((datetime.datetime.now() - dob).days/365)
 		return None
 	
-	def addRider( self, bib ):
+	def addRider( self, bib, firstName=None, lastName=None, gender=Open ):
 		if bib in self.riders:
 			Utils.writeLog( 'Tried to add existing rider!' )
 			return
-		self.riders[bib] = {'LastName':'Rider', 'FirstName':'New', 'Gender':Open, 'LastEntered':0}
+		self.riders[bib] = {'LastName':lastName if lastName is not None else '' if firstName is not None else 'Rider', 'FirstName':firstName if firstName is not None else 'New', 'Gender':gender, 'LastEntered':0}
 		tagsNoInit = []
 		for i in range(10):
 			try:
@@ -407,6 +420,7 @@ class Database:
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['writeAbbreviatedTeams'] = self.writeAbbreviatedTeams
+		db['allocateBibsFrom'] = self.allocateBibsFrom
 		db['tagTemplates'] = self.tagTemplates
 		db['eventCategoryTemplate'] = self.eventCategoryTemplate
 		db['currentSeason'] = self.curSeason
