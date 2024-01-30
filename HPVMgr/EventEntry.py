@@ -387,8 +387,8 @@ class EventEntry( wx.Panel ):
 				season = database.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
+				deletedRiders = []
 				if 'racers' in evt:
-					deletedRiders = []
 					for bibMachineCategoriesTeam in evt['racers']:
 						bib = bibMachineCategoriesTeam[0]
 						rider = database.getRider(bib)
