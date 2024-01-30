@@ -188,6 +188,19 @@ class EventEntry( wx.Panel ):
 			return
 		try:
 			bib = int(self.riderBibEntry.GetValue())
+			if not database.isRider(bib):
+				if Utils.MessageOKCancel(self, 'Rider #' + str(bib) + ' does not exist.  Do you want to add them?', title='Rider does not exist'):
+					mainwin = Utils.getMainWin()
+					mainwin.riders.addNewRider( None, bib )
+					mainwin.riderDetail.setBib(bib)
+					wx.CallAfter(mainwin.showPage, mainwin.iRiderDetailPage )
+				else:
+					self.riderMachine.Disable()
+					self.riderTeam.Disable()
+					self.riderNameEntry.ChangeValue( '' )
+					self.riderMachine.ChangeValue( '' )
+					self.riderTeam.ChangeValue( '' )
+					return
 			riderName = dict(self.riderBibNames)[bib]
 			self.riderMachine.Enable()
 			self.riderTeam.Enable()
@@ -231,6 +244,8 @@ class EventEntry( wx.Panel ):
 		try:
 			bib = int(self.riderBibEntry.GetValue())
 			categories = []
+			if not database.isRider(bib):
+				return
 			if 'Machines' not in database.riders[bib]:
 				return
 			for machineCategories in database.riders[bib]['Machines']:
@@ -471,7 +486,8 @@ class EventEntry( wx.Panel ):
 					machines.append(machineCategories[0])
 				self.riderMachine.Clear()
 				self.riderMachine.Set( machines )
-				self.riderMachine.ChangeValue(machines[-1])
+				if len(machines) > 0 :
+					self.riderMachine.ChangeValue(machines[-1])
 				self.onSelectMachine()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
