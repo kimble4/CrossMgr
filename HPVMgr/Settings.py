@@ -35,7 +35,7 @@ class Settings( wx.Panel ):
 		vs.Add( hs, flag=wx.EXPAND)
 		
 		hs = wx.BoxSizer(wx.HORIZONTAL)
-		hs.Add( wx.StaticText(self, label='Allocate bib numbers start from: '), flag=wx.ALIGN_CENTRE_VERTICAL )
+		hs.Add( wx.StaticText(self, label='Allocate bib numbers starting from: '), flag=wx.ALIGN_CENTRE_VERTICAL )
 		self.allocateBibsFrom = intctrl.IntCtrl( self, value=1, name='Allocate bibs from', min=0, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
 		hs.Add( self.allocateBibsFrom, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs )

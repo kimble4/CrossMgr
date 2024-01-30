@@ -2,7 +2,7 @@
 
 ## Riders
 
-This displays a list of all riders, which may be sorted by clicking on the column headings.  
+This displays a list of all riders, which may be sorted by clicking on the column headings.
 
 Double-click on a rider [to edit their details][RiderDetail].
 
@@ -13,7 +13,8 @@ Right-click to add or delete riders.
 Field|Description
 :----|:----------
 Bib|The rider's bib number.  This must be unique.
-Name|The rider's name.
+First Name|The rider's first name.
+Last Name|The rider's last name.
 Gender|The rider's gender.
 Age|The rider's age in years as of the current date.
 Nat|The rider's nationality code
