@@ -549,7 +549,9 @@ class EventEntry( wx.Panel ):
 				name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
 				if name:
 					self.riderBibNames.append((bib, name))
-			self.riderNameEntry.AutoComplete(riderNameCompleter([bibName[1] for bibName in self.riderBibNames]))
+			names = []
+			[names.append(bibName[1]) for bibName in self.riderBibNames if bibName[1] not in names] #remove duplicates (riders with only one name field)
+			self.riderNameEntry.AutoComplete( riderNameCompleter(names) )
 			#get the teams database, populate the ComboBox
 			self.riderTeam.Set( [teamAbbrevEntered[0] for teamAbbrevEntered in database.teams] )
 			#enable the categories checkboxes
