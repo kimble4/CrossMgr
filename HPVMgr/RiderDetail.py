@@ -111,9 +111,10 @@ class RiderDetail( wx.Panel ):
 		
 		#machines list
 		self.machinesGrid = wx.grid.Grid( self )
-		self.machinesGrid.CreateGrid(0, 2)
-		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
+		self.machinesGrid.CreateGrid(0, 3)
+		self.machinesGrid.SetColLabelValue(0, 'Machines')
 		self.machinesGrid.SetColLabelValue(1, 'Categories')
+		self.machinesGrid.SetColLabelValue(2, 'Last Entered')
 		self.machinesGrid.HideRowLabels()
 		self.machinesGrid.SetRowLabelSize( 0 )
 		self.machinesGrid.SetMargins( 0, 0 )
@@ -304,8 +305,8 @@ class RiderDetail( wx.Panel ):
 		row = event.GetRow()
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(self.bib) + ' Machines')
-		# add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
-		# self.Bind( wx.EVT_MENU, self.addMachine, add )
+		add = menu.Append( wx.ID_ANY, 'Add new machine', 'Add a new machine...' )
+		self.Bind( wx.EVT_MENU, self.addMachine, add )
 		delete = menu.Append( wx.ID_ANY, 'Delete machine from list', 'Delete this machine...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.deleteMachine(event, row), delete )
 		try:
@@ -319,15 +320,19 @@ class RiderDetail( wx.Panel ):
 			return
 		try:
 			self.bib = self.riderBib.GetValue()
+			if not self.bib:
+				return
 			bib = int(self.bib)
-			with Model.LockDatabase() as db:
-				rider = db.getRider(bib)
-				if not 'Machines' in rider:
-					rider['Machines'] = []
-					db.setChanged()
-				if 'New Machine' not in rider['Machines']:
-					rider['Machines'].append(('New Machine', []))
-					db.setChanged()
+			with wx.TextEntryDialog(self, 'Enter the name for the new machine:', caption='Add machine', value='New Machine', style=wx.OK|wx.CANCEL) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					machine = dlg.GetValue()
+					with Model.LockDatabase() as db:
+						rider = db.getRider(bib)
+						if not 'Machines' in rider:
+							rider['Machines'] = []
+						if 'New Machine' not in rider['Machines']:
+							rider['Machines'].append([machine, [], None])
+						db.setChanged()
 			self.refreshMachinesGrid()
 			self.Layout()
 		except Exception as e:
@@ -339,6 +344,8 @@ class RiderDetail( wx.Panel ):
 			return
 		try:
 			self.bib = self.riderBib.GetValue()
+			if not self.bib:
+				return
 			bib = int(self.bib)
 			with Model.LockDatabase() as db:
 				rider = db.getRider(bib)
@@ -370,6 +377,7 @@ class RiderDetail( wx.Panel ):
 		rows = self.machinesGrid.GetNumberRows()
 		if rows:
 			self.machinesGrid.DeleteRows( 0, rows )
+		self.machinesGrid.SetColLabelValue(0, 'Machines')
 			
 	def refreshMachinesGrid( self ):
 		self.clearMachinesGrid()
@@ -383,13 +391,22 @@ class RiderDetail( wx.Panel ):
 			if rider is not None:
 				self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
 				if 'Machines' in rider:
-					for machineCategories in rider['Machines']:
+					for machineCategoriesDate in sorted(rider['Machines'], key=lambda item: (item[2] if len(item) >= 3 and item[2] else 0)):
 						self.machinesGrid.AppendRows(1)
 						row = self.machinesGrid.GetNumberRows() -1
-						self.machinesGrid.SetCellValue(row, 0, str(machineCategories[0]))
-						self.machinesGrid.SetCellValue(row, 1, ','.join(database.getAbbreviatedCategory(c) for c in machineCategories[1]))
+						col = 0
+						self.machinesGrid.SetCellValue(row, col, str(machineCategoriesDate[0]))
+						col += 1
+						self.machinesGrid.SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in machineCategoriesDate[1]))
+						col += 1
+						if len(machineCategoriesDate) < 3:
+							dt = ''
+						else:
+							dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(machineCategoriesDate[2])) if machineCategoriesDate[2] is not None else ''
+							self.machinesGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+						self.machinesGrid.SetCellValue(row, col, dt)
 			else:
-				self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
+				self.machinesGrid.SetColLabelValue(0, 'Machines')
 			self.machinesGrid.AutoSize()
 			self.Layout()
 		except Exception as e:

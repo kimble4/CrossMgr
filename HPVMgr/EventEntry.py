@@ -374,14 +374,18 @@ class EventEntry( wx.Panel ):
 					if 'Machines' not in db.riders[bib]:
 						db.riders[bib]['Machines'] = []
 					found = False
-					for machineCategories in db.riders[bib]['Machines']:
-						if machine == machineCategories[0]:
-							machineCategories[1] = categories
+					for machineCategoriesDate in db.riders[bib]['Machines']:
+						if machine == machineCategoriesDate[0]:
+							machineCategoriesDate[1] = categories
+							if len(machineCategoriesDate) < 3:  #backwards compatibility with old format
+								machineCategoriesDate.append( int(datetime.datetime.now().timestamp()) )
+							else:
+								machineCategoriesDate[2] = int(datetime.datetime.now().timestamp())
 							found = True
 							break
 					if not found:
 						if len(machine) > 0:
-							db.riders[bib]['Machines'].append([machine, categories])
+							db.riders[bib]['Machines'].append([machine, categories, int(datetime.datetime.now().timestamp())])
 					if len(team) > 0:
 						db.riders[bib]['Team'] = team
 					elif 'Team' in db.riders[bib]:
@@ -487,8 +491,8 @@ class EventEntry( wx.Panel ):
 			machines = []
 			rider = database.getRider(bib)
 			if 'Machines' in rider:
-				for machineCategories in rider['Machines']:
-					machines.append(machineCategories[0])
+				for machineCategoriesDate in sorted(rider['Machines'], key=lambda item: (item[2] if len(item) >= 3 and item[2] else 0) ):
+					machines.append(machineCategoriesDate[0])
 				self.riderMachine.Clear()
 				self.riderMachine.Set( machines )
 				if len(machines) > 0 :
