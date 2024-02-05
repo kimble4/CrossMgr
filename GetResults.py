@@ -705,6 +705,7 @@ def GetResultsWithData( category ):
 	race = Model.race
 	isTimeTrial = race.isTimeTrial
 	isBestNLaps= race.isBestNLaps
+	rankBy = getattr(race, 'rankBy', Model.Race.rankByLapsTime)
 	if category is None:
 		singleCategory = None
 		for c in race.categories.values():
