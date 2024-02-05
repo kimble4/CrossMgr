@@ -246,12 +246,10 @@ class Events( wx.Panel ):
 				evt = season['events'][evtName]
 				if 'signonFileName' in evt:
 					xlFName = evt['signonFileName']
-					if 'rounds' in evt:
-						
+					if xlFName and 'rounds' in evt:
 						wb = xlsxwriter.Workbook( xlFName )
 						formats = Events.getExcelFormatsXLSX( wb )
 						ues = Utils.UniqueExcelSheetName()
-						
 						for rndName in evt['rounds']:
 							nrRaces = len(evt['rounds'][rndName])
 							if nrRaces > 1:
@@ -266,7 +264,6 @@ class Events( wx.Panel ):
 								#everyone in one race, only need a single sheet
 								sheetCur = wb.add_worksheet( ues.getSheetName(rndName) )
 								database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
-							
 						AddExcelInfo( wb )
 						try:
 							wb.close()
@@ -274,6 +271,7 @@ class Events( wx.Panel ):
 							# 	Utils.LaunchApplication( xlFName )
 							Utils.writeLog( '{}: {}'.format(_('Excel file written to'), xlFName) )
 							Utils.MessageOK(self, '{}:\n\n   {}'.format(_('CrossMgr Excel file written to'), xlFName), _('Write sign-on sheet'))
+							return
 						except IOError as e:
 							logException( e, sys.exc_info() )
 							Utils.MessageOK(self,
@@ -283,8 +281,12 @@ class Events( wx.Panel ):
 											_('If so, close it, and try again.')
 										),
 										_('Excel File Error'), iconMask=wx.ICON_ERROR )
+							return
 						except Exception as e:
 							Utils.logException( e, sys.exc_info() )
+							return
+				Utils.MessageOK(self, 'Sign-on sheet filename is not set!\nConfigure the sign-on sheet location for "' + evtName + '" on the \'Events\' screen, and try again.', _('Write sign-on sheet'), iconMask = wx.ICON_ERROR)
+
 		
 	def selectSeason( self, event ):
 		database = Model.database
