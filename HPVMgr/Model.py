@@ -251,162 +251,210 @@ class Database:
 			return []
 			
 	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet, raceNr=None ):
-		''' Write a round to an xlwt excel sheet. '''
-		titleStyle				= formats['titleStyle']
-		headerStyleAlignLeft	= formats['headerStyleAlignLeft']
-		headerStyleAlignRight	= formats['headerStyleAlignRight']
-		styleAlignLeft			= formats['styleAlignLeft']
-		styleAlignRight			= formats['styleAlignRight']
-		
-		styleTime				= formats['styleTime']
-		styleMMSS				= formats['styleMMSS']
-		styleSS					= formats['styleSS']
-		
-		styleTimeLP				= formats['styleTimeLP']
-		styleMMSSLP				= formats['styleMMSSLP']
-		styleSSLP				= formats['styleSSLP']
-		
-		colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'License', 'Machine', 'Team', 'TeamCode',
-					'Tag', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6', 'Tag7', 'Tag8', 'Tag9',
-					'EventCategory', 'CustomCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
-					 'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
-					  'CustomCategory8', 'CustomCategory9' ]
-		leftJustifyCols = ['FirstName', 'LastName', 'Gender', 'NatCode', 'Machine', 'Team', 'TeamCode',
+		try:
+			''' Write a round to an xlwt excel sheet. '''
+			titleStyle				= formats['titleStyle']
+			headerStyleAlignLeft	= formats['headerStyleAlignLeft']
+			headerStyleAlignRight	= formats['headerStyleAlignRight']
+			styleAlignLeft			= formats['styleAlignLeft']
+			styleAlignRight			= formats['styleAlignRight']
+			
+			styleTime				= formats['styleTime']
+			styleMMSS				= formats['styleMMSS']
+			styleSS					= formats['styleSS']
+			
+			styleTimeLP				= formats['styleTimeLP']
+			styleMMSSLP				= formats['styleMMSSLP']
+			styleSSLP				= formats['styleSSLP']
+			
+			colnames = ['StartTime', 'Bib#', 'FirstName', 'LastName', 'Gender', 'Age', 'NatCode', 'License', 'Factor', 'Machine', 'Team', 'TeamCode',
 						'EventCategory', 'CustomCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
 						'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
-						'CustomCategory8', 'CustomCategory9' ]
-		timeCols = ['StartTime']
-				
-		row = 0
-		
-		sheetFit = FitSheetWrapperXLSX( sheet )
-		
-		
-		seasonName = self.getSeasonsList()[self.curSeason]
-		season = self.seasons[seasonName]
-		evtName = list(season['events'])[self.curEvt]
-		evt = season['events'][evtName]
-		rnd = evt['rounds'][rndName]
-		evtRacersDict = {}
-		if 'racers' in evt:
-			for bibMachineCategoriesTeam in evt['racers']:
-				evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2] if len(bibMachineCategoriesTeam) >=3 else None, bibMachineCategoriesTeam[3] if len(bibMachineCategoriesTeam) >=4 else None)
-		
-		for col, c in enumerate(colnames):
-			#write headers
-			headerStyle = headerStyleAlignLeft if c in leftJustifyCols else headerStyleAlignRight
-			style = styleTimeLP if c in timeCols else styleAlignLeft if c in leftJustifyCols else styleAlignRight
-			sheetFit.write( row, col, c, headerStyle, bold=True )
+						'CustomCategory8', 'CustomCategory9',
+						'Tag', 'Tag1', 'Tag2', 'Tag3', 'Tag4', 'Tag5', 'Tag6', 'Tag7', 'Tag8', 'Tag9']
+			leftJustifyCols = ['FirstName', 'LastName', 'Gender', 'NatCode', 'Machine', 'Team', 'TeamCode',
+							'EventCategory', 'CustomCategory', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3',
+							'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7',
+							'CustomCategory8', 'CustomCategory9' ]
+			timeCols = ['StartTime']
+					
+			row = 0
 			
-		#now the data
-		iRace = 0
-		haveStartTime = True # always show the StartTime column
-		haveGender = False
-		haveAge = False
-		haveNatCode = False
-		haveLicense = False
-		#haveFactor = False
-		haveMachine = False
-		haveTeam = False
-		for race in rnd:
-			if raceNr is None or raceNr == iRace + 1: # only the selected race
-				eventCategory = self.eventCategoryTemplate.format(iRace+1) if len(rnd) > 1 else self.eventCategoryTemplate.format(iRace+1)[:-len(str(iRace+1))] # strip the race number if there's only a single race
-				for bibMachineCategories in sorted(race):
-					if bibMachineCategories[0] in evtRacersDict:
-						rider = self.getRider(bibMachineCategories[0])
-						if rider is None:  #skip deleted riders, even if they're in the race
-							continue
-						eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
-						row += 1
-						col = 0
-						#StartTime
-						col += 1
-						#bib
-						sheetFit.write( row, col, bibMachineCategories[0],styleAlignRight )
-						col += 1
-						#first name
-						sheetFit.write( row, col, rider['FirstName'] if 'FirstName' in rider else '', styleAlignLeft )
-						col += 1
-						#last name
-						sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
-						col += 1
-						#gender
-						if 'Gender' in rider:
-							sheetFit.write( row, col, Genders[rider['Gender']], styleAlignLeft )
-							haveGender = True
-						col += 1
-						#age
-						if self.getRiderAge(bibMachineCategories[0]):
-							sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
-							haveAge = True
-						col += 1
-						#natcode
-						if 'NatCode' in rider:
-							sheetFit.write( row, col, rider['NatCode'], styleAlignLeft )
-							haveNatCode = True
-						col += 1
-						#license
-						if 'License' in rider:
-							sheetFit.write( row, col, rider['License'], styleAlignRight )
-							haveLicense = True
-						col += 1
-						#factor
-						# if 'Factor' in rider:
-						# 	sheetFit.write( row, col, rider['Factor'], styleAlignRight )
-						# 	haveFactor = True
-						# col += 1
-						#machine
-						if bibMachineCategories[1] is None:
-							# machine has not been changed from event default
-							if eventsMachineCategoriesTeam[0]:
-								sheetFit.write( row, col, eventsMachineCategoriesTeam[0], styleAlignLeft )
-								haveMachine = True
-						elif bibMachineCategories[1]:
-							sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
-							haveMachine = True
-						col += 1
-						#team
-						if eventsMachineCategoriesTeam[2]:
-							if self.writeAbbreviatedTeams:
-								sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
-							else:
-								sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
-							haveTeam = True
-						col += 1
-						#teamcode
-						#sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
-						col += 1
-						#tag
-						sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
-						col += 1
-						#tag1-9
-						for i in range(1, 10):
-							sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+			sheetFit = FitSheetWrapperXLSX( sheet )
+			
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			evtName = list(season['events'])[self.curEvt]
+			evt = season['events'][evtName]
+			rnd = evt['rounds'][rndName]
+			evtRacersDict = {}
+			if 'racers' in evt:
+				for bibMachineCategoriesTeam in evt['racers']:
+					evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2] if len(bibMachineCategoriesTeam) >=3 else None, bibMachineCategoriesTeam[3] if len(bibMachineCategoriesTeam) >=4 else None)
+			
+			#first pass to determine which columns we need
+			haveStartTime = True # always include the StartTime column
+			haveGender = False
+			haveAge = False
+			haveNatCode = False
+			haveLicense = False
+			haveFactor = False
+			haveMachine = False
+			haveTeam = False
+			iRace = 0
+			for race in rnd:
+				if raceNr is None or raceNr == iRace + 1: # only the selected race
+					for bibMachineCategories in sorted(race):
+						if bibMachineCategories[0] in evtRacersDict:
+							rider = self.getRider(bibMachineCategories[0])
+							if rider is None:  #skip deleted riders, even if they're in the race
+								continue
+							eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
+							if 'Gender' in rider:
+								haveGender = True
+							if self.getRiderAge(bibMachineCategories[0]) is not None:
+								haveAge = True
+							if 'NatCode' in rider:
+								if len(rider['NatCode']) > 0:
+									haveNatCode = True
+							if 'License' in rider:
+								if len(rider['License']) > 0:
+									haveLicense = True
+							if 'Factor' in rider:
+								if len(rider['Factor']) >0:
+									haveFactor = True
+							if bibMachineCategories[1] is None:
+								# machine has not been changed from event default
+								if eventsMachineCategoriesTeam[0]:
+									haveMachine = True
+							elif bibMachineCategories[1]:
+								haveMachine = True	
+							if eventsMachineCategoriesTeam[2]:
+								haveTeam = True
+				iRace += 1
+			
+			#write the headers, without unusued colnames
+			if not haveGender:
+				colnames.remove('Gender')
+			if not haveAge:
+				colnames.remove('Age')
+			if not haveNatCode:
+				colnames.remove('NatCode')
+			if not haveLicense:
+				colnames.remove('License')
+			if not haveFactor:
+				colnames.remove('Factor')
+			if not haveMachine:
+				colnames.remove('Machine')
+			if not haveTeam:
+				colnames.remove('Team')
+				colnames.remove('TeamCode')
+			for col, c in enumerate(colnames):
+				headerStyle = headerStyleAlignLeft if c in leftJustifyCols else headerStyleAlignRight
+				sheetFit.write( row, col, c, headerStyle, bold=True )
+				
+			#second pass to write the data
+			iRace = 0
+			for race in rnd:
+				if raceNr is None or raceNr == iRace + 1: # only the selected race
+					eventCategory = self.eventCategoryTemplate.format(iRace+1) if len(rnd) > 1 else self.eventCategoryTemplate.format(iRace+1)[:-len(str(iRace+1))] # strip the race number if there's only a single race
+					for bibMachineCategories in sorted(race):
+						if bibMachineCategories[0] in evtRacersDict:
+							rider = self.getRider(bibMachineCategories[0])
+							if rider is None:  #skip deleted riders, even if they're in the race
+								continue
+							eventsMachineCategoriesTeam = evtRacersDict[bibMachineCategories[0]]
+							row += 1
+							col = 0
+							#StartTime
+							if haveStartTime:
+								# just create an empty column so TT start times can be added in the spreadsheet
+								col += 1
+							#bib
+							sheetFit.write( row, col, bibMachineCategories[0],styleAlignRight )
 							col += 1
-						#eventcategory
-						sheetFit.write( row, col, eventCategory, styleAlignLeft )
-						col += 1
-						#customcategories
-						if bibMachineCategories[2] is None:
-							# categories have not been changed from event default
-							for i in range(len(eventsMachineCategoriesTeam[1])):
-								sheetFit.write( row, col, eventsMachineCategoriesTeam[1][i], styleAlignLeft )
+							#first name
+							sheetFit.write( row, col, rider['FirstName'] if 'FirstName' in rider else '', styleAlignLeft )
+							col += 1
+							#last name
+							sheetFit.write( row, col, rider['LastName'] if 'LastName' in rider else '', styleAlignLeft )
+							col += 1
+							#gender
+							if haveGender:
+								if 'Gender' in rider:
+									sheetFit.write( row, col, Genders[rider['Gender']], styleAlignLeft )
 								col += 1
-						else:
-							for i in range(len(bibMachineCategories[2])):
-								sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
+							#age
+							if haveAge:
+								if self.getRiderAge(bibMachineCategories[0]) is not None:
+									sheetFit.write( row, col, self.getRiderAge(bibMachineCategories[0]), styleAlignRight )
 								col += 1
-			iRace += 1
-		sheet.set_column(colnames.index('StartTime'), colnames.index('StartTime'), None, None, {'hidden': 0 if haveStartTime else 1})
-		sheet.set_column(colnames.index('Gender'), colnames.index('Gender'), None, None, {'hidden': 0 if haveGender else 1})
-		sheet.set_column(colnames.index('Age'), colnames.index('Age'), None, None, {'hidden': 0 if haveAge else 1})
-		sheet.set_column(colnames.index('NatCode'), colnames.index('NatCode'), None, None, {'hidden': 0 if haveNatCode else 1})
-		sheet.set_column(colnames.index('License'), colnames.index('License'), None, None, {'hidden': 0 if haveLicense else 1})
-		#sheet.set_column(colnames.index('Factor'), colnames.index('Factor'), None, None, {'hidden': 0 if haveFactor else 1})
-		sheet.set_column(colnames.index('Machine'), colnames.index('Machine'), None, None, {'hidden': 0 if haveMachine else 1})
-		sheet.set_column(colnames.index('Team'), colnames.index('Team'), None, None, {'hidden': 0 if haveTeam else 1})
-		sheet.set_column(colnames.index('TeamCode'), colnames.index('TeamCode'), None, None, {'hidden': 1}) # always hide the TeamCode column
-		sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
+							#natcode
+							if haveNatCode:
+								if 'NatCode' in rider:
+									if len(rider['NatCode']) > 0:
+										sheetFit.write( row, col, rider['NatCode'], styleAlignLeft )
+								col += 1
+							#license
+							if haveLicense:
+								if 'License' in rider:
+									if len(rider['License']) > 0:
+										sheetFit.write( row, col, rider['License'], styleAlignRight )
+								col += 1
+							#factor
+							if haveFactor:
+								if 'Factor' in rider:
+									if len(rider['Factor']) >0:
+										sheetFit.write( row, col, rider['Factor'], styleAlignRight )
+								col += 1
+							#machine
+							if haveMachine:
+								if bibMachineCategories[1] is None: # machine has not been changed from event default
+									if eventsMachineCategoriesTeam[0]:
+										sheetFit.write( row, col, eventsMachineCategoriesTeam[0], styleAlignLeft )
+								elif bibMachineCategories[1]: # machine has been edited for this race
+									sheetFit.write( row, col, bibMachineCategories[1], styleAlignLeft )
+								col += 1
+							#team
+							if haveTeam:
+								if eventsMachineCategoriesTeam[2]:
+									if self.writeAbbreviatedTeams:
+										sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
+									else:
+										sheetFit.write( row, col, eventsMachineCategoriesTeam[2], styleAlignLeft )
+								col += 1
+								#teamcode
+								#sheetFit.write( row, col, self.getAbbreviatedTeam(eventsMachineCategoriesTeam[2]), styleAlignLeft )
+								col += 1
+							#eventcategory
+							sheetFit.write( row, col, eventCategory, styleAlignLeft )
+							col += 1
+							#customcategories
+							if bibMachineCategories[2] is None: # categories have not been changed from event default
+								for i in range(len(eventsMachineCategoriesTeam[1])):
+									sheetFit.write( row, col, eventsMachineCategoriesTeam[1][i], styleAlignLeft )
+									col += 1
+								for i in range(10 - len(eventsMachineCategoriesTeam[1])): # add empty columns for unused CustomCategories
+									col += 1
+							else: # categories have been edited for this race
+								for i in range(len(bibMachineCategories[2])):
+									sheetFit.write( row, col, bibMachineCategories[2][i], styleAlignLeft )
+									col += 1
+								for i in range(10 - len(eventsMachineCategoriesTeam[1])): # add empty columns for unused CustomCategories
+									col += 1
+							#tag
+							sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
+							col += 1
+							#tag1-9
+							for i in range(1, 10):
+								sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+								col += 1
+				iRace += 1
+			# if haveTeam:
+			# 	sheet.set_column(colnames.index('TeamCode'), colnames.index('TeamCode'), None, None, {'hidden': 1}) # always hide the TeamCode column
+			#sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
+		except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed
