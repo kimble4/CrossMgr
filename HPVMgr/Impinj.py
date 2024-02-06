@@ -296,7 +296,7 @@ class Impinj( wx.Panel ):
 	def onTagsClick( self, event ):
 		if not self.writeAllTags.IsChecked():
 			row = event.GetRow()
-			data = re.sub('[^0-9A-F]','', self.tagsGrid.GetCellValue(row, 0).upper())
+			data = re.sub('[^0-9A-F]','', self.tagsGrid.GetCellValue(row, 1).upper())
 			self.destinationTag.SetLabel(data)
 			self.destination = data.zfill(self.EPCHexCharsMax) #strip non-hex chars and fill with leading zeros
 			for r in range(self.tagsGrid.GetNumberRows()):
@@ -380,7 +380,7 @@ class Impinj( wx.Panel ):
 						self.antennaChoice.Clear()
 						self.antennaChoice.Append( 'All' )
 						self.antennaChoice.AppendItems( self.antennasAvailable )
-						self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
+						self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v+1 else 0 )
 				self.writeOptions()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
