@@ -12,7 +12,7 @@ Once the details are entered, click the "**Connect**" button to attempt to conne
 
 If you need to adjust the transmit power or receiver gain, these settings can be accessed via the "**Advanced**" button.  Click "**Reset Connection**" after making changes.
 
-Select the antenna you want to use for writing tags with the "**Write antenna**" dropdown.
+Select the antenna you want to use for reading and writing tags with the "**Use antenna**" dropdown.
 
 ### Reading tags
 

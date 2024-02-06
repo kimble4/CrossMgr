@@ -162,7 +162,7 @@ class Impinj( wx.Panel ):
 		advancedButton.SetToolTip( wx.ToolTip( 'Adjust gain parameters and view reader info') )
 		advancedButton.Bind( wx.EVT_BUTTON, self.doAdvancedButton )
 		gbs.Add( advancedButton, pos=(row, 2), span=(1, 1), flag=wx.ALIGN_CENTRE_VERTICAL )
-		gbs.Add(wx.StaticText(self, label='Write antenna:'), pos=(row, 3), span=(1, 1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add(wx.StaticText(self, label='Use antenna:'), pos=(row, 3), span=(1, 1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.antennaChoice = wx.Choice( self, choices=[], name='Antenna selection' )
 		self.antennaChoice.Bind( wx.EVT_CHOICE, self.onChooseAntenna )
 		gbs.Add( self.antennaChoice, pos=(row, 4), span=(1, 1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
@@ -459,6 +459,16 @@ class Impinj( wx.Panel ):
 		else:
 			host = self.impinjHost.GetAddress()
 		return host
+		
+	def epcToASCII( self, epc, printable=True ):
+		try:
+			# fromhex() requires an even number of characters, add a leading zero if needed
+			asciiValue=bytes.fromhex(epc if len(epc)%2 == 0 else '0' + epc).decode(encoding="Latin1")
+			if printable:
+				asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
+		except:
+			asciiValue='DECODE ERROR'
+		return asciiValue
 	
 	def onWriteButton( self, event ):
 		if not self.tagWriter:
@@ -507,6 +517,8 @@ class Impinj( wx.Panel ):
 		
 		tagInventory = None
 		
+		antennas = [self.useAntenna] if self.useAntenna > 0 else None
+		
 		def tagInventoryKey( x ):
 			try:
 				return int(x, 16)
@@ -515,7 +527,7 @@ class Impinj( wx.Panel ):
 				
 		with wx.BusyCursor():
 			try:
-				tagInventory, otherMessages = self.tagWriter.GetTagInventory()
+				tagInventory, otherMessages = self.tagWriter.GetTagInventory(antennas=antennas)
 				tagDetail = { t['Tag']:t for t in self.tagWriter.tagDetail }
 				tagInventory = [(t, tagDetail[t].get('PeakRSSI',''), tagDetail[t].get('AntennaID','')) for t in sorted(tagInventory, key = tagInventoryKey)]
 				#Utils.writeLog('Impinj: Read tag inventory: ' + str(tagInventory))
@@ -528,12 +540,6 @@ class Impinj( wx.Panel ):
 			success = False
 			
 			for tag in tagInventory: #first pass
-				try:
-					# fromhex() requires an even number of characters, add a leading zero if needed
-					asciiValue=bytes.fromhex(tag[0] if len(tag[0])%2 == 0 else '0' + tag[0]).decode(encoding="Latin1")
-					asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
-				except:
-					asciiValue='DECODE ERROR'
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
@@ -542,7 +548,7 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
-					self.tagsGrid.SetCellValue(row, col, '"' + asciiValue + '"' )
+					self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(tag[0]) + '"' )
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
@@ -567,7 +573,6 @@ class Impinj( wx.Panel ):
 					else:
 						for c in range(col):
 								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
-			
 			if self.useAntenna > 0: # second pass listing tags not on our antenna
 				for tag in tagInventory:
 					if tag[2] != self.useAntenna:
@@ -577,7 +582,7 @@ class Impinj( wx.Panel ):
 						self.tagsGrid.SetCellValue(row, col, str(tag[0]))
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						col += 1
-						self.tagsGrid.SetCellValue(row, col, '"' + asciiValue + '"')
+						self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(tag[0]) + '"')
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
@@ -601,12 +606,11 @@ class Impinj( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		if asAscii:
-			data = self.tagsGrid.GetCellValue( row, 1 )[1:-1]
-		else:
-			data = self.tagsGrid.GetCellValue( row, 0 )
+		data = self.tagsGrid.GetCellValue( row, 0 )
 		if data:
-			if not asAscii and getattr(database, 'copyTagsWithDelim', False):
+			if asAscii:
+				data = self.epcToASCII(data, printable=False)
+			elif getattr(database, 'copyTagsWithDelim', False):
 				out = []
 				for i in range(len(data), 0, -4):
 					if i-4 < 0:
