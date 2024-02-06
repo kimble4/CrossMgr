@@ -528,8 +528,12 @@ class Impinj( wx.Panel ):
 			success = False
 			
 			for tag in tagInventory: #first pass
-				asciiValue=bytes.fromhex(tag[0]).decode(encoding="Latin1")
-				asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
+				try:
+					# fromhex() requires an even number of characters, add a leading zero if needed
+					asciiValue=bytes.fromhex(tag[0] if len(tag[0])%2 == 0 else '0' + tag[0]).decode(encoding="Latin1")
+					asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
+				except:
+					asciiValue='DECODE ERROR'
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
