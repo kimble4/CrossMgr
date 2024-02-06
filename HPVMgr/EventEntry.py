@@ -93,6 +93,7 @@ class EventEntry( wx.Panel ):
 	
 	numCategories = 18
 	yellowColour = wx.Colour( 255, 255, 0 )
+	OrangeColour = wx.Colour( 255, 165, 0 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -155,10 +156,14 @@ class EventEntry( wx.Panel ):
 		self.deleteAllButton.SetToolTip( wx.ToolTip('Deletes all racers from the event'))
 		self.Bind( wx.EVT_BUTTON, self.deleteAllRiders, self.deleteAllButton )
 		gbs.Add( self.deleteAllButton, pos=(3,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
-		self.addToRaceButton = wx.Button( self, label='Enter rider')
-		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event'))
+		self.deleteRiderButton = wx.Button( self, label='Delete racer')
+		self.deleteRiderButton.SetToolTip( wx.ToolTip('Deletes currently selected racer from the event'))
+		self.Bind( wx.EVT_BUTTON, self.deleteCurrentRider, self.deleteRiderButton )
+		gbs.Add( self.deleteRiderButton, pos=(3,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		self.addToRaceButton = wx.Button( self, label='Enter/Update racer')
+		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event or updates their details if already entered'))
 		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
-		gbs.Add( self.addToRaceButton, pos=(3,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		gbs.Add( self.addToRaceButton, pos=(3,3), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		
 		vs.Add( gbs, flag=wx.EXPAND )
@@ -176,13 +181,15 @@ class EventEntry( wx.Panel ):
 		self.racersGrid.EnableEditing(False)
 		self.racersGrid.SetSelectionMode(wx.grid.Grid.GridSelectRows)
 		self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.onRacerRightClick )
+		self.racersGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.onRacerClick )
+		self.racersGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.onLabelClick )
 		vs.Add( self.racersGrid, flag=wx.EXPAND )
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
 		vs.SetSizeHints(self)
 		
-	def onSelectBib( self, event ):
+	def onSelectBib( self, event=None ):
 		database = Model.database
 		if database is None:
 			return
@@ -213,19 +220,17 @@ class EventEntry( wx.Panel ):
 		self.updateMachinesChoices(bib)
 		self.updateTeamSelection(bib)
 		self.onSelectMachine()
+		self.highlightBib(str(bib))
 		
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
 		for bibName in self.riderBibNames:
 			if name == re.sub("[^a-z ]", "", bibName[1].lower()):
 				self.riderBibEntry.SetValue(str(bibName[0]))
-				self.riderNameEntry.ChangeValue( bibName[1] )
-				self.updateMachinesChoices(bibName[0])
-				self.updateTeamSelection(bibName[0])
-				self.riderMachine.Enable()
-				self.riderTeam.Enable()
+				self.onSelectBib()
 				return
 		self.riderBibEntry.SetSelection(wx.NOT_FOUND)
+		self.riderBibEntry.ChangeValue('')
 	
 	def onCategoryChanged( self, event, iCat ):
 		count = 0
@@ -265,9 +270,14 @@ class EventEntry( wx.Panel ):
 							else:
 								getattr(self, 'riderCategory' + str(iCat), None).SetValue(False)
 							iCat += 1
+		except ValueError: # invalid bib
+			return
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 						
+	def onLabelClick( self, event ):
+		self.commit()
+		self.refreshRaceAllocationTable()
 		
 	def onRacerRightClick( self, event ):
 		row = event.GetRow()
@@ -279,8 +289,8 @@ class EventEntry( wx.Panel ):
 			return
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(bib) + ' ' + name)
-		# ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
-		# self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
+		ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
 		delete = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), delete )
 		try:
@@ -288,6 +298,55 @@ class EventEntry( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
+	def onRacerClick( self, event ):
+		row = event.GetRow()
+		self.editRiderDetails( event, self.racersGrid.GetCellValue(row, 0))
+			
+	def editRiderDetails( self, event, bib ):
+		bibStr = str(bib)
+		self.highlightBib(bibStr)
+		self.riderBibEntry.ChangeValue(bibStr)
+		self.onSelectBib()
+		
+	def highlightBib( self, bibStr):
+		bibRow = -1
+		for row in range(self.racersGrid.GetNumberRows()):
+			if self.racersGrid.GetCellValue(row, 0) == bibStr:
+				bibRow = row
+				for col in range(self.racersGrid.GetNumberCols()):
+					self.racersGrid.SetCellBackgroundColour(row, col, self.OrangeColour)
+			else:
+				for col in range(self.racersGrid.GetNumberCols()):
+					self.racersGrid.SetCellBackgroundColour(row, col, wx.WHITE)
+		self.racersGrid.AutoSize() #needed to make colour change take effect
+		self.Layout()
+		if bibRow == -1:
+			return
+		self.racersGrid.MakeCellVisible(bibRow, 0)
+			
+	def deleteCurrentRider( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			bib = int(self.riderBibEntry.GetValue())
+			riderName = dict(self.riderBibNames)[bib]
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			evtName = list(season['events'])[self.evt]
+			evt = season['events'][evtName]
+			for bibMachineCategoriesTeam in evt['racers']:
+				if bibMachineCategoriesTeam[0] == bib:
+					if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' from this event?', 'Delete rider' ):
+						self.deleteRider(event, bib)
+					return
+			else:
+				Utils.MessageOK( self, '#' + str(bib) + ' ' + database.getRiderName(bib, True) + ' is not entered in this event!', 'Cannot delete rider', iconMask=wx.ICON_ERROR)
+		except ValueError:
+			return
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+		
 	def deleteRider( self, event, bib ):
 		database = Model.database
 		if database is None:
@@ -312,7 +371,7 @@ class EventEntry( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		if Utils.MessageOKCancel( self, 'Are you sure you want to delete all racers from this event?', 'Delete all racers?' ):
+		if Utils.MessageOKCancel( self, 'Are you sure you want to delete all racers from this event?', 'Delete all racers' ):
 			if self.season is not None and self.evt is not None:
 				try:
 					with Model.LockDatabase() as db:
@@ -339,7 +398,6 @@ class EventEntry( wx.Panel ):
 		if self.season is not None and self.evt is not None:
 			try:
 				bib = int(self.riderBibEntry.GetValue())
-				
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
@@ -349,10 +407,15 @@ class EventEntry( wx.Panel ):
 						evt['racers'] = []
 					for bibMachineCategoriesTeam in evt['racers']:
 						if bibMachineCategoriesTeam[0] == bib:
-							Utils.writeLog( evtName + ': Not adding duplicate rider #: ' + str(bib) + ' ' + database.getRiderName(bib))
-							Utils.MessageOK( self, '#' + str(bib)  + ' ' + database.getRiderName(bib, True) + ' is already entered!', 'Duplicate entry' )
-							self.refreshCurrentSelection()
-							return
+							if not Utils.MessageOKCancel( self, '#' + str(bib)  + ' ' + database.getRiderName(bib, True) + ' is already in this event!\nDo you want to update their details?', 'Rider already entered'):
+								Utils.writeLog( evtName + ': Not updating rider #: ' + str(bib) + ' ' + database.getRiderName(bib))
+								self.refreshCurrentSelection()
+								self.refreshRaceAllocationTable()
+								return
+							#delete the existing entry
+							evt['racers'].remove(bibMachineCategoriesTeam)
+							db.setChanged()
+							#now continue to re-add them with the new details...
 					machine = self.riderMachine.GetValue()
 					team = self.riderTeam.GetValue().strip()
 					foundTeam = False
@@ -398,6 +461,8 @@ class EventEntry( wx.Panel ):
 					self.clearCategorySelections()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable(makeLastRowVisible=True)
+			except ValueError:
+				return
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 					
@@ -511,7 +576,6 @@ class EventEntry( wx.Panel ):
 				self.riderTeam.SetValue(rider['Team'])
 				return
 		self.riderTeam.SetValue('')
-			
 			
 	def clearCategorySelections( self ):
 		for i in range(EventEntry.numCategories):
