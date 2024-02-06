@@ -540,10 +540,20 @@ class Impinj( wx.Panel ):
 				tagInventory = [(t, tagDetail[t].get('PeakRSSI',''), tagDetail[t].get('AntennaID','')) for t in sorted(tagInventory, key = tagInventoryKey)]
 				#Utils.writeLog('Impinj: Read tag inventory: ' + str(tagInventory))
 				Utils.writeLog('Impinj: Read tag inventory (' + str(len(tagInventory)) + ' tags)')
+			except TimeoutError:
+				Utils.writeLog('Impinj: Read failed: Connection timed out.')
+				self.setStatus( self.StatusError )
+				self.tagWriter = None
+				self.readButton.Disable()
+				self.writeButton.Disable()
+				self.tagsFound.SetLabel('')
+				return
 			except Exception as e:
 				Utils.MessageOK( self, 'Read Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Fails' )
 				Utils.logException( e, sys.exc_info() )
+				self.tagsFound.SetLabel('')
+				return
 			
 			self.tagsFound.SetLabel(str(len(tagInventory)))
 			
