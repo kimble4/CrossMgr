@@ -345,26 +345,26 @@ class RaceAllocation( wx.Panel ):
 						if season['categories']:  
 							iCategory = 0
 							for categoryAbbrev in season['categories']:
-								catChanged = False
 								catChoices.append(categoryAbbrev[0])
 								#check for previous change
 								if editedCategories is not None:
 									if categoryAbbrev[0] in editedCategories:
 										catSelected.append(iCategory)
-										catChanged = True
-								# use the event category
+								elif categoryAbbrev[0] in evtRacersDict[bib][1]:
+									catSelected.append(iCategory)
+								#get the event categories
 								if categoryAbbrev[0] in evtRacersDict[bib][1]:
 									catSelectedOrig.append(iCategory)
-									if not catChanged:
-										catSelected.append(iCategory)
 								iCategory += 1
+						else:
+							Utils.writeLog('editRacerCategories: Zero-length categories in ' + seasonName)
 						with wx.MultiChoiceDialog(self, 'Select categories', 'Change categories', catChoices) as dlg:
 							dlg.SetSelections(catSelected)
 							if dlg.ShowModal() == wx.ID_OK:
 								newSelections = dlg.GetSelections()
-								if newSelections == catSelected:
-									Utils.writeLog('editRacerCategories: No change to #' + str(bib) + '\'s categories')
-									return
+								# print('selected: ' + str(catSelected))
+								# print('orig:     ' + str(catSelectedOrig))
+								# print('from dlg: ' + str(newSelections))
 								if newSelections == catSelectedOrig:
 									Utils.writeLog('editRacerCategories: Reverting #' + str(bib) + '\'s categories to event default')
 									for bibMachineCategories in race:
@@ -373,6 +373,9 @@ class RaceAllocation( wx.Panel ):
 											race.append([bibMachineCategories[0], bibMachineCategories[1], None])
 											db.setChanged()
 											self.refreshRaceTables()
+									return
+								if newSelections == catSelected:
+									Utils.writeLog('editRacerCategories: No change to #' + str(bib) + '\'s categories')
 									return
 								iChoice = 0
 								selectedCategories = []
@@ -386,6 +389,8 @@ class RaceAllocation( wx.Panel ):
 										race.append([bibMachineCategories[0], bibMachineCategories[1], selectedCategories])
 										db.setChanged()
 										break
+					else:
+						Utils.writeLog('editRacerCategories: No categories in ' + seasonName)
 				self.refreshRaceTables()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
