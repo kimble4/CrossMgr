@@ -556,7 +556,7 @@ class Impinj( wx.Panel ):
 				return
 			
 			self.tagsFound.SetLabel(str(len(tagInventory)))
-			
+			tagInventory.sort(key=lambda tagRssiAnt: tagRssiAnt[1], reverse=True)
 			success = False
 			count = 0
 			for tag in tagInventory: #first pass
