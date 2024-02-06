@@ -93,6 +93,9 @@ class Impinj( wx.Panel ):
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
+		self.boldFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		self.boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
+		
 		self.teletypeFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		self.teletypeFont.SetFamily( wx.FONTFAMILY_TELETYPE )
 		
@@ -171,12 +174,15 @@ class Impinj( wx.Panel ):
 		gbs.Add( wx.StaticLine(self, style=wx.LI_HORIZONTAL), pos=(row,0), span=(1,4) )
 		
 		row += 1
+		gbs.Add( wx.StaticText( self, label='Tags found:') , pos=(row, 0), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
+		self.tagsFound = wx.StaticText( self, label='' )
+		self.tagsFound.SetFont( self.boldFont )
+		gbs.Add( self.tagsFound, pos=(row, 1), span=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL )
 		self.writeAllTags = wx.CheckBox(self, label='Write to ALL tags within range')
 		self.writeAllTags.SetToolTip(wx.ToolTip( 'If selected, all tags within range will be overwritten simultaneously' ) )
 		self.writeAllTags.Bind( wx.EVT_CHECKBOX, self.onWriteAllTagsBox )
 		self.writeAllTags.SetValue( False )
 		gbs.Add( self.writeAllTags, pos=(row, 3), span=(1,2), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL)
-		
 		
 		row += 1
 		gbs.Add( wx.StaticText( self, label='EPC to write:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
@@ -214,6 +220,8 @@ class Impinj( wx.Panel ):
 		
 		
 		
+		
+		
 		row = 1
 		gbs.Add( wx.StaticText(self, label='Reader status:'), pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.statusLabel = wx.StaticText( self, label = 'Not Connected' )
@@ -235,7 +243,7 @@ class Impinj( wx.Panel ):
 		
 		vs.Add( gbs, flag=wx.EXPAND)
 		
-		self.colnames = ['Tag EPC (Hexadecimal)', 'Tag EPC (ASCII printable)', 'Peak RSSI (dB)', 'Antenna' ]
+		self.colnames = ['Count','Tag EPC (Hexadecimal)', 'Tag EPC (ASCII printable)', 'Peak RSSI (dB)', 'Antenna' ]
 		
 		self.tagsGrid = wx.grid.Grid( self )
 		self.tagsGrid.CreateGrid(0, len(self.colnames))
@@ -280,9 +288,7 @@ class Impinj( wx.Panel ):
 		if self.writeAllTags.IsChecked():
 			Utils.MessageOK( self,  'All tags within range will be overwritten\nwith the same EPC simultaneously!\nDo NOT use this at the trackside!', 'Warning', iconMask = wx.ICON_WARNING)
 			self.destinationTag.SetLabel('ALL visible tags')
-			boldFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-			boldFont.SetWeight( wx.FONTWEIGHT_BOLD )
-			self.destinationTag.SetFont( boldFont )
+			self.destinationTag.SetFont( self.boldFont )
 		else:
 			self.destinationTag.SetLabel('')
 			self.destinationTag.SetFont( self.teletypeFont )
@@ -370,9 +376,10 @@ class Impinj( wx.Panel ):
 				self.tagWriter.Connect( self.receiveSensitivity_dB.GetLabel(), self.transmitPower_dBm.GetLabel() )
 				for k, v in self.tagWriter.general_capabilities:
 					if k == 'MaxNumberOfAntennaSupported':
+						self.antennasAvailable = [str(i) for i in range( 1, v+1 )]
 						self.antennaChoice.Clear()
 						self.antennaChoice.Append( 'All' )
-						self.antennaChoice.AppendItems( [str(i) for i in range( 1, v+1 )] )
+						self.antennaChoice.AppendItems( self.antennasAvailable )
 						self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v else 0 )
 				self.writeOptions()
 			except Exception as e:
@@ -517,7 +524,8 @@ class Impinj( wx.Panel ):
 		
 		tagInventory = None
 		
-		antennas = [self.useAntenna] if self.useAntenna > 0 else None
+		
+		antennas = [self.useAntenna] if self.useAntenna > 0 else [int(a) for a in self.antennasAvailable]
 		
 		def tagInventoryKey( x ):
 			try:
@@ -531,19 +539,25 @@ class Impinj( wx.Panel ):
 				tagDetail = { t['Tag']:t for t in self.tagWriter.tagDetail }
 				tagInventory = [(t, tagDetail[t].get('PeakRSSI',''), tagDetail[t].get('AntennaID','')) for t in sorted(tagInventory, key = tagInventoryKey)]
 				#Utils.writeLog('Impinj: Read tag inventory: ' + str(tagInventory))
-				Utils.writeLog('Impinj: Read tag inventory.')
+				Utils.writeLog('Impinj: Read tag inventory (' + str(len(tagInventory)) + ' tags)')
 			except Exception as e:
 				Utils.MessageOK( self, 'Read Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Fails' )
 				Utils.logException( e, sys.exc_info() )
 			
-			success = False
+			self.tagsFound.SetLabel(str(len(tagInventory)))
 			
+			success = False
+			count = 0
 			for tag in tagInventory: #first pass
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
+					count += 1
 					self.tagsGrid.AppendRows(1)
 					row = self.tagsGrid.GetNumberRows() -1
 					col = 0
+					self.tagsGrid.SetCellValue(row, col, str(count))
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[0]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
@@ -576,9 +590,13 @@ class Impinj( wx.Panel ):
 			if self.useAntenna > 0: # second pass listing tags not on our antenna
 				for tag in tagInventory:
 					if tag[2] != self.useAntenna:
+						count += 1
 						self.tagsGrid.AppendRows(1)
 						row = self.tagsGrid.GetNumberRows() -1
 						col = 0
+						self.tagsGrid.SetCellValue(row, col, str(count))
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[0]))
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						col += 1
