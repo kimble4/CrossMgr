@@ -67,7 +67,6 @@ class RaceAllocation( wx.Panel ):
 		self.copyAllocationButton.Bind( wx.EVT_BUTTON, self.copyAllocation )
 		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
-		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
 		self.writeSignonButton.Bind( wx.EVT_BUTTON, self.writeSignonSheet )
 		hs.AddStretchSpacer()
 		hs.Add( self.writeSignonButton,  flag=wx.ALIGN_CENTER_VERTICAL )
@@ -624,6 +623,9 @@ class RaceAllocation( wx.Panel ):
 					if evt['signonFileName']:
 						self.writeSignonButton.Enable()
 						self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
+					else:
+						self.writeSignonButton.Disable()
+						self.writeSignonButton.SetToolTip( wx.ToolTip('Sign-on sheet filename is empty!'))
 				else:
 					self.writeSignonButton.Disable()
 					self.writeSignonButton.SetToolTip( wx.ToolTip('Sign-on sheet filename is not set!'))
