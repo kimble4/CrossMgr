@@ -143,6 +143,7 @@ class EventEntry( wx.Panel ):
 		for i in range(EventEntry.numCategories):
 			setattr(self, 'riderCategory' + str(i), wx.CheckBox(self, label='Category' + str(i) ) )
 			getattr(self, 'riderCategory' + str(i), None).Bind( wx.EVT_CHECKBOX, lambda event, cat = i: self.onCategoryChanged(event, cat), getattr(self, 'riderCategory' + str(i), None) )
+			getattr(self, 'riderCategory' + str(i), None).Disable()
 			getattr(self, 'riderCategory' + str(i), None).Hide()
 		for i in range(6):
 			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i), None), pos=(0,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
@@ -159,10 +160,12 @@ class EventEntry( wx.Panel ):
 		self.deleteRiderButton = wx.Button( self, label='Delete racer')
 		self.deleteRiderButton.SetToolTip( wx.ToolTip('Deletes currently selected racer from the event'))
 		self.Bind( wx.EVT_BUTTON, self.deleteCurrentRider, self.deleteRiderButton )
+		self.deleteRiderButton.Disable()
 		gbs.Add( self.deleteRiderButton, pos=(3,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.addToRaceButton = wx.Button( self, label='Enter/Update racer')
 		self.addToRaceButton.SetToolTip( wx.ToolTip('Adds the selected rider to the event or updates their details if already entered'))
 		self.Bind( wx.EVT_BUTTON, self.onAddToRaceButton, self.addToRaceButton )
+		self.addToRaceButton.Disable()
 		gbs.Add( self.addToRaceButton, pos=(3,3), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		
@@ -202,25 +205,40 @@ class EventEntry( wx.Panel ):
 					mainwin.riderDetail.setBib(bib)
 					wx.CallAfter(mainwin.showPage, mainwin.iRiderDetailPage )
 				else:
-					self.riderMachine.Disable()
-					self.riderTeam.Disable()
-					self.riderNameEntry.ChangeValue( '' )
-					self.riderMachine.ChangeValue( '' )
-					self.riderTeam.ChangeValue( '' )
+					self.enableRiderControls(enable=False)
 					return
 			riderName = dict(self.riderBibNames)[bib]
-			self.riderMachine.Enable()
-			self.riderTeam.Enable()
+			self.enableRiderControls()
 		except (ValueError, KeyError):
 			bib = None
 			riderName = ''
-			self.riderMachine.Disable()
-			self.riderTeam.Disable()
+			self.enableRiderControls(enable=False)
 		self.riderNameEntry.ChangeValue( riderName )
 		self.updateMachinesChoices(bib)
 		self.updateTeamSelection(bib)
 		self.onSelectMachine()
 		self.highlightBib(str(bib))
+		
+	def enableRiderControls( self, enable=True, clearName=True):
+		if enable:
+			self.riderMachine.Enable()
+			self.riderTeam.Enable()
+			self.deleteRiderButton.Enable()
+			self.addToRaceButton.Enable()
+			for i in range(EventEntry.numCategories):
+				getattr(self, 'riderCategory' + str(i), None).Enable()
+		else:
+			self.riderMachine.Disable()
+			self.riderTeam.Disable()
+			self.deleteRiderButton.Disable()
+			self.addToRaceButton.Disable()
+			if clearName:
+				self.riderNameEntry.ChangeValue( '' )
+			self.riderMachine.ChangeValue( '' )
+			self.riderTeam.ChangeValue( '' )
+			for i in range(EventEntry.numCategories):
+				getattr(self, 'riderCategory' + str(i), None).SetValue(False)
+				getattr(self, 'riderCategory' + str(i), None).Disable()
 		
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
@@ -231,6 +249,7 @@ class EventEntry( wx.Panel ):
 				return
 		self.riderBibEntry.SetSelection(wx.NOT_FOUND)
 		self.riderBibEntry.ChangeValue('')
+		self.enableRiderControls(enable=False, clearName=False)
 	
 	def onCategoryChanged( self, event, iCat ):
 		count = 0
@@ -454,10 +473,10 @@ class EventEntry( wx.Panel ):
 					elif 'Team' in db.riders[bib]:
 						del db.riders[bib]['Team']
 					db.setChanged()
-					self.riderNameEntry.ChangeValue( '' )
-					self.updateMachinesChoices(None)
 					self.riderBibEntry.ChangeValue('')
-					self.riderMachine.Disable()
+					self.riderNameEntry.ChangeValue('')
+					self.updateMachinesChoices(None)
+					self.enableRiderControls(enable=False)
 					self.clearCategorySelections()
 					self.refreshCurrentSelection()
 					self.refreshRaceAllocationTable(makeLastRowVisible=True)
