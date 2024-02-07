@@ -166,14 +166,14 @@ class Events( wx.Panel ):
 		bs = wx.BoxSizer( wx.VERTICAL )
 		#edit button
 		self.editEntryButton = wx.Button( self, label='Edit entries')
-		self.editEntryButton.SetToolTip( wx.ToolTip('Edit entries'))
+		self.editEntryButton.SetToolTip( wx.ToolTip('Go to the EventEntry screen to enter riders in the event...'))
 		self.editEntryButton.Disable()
 		self.Bind( wx.EVT_BUTTON, self.onEditEntryButton, self.editEntryButton )
 		bs.Add( self.editEntryButton, flag=wx.ALIGN_RIGHT )
 		
 		#edit button
 		self.editRacesButton = wx.Button( self, label='Edit races')
-		self.editRacesButton.SetToolTip( wx.ToolTip('Edit races'))
+		self.editRacesButton.SetToolTip( wx.ToolTip('Go to the RaceAllocation screen to allocate racers to races...'))
 		self.editRacesButton.Disable()
 		self.Bind( wx.EVT_BUTTON, self.onEditRacesButton, self.editRacesButton )
 		bs.Add( self.editRacesButton, flag=wx.ALIGN_RIGHT )
@@ -299,8 +299,6 @@ class Events( wx.Panel ):
 			self.rnd = None
 			self.commit()
 			self.updateSignonSheetName()
-			self.editEntryButton.Disable()
-			self.editRacesButton.Disable()
 			self.refreshSeasonsGrid()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -404,8 +402,6 @@ class Events( wx.Panel ):
 			self.evt = row
 			self.rnd = None
 			self.updateSignonSheetName()
-			self.editEntryButton.Enable()
-			self.editRacesButton.Disable()
 			self.commit()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -556,7 +552,6 @@ class Events( wx.Panel ):
 		row = event.GetRow()
 		if row >= 0:
 			self.rnd = row
-			self.editRacesButton.Enable()
 			self.commit()
 			self.refreshRoundsGrid()
 			self.refreshCurrentSelection()
@@ -833,9 +828,16 @@ class Events( wx.Panel ):
 				evtName = list(season['events'])[self.evt]
 				selection.append( evtName )
 				evt = season['events'][evtName]
+				self.editEntryButton.Enable()
 				if self.rnd is not None and 'rounds' in evt:
 					rndName = list(evt['rounds'])[self.rnd]
 					selection.append( rndName )
+					self.editRacesButton.Enable()
+				else:
+					self.editRacesButton.Disable()
+			else:
+				self.editEntryButton.Disable()
+				self.editRacesButton.Disable()
 			title = ', '.join(n for n in selection)
 		self.currentSelection.SetLabel( title if title else '')
 		Utils.getMainWin().SetTitle( ' — '.join( n for n in [title, Version.AppVerName] if n ) )

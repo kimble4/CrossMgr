@@ -619,8 +619,16 @@ class RaceAllocation( wx.Panel ):
 				season = database.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
-				rounds = list(evt['rounds'])
+				#enable button if we have a sign-on sheet
+				if 'signonFileName' in evt:
+					if evt['signonFileName']:
+						self.writeSignonButton.Enable()
+						self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
+				else:
+					self.writeSignonButton.Disable()
+					self.writeSignonButton.SetToolTip( wx.ToolTip('Sign-on sheet filename is not set!'))
 				#update round choice
+				rounds = list(evt['rounds'])
 				self.chooseRound.AppendItems( rounds  )
 				self.chooseRound.SetSelection(self.rnd if self.rnd is not None else wx.NOT_FOUND)
 				if self.rnd is not None:
