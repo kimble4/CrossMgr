@@ -24,7 +24,7 @@ class Categories( wx.Panel ):
 		
 		self.season = None
 
-		self.colnames = ['Category', 'Abbreviation']
+		self.colnames = ['Count', 'Category', 'Abbreviation']
 		
 		self.riderBibNames = []
 		
@@ -100,8 +100,8 @@ class Categories( wx.Panel ):
 		menu.SetTitle('Categories')
 		add = menu.Append( wx.ID_ANY, 'Add new category', 'Add a new category...' )
 		self.Bind( wx.EVT_MENU, self.addCategory, add )
-		if row >= 1 or (row == 0 and len(self.categoriesGrid.GetCellValue(row, 0).strip()) > 0):
-			delete = menu.Append( wx.ID_ANY, 'Delete ' + self.categoriesGrid.GetCellValue(row, 0) + ' from list', 'Delete this season...' )
+		if row >= 1 or (row == 0 and len(self.categoriesGrid.GetCellValue(row, 1).strip()) > 0):
+			delete = menu.Append( wx.ID_ANY, 'Delete ' + self.categoriesGrid.GetCellValue(row, 1) + ' from list', 'Delete this season...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteCategory(event, row), delete )
 		try:
 			self.PopupMenu( menu )
@@ -125,11 +125,14 @@ class Categories( wx.Panel ):
 							for category in season['categories']:
 								self.categoriesGrid.AppendRows(1)
 								row = self.categoriesGrid.GetNumberRows() -1
-								self.categoriesGrid.SetCellValue(row, 0, category[0])
-								self.categoriesGrid.SetCellValue(row, 1, category[1])
-								self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+								self.categoriesGrid.SetCellValue(row, 0, str(row+1))
+								self.categoriesGrid.SetCellAlignment(row, 0, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+								self.categoriesGrid.SetCellValue(row, 1, category[0])
+								self.categoriesGrid.SetCellValue(row, 2, category[1])
+								self.categoriesGrid.SetCellAlignment(row, 2, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 					self.categoriesGrid.AutoSize()
 					self.onCategoriesEdited()
+					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 		
@@ -140,9 +143,11 @@ class Categories( wx.Panel ):
 			Utils.MessageOK( self, 'We do not support more than ' + str(Categories.maxCategories) + ' categories!', 'Too many categories' )
 			self.categoriesGrid.DeleteRows(row, 1)
 			return
-		self.categoriesGrid.SetCellValue(row, 0, 'New Category')
-		self.categoriesGrid.SetCellValue(row, 1, 'NC')
-		self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+		self.categoriesGrid.SetCellValue(row, 0, str(row+1))
+		self.categoriesGrid.SetCellAlignment(row, 0, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+		self.categoriesGrid.SetCellValue(row, 1, 'New Category')
+		self.categoriesGrid.SetCellValue(row, 2, 'NC')
+		self.categoriesGrid.SetCellAlignment(row, 2, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		self.categoriesGrid.AutoSize()
 		self.editedWarning.SetLabel('Edited!')
 		self.Layout()
@@ -163,12 +168,14 @@ class Categories( wx.Panel ):
 			season = database.seasons[seasonName]
 			if 'categories' in season:
 				if season['categories']:
-					for category in season['categories']:
+					for i, category in enumerate(season['categories']):
 						self.categoriesGrid.AppendRows(1)
 						row = self.categoriesGrid.GetNumberRows() -1
-						self.categoriesGrid.SetCellValue(row, 0, category[0])
-						self.categoriesGrid.SetCellValue(row, 1, category[1])
-						self.categoriesGrid.SetCellAlignment(row, 1, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+						self.categoriesGrid.SetCellValue(row, 0, str(i+1))
+						self.categoriesGrid.SetCellAlignment(row, 0, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
+						self.categoriesGrid.SetCellValue(row, 1, category[0])
+						self.categoriesGrid.SetCellValue(row, 2, category[1])
+						self.categoriesGrid.SetCellAlignment(row, 2, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 		self.categoriesGrid.AutoSize()
 		self.editedWarning.SetLabel('')
 		
@@ -192,7 +199,7 @@ class Categories( wx.Panel ):
 						season['categories'] = []
 					season['categories'].clear()
 					for row in range(self.categoriesGrid.GetNumberRows()):
-						season['categories'].append((self.categoriesGrid.GetCellValue(row, 0), (self.categoriesGrid.GetCellValue(row, 1))))
+						season['categories'].append((self.categoriesGrid.GetCellValue(row, 1), (self.categoriesGrid.GetCellValue(row, 2))))
 					db.setChanged()
 					wx.CallAfter( self.refresh )
 			except Exception as e:
