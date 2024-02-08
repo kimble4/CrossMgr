@@ -73,7 +73,7 @@ class Riders( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Bib', 'First Name', 'Last Name', 'Gender', 'Age', 'Nat', 'License', 'Team', 'Last Entered']
+		self.colnames = ['Bib', 'First Name', 'Last Name', 'Gender', 'Age', 'Nat', 'License', 'Factor', 'Team', 'Last Entered']
 		self.sortBy = 0
 		self.reverseSort = False
 		
@@ -227,9 +227,11 @@ class Riders( wx.Panel ):
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['NatCode']) if 'NatCode' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 6: # License
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['License']) if 'License' in item[1] else '', reverse=self.reverseSort))
-		elif self.sortBy == 7: # Team
+		elif self.sortBy == 7: # Factor
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (str(item[1]['Factor'])) if 'Factor' in item[1] else '', reverse=self.reverseSort))
+		elif self.sortBy == 8: # Team
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Team']) if 'Team' in item[1] else '', reverse=self.reverseSort))
-		elif self.sortBy == 8: # Last entered
+		elif self.sortBy == 9: # Last entered
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastEntered'], reverse=self.reverseSort))
 		else: #default (bib)
 			sortedRiders = dict(sorted(riders.items(), reverse=self.reverseSort))
@@ -256,6 +258,9 @@ class Riders( wx.Panel ):
 			self.ridersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
 			col+=1
 			self.ridersGrid.SetCellValue(row, col, rider['License'] if 'License' in rider else '')
+			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+			col+=1
+			self.ridersGrid.SetCellValue(row, col, str(rider['Factor']) if 'Factor' in rider else '')
 			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			col+=1
 			self.ridersGrid.SetCellValue(row, col, rider['Team'] if 'Team' in rider else '')

@@ -19,4 +19,6 @@ Gender|The rider's gender.
 Age|The rider's age in years as of the current date.
 Nat|The rider's nationality code
 License|The rider's license
+Factor|The rider's Factor
+Team|The team the rider last raced for.
 Last Entered|The date that the rider was last added to an [Event][Events] in HPVMgr, even if they were subsequently removed.  (Not the date of the event itself.)
