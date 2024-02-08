@@ -65,6 +65,10 @@ class Settings( wx.Panel ):
 		
 		self.writeAbbreviatedTeams = wx.CheckBox( self, label='Use abbreviated team names in sign-on sheet' )
 		vs.Add( self.writeAbbreviatedTeams )
+		self.useFactors = wx.CheckBox( self, label='Include para-cycling Factors in sign-on sheet' )
+		vs.Add( self.useFactors )
+		
+		vs.AddStretchSpacer()
 		
 		self.commitButton = wx.Button( self, label='Commit')
 		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
@@ -159,6 +163,7 @@ class Settings( wx.Panel ):
 				db.tagTemplates[n] = self.tagTemplate.GetValue()
 			db.eventCategoryTemplate = self.eventCategoryTemplate.GetValue()
 			db.writeAbbreviatedTeams = self.writeAbbreviatedTeams.IsChecked()
+			db.useFactors = self.useFactors.IsChecked()
 			db.setChanged()
 			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
@@ -187,3 +192,4 @@ class Settings( wx.Panel ):
 		self.onChangeTagTemplateNr()
 		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )
 		self.writeAbbreviatedTeams.SetValue( getattr(database, 'writeAbbreviatedTeams', False) )
+		self.useFactors.SetValue( getattr(database, 'useFactors', False) )

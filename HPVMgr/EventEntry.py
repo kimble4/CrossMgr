@@ -99,7 +99,7 @@ class EventEntry( wx.Panel ):
 		super().__init__(parent, id)
 		self.season = None
 		self.evt = None
-		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Machine', 'Categories', 'Team']
+		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Factor', 'Machine', 'Categories', 'Team']
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
@@ -512,17 +512,19 @@ class EventEntry( wx.Panel ):
 							col += 1
 							self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
 							col += 1
-							age = ''
 							self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
 							self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 							col += 1
 							self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 							self.racersGrid.SetCellValue(row, col, rider['NatCode'] if 'NatCode' in rider else '')
 							col += 1
+							self.racersGrid.SetCellValue(row, col, str(rider['Factor']) if 'Factor' in rider else '' )
+							self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+							col += 1
 						else:
 							deletedRiders.append(bib)
 							self.racersGrid.SetCellValue(row, col, '[DELETED RIDER]')
-							col += 4
+							col += 5
 						if len(bibMachineCategoriesTeam) >=2:
 							self.racersGrid.SetCellValue(row, col, bibMachineCategoriesTeam[1])
 						col += 1
@@ -535,6 +537,10 @@ class EventEntry( wx.Panel ):
 						if rider is None:
 							for c in range(col):
 								self.racersGrid.SetCellBackgroundColour(row, c, self.yellowColour)
+				if database.useFactors:
+					self.racersGrid.ShowCol(5)
+				else:
+					self.racersGrid.HideCol(5)
 				self.racersGrid.AutoSize()
 				self.Layout()
 				if makeLastRowVisible:

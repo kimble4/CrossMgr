@@ -68,6 +68,12 @@ class RiderDetail( wx.Panel ):
 		gbs.Add( wx.StaticText( self, label='License:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderLicense = wx.TextCtrl( self, size=(300,-1))
 		gbs.Add( self.riderLicense, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderLicense )
+		row += 1
+		gbs.Add( wx.StaticText( self, label='Factor:'), pos=(row,0), span=(1,1), flag=labelAlign )
+		self.riderFactor = wx.TextCtrl( self, size=(300,-1))
+		gbs.Add( self.riderFactor, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderFactor )
 		row += 1
 		gbs.Add( wx.StaticText( self, label='Team:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		self.riderTeam = wx.StaticText( self, label='')
@@ -196,6 +202,10 @@ class RiderDetail( wx.Panel ):
 					self.riderLicense.ChangeValue(rider['License'])
 				else:
 					self.riderLicense.ChangeValue('')
+				if 'Factor' in rider:
+					self.riderFactor.ChangeValue(str(rider['Factor']))
+				else:
+					self.riderFactor.ChangeValue('')
 				if 'Team' in rider:
 					self.riderTeam.SetLabel(rider['Team'])
 				else:
@@ -448,6 +458,14 @@ class RiderDetail( wx.Panel ):
 						del db.riders[bib]['License']
 					if len(self.riderLicense.GetValue()) > 0:
 						db.riders[bib]['License'] = self.riderLicense.GetValue()
+					if 'Factor' in db.riders[bib]:
+						del db.riders[bib]['Factor']
+					if len(self.riderFactor.GetValue()) > 0:
+						try:
+							factor = float(self.riderFactor.GetValue())
+							db.riders[bib]['Factor'] = factor
+						except ValueError:
+							pass
 					for i in range(10):
 						data = getattr(self, 'riderTag' + str(i), None).GetValue()
 						if data:

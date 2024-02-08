@@ -27,7 +27,7 @@ class RaceAllocation( wx.Panel ):
 		self.rnd = None
 		self.race = 0
 		self.nrRaces = 0
-		self.colnames = ['Bib', 'Name', 'Machine', 'Categories']
+		self.colnames = ['Bib', 'Name', 'Factor', 'Machine', 'Categories']
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
@@ -513,6 +513,9 @@ class RaceAllocation( wx.Panel ):
 							col += 1
 							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) if database.isRider(bibMachineCategories[0]) else '[DELETED RIDER]' )
 							col += 1
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderFactor(bibMachineCategories[0])) if database.getRiderFactor(bibMachineCategories[0]) is not None else '' )
+							getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+							col += 1
 							if bibMachineCategories[1] is None:
 								# machine has not been changed from event default
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
@@ -542,11 +545,16 @@ class RaceAllocation( wx.Panel ):
 					getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
 					totalRacers += nrRacers
 					if self.showDetails.IsChecked():
-						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+						if database.useFactors:
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+						else:
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
 						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
+						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(4)
 					else:
 						getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
 						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
+						getattr(self, 'raceGrid' + str(iRace), None).HideCol(4)
 					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 					iRace += 1
 				self.totalRacers.SetLabel(' (' + str(totalRacers) + ' racers)')

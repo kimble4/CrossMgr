@@ -83,6 +83,7 @@ class Database:
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
 		self.writeAbbreviatedTeams = False
+		self.useFactors = False
 		self.allocateBibsFrom = 1
 		self.curSeason = None
 		self.curEvt = None
@@ -98,6 +99,7 @@ class Database:
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
+				self.useFactors = data['useFactors'] if 'useFactors' in data else False
 				self.allocateBibsFrom = data['allocateBibsFrom'] if 'allocateBibsFrom' in data else 1
 				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
@@ -177,6 +179,13 @@ class Database:
 			if 'DOB' in rider:
 				dob = datetime.datetime.fromtimestamp(rider['DOB'])
 				return int((datetime.datetime.now() - dob).days/365)
+		return None
+		
+	def getRiderFactor( self, bib):
+		if bib in self.riders:
+			rider = self.riders[bib]
+			if 'Factor' in rider:
+				return rider['Factor']
 		return None
 	
 	def addRider( self, bib, firstName=None, lastName=None, gender=Open ):
@@ -321,7 +330,7 @@ class Database:
 								if len(rider['License']) > 0:
 									haveLicense = True
 							if 'Factor' in rider:
-								if len(rider['Factor']) >0:
+								if rider['Factor'] >0:
 									haveFactor = True
 							if bibMachineCategories[1] is None:
 								# machine has not been changed from event default
@@ -332,6 +341,10 @@ class Database:
 							if eventsMachineCategoriesTeam[2]:
 								haveTeam = True
 				iRace += 1
+			
+			#override presence of factors if disabled in settings
+			if not self.useFactors:
+				haveFactor = true
 			
 			#write the headers, without unusued colnames
 			if not haveGender:
@@ -404,7 +417,7 @@ class Database:
 							#factor
 							if haveFactor:
 								if 'Factor' in rider:
-									if len(rider['Factor']) >0:
+									if rider['Factor'] > 0:
 										sheetFit.write( row, col, rider['Factor'], styleAlignRight )
 								col += 1
 							#machine
@@ -468,6 +481,7 @@ class Database:
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['writeAbbreviatedTeams'] = self.writeAbbreviatedTeams
+		db['useFactors'] = self.useFactors
 		db['allocateBibsFrom'] = self.allocateBibsFrom
 		db['tagTemplates'] = self.tagTemplates
 		db['eventCategoryTemplate'] = self.eventCategoryTemplate
