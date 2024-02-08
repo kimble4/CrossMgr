@@ -16,5 +16,6 @@ Copy tags with delimiters...|Inserts a '-' between each group of 4 characters wh
 Tag template|Configures a Python format string used to generate each of the default tag numbers of new riders.  Eg. use "`{:04d}`" for the rider's bib number in decimal with 4 leading zeros, or "`{:x}`" for the rider's bib number in hexadecimal without leading zeroes.
 EventCategory template|Configures a Python format string used to generate the `EventCategory` fields in the CrossMgr sign-on sheet.  Eg. "`Race{:d}`" for `Race1`, `Race2` etc.
 Use abbreviated team names in sign-on-sheet|If selected, team names will be written to the sign-on sheet in the abbreviated form defined on the [Teams][] screen.  Otherwise the full team name is used.  Useful if there are teams with very long names.
+Include para-cycling Factors in sign-on sheet|If selected, rider Factors will be displayed in the [EventEntry][] and [RaceAllocation][] screens, and an appropriate column will be included in the sign-on sheet.  Otherwise, Factors are not used.
 
 The "**Commit**" button saves edits to the in-memory database, but does not write them to disk.
