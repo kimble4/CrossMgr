@@ -251,7 +251,8 @@ class Events( wx.Panel ):
 						formats = Events.getExcelFormatsXLSX( wb )
 						ues = Utils.UniqueExcelSheetName()
 						for rndName in evt['rounds']:
-							nrRaces = len(evt['rounds'][rndName])
+							rnd = evt['rounds'][rndName]
+							nrRaces = len(rnd['races']) if 'races' in rnd else 0
 							if nrRaces > 1:
 								#first, individual sheets for each race
 								for i in range(nrRaces):
@@ -602,7 +603,7 @@ class Events( wx.Panel ):
 							evt['rounds'] = {}
 						#print('season: ' + seasonName + ', event: ' + evtName + ', rounds: ' + str(evt['rounds']))
 						if newRnd not in evt['rounds']:
-							evt['rounds'][newRnd] = []
+							evt['rounds'][newRnd] = {}
 							db.setChanged()
 							self.rnd = len(evt['rounds'])-1
 							self.commit()

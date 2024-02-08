@@ -181,12 +181,8 @@ class RaceAllocation( wx.Panel ):
 					evt = season['events'][evtName]
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					race = rnd[iRace]
-					newRace = rnd[iRace+1]
-					# for bibMachineCategories in sorted(race):
-					# 	if bibMachineCategories[0] == bib:
-					# 		race.remove(bibMachineCategories)
-					# 		newRace.append(bibMachineCategories)
+					race = rnd['races'][iRace]
+					newRace = rnd['races'][iRace+1]
 					for raceEntryDict in race:
 						if raceEntryDict['bib'] == bib:
 							race.remove(raceEntryDict)
@@ -212,12 +208,8 @@ class RaceAllocation( wx.Panel ):
 					evt = season['events'][evtName]
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					race = rnd[iRace]
-					newRace = rnd[iRace-1]
-					# for bibMachineCategories in sorted(race):
-					# 	if bibMachineCategories[0] == bib:
-					# 		race.remove(bibMachineCategories)
-					# 		newRace.append(bibMachineCategories)
+					race = rnd['races'][iRace]
+					newRace = rnd['races'][iRace-1]
 					for raceEntryDict in race:
 						if raceEntryDict['bib'] == bib:
 							race.remove(raceEntryDict)
@@ -260,10 +252,10 @@ class RaceAllocation( wx.Panel ):
 								evt = season['events'][evtName]
 								rnd = evt['rounds'][rndName]
 								# delete all races from current round
-								rnd.clear()
+								rnd['races'].clear()
 								# copy the allocations
 								for sourceRace in evt['rounds'][sourceRound]:
-									rnd.append(sourceRace)
+									rnd['races'].append(sourceRace)
 								db.setChanged()
 							Utils.writeLog( 'copyAllocation: Copied race allocation in event "' + evtName + '" from round "' + sourceRound + '" to round "' + rndName + '"' )
 							wx.CallAfter( self.refresh )
@@ -286,7 +278,7 @@ class RaceAllocation( wx.Panel ):
 					evt = season['events'][evtName]
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					race = rnd[iRace]
+					race = rnd['races'][iRace]
 					rider = database.getRider(bib)
 					machineChoices = ['[Enter New]']
 					if 'Machines' in rider:
@@ -311,10 +303,6 @@ class RaceAllocation( wx.Panel ):
 										return
 							else: #selected from list
 								newMachine = dlg.GetStringSelection()
-							# for bibMachineCategories in race:
-							# 	if bibMachineCategories[0] == bib:
-							# 		race.remove(bibMachineCategories)
-							# 		race.append([bibMachineCategories[0], newMachine, bibMachineCategories[2]])
 							for raceEntryDict in race:
 								if raceEntryDict['bib'] == bib:
 									raceEntryDict['machine'] = newMachine
@@ -337,16 +325,13 @@ class RaceAllocation( wx.Panel ):
 					evt = season['events'][evtName]
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					race = rnd[iRace]
+					race = rnd['races'][iRace]
 					rider = database.getRider(bib)
 					evtRacersDict = {}
 					if 'racers' in evt:
 						for bibMachineCategoriesTeam in evt['racers']:
 							evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2])
 					editCategories = None
-					# for bibMachineCategories in race:
-					# 	if bibMachineCategories[0] == bib:
-					# 		editedCategories = bibMachineCategories[2]
 					for raceEntryDict in race:
 						if raceEntryDict['bib'] == bib:
 							editedCategories = raceEntryDict['categories'] if 'categories' in raceEntryDict else None
@@ -375,15 +360,8 @@ class RaceAllocation( wx.Panel ):
 							dlg.SetSelections(catSelected)
 							if dlg.ShowModal() == wx.ID_OK:
 								newSelections = dlg.GetSelections()
-								# print('selected: ' + str(catSelected))
-								# print('orig:     ' + str(catSelectedOrig))
-								# print('from dlg: ' + str(newSelections))
 								if newSelections == catSelectedOrig:
 									Utils.writeLog('editRacerCategories: Reverting #' + str(bib) + '\'s categories to event default')
-									# for bibMachineCategories in race:
-									# 	if bibMachineCategories[0] == bib:
-									# 		race.remove(bibMachineCategories)
-									# 		race.append([bibMachineCategories[0], bibMachineCategories[1], None])
 									for raceEntryDict in race:
 										if raceEntryDict['bib'] == bib:
 											del raceEntryDict['categories']
@@ -432,13 +410,15 @@ class RaceAllocation( wx.Panel ):
 						evt = season['events'][evtName]
 						rndName = list(evt['rounds'])[self.rnd]
 						rnd = evt['rounds'][rndName]
-						curLen = len(rnd)
+						if 'races' not in rnd:
+							rnd['races'] = []
+						curLen = len(rnd['races'])
 						if curLen < self.nrRaces:
 							for i in range(self.nrRaces - curLen):
-								rnd.append([])
+								rnd['races'].append([])
 						elif curLen > self.nrRaces:
 							for i in range(curLen - self.nrRaces):
-								rnd.pop()
+								rnd['races'].pop()
 						db.setChanged()
 					self.addUnallocatedRiders()
 					self.refreshRaceTables()
@@ -460,9 +440,10 @@ class RaceAllocation( wx.Panel ):
 			rndName = list(evt['rounds'])[self.rnd]
 			rnd = evt['rounds'][rndName]
 			allocatedBibs = []
-			for race in rnd:  # first pass to see what's allocated
-				for raceEntryDict in race:
-					allocatedBibs.append(raceEntryDict['bib'])
+			if 'races' in rnd:
+				for race in rnd['races']:  # first pass to see what's allocated
+					for raceEntryDict in race:
+						allocatedBibs.append(raceEntryDict['bib'])
 			self.unallocatedBibs.clear()
 			enteredBibs = []
 			if 'racers' in evt: # build list of unallocated riders
@@ -481,11 +462,7 @@ class RaceAllocation( wx.Panel ):
 					# remove racers from the race who are not in the event
 					if len(missingBibs) > 0:
 						iRace = 0
-						for race in rnd:
-							# for bibMachineCategories in race:
-							# 	if bibMachineCategories[0] in missingBibs:
-							# 		Utils.writeLog( 'addUnallocatedRiders: #' + str(bibMachineCategories[0]) + ' "' + database.getRiderName(bibMachineCategories[0], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
-							# 		race.remove(bibMachineCategories)
+						for race in rnd['races']:
 							for raceEntryDict in race:
 								if raceEntryDict['bib'] in missingBibs:
 									Utils.writeLog( 'addUnallocatedRiders: #' + str(raceEntryDict['bib']) + ' "' + database.getRiderName(raceEntryDict['bib'], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
@@ -493,11 +470,10 @@ class RaceAllocation( wx.Panel ):
 						db.setChanged()
 					# now add the unallocated racers to the first race
 					if len(self.unallocatedBibs) > 0:
-						if len(rnd) > 0:
-							race = rnd[0] # first race
+						if len(rnd['races']) > 0:
+							race = rnd['races'][0] # first race
 							for bib in self.unallocatedBibs:
 								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race 1.' )
-								#race.append([bib, None, None])
 								race.append({'bib': bib})
 							db.setChanged()
 		except Exception as e:
@@ -524,102 +500,63 @@ class RaceAllocation( wx.Panel ):
 				iRace = 0
 				deletedRiders = []
 				totalRacers = 0
-				for race in rnd:
-					#print(race)
-					# for bibMachineCategories in sorted(race):
-					# 	if bibMachineCategories[0] in evtRacersDict:
-					# 		eventsMachineCategories = evtRacersDict[bibMachineCategories[0]]
-					# 		getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
-					# 		row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
-					# 		col = 0
-					# 		getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[0]))
-					# 		getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-					# 		col += 1
-					# 		getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(bibMachineCategories[0]) if database.isRider(bibMachineCategories[0]) else '[DELETED RIDER]' )
-					# 		col += 1
-					# 		getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderFactor(bibMachineCategories[0])) if database.getRiderFactor(bibMachineCategories[0]) is not None else '' )
-					# 		getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-					# 		col += 1
-					# 		if bibMachineCategories[1] is None:
-					# 			# machine has not been changed from event default
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
-					# 		else:
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(bibMachineCategories[1]))
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-					# 		col += 1
-					# 		if bibMachineCategories[2] is None:
-					# 			# categories have not been changed from event default
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
-					# 		else:
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in bibMachineCategories[2]))
-					# 			getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-					# 		col += 1
-					# 		if not database.isRider(bibMachineCategories[0]):
-					# 			deletedRiders.append(bibMachineCategories[0])
-					# 			for c in range(col):
-					# 				getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.lightBlueColour)
-					# 		if bibMachineCategories[0] in self.unallocatedBibs:
-					# 			for c in range(col):
-					# 				getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
-					# 	else:
-					# 		Utils.writeLog( 'refreshRaceTables: Bib #' + str(bibMachineCategories[0]) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
-					for raceEntryDict in sorted(race, key=lambda raceEntryDict: raceEntryDict['bib']):
-						if raceEntryDict['bib'] in evtRacersDict:
-							eventsMachineCategories = evtRacersDict[raceEntryDict['bib']]
-							getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
-							row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
-							col = 0
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['bib']))
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-							col += 1
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(raceEntryDict['bib']) if database.isRider(raceEntryDict['bib']) else '[DELETED RIDER]' )
-							col += 1
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderFactor(raceEntryDict['bib'])) if database.getRiderFactor(raceEntryDict['bib']) is not None else '' )
-							getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
-							col += 1
-							if 'machine' not in raceEntryDict or raceEntryDict['machine'] is None:
-								# machine has not been changed from event default
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+				if 'races' in rnd:
+					for race in rnd['races']:
+						for raceEntryDict in sorted(race, key=lambda raceEntryDict: raceEntryDict['bib']):
+							if raceEntryDict['bib'] in evtRacersDict:
+								eventsMachineCategories = evtRacersDict[raceEntryDict['bib']]
+								getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
+								row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
+								col = 0
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['bib']))
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+								col += 1
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(raceEntryDict['bib']) if database.isRider(raceEntryDict['bib']) else '[DELETED RIDER]' )
+								col += 1
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderFactor(raceEntryDict['bib'])) if database.getRiderFactor(raceEntryDict['bib']) is not None else '' )
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+								col += 1
+								if 'machine' not in raceEntryDict or raceEntryDict['machine'] is None:
+									# machine has not been changed from event default
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(eventsMachineCategories[0]))
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+								else:
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['machine']))
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+								col += 1
+								if 'categories' not in raceEntryDict or raceEntryDict['categories'] is None:
+									# categories have not been changed from event default
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+								else:
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in raceEntryDict['categories']))
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
+								col += 1
+								if not database.isRider(raceEntryDict['bib']):
+									deletedRiders.append(raceEntryDict['bib'])
+									for c in range(col):
+										getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.lightBlueColour)
+								if raceEntryDict['bib'] in self.unallocatedBibs:
+									for c in range(col):
+										getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
 							else:
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['machine']))
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-							col += 1
-							if 'categories' not in raceEntryDict or raceEntryDict['categories'] is None:
-								# categories have not been changed from event default
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in eventsMachineCategories[1]))
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.whiteColour)
+								Utils.writeLog( 'refreshRaceTables: Bib #' + str(raceEntryDict['bib']) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
+						nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
+						getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
+						totalRacers += nrRacers
+						if self.showDetails.IsChecked():
+							if database.useFactors:
+								getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
 							else:
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, ','.join(database.getAbbreviatedCategory(c) for c in raceEntryDict['categories']))
-								getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
-							col += 1
-							if not database.isRider(raceEntryDict['bib']):
-								deletedRiders.append(raceEntryDict['bib'])
-								for c in range(col):
-									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.lightBlueColour)
-							if raceEntryDict['bib'] in self.unallocatedBibs:
-								for c in range(col):
-									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
-						else:
-							Utils.writeLog( 'refreshRaceTables: Bib #' + str(raceEntryDict['bib']) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
-					nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
-					getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
-					totalRacers += nrRacers
-					if self.showDetails.IsChecked():
-						if database.useFactors:
-							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+								getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(4)
 						else:
 							getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
-						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
-						getattr(self, 'raceGrid' + str(iRace), None).ShowCol(4)
-					else:
-						getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
-						getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
-						getattr(self, 'raceGrid' + str(iRace), None).HideCol(4)
-					getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
-					iRace += 1
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(4)
+						getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
+						iRace += 1
 				self.totalRacers.SetLabel(' (' + str(totalRacers) + ' racers)')
 				self.Layout()
 				if len(deletedRiders) > 0:
@@ -708,7 +645,7 @@ class RaceAllocation( wx.Panel ):
 					#update tables
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
-					self.nrRaces = len(rnd)
+					self.nrRaces = len(rnd['races']) if 'races' in rnd else 0
 					self.numberOfRaces.ChangeValue(self.nrRaces)
 					self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
 					self.refreshNumberOfRaces()
