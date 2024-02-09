@@ -36,7 +36,7 @@ class Settings( wx.Panel ):
 		
 		hs = wx.BoxSizer(wx.HORIZONTAL)
 		hs.Add( wx.StaticText(self, label='Allocate bib numbers starting from: '), flag=wx.ALIGN_CENTRE_VERTICAL )
-		self.allocateBibsFrom = intctrl.IntCtrl( self, value=1, name='Allocate bibs from', min=0, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
+		self.allocateBibsFrom = intctrl.IntCtrl( self, value=1, name='Allocate bibs from', min=0, limited=0, allow_none=1, style=wx.TE_PROCESS_ENTER )
 		hs.Add( self.allocateBibsFrom, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs )
 		
@@ -62,6 +62,18 @@ class Settings( wx.Panel ):
 		self.eventCategoryTemplate.SetToolTip( wx.ToolTip('Python format string for EventCategory names'))
 		hs.Add( self.eventCategoryTemplate, flag=wx.ALIGN_CENTRE_VERTICAL )
 		vs.Add( hs, flag=wx.EXPAND )
+		
+		hs =  wx.BoxSizer(wx.HORIZONTAL)
+		hs.Add( wx.StaticText( self, label='Seconds before first TT rider start:' ), flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.ttStartDelay = intctrl.IntCtrl( self, value=60, name='TT start delay', min=0, max=3600, limited=1, allow_none=0 )
+		hs.Add( self.ttStartDelay, flag=wx.ALIGN_CENTRE_VERTICAL )
+		vs.Add(hs, flag=wx.EXPAND)
+		hs =  wx.BoxSizer(wx.HORIZONTAL)
+		hs.Add( wx.StaticText( self, label='Seconds between TT riders:' ), flag=wx.ALIGN_CENTRE_VERTICAL )
+		self.ttInterval = intctrl.IntCtrl( self, value=30, name='TT interval', min=1, max=3600, limited=1, allow_none=0 )
+		hs.Add( self.ttInterval, flag=wx.ALIGN_CENTRE_VERTICAL )
+		vs.Add(hs, flag=wx.EXPAND)
+		
 		
 		self.writeAbbreviatedTeams = wx.CheckBox( self, label='Use abbreviated team names in sign-on sheet' )
 		vs.Add( self.writeAbbreviatedTeams )
@@ -131,6 +143,12 @@ class Settings( wx.Panel ):
 			self.tagTemplate.ChangeValue(database.tagTemplates[n] if n in database.tagTemplates else '')
 		else:
 			self.tagTemplate.ChangeValue('')
+			
+	def getTTStartDelay( self ):
+		return self.ttStartDelay.GetValue()
+		
+	def getTTInterval( self ):
+		return self.ttInterval.GetValue()
 
 	def commit( self, event=None ):
 		Utils.writeLog('Settings commit: ' + str(event))
@@ -163,6 +181,8 @@ class Settings( wx.Panel ):
 				db.tagTemplates[n] = self.tagTemplate.GetValue()
 			db.eventCategoryTemplate = self.eventCategoryTemplate.GetValue()
 			db.writeAbbreviatedTeams = self.writeAbbreviatedTeams.IsChecked()
+			db.ttStartDelay = self.ttStartDelay.GetValue()
+			db.ttInterval = self.ttInterval.GetValue()
 			db.useFactors = self.useFactors.IsChecked()
 			db.setChanged()
 			config = Utils.getMainWin().config
@@ -191,5 +211,7 @@ class Settings( wx.Panel ):
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
 		self.onChangeTagTemplateNr()
 		self.eventCategoryTemplate.SetValue( getattr(database, 'eventCategoryTemplate', '') )
+		self.ttStartDelay.SetValue( getattr(database, 'ttStartDelay', 60) )
+		self.ttInterval.SetValue( getattr(database, 'ttInterval', 30) )
 		self.writeAbbreviatedTeams.SetValue( getattr(database, 'writeAbbreviatedTeams', False) )
 		self.useFactors.SetValue( getattr(database, 'useFactors', False) )

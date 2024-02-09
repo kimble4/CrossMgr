@@ -18,6 +18,7 @@ class RaceAllocation( wx.Panel ):
 	orangeColour = wx.Colour( 255, 165, 0 )
 	yellowColour = wx.Colour( 255, 255, 0 )
 	lightBlueColour = wx.Colour( 153, 205, 255 )
+	redColour = wx.Colour( 255, 0, 0 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -28,6 +29,7 @@ class RaceAllocation( wx.Panel ):
 		self.race = 0
 		self.nrRaces = 0
 		self.colnames = ['Start', 'Bib', 'Name', 'Factor', 'Machine', 'Categories']
+		self.haveTTStartClash = False
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
@@ -149,8 +151,10 @@ class RaceAllocation( wx.Panel ):
 		self.refreshRaceTables()
 		
 	def onToggleStartTimes( self, event ):
+		database = Model.database
 		if self.season is not None and self.evt is not None and self.rnd is not None:
 			try:
+				rndName = ''
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
@@ -160,8 +164,10 @@ class RaceAllocation( wx.Panel ):
 					rnd = evt['rounds'][rndName]
 					rnd['useStartTimes'] = self.useStartTimes.IsChecked()
 					db.setChanged()
-				self.allocateStartTimes(clearStartTimes = not self.useStartTimes.IsChecked())
 				self.refreshRaceTables()
+				if self.useStartTimes.IsChecked() and self.nrRaces > 1:
+					Utils.MessageOK(self, 'Round "' + rndName + '" has more than one race.\nThis is allowed, but is probably not what you want for a time trial.', title='TT has more than one race')
+				self.checkRacersNoTTStart()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		
@@ -185,6 +191,11 @@ class RaceAllocation( wx.Panel ):
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerMachine(event, bib, race), editMachine )
 		editCategories = menu.Append( wx.ID_ANY, 'Change categories', 'Change categories for this race only...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerCategories(event, bib, race), editCategories )
+		if self.useStartTimes.IsChecked():
+			changeTTStart = menu.Append( wx.ID_ANY, 'Change TT start time', 'Edit this rider\'s TT start time.' )
+			self.Bind( wx.EVT_MENU, lambda event: self.changeTTStart(event, bib), changeTTStart )
+		reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times', 'Reallocate the Time Trial start times...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.allocateStartTimes(event, clearStartTimes = not self.useStartTimes.IsChecked()), reallocateTTStart )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -285,6 +296,9 @@ class RaceAllocation( wx.Panel ):
 					Utils.logException( e, sys.exc_info() )
 					
 	def writeSignonSheet( self, event ):
+		if self.useStartTimes.IsChecked():
+			if not Utils.MessageOKCancel(self, 'Riders have clashing time trial start times.\nAre you sure you want to continue writing the sign-on sheet?', 'Start time clash', iconMask=wx.ICON_WARNING):
+				return
 		Utils.getMainWin().events.writeSignonSheet()
 	
 	def editRacerMachine( self, event, bib, iRace ):
@@ -499,12 +513,54 @@ class RaceAllocation( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
-	def allocateStartTimes( self, event=None, clearStartTimes=False ):
+	def checkRacersNoTTStart( self ):
+		if not self.useStartTimes.IsChecked():
+			return
+		database = Model.database
+		if database is None:
+			return
+		seasonName = database.getSeasonsList()[self.season]
+		season = database.seasons[seasonName]
+		evtName = list(season['events'])[self.evt]
+		evt = season['events'][evtName]
+		rndName = list(evt['rounds'])[self.rnd]
+		rnd = evt['rounds'][rndName]
+		racersNoTTStart = 0
+		if 'races' in rnd:
+			for race in rnd['races']:
+				for raceEntryDict in race:
+					if 'startTime' not in raceEntryDict:
+						racersNoTTStart += 1
+		if racersNoTTStart:
+			Utils.writeLog('RaceAllocation: ' + str(racersNoTTStart) + ' racers in round "' + rndName + '" have no TT StartTime!')
+			if Utils.MessageOKCancel(self, str(racersNoTTStart) + ' racers have no TT start time.\nDo you want to re-allocate the start times now?', title='Missing start times'):
+				self.allocateStartTimes()
+		return
+		
+	def checkTTStartClash( self, time ):
+		database = Model.database
+		if database is None:
+			return False
+		seasonName = database.getSeasonsList()[self.season]
+		season = database.seasons[seasonName]
+		evtName = list(season['events'])[self.evt]
+		evt = season['events'][evtName]
+		rndName = list(evt['rounds'])[self.rnd]
+		rnd = evt['rounds'][rndName]
+		count = 0
+		if 'races' in rnd:
+			for race in rnd['races']:
+				for raceEntryDict in race:
+					if 'startTime' in raceEntryDict:
+						if raceEntryDict['startTime'] == time:
+							count += 1
+		return count > 1
+		
+	def changeTTStart( self, event, bib ):
 		database = Model.database
 		if database is None:
 			return
 		try:
-			lastStartTime = 60 #fixme
 			with Model.LockDatabase() as db:
 				seasonName = db.getSeasonsList()[self.season]
 				season = db.seasons[seasonName]
@@ -513,15 +569,48 @@ class RaceAllocation( wx.Panel ):
 				rndName = list(evt['rounds'])[self.rnd]
 				rnd = evt['rounds'][rndName]
 				for race in rnd['races']:
+					for raceEntryDict in race:
+						if raceEntryDict['bib'] == bib:
+							with wx.TextEntryDialog(self, 'Enter new TT start time for #' + str(bib) + ' ' + db.getRiderName(bib, True) + ':', caption='Edit start time', value=Utils.formatTime(raceEntryDict['startTime']) if 'startTime' in raceEntryDict else '') as dlg:
+								if dlg.ShowModal() == wx.ID_OK:
+									try:
+										time = datetime.datetime.strptime(dlg.GetValue(), "%M:%S")
+										raceEntryDict['startTime'] = time.minute * 60 + time.second
+										db.setChanged()
+									except:
+										Utils.writeLog('RaceAllocation: ChangeTTStart failed to parse time: ' + dlg.GetValue())
+										return
+									self.refreshRaceTables()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
+	def allocateStartTimes( self, event=None, clearStartTimes=False ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			mainwin = Utils.getMainWin()
+			lastStartTime = mainwin.settings.getTTStartDelay()
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				rndName = list(evt['rounds'])[self.rnd]
+				rnd = evt['rounds'][rndName]
+				lastStartTime = mainwin.settings.getTTStartDelay()
+				for race in rnd['races']:
 					racers = sorted(race, key=lambda raceEntryDict: raceEntryDict['bib'])
 					for raceEntryDict in racers:
 						if clearStartTimes:
 							if 'startTime' in raceEntryDict:
 								del raceEntryDict['startTime']
 						else:
-							lastStartTime += 30  #fixme
 							raceEntryDict['startTime'] = lastStartTime
+							lastStartTime += mainwin.settings.getTTInterval()
 				db.setChanged()
+			if event is not None:  # called by menu
+				self.refreshRaceTables()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
@@ -546,6 +635,7 @@ class RaceAllocation( wx.Panel ):
 				iRace = 0
 				deletedRiders = []
 				totalRacers = 0
+				self.haveTTStartClash = False
 				if 'races' in rnd:
 					for race in rnd['races']:
 						if self.useStartTimes.IsChecked():
@@ -592,6 +682,10 @@ class RaceAllocation( wx.Panel ):
 								if raceEntryDict['bib'] in self.unallocatedBibs:
 									for c in range(col):
 										getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, c, self.yellowColour)
+								if 'startTime' in raceEntryDict:
+									if self.checkTTStartClash(raceEntryDict['startTime']):
+										getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, 0, self.redColour)
+										self.haveTTStartClash = True
 							else:
 								Utils.writeLog( 'refreshRaceTables: Bib #' + str(raceEntryDict['bib']) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
 						nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
@@ -709,6 +803,8 @@ class RaceAllocation( wx.Panel ):
 					self.refreshNumberOfRaces()
 					#process unallocated/missing Riders
 					self.addUnallocatedRiders()
+					#check for TT start times
+					self.checkRacersNoTTStart()
 			self.refreshRaceTables()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )

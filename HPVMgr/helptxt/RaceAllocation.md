@@ -11,13 +11,13 @@ To allocate racers to races:
 1. Set the "**Number of races in this round**" field to the appropriate number, and press <Enter>.  Setting this to zero (the default) will de-allocate all racers and prevent the round being added to the sign-on sheet.  This may prove useful to somebody some day perhaps, in a somewhat bizarre set of circumstances.
 1. A warning that current allocations will be lost if you change the number of rounds will appear.  Click OK.
 1. All **unallocated racers** will initially be added to **Race 1** and highlighted in **yellow**.
-1. You can move racers between races by using the options in the righ-click context menu.
+1. You can move racers between races by using the options in the right-click context menu.
 
-* Select "**TT start times**" to allocate riders pre-determined start times for a time trial.  A **StartTime** column wil be added to the sign-on sheet for this race.
+* Select "**TT start times**" to enable pre-determined start times for a time trial.  A **StartTime** column wil be added to the sign-on sheet for this race.  Rider start times may be automatically allocated (see the relevant options in [Settings][]) or individually edited via the right-click context menu.  Clashing start times will be highlighted in **red**.
 * The "**Copy allocation**" button may be used to copy the allocation from another **Round** in the same **Event**.
 * The "**Show machine/category details**" tickbox adds additional information columns to the tables.  You may need to turn this off if you have a large number of races and/or a very narrow window.
 * A racer's **Machine** and **Categories** may be edited using the options in the context menu.  This will only affect their entry for the current Race/Round; other Rounds in the Event will maintain the details entered on the [EventEntry][] screen.  **This is intended to allow specific changes to be made during an Event**, eg. when a racer swaps machines or removes a fairing due to mechanical problems.  The edited fields will be coloured **orange**.
-* If a racer does not exist in the [Riders][] database, their allocation will be preserved but they will not be added to the sign-on sheet.  Such entries will be highlighted in **blue**.
+* If a racer does not exist in the [Riders][] database, their race allocation will be preserved but they will not be included in the sign-on sheet.  Such entries will be highlighted in **blue**.
 * Use the "**Write sign-on sheet**" button after making changes to write the updated CrossMgr sign-on sheet to disk.
 
 All changes made on the **RaceAllocation** screen manipulate the in-memory database directly.  There is no '**Commit**' button.
