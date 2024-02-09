@@ -13,6 +13,7 @@ To allocate racers to races:
 1. All **unallocated racers** will initially be added to **Race 1** and highlighted in **yellow**.
 1. You can move racers between races by using the options in the righ-click context menu.
 
+* Select "**TT start times**" to allocate riders pre-determined start times for a time trial.  A **StartTime** column wil be added to the sign-on sheet for this race.
 * The "**Copy allocation**" button may be used to copy the allocation from another **Round** in the same **Event**.
 * The "**Show machine/category details**" tickbox adds additional information columns to the tables.  You may need to turn this off if you have a large number of races and/or a very narrow window.
 * A racer's **Machine** and **Categories** may be edited using the options in the context menu.  This will only affect their entry for the current Race/Round; other Rounds in the Event will maintain the details entered on the [EventEntry][] screen.  **This is intended to allow specific changes to be made during an Event**, eg. when a racer swaps machines or removes a fairing due to mechanical problems.  The edited fields will be coloured **orange**.

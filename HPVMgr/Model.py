@@ -309,7 +309,7 @@ class Database:
 				return
 				
 			#first pass to determine which columns we need
-			haveStartTime = True # always include the StartTime column
+			haveStartTime = False
 			haveGender = False
 			haveAge = False
 			haveNatCode = False
@@ -326,6 +326,9 @@ class Database:
 							if rider is None:  #skip deleted riders, even if they're in the race
 								continue
 							eventsMachineCategoriesTeam = evtRacersDict[raceEntryDict['bib']]
+							if 'startTime' in raceEntryDict:
+								if raceEntryDict['startTime']:
+									haveStartTime = True
 							if 'Gender' in rider:
 								haveGender = True
 							if self.getRiderAge(raceEntryDict['bib']) is not None:
@@ -353,7 +356,9 @@ class Database:
 			if not self.useFactors:
 				haveFactor = False
 			
-			#write the headers, without unusued colnames
+			#write the headers, without unused colnames
+			if not haveStartTime:
+				colnames.remove('StartTime')
 			if not haveGender:
 				colnames.remove('Gender')
 			if not haveAge:
@@ -389,6 +394,7 @@ class Database:
 							#StartTime
 							if haveStartTime:
 								# just create an empty column so TT start times can be added in the spreadsheet
+								sheetFit.write( row, col, Utils.formatTime(raceEntryDict['startTime']),styleAlignRight )
 								col += 1
 							#bib
 							sheetFit.write( row, col, raceEntryDict['bib'],styleAlignRight )

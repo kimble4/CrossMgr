@@ -27,7 +27,7 @@ class RaceAllocation( wx.Panel ):
 		self.rnd = None
 		self.race = 0
 		self.nrRaces = 0
-		self.colnames = ['Bib', 'Name', 'Factor', 'Machine', 'Categories']
+		self.colnames = ['Start', 'Bib', 'Name', 'Factor', 'Machine', 'Categories']
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
@@ -56,11 +56,16 @@ class RaceAllocation( wx.Panel ):
 		
 		self.chooseRound.Bind( wx.EVT_CHOICE, self.onChooseRound )
 		
-		hs.Add( wx.StaticText( self, label='Number of races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )
+		hs.Add( wx.StaticText( self, label='Races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		self.numberOfRaces = intctrl.IntCtrl( self, value=self.nrRaces, name='Number of races', min=0, max=RaceAllocation.maxRaces, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
 		self.numberOfRaces.Bind( wx.EVT_TEXT_ENTER, self.onChangeNumberOfRaces )
 		hs.Add( self.numberOfRaces, flag=wx.ALIGN_CENTER_VERTICAL )
+		
+		self.useStartTimes = wx.CheckBox( self, label='TT start times' )
+		self.useStartTimes.Bind( wx.EVT_CHECKBOX, self.onToggleStartTimes )
+		hs.Add( self.useStartTimes, flag=wx.ALIGN_CENTER_VERTICAL )
+		
 		hs.AddStretchSpacer()
 		self.copyAllocationButton = wx.Button( self, label='Copy allocation' )
 		self.copyAllocationButton.SetToolTip( wx.ToolTip('Copy the race allocations from another round'))
@@ -137,18 +142,35 @@ class RaceAllocation( wx.Panel ):
 			evt.Skip()
 		grid.GetGridWindow().Bind( wx.EVT_MOTION, OnMouseMotion)
 		
-	def onShowDetails( self, event):
+	def onShowDetails( self, event ):
 		config = Utils.getMainWin().config
 		config.WriteBool( 'raceAllocationShowDetails', self.showDetails.GetValue() )
 		config.Flush()
 		self.refreshRaceTables()
 		
+	def onToggleStartTimes( self, event ):
+		if self.season is not None and self.evt is not None and self.rnd is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[self.evt]
+					evt = season['events'][evtName]
+					rndName = list(evt['rounds'])[self.rnd]
+					rnd = evt['rounds'][rndName]
+					rnd['useStartTimes'] = self.useStartTimes.IsChecked()
+					db.setChanged()
+				self.allocateStartTimes(clearStartTimes = not self.useStartTimes.IsChecked())
+				self.refreshRaceTables()
+			except Exception as e:
+				Utils.logException( e, sys.exc_info() )
+		
 	def onRacerRightClick( self, event, race ):
 		row = event.GetRow()
 		col = event.GetCol()
 		try:
-			bib = int(getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, 0))
-			name = getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, 1)
+			bib = int(getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, self.colnames.index('Bib')))
+			name = getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, self.colnames.index('Name'))
 		except:
 			return
 		menu = wx.Menu()
@@ -356,7 +378,7 @@ class RaceAllocation( wx.Panel ):
 								iCategory += 1
 						else:
 							Utils.writeLog('editRacerCategories: Zero-length categories in ' + seasonName)
-						with wx.MultiChoiceDialog(self, 'Select categories', 'Change categories', catChoices) as dlg:
+						with wx.MultiChoiceDialog(self, '#' + str(bib) + ' ' + database.getRiderName(bib, True) + '\'s categories:', 'Change categories', catChoices) as dlg:
 							dlg.SetSelections(catSelected)
 							if dlg.ShowModal() == wx.ID_OK:
 								newSelections = dlg.GetSelections()
@@ -377,10 +399,6 @@ class RaceAllocation( wx.Panel ):
 									if iChoice in newSelections:
 										selectedCategories.append(category)
 									iChoice += 1
-								# for bibMachineCategories in race:
-								# 	if bibMachineCategories[0] == bib:
-								# 		race.remove(bibMachineCategories)
-								# 		race.append([bibMachineCategories[0], bibMachineCategories[1], selectedCategories])
 								for raceEntryDict in race:
 									if raceEntryDict['bib'] == bib:
 										raceEntryDict['categories'] = selectedCategories
@@ -453,29 +471,57 @@ class RaceAllocation( wx.Panel ):
 						self.unallocatedBibs.append(bibMachineCategoriesTeam[0])
 			missingBibs = [bib for bib in allocatedBibs if bib not in enteredBibs]
 			with Model.LockDatabase() as db:
-					seasonName = db.getSeasonsList()[self.season]
-					season = db.seasons[seasonName]
-					evtName = list(season['events'])[self.evt]
-					evt = season['events'][evtName]
-					rndName = list(evt['rounds'])[self.rnd]
-					rnd = evt['rounds'][rndName]
-					# remove racers from the race who are not in the event
-					if len(missingBibs) > 0:
-						iRace = 0
-						for race in rnd['races']:
-							for raceEntryDict in race:
-								if raceEntryDict['bib'] in missingBibs:
-									Utils.writeLog( 'addUnallocatedRiders: #' + str(raceEntryDict['bib']) + ' "' + database.getRiderName(raceEntryDict['bib'], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
-							iRace += 1
-						db.setChanged()
-					# now add the unallocated racers to the first race
-					if len(self.unallocatedBibs) > 0:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				rndName = list(evt['rounds'])[self.rnd]
+				rnd = evt['rounds'][rndName]
+				# remove racers from the race who are not in the event
+				if len(missingBibs) > 0:
+					iRace = 0
+					for race in rnd['races']:
+						for raceEntryDict in race:
+							if raceEntryDict['bib'] in missingBibs:
+								Utils.writeLog( 'addUnallocatedRiders: #' + str(raceEntryDict['bib']) + ' "' + database.getRiderName(raceEntryDict['bib'], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
+						iRace += 1
+					db.setChanged()
+				# now add the unallocated racers to the first race
+				if len(self.unallocatedBibs) > 0:
+					if 'races' in rnd:
 						if len(rnd['races']) > 0:
 							race = rnd['races'][0] # first race
 							for bib in self.unallocatedBibs:
 								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race 1.' )
-								race.append({'bib': bib})
+								raceEntryDict = {'bib': bib}
+								race.append(raceEntryDict)
 							db.setChanged()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
+	def allocateStartTimes( self, event=None, clearStartTimes=False ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			lastStartTime = 60 #fixme
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				rndName = list(evt['rounds'])[self.rnd]
+				rnd = evt['rounds'][rndName]
+				for race in rnd['races']:
+					racers = sorted(race, key=lambda raceEntryDict: raceEntryDict['bib'])
+					for raceEntryDict in racers:
+						if clearStartTimes:
+							if 'startTime' in raceEntryDict:
+								del raceEntryDict['startTime']
+						else:
+							lastStartTime += 30  #fixme
+							raceEntryDict['startTime'] = lastStartTime
+				db.setChanged()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 			
@@ -502,12 +548,19 @@ class RaceAllocation( wx.Panel ):
 				totalRacers = 0
 				if 'races' in rnd:
 					for race in rnd['races']:
-						for raceEntryDict in sorted(race, key=lambda raceEntryDict: raceEntryDict['bib']):
+						if self.useStartTimes.IsChecked():
+							racers = sorted(race, key=lambda raceEntryDict: (raceEntryDict['startTime'] if 'startTime' in raceEntryDict else 0))
+						else:
+							racers = sorted(race, key=lambda raceEntryDict: raceEntryDict['bib'])
+						for raceEntryDict in racers:
 							if raceEntryDict['bib'] in evtRacersDict:
 								eventsMachineCategories = evtRacersDict[raceEntryDict['bib']]
 								getattr(self, 'raceGrid' + str(iRace), None).AppendRows(1)
 								row = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows() -1
 								col = 0
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, Utils.formatTime(raceEntryDict['startTime']) if 'startTime' in raceEntryDict else '')
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+								col += 1
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['bib']))
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 								col += 1
@@ -544,17 +597,21 @@ class RaceAllocation( wx.Panel ):
 						nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
 						getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
 						totalRacers += nrRacers
+						if self.useStartTimes.IsChecked():
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Start'))
+						else:
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Start'))
 						if self.showDetails.IsChecked():
 							if database.useFactors:
-								getattr(self, 'raceGrid' + str(iRace), None).ShowCol(2)
+								getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Factor'))
 							else:
-								getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
-							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(3)
-							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(4)
+								getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Factor'))
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Machine'))
+							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Categories'))
 						else:
-							getattr(self, 'raceGrid' + str(iRace), None).HideCol(2)
-							getattr(self, 'raceGrid' + str(iRace), None).HideCol(3)
-							getattr(self, 'raceGrid' + str(iRace), None).HideCol(4)
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Factor'))
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Machine'))
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Categories'))
 						getattr(self, 'raceGrid' + str(iRace), None).AutoSize()
 						iRace += 1
 				self.totalRacers.SetLabel(' (' + str(totalRacers) + ' racers)')
@@ -645,6 +702,7 @@ class RaceAllocation( wx.Panel ):
 					#update tables
 					rndName = list(evt['rounds'])[self.rnd]
 					rnd = evt['rounds'][rndName]
+					self.useStartTimes.SetValue( rnd['useStartTimes'] if 'useStartTimes' in rnd else False )
 					self.nrRaces = len(rnd['races']) if 'races' in rnd else 0
 					self.numberOfRaces.ChangeValue(self.nrRaces)
 					self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
