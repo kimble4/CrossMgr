@@ -112,22 +112,23 @@ class Impinj( wx.Panel ):
 		self.useHostName = wx.RadioButton( self, label = 'Host Name:', style=wx.RB_GROUP )
 		gbs.Add( self.useHostName, pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb = wx.BoxSizer( wx.HORIZONTAL )
-		hb.Add( wx.StaticText(self, label = ImpinjHostNamePrefix), flag=wx.ALIGN_CENTER_VERTICAL )
-		if 'WXMAC' in wx.Platform:
-			self.impinjHostName = masked.TextCtrl( self,
-								defaultValue = '00-00-00',
-								useFixedWidthFont = True,
-								size=(120,-1),
-							)
-		else:
-			self.impinjHostName = masked.TextCtrl( self,
-								mask         = 'NN-NN-NN',
-								defaultValue = '00-00-00',
-								useFixedWidthFont = True,
-								size=(120,-1),
-							)
+		#hb.Add( wx.StaticText(self, label = ImpinjHostNamePrefix), flag=wx.ALIGN_CENTER_VERTICAL )
+		# if 'WXMAC' in wx.Platform:
+		# 	self.impinjHostName = masked.TextCtrl( self,
+		# 						defaultValue = '00-00-00',
+		# 						useFixedWidthFont = True,
+		# 						size=(120,-1),
+		# 					)
+		# else:
+		# 	self.impinjHostName = masked.TextCtrl( self,
+		# 						mask         = 'NN-NN-NN',
+		# 						defaultValue = '00-00-00',
+		# 						useFixedWidthFont = True,
+		# 						size=(120,-1),
+		# 					)
+		self.impinjHostName = wx.TextCtrl( self, value = ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix, size=(300,-1))
 		hb.Add( self.impinjHostName )
-		hb.Add( wx.StaticText(self, label = ImpinjHostNameSuffix), flag=wx.ALIGN_CENTER_VERTICAL )
+		#hb.Add( wx.StaticText(self, label = ImpinjHostNameSuffix), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb.Add( wx.StaticText(self, label = ' : ' + '{}'.format(ImpinjInboundPort)), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( hb, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
 		
@@ -223,7 +224,7 @@ class Impinj( wx.Panel ):
 		
 		
 		row = 1
-		gbs.Add( wx.StaticText(self, label='Reader status:'), pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
+		gbs.Add( wx.StaticText(self, label='Status:'), pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		self.statusLabel = wx.StaticText( self, label = 'Not Connected' )
 		self.statusLabel.SetFont(bigFont)
 		gbs.Add( self.statusLabel, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
@@ -243,7 +244,7 @@ class Impinj( wx.Panel ):
 		
 		vs.Add( gbs, flag=wx.EXPAND)
 		
-		self.colnames = ['Count','Tag EPC (Hexadecimal)', 'Tag EPC (ASCII printable)', 'Peak RSSI (dB)', 'Antenna' ]
+		self.colnames = ['Count','Tag EPC (Hexadecimal)', 'Tag EPC (ASCII)', 'Peak RSSI (dB)', 'Antenna', 'Write status' ]
 		
 		self.tagsGrid = wx.grid.Grid( self )
 		self.tagsGrid.CreateGrid(0, len(self.colnames))
@@ -422,11 +423,12 @@ class Impinj( wx.Panel ):
 		config = Utils.getMainWin().config
 		
 		config.Write( 'UseHostName', 'True' if self.useHostName.GetValue() else 'False' )
-		config.Write( 'ImpinjHostName', ImpinjHostNamePrefix + self.impinjHostName.GetValue() + ImpinjHostNameSuffix )
+		config.Write( 'ImpinjHostName', self.impinjHostName.GetValue() )
 		config.Write( 'ImpinjAddr', self.impinjHost.GetAddress() )
 		config.Write( 'ImpinjPort', '{}'.format(ImpinjInboundPort) )
 		config.Write( 'ReceiveSensitivity_dB', '{}'.format(self.receiveSensitivity_dB.GetLabel()) )
 		config.Write( 'TransmitPower_dBm', '{}'.format(self.transmitPower_dBm.GetLabel()) )
+		config.Flush()
 	
 	def readOptions( self ):
 		config = Utils.getMainWin().config
@@ -434,7 +436,7 @@ class Impinj( wx.Panel ):
 		useHostName = (config.Read('UseHostName', 'True').upper()[:1] == 'T')
 		self.useHostName.SetValue( useHostName )
 		self.useStaticAddress.SetValue( not useHostName )
-		self.impinjHostName.SetValue( config.Read('ImpinjHostName', ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix)[len(ImpinjHostNamePrefix):-len(ImpinjHostNameSuffix)] )
+		self.impinjHostName.SetValue( config.Read('ImpinjHostName', ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix) )
 		self.impinjHost.SetValue( config.Read('ImpinjAddr', '0.0.0.0') )
 		self.useAntenna = config.ReadInt('useAntenna', 0)
 		self.receiveSensitivity_dB.SetLabel( config.Read('ReceiveSensitivity_dB', 'Max') )
@@ -462,7 +464,8 @@ class Impinj( wx.Panel ):
 		
 	def getHost( self ):
 		if self.useHostName.GetValue():
-			host = ImpinjHostNamePrefix + self.impinjHostName.GetValue().strip() + ImpinjHostNameSuffix
+			#host = ImpinjHostNamePrefix + self.impinjHostName.GetValue().strip() + ImpinjHostNameSuffix
+			host = self.impinjHostName.GetValue().strip() 
 		else:
 			host = self.impinjHost.GetAddress()
 		return host
@@ -501,8 +504,8 @@ class Impinj( wx.Panel ):
 		with wx.BusyCursor():
 		
 			try:
-				#Utils.writeLog('Impinj: Writing tag 0x' + writeValue)
 				self.tagWriter.WriteTag( destination, writeValue, antenna )
+				Utils.writeLog('Impinj: Writing EPC: ' + writeValue + ' to current tag ' + destination)
 			except Exception as e:
 				Utils.MessageOK( self, 'Write Fails: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Write Fails' )
@@ -577,25 +580,28 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
-					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[2]))
-					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
 					col += 1
 					if not justRead:
 						if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue().zfill(self.EPCHexCharsMax):
-							for c in range(col):
+							self.tagsGrid.SetCellValue(row, col, 'Success')
+							for c in range(col+1):
 								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreenColour)
 							success = True
-							Utils.writeLog('Impinj: Successfully wrote tag: 0x' + tag[0])
+							Utils.writeLog('Impinj: Successfully wrote tag: ' + str(tag[0]).zfill(self.EPCHexCharsMax))
 						elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
-							for c in range(col):
+							self.tagsGrid.SetCellValue(row, col, 'Failed')
+							for c in range(col+1):
 								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRedColour)
+							Utils.writeLog('Impinj: Failed to write to tag: ' + str(tag[0]).zfill(self.EPCHexCharsMax))
 						else:
-							for c in range(col):
+							for c in range(col+1):
 								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 					else:
-						for c in range(col):
+						for c in range(col+1):
 								self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 			if self.useAntenna > 0: # second pass listing tags not on our antenna
 				for tag in tagInventory:
@@ -614,12 +620,12 @@ class Impinj( wx.Panel ):
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
-						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[2]))
-						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)  
+						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)  
 						col += 1
-						for c in range(col):
+						for c in range(col+1):
 							self.tagsGrid.SetCellTextColour(row, c, self.GreyColour)
 			self.tagsGrid.AutoSize()
 			totalWidth = 0
