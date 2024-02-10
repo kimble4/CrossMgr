@@ -112,23 +112,8 @@ class Impinj( wx.Panel ):
 		self.useHostName = wx.RadioButton( self, label = 'Host Name:', style=wx.RB_GROUP )
 		gbs.Add( self.useHostName, pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb = wx.BoxSizer( wx.HORIZONTAL )
-		#hb.Add( wx.StaticText(self, label = ImpinjHostNamePrefix), flag=wx.ALIGN_CENTER_VERTICAL )
-		# if 'WXMAC' in wx.Platform:
-		# 	self.impinjHostName = masked.TextCtrl( self,
-		# 						defaultValue = '00-00-00',
-		# 						useFixedWidthFont = True,
-		# 						size=(120,-1),
-		# 					)
-		# else:
-		# 	self.impinjHostName = masked.TextCtrl( self,
-		# 						mask         = 'NN-NN-NN',
-		# 						defaultValue = '00-00-00',
-		# 						useFixedWidthFont = True,
-		# 						size=(120,-1),
-		# 					)
 		self.impinjHostName = wx.TextCtrl( self, value = ImpinjHostNamePrefix + '00-00-00' + ImpinjHostNameSuffix, size=(300,-1))
 		hb.Add( self.impinjHostName )
-		#hb.Add( wx.StaticText(self, label = ImpinjHostNameSuffix), flag=wx.ALIGN_CENTER_VERTICAL )
 		hb.Add( wx.StaticText(self, label = ' : ' + '{}'.format(ImpinjInboundPort)), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( hb, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT )
 		
@@ -205,7 +190,7 @@ class Impinj( wx.Panel ):
 		gbs.Add( self.destinationTag, pos=(row,1), span=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTRE_VERTICAL )
 		
 		self.writeButton = wx.Button( self, label = 'Write' )
-		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to destination tag' ) )
+		self.writeButton.SetToolTip( wx.ToolTip( 'Write this EPC to destination tag (Ctrl-W)' ) )
 		self.writeButton.Enabled = False
 		self.writeButton.Bind( wx.EVT_BUTTON, self.onWriteButton )
 		gbs.Add( self.writeButton, pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
@@ -214,14 +199,10 @@ class Impinj( wx.Panel ):
 		gbs.Add( self.writeSuccess, pos=(row,3), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		self.readButton = wx.Button( self, label = 'Read Tags' )
-		self.readButton.SetToolTip( wx.ToolTip( 'Perform an inventory run') )
+		self.readButton.SetToolTip( wx.ToolTip( 'Perform an inventory run (Ctrl-R)') )
 		self.readButton.Enabled = False
 		self.readButton.Bind( wx.EVT_BUTTON, self.onReadButton )
 		gbs.Add( self.readButton, pos=(row,4), span=(1,1), flag=wx.ALIGN_TOP )
-		
-		
-		
-		
 		
 		row = 1
 		gbs.Add( wx.StaticText(self, label='Status:'), pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
@@ -265,14 +246,22 @@ class Impinj( wx.Panel ):
 		vs.Add( self.tagsGrid, flag=wx.EXPAND )
 
 		self.setWriteSuccess( False )
-
-		#wx.CallAfter( self.doReset )  # hangs on startup without tag reader
 		
 		self.useHostName.SetValue( True )
 		self.useStaticAddress.SetValue( False )
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(vs)
+		
+		#ctrl-R and ctrl-W for read and write buttons
+		readKeyID = wx.NewId()
+		writeKeyID = wx.NewId()
+		self.Bind(wx.EVT_MENU, self.onReadButton, id=readKeyID)
+		self.Bind(wx.EVT_MENU, self.onWriteButton, id=writeKeyID)
+		accel_tbl = wx.AcceleratorTable([	(wx.ACCEL_CTRL,  ord('R'), readKeyID ),
+											(wx.ACCEL_CTRL,  ord('W'), writeKeyID )])
+		self.SetAcceleratorTable(accel_tbl)
+        
 		
 	def onTagToWriteChanged( self, event=None ):
 		data = self.tagToWrite.GetValue().upper()
@@ -464,7 +453,6 @@ class Impinj( wx.Panel ):
 		
 	def getHost( self ):
 		if self.useHostName.GetValue():
-			#host = ImpinjHostNamePrefix + self.impinjHostName.GetValue().strip() + ImpinjHostNameSuffix
 			host = self.impinjHostName.GetValue().strip() 
 		else:
 			host = self.impinjHost.GetAddress()
@@ -561,6 +549,7 @@ class Impinj( wx.Panel ):
 			self.tagsFound.SetLabel(str(len(tagInventory)))
 			tagInventory.sort(key=lambda tagRssiAnt: tagRssiAnt[1], reverse=True)
 			success = False
+			fail = False
 			count = 0
 			for tag in tagInventory: #first pass
 				if self.useAntenna == 0 or tag[2] == self.useAntenna:
@@ -596,6 +585,7 @@ class Impinj( wx.Panel ):
 							self.tagsGrid.SetCellValue(row, col, 'Failed')
 							for c in range(col+1):
 								self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRedColour)
+							fail = True
 							Utils.writeLog('Impinj: Failed to write to tag: ' + str(tag[0]).zfill(self.EPCHexCharsMax))
 						else:
 							for c in range(col+1):
@@ -615,9 +605,11 @@ class Impinj( wx.Panel ):
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[0]))
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(tag[0]) + '"')
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+						self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
@@ -627,6 +619,43 @@ class Impinj( wx.Panel ):
 						col += 1
 						for c in range(col+1):
 							self.tagsGrid.SetCellTextColour(row, c, self.GreyColour)
+						if not justRead:
+							if str(tag[0]).zfill(self.EPCHexCharsMax) == self.tagToWrite.GetValue().zfill(self.EPCHexCharsMax):
+								self.tagsGrid.SetCellValue(row, col, 'Success')
+								for c in range(col+1):
+									self.tagsGrid.SetCellBackgroundColour(row, c, self.LightGreenColour)
+								success = True
+								Utils.writeLog('Impinj: Successfully wrote tag: ' + str(tag[0]).zfill(self.EPCHexCharsMax))
+							elif str(tag[0]).zfill(self.EPCHexCharsMax) == self.destination:
+								self.tagsGrid.SetCellValue(row, col, 'Failed')
+								for c in range(col+1):
+									self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRedColour)
+								fail = True
+								Utils.writeLog('Impinj: Failed to write to tag: ' + str(tag[0]).zfill(self.EPCHexCharsMax))
+							else:
+								for c in range(col+1):
+									self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
+						else:
+							for c in range(col+1):
+									self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
+			if not justRead:
+				if not success and not fail:
+					self.tagsGrid.InsertRows(0, 1)
+					row = 0
+					col = 1
+					self.tagsGrid.SetCellValue(row, col, self.destination)
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
+					col += 1
+					self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(self.destination) + '"')
+					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
+					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
+					col = self.colnames.index('Write status')
+					self.tagsGrid.SetCellValue(row, col, 'Tag not found')
+					for c in range(col+1):
+						self.tagsGrid.SetCellBackgroundColour(row, c, self.LightRedColour)
+					Utils.writeLog('Impinj: Failed to find destination tag: ' + str(self.destination))
+					
 			self.tagsGrid.AutoSize()
 			totalWidth = 0
 			self.setWriteSuccess( success )
