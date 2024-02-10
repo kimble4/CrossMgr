@@ -590,7 +590,7 @@ class RaceAllocation( wx.Panel ):
 			return
 		try:
 			mainwin = Utils.getMainWin()
-			lastStartTime = mainwin.settings.getTTStartDelay()
+			lastStartTime = database.ttStartDelay
 			with Model.LockDatabase() as db:
 				seasonName = db.getSeasonsList()[self.season]
 				season = db.seasons[seasonName]
@@ -598,7 +598,6 @@ class RaceAllocation( wx.Panel ):
 				evt = season['events'][evtName]
 				rndName = list(evt['rounds'])[self.rnd]
 				rnd = evt['rounds'][rndName]
-				lastStartTime = mainwin.settings.getTTStartDelay()
 				for race in rnd['races']:
 					racers = sorted(race, key=lambda raceEntryDict: raceEntryDict['bib'])
 					for raceEntryDict in racers:
@@ -607,7 +606,7 @@ class RaceAllocation( wx.Panel ):
 								del raceEntryDict['startTime']
 						else:
 							raceEntryDict['startTime'] = lastStartTime
-							lastStartTime += mainwin.settings.getTTInterval()
+							lastStartTime += database.ttInterval
 				db.setChanged()
 			if event is not None:  # called by menu
 				self.refreshRaceTables()

@@ -640,14 +640,18 @@ class Impinj( wx.Panel ):
 									self.tagsGrid.SetCellBackgroundColour(row, c, wx.WHITE)
 			if not justRead:
 				if not success and not fail:
+					if self.writeAllTags.IsChecked():
+						t = self.tagToWrite.GetValue()
+					else:
+						t = self.destination
 					self.tagsGrid.InsertRows(0, 1)
 					row = 0
 					col = 1
-					self.tagsGrid.SetCellValue(row, col, self.destination)
+					self.tagsGrid.SetCellValue(row, col, t)
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
-					self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(self.destination) + '"')
+					self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(t) + '"')
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col = self.colnames.index('Write status')

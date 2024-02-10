@@ -85,6 +85,8 @@ class Database:
 		self.writeAbbreviatedTeams = False
 		self.useFactors = False
 		self.allocateBibsFrom = 1
+		self.ttStartDelay = 60
+		self.ttInterval = 30
 		self.curSeason = None
 		self.curEvt = None
 		self.curRnd = None
@@ -101,6 +103,8 @@ class Database:
 				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
 				self.useFactors = data['useFactors'] if 'useFactors' in data else False
 				self.allocateBibsFrom = data['allocateBibsFrom'] if 'allocateBibsFrom' in data else 1
+				self.ttStartDelay = data['ttStartDelay'] if 'ttStartDelay' in data else 60
+				self.ttInterval = data['ttInterval'] if 'ttInterval' in data else 30
 				self.tagTemplates = keys2int(data['tagTemplates']) if 'tagTemplates' in data else {}
 				self.eventCategoryTemplate = data['eventCategoryTemplate'] if 'eventCategoryTemplate' in data else 'Race{:d}'
 				self.riders = keys2int(data['riders']) if 'riders' in data else {}
@@ -496,6 +500,8 @@ class Database:
 		db['writeAbbreviatedTeams'] = self.writeAbbreviatedTeams
 		db['useFactors'] = self.useFactors
 		db['allocateBibsFrom'] = self.allocateBibsFrom
+		db['ttStartDelay'] = self.ttStartDelay
+		db['ttInterval'] = self.ttInterval
 		db['tagTemplates'] = self.tagTemplates
 		db['eventCategoryTemplate'] = self.eventCategoryTemplate
 		db['currentSeason'] = self.curSeason

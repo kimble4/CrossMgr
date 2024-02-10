@@ -184,12 +184,6 @@ class Settings( wx.Panel ):
 		if n is not wx.NOT_FOUND:
 			self.tagTemplates[n] = self.tagTemplate.GetValue()
 			self.onEdited()
-			
-	def getTTStartDelay( self ):
-		return self.ttStartDelay.GetValue()
-		
-	def getTTInterval( self ):
-		return self.ttInterval.GetValue()
 
 	def commit( self, event=None ):
 		Utils.writeLog('Settings commit: ' + str(event))
