@@ -20,7 +20,7 @@ import Utils
 PORT_NUMBER = 8761
 
 try:
-	with open( os.path.join(Utils.getImageFolder(), 'HPVMgry.ico'), 'rb' ) as f:
+	with open( os.path.join(Utils.getImageFolder(), 'HPVMgr.ico'), 'rb' ) as f:
 		favicon = f.read()
 except Exception:
 	favicon = None

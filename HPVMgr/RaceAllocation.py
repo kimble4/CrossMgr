@@ -120,7 +120,7 @@ class RaceAllocation( wx.Panel ):
 		
 	def getGridToolTip( self, grid, row, col ):
 		if not self.showDetails.IsChecked():
-			text = '\"' + grid.GetCellValue(row, 2) + '\": ' + grid.GetCellValue(row, 3)
+			text = '\"' + grid.GetCellValue(row, self.colnames.index('Machine')) + '\": ' + grid.GetCellValue(row, self.colnames.index('Categories'))
 			return text
 		else:
 			return None
@@ -171,30 +171,33 @@ class RaceAllocation( wx.Panel ):
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 		
-	def onRacerRightClick( self, event, race ):
+	def onRacerRightClick( self, event, iRace ):
 		row = event.GetRow()
 		col = event.GetCol()
 		try:
-			bib = int(getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, self.colnames.index('Bib')))
-			name = getattr(self, 'raceGrid' + str(race), None).GetCellValue(row, self.colnames.index('Name'))
+			bib = int(getattr(self, 'raceGrid' + str(iRace), None).GetCellValue(row, self.colnames.index('Bib')))
+			name = getattr(self, 'raceGrid' + str(iRace), None).GetCellValue(row, self.colnames.index('Name'))
 		except:
 			return
 		menu = wx.Menu()
 		menu.SetTitle('#' + str(bib) + ' ' + name)
-		if race < self.nrRaces - 1:
-			right = menu.Append( wx.ID_ANY, 'Move to next  ->', 'Move rider to next race...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToNextRace(event, bib, race), right )
-		if race > 0:
-			left = menu.Append( wx.ID_ANY, '<-  Move to previous', 'Move rider to previous race...' )
-			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToPreviousRace(event, bib, race), left )
-		editMachine = menu.Append( wx.ID_ANY, 'Change machine', 'Change machine for this race only...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.editRacerMachine(event, bib, race), editMachine )
-		editCategories = menu.Append( wx.ID_ANY, 'Change categories', 'Change categories for this race only...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.editRacerCategories(event, bib, race), editCategories )
+		if iRace < self.nrRaces - 1:
+			right = menu.Append( wx.ID_ANY, 'Move to Race ' + str(iRace+2) + ' ->', 'Move rider to next race...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToNextRace(event, bib, iRace), right )
+		if iRace > 0:
+			left = menu.Append( wx.ID_ANY, '<-  Move to Race ' + str(iRace), 'Move rider to previous race...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.moveRacerToPreviousRace(event, bib, iRace), left )
 		if self.useStartTimes.IsChecked():
 			changeTTStart = menu.Append( wx.ID_ANY, 'Change TT start time', 'Edit this rider\'s TT start time.' )
 			self.Bind( wx.EVT_MENU, lambda event: self.changeTTStart(event, bib), changeTTStart )
-		reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times', 'Reallocate the Time Trial start times...' )
+		editMachine = menu.Append( wx.ID_ANY, 'Change machine', 'Change machine for this race only...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.editRacerMachine(event, bib, iRace), editMachine )
+		editCategories = menu.Append( wx.ID_ANY, 'Change categories', 'Change categories for this race only...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.editRacerCategories(event, bib, iRace), editCategories )
+		# editTags = menu.Append( wx.ID_ANY, 'Change tags', 'Change tags for this race only...' )
+		# self.Bind( wx.EVT_MENU, lambda event: self.editRacerTags(event, bib, iRace), editTags )
+		reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times' if self.useStartTimes.IsChecked() else 'Delete all TT start times'
+								  , 'Reallocate the Time Trial start times...' if self.useStartTimes.IsChecked() else 'Delete the Time Trial start times...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.allocateStartTimes(event, clearStartTimes = not self.useStartTimes.IsChecked()), reallocateTTStart )
 		try:
 			self.PopupMenu( menu )
@@ -423,6 +426,9 @@ class RaceAllocation( wx.Panel ):
 				self.refreshRaceTables()
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				
+	def editRacerTags( self, event, bib, iRace ):  #fixme
+		pass
 		
 	def onChangeNumberOfRaces( self, event ):
 		database = Model.database
@@ -652,6 +658,19 @@ class RaceAllocation( wx.Panel ):
 								col += 1
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(raceEntryDict['bib']))
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+								# check for edited tags, colour bib cell if found
+								tagEdited = False
+								if 'tag' not in raceEntryDict or raceEntryDict['tag'] is None:
+									for i in range(1, 10):
+										if 'tag' + str(i) not in raceEntryDict or raceEntryDict['tag' + str(i)] is None:
+											pass
+										else:
+											tagEdited = True
+											break
+								else:
+									tagEdited = True
+								if tagEdited:
+									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
 								col += 1
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(raceEntryDict['bib']) if database.isRider(raceEntryDict['bib']) else '[DELETED RIDER]' )
 								col += 1

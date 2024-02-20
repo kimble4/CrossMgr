@@ -470,14 +470,20 @@ class Database:
 								for i in range(len(raceEntryDict['categories'])):
 									sheetFit.write( row, col, raceEntryDict['categories'][i], styleAlignLeft )
 									col += 1
-								for i in range(10 - len(eventsMachineCategoriesTeam[1])): # add empty columns for unused CustomCategories
+								for i in range(10 - len(raceEntryDict['categories'])): # add empty columns for unused CustomCategories
 									col += 1
 							#tag
-							sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
+							if 'tag' not in raceEntryDict or raceEntryDict['tag'] is None: # tag has not been changed from event default
+								sheetFit.write( row, col, rider['Tag'] if 'Tag' in rider else '', styleAlignRight )
+							elif raceEntryDict['tag']: # tag has been edited
+								sheetFit.write( row, col, raceEntryDict['tag'], styleAlignRight )
 							col += 1
 							#tag1-9
 							for i in range(1, 10):
-								sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+								if 'tag' + str(i) not in raceEntryDict or raceEntryDict['tag' + str(i)] is None: # tag has not been changed from event default
+									sheetFit.write( row, col, rider['Tag' + str(i)] if 'Tag' + str(i) in rider else '', styleAlignRight )
+								elif raceEntryDict['tag' + str(i)]: #tag has been edited
+									sheetFit.write( row, col, raceEntryDict['tag' + str(i)], styleAlignRight )
 								col += 1
 				iRace += 1
 			# if haveTeam:

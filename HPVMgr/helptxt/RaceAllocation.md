@@ -14,8 +14,8 @@ To allocate racers to races:
 1. You can move racers between races by using the options in the right-click context menu.
 
 * Select "**TT start times**" to enable pre-determined start times for a time trial.  A **StartTime** column wil be added to the sign-on sheet for this race.  Rider start times may be automatically allocated (see the relevant options in [Settings][]) or individually edited via the right-click context menu.  Clashing start times will be highlighted in **red**.
-* The "**Copy allocation**" button may be used to copy the allocation from another **Round** in the same **Event**.
-* The "**Show machine/category details**" tickbox adds additional information columns to the tables.  You may need to turn this off if you have a large number of races and/or a very narrow window.
+* The "**Copy allocation**" button may be used to copy the allocation from another **Round** in the same **Event**.  Note that any race-specific edits to riders' machines or categories will also be copied.
+* The "**Show machine/category details**" tickbox adds additional information columns to the tables.  You may need to turn this off to save space if you have a large number of races and/or a very narrow window.  When this is disabled, riders' machine and categories will be displayed as a tooltip.
 * A racer's **Machine** and **Categories** may be edited using the options in the context menu.  This will only affect their entry for the current Race/Round; other Rounds in the Event will maintain the details entered on the [EventEntry][] screen.  **This is intended to allow specific changes to be made during an Event**, eg. when a racer swaps machines or removes a fairing due to mechanical problems.  The edited fields will be coloured **orange**.
 * If a racer does not exist in the [Riders][] database, their race allocation will be preserved but they will not be included in the sign-on sheet.  Such entries will be highlighted in **blue**.
 * Use the "**Write sign-on sheet**" button after making changes to write the updated CrossMgr sign-on sheet to disk.
