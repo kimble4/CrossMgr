@@ -762,14 +762,14 @@ if ($all -eq $true)
 	$programs = @(
 		'CrossMgr',
 		'CrossMgrImpinj',
-		'TagReadWrite',
+#		'TagReadWrite',
 		'SeriesMgr',
 #		'CrossMgrAlien',
 		'CrossMgrVideo',
 #		'PointsRaceMgr',
 #		'CallupSeedingMgr',
 #		'StageRaceGC',
-		'SprintMgr',
+#		'SprintMgr',
 		'SprintTimer',
 		'HPVMgr'
 		)

@@ -532,7 +532,7 @@ do
 		h) doHelp
 		;;
 #		a) PROGRAMS="StageRaceGC CallupSeedingMgr CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrAlien CrossMgrVideo PointsRaceMgr SprintMgr SprintTimer HPVMgr CrossMgr"
-		a) PROGRAMS="CrossMgrImpinj TagReadWrite SeriesMgr CrossMgrVideo SprintTimer HPVMgr CrossMgr"
+		a) PROGRAMS="CrossMgrImpinj SeriesMgr CrossMgrVideo SprintTimer HPVMgr CrossMgr"
 ;;
 		c) PROGRAMS="$PROGRAMS CrossMgr"
 		;;
