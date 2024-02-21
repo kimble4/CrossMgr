@@ -9,7 +9,7 @@ from collections import defaultdict
 import datetime
 import Model
 import wx.lib.intctrl as intctrl
-
+from ChangeTags import ChangeTagsDialog
 
 class RaceAllocation( wx.Panel ):
 	
@@ -194,8 +194,8 @@ class RaceAllocation( wx.Panel ):
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerMachine(event, bib, iRace), editMachine )
 		editCategories = menu.Append( wx.ID_ANY, 'Change categories', 'Change categories for this race only...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerCategories(event, bib, iRace), editCategories )
-		# editTags = menu.Append( wx.ID_ANY, 'Change tags', 'Change tags for this race only...' )
-		# self.Bind( wx.EVT_MENU, lambda event: self.editRacerTags(event, bib, iRace), editTags )
+		editTags = menu.Append( wx.ID_ANY, 'Change tags', 'Change tags for this race only...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.editRacerTags(event, bib, iRace), editTags )
 		reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times' if self.useStartTimes.IsChecked() else 'Delete all TT start times'
 								  , 'Reallocate the Time Trial start times...' if self.useStartTimes.IsChecked() else 'Delete the Time Trial start times...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.allocateStartTimes(event, clearStartTimes = not self.useStartTimes.IsChecked()), reallocateTTStart )
@@ -428,7 +428,9 @@ class RaceAllocation( wx.Panel ):
 				Utils.logException( e, sys.exc_info() )
 				
 	def editRacerTags( self, event, bib, iRace ):  #fixme
-		pass
+		with ChangeTagsDialog(self, bib, iRace ) as dlg:
+			dlg.ShowModal()
+			self.refreshRaceTables()
 		
 	def onChangeNumberOfRaces( self, event ):
 		database = Model.database
@@ -660,15 +662,12 @@ class RaceAllocation( wx.Panel ):
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 								# check for edited tags, colour bib cell if found
 								tagEdited = False
-								if 'tag' not in raceEntryDict or raceEntryDict['tag'] is None:
-									for i in range(1, 10):
-										if 'tag' + str(i) not in raceEntryDict or raceEntryDict['tag' + str(i)] is None:
-											pass
-										else:
-											tagEdited = True
-											break
-								else:
-									tagEdited = True
+								for i in range(10):
+									if 'tag' + (str(i) if i > 0 else '') not in raceEntryDict or raceEntryDict['tag' + (str(i) if i > 0 else '')] is None:
+										pass
+									else:
+										tagEdited = True
+										break
 								if tagEdited:
 									getattr(self, 'raceGrid' + str(iRace), None).SetCellBackgroundColour(row, col, self.orangeColour)
 								col += 1
