@@ -83,7 +83,7 @@ class Results( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Time of day', 'Note', 'Attempts']
+		self.colnames = ['Pos', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Age', 'Nat', 'Seconds', 'Speed', 'Time of day', 'Note', 'Attempts']
 		
 		#self.category = None
 		#self.showRiderData = True
@@ -319,22 +319,12 @@ class Results( wx.Panel ):
 	def clearGrid( self ):
 		if self.resultsGrid.GetNumberRows():
 			self.resultsGrid.DeleteRows(0, self.resultsGrid.GetNumberRows())
-		#self.resultsGrid.Set( data = [], colnames = [], textColour = {}, backgroundColour = {} )
-		#self.resultsGrid.Reset()
-		#self.lapGrid.Set( data = [], colnames = [], textColour = {}, backgroundColour = {} )
-		#self.lapGrid.Reset()
+		for col in range(self.resultsGrid.GetNumberCols()):
+			self.resultsGrid.ShowCol(col)
 
 	def refresh( self ):
 		self.category = None
-		#self.isEmpty = True
-		#self.iLastLap = 0
-		#self.rcInterp = set()	# Set of row/col coordinates of interpolated numbers.
-		#self.rcNumTime = set()
-		
-		#self.search.SelectAll()
-		
-		#CloseFinishTime = 0.07
-		#self.closeFinishBibs = defaultdict( list )
+	
 		self.clearGrid()
 		
 		race = Model.race
@@ -347,9 +337,7 @@ class Results( wx.Panel ):
 		
 		category = FixCategories( self.categoryChoice, getattr(race, 'resultsCategory', 0) )
 		self.hbs.Layout()
-		#for si in self.hbs.GetChildren():
-			#if si.IsWindow():
-				#si.GetWindow().Refresh()
+
 		self.category = category
 
 		#Fix the speed column.
@@ -370,7 +358,14 @@ class Results( wx.Panel ):
 
 		res = race.getSprintResults(self.category)
 		
+		haveMachine = False
+		haveTeam = False
+		haveGender = False
+		haveAge = False
+		haveNat = False
+		
 		for i, bibSprintDicts in enumerate(res):
+			#get rider data
 			bib = bibSprintDicts[0]
 			status = race.getRiderStatus(bib) if race.getRiderStatus(bib) is not None else Model.Rider.NP
 			name = ''
@@ -379,47 +374,67 @@ class Results( wx.Panel ):
 					name = ', '.join( n for n in [externalInfo[bib]['LastName'], externalInfo[bib]['FirstName']] if n )
 				except:
 					pass
-			elif 'sprintNameEdited' in sprintDict:
-					name = sprintDict['sprintNameEdited']
 			gender = ''
 			if bib and excelLink is not None and excelLink.hasField('Gender'):
 				try:
 					gender = externalInfo[bib]['Gender']
+					haveGender = True
 				except:
 					pass
-			elif 'sprintGenderEdited' in sprintDict:
-					gender = sprintDict['sprintGenderEdited']
+			age = ''
+			if bib and excelLink is not None and excelLink.hasField('Age'):
+				try:
+					age = externalInfo[bib]['Age']
+					haveAge = True
+				except:
+					pass
 			natcode = ''
 			if bib and excelLink is not None and excelLink.hasField('NatCode'):
 				try:
 					natcode = externalInfo[bib]['NatCode']
+					haveNat = True
 				except:
 					if excelLink.hasField('UCICode'):
 						try:
 							natcode = externalInfo[bib]['UCIcode']
+							haveNat = True
 						except:
 							pass
-			elif 'sprintNatcodeEdited' in sprintDict:
-					natcode = sprintDict['sprintNatcodeEdited']
 			machine = ''
 			if bib and excelLink is not None and excelLink.hasField('Machine'):
 				try:
 					machine = externalInfo[bib]['Machine']
-					
+					haveMachine = True
 				except:
 					pass
-			elif 'sprintMachineEdited' in sprintDict:
-				machine = sprintDict['sprintMachineEdited']
 			team = ''
 			if bib and excelLink is not None and excelLink.hasField('Team'):
 				try:
 					team = externalInfo[bib]['Team']
+					haveTeam = True
 				except:
 					pass
-			elif 'sprintTeamEdited' in sprintDict:
-				team = sprintDict['sprintTeamEdited']
 			if bibSprintDicts[1] is not None:
 				sprintDict = bibSprintDicts[1][0]
+				#update values if they've been edited
+				if 'sprintNameEdited' in sprintDict:
+					name = sprintDict['sprintNameEdited']
+				if 'sprintGenderEdited' in sprintDict:
+					gender = sprintDict['sprintGenderEdited']
+					haveGender = True
+				if 'sprintAgeEdited' in sprintDict:
+					age = sprintDict['sprintAgeEdited']
+					haveAge = True
+				if 'sprintNatcodeEdited' in sprintDict:
+					natcode = sprintDict['sprintNatcodeEdited']
+					haveNat = True
+				if 'sprintMachineEdited' in sprintDict:
+					machine = sprintDict['sprintMachineEdited']
+					haveMachine = True
+				if 'sprintTeamEdited' in sprintDict:
+					team = sprintDict['sprintTeamEdited']
+					haveTeam = True
+				#add the data to the grid
 				self.resultsGrid.AppendRows(1)
 				row = self.resultsGrid.GetNumberRows() -1
 				col = 0
@@ -439,6 +454,8 @@ class Results( wx.Panel ):
 				self.resultsGrid.SetCellValue(row, col, str(team))
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(gender))
+				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(age))
 				col += 1
 				self.resultsGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 				self.resultsGrid.SetCellValue(row, col, str(natcode))
@@ -486,11 +503,24 @@ class Results( wx.Panel ):
 				col += 1
 				self.resultsGrid.SetCellValue(row, col, str(gender))
 				col += 1
+				self.resultsGrid.SetCellValue(row, col, str(age))
+				col += 1
 				self.resultsGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 				self.resultsGrid.SetCellValue(row, col, str(natcode))
 				col += 5
 				self.resultsGrid.SetCellValue(row, col, '0')
 				self.resultsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 		
+		#hide unused info columns
+		if not haveMachine:
+			self.resultsGrid.HideCol( self.colnames.index('Machine') )
+		if not haveTeam:
+			self.resultsGrid.HideCol( self.colnames.index('Team') )
+		if not haveGender:
+			self.resultsGrid.HideCol( self.colnames.index('Gender') )
+		if not haveAge:
+			self.resultsGrid.HideCol( self.colnames.index('Age') )
+		if not haveNat:
+			self.resultsGrid.HideCol( self.colnames.index('Nat') )
 		
 		self.resultsGrid.AutoSizeColumns()

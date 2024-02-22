@@ -22,4 +22,4 @@ Time of Day|The time that the sprint was recorded.
 Note|The Note field for the relevant sprint.
 Attempts|Total number of sprint attempts by that rider.
 
-Other than the rider's status, the results may not be edited; if you need to make a change, do so on the [Data][] tab, or in the [sign-on spreadsheet][DataMgmt].
+Other than the rider's **status**, the results may not be edited; if you need to make a change, do so on the [Data][] tab, or in the [sign-on spreadsheet][DataMgmt].

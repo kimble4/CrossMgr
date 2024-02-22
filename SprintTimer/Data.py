@@ -615,6 +615,12 @@ class Data( wx.Panel ):
 			# restore the old value
 			self.dataGrid.SetCellValue(row, col, old)
 
+	def clearGrid( self ):
+		if self.dataGrid.GetNumberRows():
+			self.dataGrid.DeleteRows(0, self.dataGrid.GetNumberRows())
+		for col in range(self.dataGrid.GetNumberCols()):
+			self.dataGrid.ShowCol(col)
+
 	
 	def refresh( self, event=None ):
 		#self.clock.Start()
@@ -657,8 +663,12 @@ class Data( wx.Panel ):
 
 		sprints.sort(key=lambda item: item[0])
 			
-		if self.dataGrid.GetNumberRows():
-			self.dataGrid.DeleteRows(0, self.dataGrid.GetNumberRows())
+		self.clearGrid()
+			
+		haveMachine = False
+		haveTeam = False
+		haveGender = False
+		haveNat = False
 		
 		for sprint in sprints:
 			bib = None
@@ -739,10 +749,12 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('Machine'):
 				try:
 					machine = externalInfo[bib]['Machine']
+					haveMachine = True
 				except:
 					pass
 			elif "sprintMachineEdited" in sprintDict:
 				machine = sprintDict["sprintMachineEdited"]
+				haveMachine = True
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellValue(row, col, machine)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
@@ -751,10 +763,12 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('Team'):
 				try:
 					team = externalInfo[bib]['Team']
+					haveTeam = True
 				except:
 					pass
 			elif "sprintTeamEdited" in sprintDict:
 				team = sprintDict["sprintTeamEdited"]
+				haveTeam = True
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellValue(row, col, team)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
@@ -763,10 +777,12 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('Gender'):
 				try:
 					gender = externalInfo[bib]['Gender']
+					haveGender = True
 				except:
 					pass
 			elif "sprintGenderEdited" in sprintDict:
 				gender = sprintDict["sprintGenderEdited"]
+				haveGender = True
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellValue(row, col, gender)
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
@@ -775,14 +791,17 @@ class Data( wx.Panel ):
 			if bib and excelLink is not None and excelLink.hasField('NatCode'):
 				try:
 					natcode = externalInfo[bib]['NatCode']
+					haveNat = True
 				except:
 					if excelLink.hasField('UCICode'):
 						try:
 							natcode = externalInfo[bib]['UCICode']
+							haveNat = True
 						except:
 							pass
 			elif "sprintNatcodeEdited" in sprintDict:
 				natcode = sprintDict["sprintNatcodeEdited"]
+				haveNat = True
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			self.dataGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
 			self.dataGrid.SetCellValue(row, col, natcode)
@@ -824,7 +843,16 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellValue(row, col, '{:.1f}'.format(sprintDict["elevation"]) if "elevation" in sprintDict else '')
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTER)
 			col += 1
-				
+		
+		#hide unused info columns
+		if not haveMachine:
+			self.dataGrid.HideCol( self.colnames.index('Machine') )
+		if not haveTeam:
+			self.dataGrid.HideCol( self.colnames.index('Team') )
+		if not haveGender:
+			self.dataGrid.HideCol( self.colnames.index('Gender') )
+		if not haveNat:
+			self.dataGrid.HideCol( self.colnames.index('Nat') )
 		
 		row = self.dataGrid.GetNumberRows() -1
 		self.dataGrid.MakeCellVisible(row, 0)
