@@ -14,6 +14,7 @@
 [Main Screen]:		MainScreen.html
 [Data]:				Data.html
 [Results]:			Results.html
+[RiderDetail]:		RiderDetail.html
 [Categories]:		Categories.html
 [Properties]:		Properties.html
 [RaceOptionsProperties]: Properties.html#race-options

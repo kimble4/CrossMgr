@@ -18,6 +18,7 @@ Get started with SprintTimer now!
 * [Main Screen][]
 * [Data][]
 * [Results][]
+* [RiderDetail][]
 * [Categories][]
 * [Properties][]
 

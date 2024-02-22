@@ -47,7 +47,7 @@ from Data				import Data, ManualEntryDialog
 #from Actions			import Actions
 #from Gantt				import Gantt
 #from History			import History
-#from RiderDetail		import RiderDetail
+from RiderDetail		import RiderDetail
 from Results			import Results
 from Categories			import Categories
 from Properties			import Properties, PropertiesDialog, BatchPublishPropertiesDialog
@@ -561,7 +561,7 @@ class MainWin( wx.Frame ):
 			[ 'results',		Results,			_('Results') ],
 			#[ 'pulled',			Pulled,				_('Pulled') ],
 			#[ 'history',		History,			_('Passings') ],
-			#[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
+			[ 'riderDetail',	RiderDetail,		_('RiderDetail') ],
 			#[ 'gantt', 			Gantt,				_('Chart') ],
 			#[ 'recommendations',Recommendations,	_('Recommendations') ],
 			[ 'categories', 	Categories,			_('Categories') ],

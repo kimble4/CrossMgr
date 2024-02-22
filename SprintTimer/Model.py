@@ -2963,12 +2963,12 @@ class Race:
 		self._buildCategoryCache()
 		return self.categoryCache.get(num, None)
 	
-	#def inCategory( self, num, category ):
-		#if category is None:
-			#return True
-		#if getattr(self, 'categoryCache', None) is None:
-			#self._buildCategoryCache()		
-		#return num in category.bibSet
+	def inCategory( self, num, category ):
+		if category is None:
+			return True
+		if getattr(self, 'categoryCache', None) is None:
+			self._buildCategoryCache()		
+		return num in category.bibSet
 		
 	#def getStartOffset( self, num ):
 		#if self.isTimeTrial:
