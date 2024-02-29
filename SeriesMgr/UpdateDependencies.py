@@ -15,7 +15,7 @@ def UpdateDependencies():
 			except Exception:
 				pass
 			
-			with open(os.path.join('..', fname), encoding="utf8") as fc:
+			with open(os.path.join('..', fname)) as fc:
 				contents = fc.read()
 			if fname in ('Utils.py', 'HelpIndex.py'):
 				contents = contents.replace("'CrossMgr", "'SeriesMgr").replace('CrossMgrImages', 'SeriesMgrImages')
