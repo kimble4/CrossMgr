@@ -75,9 +75,9 @@ class RiderResult:
 		if self.status == Model.Rider.Finisher:
 			try:
 				if self.raceTimes[-2] <= t:
-					return '🏁 '
+					return '\U0001F3C1'
 				if self.raceTimes[-3] <= t:
-					return '🔔 '
+					return '\U0001F514'
 			except Exception:
 				pass
 		return ''
@@ -86,9 +86,9 @@ class RiderResult:
 		if self.status == Model.Rider.Finisher:
 			try:
 				if self.raceTimes[-1] <= t:
-					return '🏁 '
+					return '\U0001F3C1'
 				if self.raceTimes[-2] <= t:
-					return '🔔 '
+					return '\U0001F514'
 			except Exception:
 				pass
 		return ''
