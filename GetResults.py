@@ -71,7 +71,7 @@ class RiderResult:
 		self.lastInterp = False
 		self.bests		= [True] * self.laps
 		
-def _getExpectedLapChar( self, t ):
+	def _getExpectedLapChar( self, t ):
 		if self.status == Model.Rider.Finisher:
 			try:
 				if self.raceTimes[-2] <= t:
