@@ -30,4 +30,3 @@ import imagebrowser
 import scramble
 import getuser
 import Utils
-import SetNoDataDNS
