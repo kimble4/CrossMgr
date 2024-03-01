@@ -524,7 +524,7 @@ def GetPotentialDuplicateFullNames( riderNameLicense ):
 	
 	return {full_name for full_name, licenses in nameLicense.items() if len(licenses) > 1}
 			
-def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMostEventsCompleted=False, numPlacesTieBreaker=5 ):
+def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMostRacesCompleted=False, numPlacesTieBreaker=5 ):
 	model = SeriesModel.model
 	
 	scoreByTime						= model.scoreByTime
