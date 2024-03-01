@@ -226,7 +226,7 @@ class Races(wx.Panel):
 			raceList.append( (fileName, pname, pteamname, grade, raceName, eventName) )
 		
 		model = SeriesModel.model
-		model.setRaces( raceList )
+		racesChanged = model.setRaces( raceList )
 		
 		if self.seriesName.GetValue() != model.name:
 			model.name = self.seriesName.GetValue()
@@ -235,8 +235,10 @@ class Races(wx.Panel):
 		if self.organizerName.GetValue() != model.organizer:
 			model.organizer = self.organizerName.GetValue()
 			model.changed = True
-			
+		
 		wx.CallAfter( self.refresh )
+		if racesChanged and Utils.getMainWin():
+			wx.CallAfter( Utils.getMainWin().refreshAll )
 		
 #----------------------------------------------------------------------------
 

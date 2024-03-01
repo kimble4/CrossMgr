@@ -7,6 +7,7 @@ import time
 import operator
 import functools
 import datetime
+import threading
 from multiprocessing import Pool
 import GetModelInfo
 from FileTrie import FileTrie
@@ -224,6 +225,8 @@ rankDNF					= 999999
 rankDidNotParticipate	= 9999999
 rankUnknown				= 99999999
 
+modelUpdateLock = threading.Lock()
+
 class SeriesModel:
 	DefaultPointStructureName = 'Regular'
 	useMostRacesCompleted = False
@@ -266,7 +269,9 @@ class SeriesModel:
 	ftpProtocol = ''
 	urlPath = ''
 	
-	uciIdKey = False			# If true, use the uci_id for id only (not name).
+	# Control how to identify riders: name, uciid or license.
+	KeyByName, KeyByUciId, KeyByLicense = list(range(3))
+	riderKey = KeyByName
 	
 	@property
 	def scoreByPoints( self ):
@@ -320,7 +325,7 @@ class SeriesModel:
 	
 	def setRaces( self, raceList ):
 		if [(r.fileName, r.pointStructure.name, r.teamPointStructure.name if r.teamPointStructure else None, r.grade, r.raceName, r.eventName) for r in self.races] == raceList:
-			return
+			return False
 		
 		self.setChanged()
 		
@@ -344,6 +349,7 @@ class SeriesModel:
 		self.races = newRaces
 		for i, r in enumerate(self.races):
 			r.iSequence = i
+		return True
 		
 	def setReferences( self, references ):
 		dNew = dict( references )
@@ -632,25 +638,26 @@ class SeriesModel:
 	
 	@memoize
 	def _extractAllRaceResultsCore( self ):
-		# Extract all race results in parallel.  Arguments are the race info and this series (to get the alias lookups).
-		with Pool() as p:
-			p_results = p.starmap( GetModelInfo.ExtractRaceResults, ((r,self) for r in self.races) )
-		
-		# Combine all results and record errors.
-		raceResults = []
-		oldErrors = self.errors
-		self.errors = []
-		for ret, r in zip(p_results, self.races):
-			if ret['success']:
-				raceResults.extend( ret['raceResults'] )
-				if ret['licenseLinkTemplate']:
-					self.licenseLinkTemplate = ret['licenseLinkTemplate']
-			else:
-				self.errors.append( (r, ret['explanation']) )
-		if oldErrors != self.errors:
-			self.changed = True
+		with modelUpdateLock:		
+			# Extract all race results in parallel.  Arguments are the race info and this series (to get the alias lookups).
+			with Pool() as p:
+				p_results = p.starmap( GetModelInfo.ExtractRaceResults, ((r,self) for r in self.races) )
 			
-		self.harmonizeCategorySequence( raceResults )
+			# Combine all results and record errors.
+			raceResults = []
+			oldErrors = self.errors
+			self.errors = []
+			for ret, r in zip(p_results, self.races):
+				if ret['success']:
+					raceResults.extend( ret['raceResults'] )
+					if ret['licenseLinkTemplate']:
+						self.licenseLinkTemplate = ret['licenseLinkTemplate']
+				else:
+					self.errors.append( (r, ret['explanation']) )
+			if oldErrors != self.errors:
+				self.changed = True
+				
+			self.harmonizeCategorySequence( raceResults )
 		return raceResults
 
 	def extractAllRaceResults( self, adjustForUpgrades=True, isIndividual=True ):

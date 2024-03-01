@@ -71,13 +71,13 @@ class RiderResult:
 		self.lastInterp = False
 		self.bests		= [True] * self.laps
 		
-	def _getExpectedLapChar( self, t ):
+def _getExpectedLapChar( self, t ):
 		if self.status == Model.Rider.Finisher:
 			try:
 				if self.raceTimes[-2] <= t:
-					return '\U0001F3C1'
+					return '🏁 '
 				if self.raceTimes[-3] <= t:
-					return '\U0001F514'
+					return '🔔 '
 			except Exception:
 				pass
 		return ''
@@ -86,9 +86,9 @@ class RiderResult:
 		if self.status == Model.Rider.Finisher:
 			try:
 				if self.raceTimes[-1] <= t:
-					return '\U0001F3C1'
+					return '🏁 '
 				if self.raceTimes[-2] <= t:
-					return '\U0001F514'
+					return '🔔 '
 			except Exception:
 				pass
 		return ''
