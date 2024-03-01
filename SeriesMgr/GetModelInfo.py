@@ -130,19 +130,32 @@ class RaceResult:
 	@property
 	def teamIsValid( self ):
 		return self.team and self.team.lower() not in {'no team', 'no-team', 'independent'}
-		
+	
+	'''
 	def keySort( self ):
-		fields = ['categoryName', 'lastName', 'firstName', 'license', 'raceDate', 'raceName']
+		if SeriesModel.model.uciIdKey:
+			fields = 'categoryName', 'lastName', 'firstName', 'uci_id', 'raceDate', 'raceName'
+		else:
+			fields = 'categoryName', 'lastName', 'firstName', 'license', 'raceDate', 'raceName'
 		return tuple( safe_upper(getattr(self, a)) for a in fields )
 		
 	def keyMatch( self ):
-		fields = ['categoryName', 'lastName', 'firstName', 'license']
+		if SeriesModel.model.uciIdKey:
+			fields = 'categoryName', 'lastName', 'firstName', 'uci_id'
+		else:
+			fields = 'categoryName', 'lastName', 'firstName', 'license'
 		return tuple( safe_upper(getattr(self, a)) for a in fields )
+	'''
 		
 	def key( self ):
-		k = self.full_name.upper()
-		s = Utils.removeDiacritic(k)	# If the full name has characters that have no ascii representation, return it as-is.
-		return (s if len(s) == len(k) else k, Utils.removeDiacritic(self.license))
+		if SeriesModel.model.riderKey == SeriesModel.SeriesModel.KeyByUciId:
+			return self.uci_id
+		elif SeriesModel.model.riderKey == SeriesModel.SeriesModel.KeyByLicense:
+			return self.license
+		else:
+			k = self.full_name.upper()
+			s = Utils.removeDiacritic(k)		# If the full name has characters that have no ascii representation, return it as-is.
+			return (s if len(s) == len(k) else k, Utils.removeDiacritic(self.license))
 		
 	def keyTeam( self ):
 		k = self.team.upper()
@@ -171,7 +184,12 @@ def toInt( n ):
 		return n
 
 def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
-	ret = { 'success':True, 'explanation':'success', 'raceResults':[], 'licenseLinkTemplate':None }	
+	ret = { 'success':True, 'explanation':'success', 'raceResults':[], 'licenseLinkTemplate':None }
+	
+	if not os.path.exists( raceInSeries.getFileName() ):
+		ret['success'] = False
+		ret['explanation'] = 'File not found'
+		return ret
 
 	getReferenceName = seriesModel.getReferenceName
 	getReferenceLicense = seriesModel.getReferenceLicense
@@ -506,16 +524,18 @@ def GetPotentialDuplicateFullNames( riderNameLicense ):
 	
 	return {full_name for full_name, licenses in nameLicense.items() if len(licenses) > 1}
 			
-def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMostRacesCompleted=False, numPlacesTieBreaker=5 ):
-	scoreByTime = SeriesModel.model.scoreByTime
-	scoreByPercent = SeriesModel.model.scoreByPercent
-	scoreByTrueSkill = SeriesModel.model.scoreByTrueSkill
-	bestResultsToConsider = SeriesModel.model.bestResultsToConsider
-	bestEventsToConsider = SeriesModel.model.bestEventsToConsider
-	mustHaveCompleted = SeriesModel.model.mustHaveCompleted
-	showLastToFirst = SeriesModel.model.showLastToFirst
-	considerPrimePointsOrTimeBonus = SeriesModel.model.considerPrimePointsOrTimeBonus
-	scoreByPointsInput = SeriesModel.model.scoreByPointsInput
+def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMostEventsCompleted=False, numPlacesTieBreaker=5 ):
+	model = SeriesModel.model
+	
+	scoreByTime						= model.scoreByTime
+	scoreByPercent					= model.scoreByPercent
+	scoreByTrueSkill				= model.scoreByTrueSkill
+	bestResultsToConsider			= model.bestResultsToConsider
+	bestEventsToConsider			= model.bestEventsToConsider
+	mustHaveCompleted				= model.mustHaveCompleted
+	showLastToFirst					= model.showLastToFirst
+	considerPrimePointsOrTimeBonus	= model.considerPrimePointsOrTimeBonus
+	scoreByPointsInput				= model.scoreByPointsInput
 	
 	# Get all results for this category.
 	raceResults = [rr for rr in raceResults if rr.categoryName == categoryName]
@@ -523,11 +543,11 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		return [], [], set()
 		
 	# Create a map for race filenames to grade.
-	raceGrade = { race.getFileName():race.grade for race in SeriesModel.model.races }
-	gradesUsed = sorted( set(race.grade for race in SeriesModel.model.races) )
+	raceGrade = { race.getFileName():race.grade for race in model.races }
+	gradesUsed = sorted( set(race.grade for race in model.races) )
 		
 	# Assign a sequence number to the races in the specified order.
-	for i, r in enumerate(SeriesModel.model.races):
+	for i, r in enumerate(model.races):
 		r.iSequence = i
 		
 	# Get all races for this category.
