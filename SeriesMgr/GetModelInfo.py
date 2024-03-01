@@ -341,7 +341,7 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 				else:
 					try:
 						date = datetime.datetime.strptime(row[0], '%B %d, %Y')
-						print(date)
+						#print(date)
 					except:
 						pass
 				

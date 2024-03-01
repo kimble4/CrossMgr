@@ -639,7 +639,7 @@ def GetNonWaveCategoryResults( category ):
 	riderResults = []
 
 	getCategory = race.getCategory
-	for num in race.getRiderNums():
+	for num in list(race.getRiderNums()):
 		if not race.inCategory(num, category):
 			continue
 		
