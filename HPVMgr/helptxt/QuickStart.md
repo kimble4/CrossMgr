@@ -70,8 +70,9 @@ If a rider changes machine or category (eg. Swapping machines or removing a fair
 
 1. Select the relevant Season and Event on the [Events][] screen.
 1. Switch to the [EventEntry][] screen.
-1. Delete the rider from the list using the right-click context menu.
-1. Re-add the rider using their bib number or name, entering the new machine and category details.
+1. Right-click on the racer and select "Edit details" from the context menu.  The racer's entry will be highlighted in **Orange**
+1. Make changes to the machine and category details at the top of the screen.
+1. Click "**Enter/Update racer**" to update their entry.
 1. Re-write the sign-on sheet.
 
 #### If the change only applies to one round/race:

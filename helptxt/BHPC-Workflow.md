@@ -22,9 +22,11 @@ The first thing you will need to do to set up a race, is create a directory for 
 
 ## Creating a Sign-on sheet
 
-**This section intentionally left blank**; we intend to revamp the Sign-on software, so there's little point in documenting the old one.
+See the **HPVMgr** help documentation for how to use the HPVMgr application to generate sign-on sheets.
 
-Suffice to say that you should use the sign-on system to generate an Excel file containing a sheet for each Race, with columns for the rider's name, RFID tag number and race categories.  See [DataMgmt][] for more details of the format.
+Alternatively, the old **BHPC organisers' spreadsheet** may be used.
+
+Otherwise you can manually generate an Excel file containing a sheet for each Race, with columns for the rider's name, RFID tag number(s) and race categories.  See [DataMgmt][] for more details of the format.
 
 
 ## Creating a CrossMgr race file
@@ -295,7 +297,7 @@ If you are using a generator, start it and allow the output to stabilise before 
 1. Unpack the cables and loose equipment from the flight-case.  **Prop the flight-case lid open** by engaging the piece of aluminium profile on the right hand side of the lid with the protruding bolt in the base.
 1. Locate the black **AC power cable** for the flight-case.  This has a standard **13A BS1363 mains plug** on one end, and a circular female **PowerCon** connector on the other.  Insert this in the male PowerCon **AC power inlet** on the side of the flight-case, and twist clockwise so it clicks into place.
 ![Conections on the side panel of the flightcase](./images/side_panel.jpg "Connections on the side panel of the flight-case")
-Connect the other end to mains power (or another 85-265V AC supply, eg. from a generator or inverter).  An adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 Ceeform.
+Connect the other end to mains power (or another 85-265V AC supply, eg. from a generator or inverter).  An adaptor should be present in the crate of timing equipment to adapt BS1363 to 16A IEC 60309 (the blue Ceeform commonly used for caravan hookups).
 1. The AC power display on the power supply should light up and indicate the voltage and frequency of the AC supply, with a power draw in the region of about 15W as the router and tag reader boot up.  The DC power display will flash its backlight in alarm and show a voltage of 0V (occasionally this mis-reads as 99.99V), indicating that a DC supply is not present.
 1. **DC power** of 12-36V can be connected using one (or more) of: **(A)** The small black centre-positive **2.5mm DC barrel jack** inlet on the side of the flight-case.  (A short jack-jack cable is included to connect to a 2.1mm DC jack)  **(B)** The yellow **male XT60** connector on the side of the flight-case. (Cables are included to connect to spade terminals, or a 12V vehicle cigarette lighter socket) **(C)** The **female USB-C inlet** on the bottom left of the power supply panel. (Cables not included.  The USB power source must be 'laptop' rated - a standard phone-charging power bank cannot provide enough power to run the tag-reader)  Once connected, the DC power display should show a voltage appropriate for your power source, but no significant current/power will be drawn while AC power is present.  If DC power does not appear to work, check the polarity, and the respective inlet fuse.
 ![Power supply panel](./images/power_supply.jpg "Dual power supply")
@@ -303,7 +305,7 @@ Connect the other end to mains power (or another 85-265V AC supply, eg. from a g
 1. Connect the **laptop's power supply** to AC power and the DC power inlet on the left side of the laptop.
 1. Optional: Connect the **mouse** to the USB port on the right side of the laptop.  (The trackpad can be unreliable when operated with sweaty fingers.)
 1. Locate the **red Ethernet cable**.  This has a standard RJ45 plug on one end, and a rugged RJ45-in-an-XLR-shell plug on the other.  Connect the XLR end to *either* of the two XLR-RJ45 sockets on the side of the flight-case, and the standard RJ45 to the fiddly Ethernet socket on the left side of the laptop next to the power inlet.
-1. Locate the **long coaxial cables** (stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the RP-TNC plugs to the RP-TNC jacks on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
+1. Locate a pair of **long coaxial cables** of appropriate lengths for the track (they're stored separately in in the crate of timing stuff) and connect the male N-connectors to the RFID aerials (which should have right-angle N adaptors attached), and the RP-TNC plugs to the RP-TNC jacks on the tag reader (passing the cables through the holes in the side of the flight-case).  The far-side aerial should be the one covered in ScotchLite retro-reflective tape.
 ![RP-TNC aerial connctions on RFID tag reade](./images/aerial_connections.jpg "RP-TNC aerial connctions on RFID tag reader")
 By convention, we connect the near-side aerial to channel 1 on the tag reader, and the far-side aerial to channel 2.  (This makes it easier to determine which isn't working properly if there's a fault.)
 1. Optional (only needed **for writing tags**): Locate the short coaxial cable with a TNC plug on one end and RP-TNC plug on the other, and use this to connect the 'desktop' aerial to channel 3 of the tag reader.
@@ -314,12 +316,12 @@ By convention, we connect the near-side aerial to channel 1 on the tag reader, a
 ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 1. Optional: Screw the **reflective IR beam break** unit onto its drainpipe and mount it on its stand beside the nearside RFID aerial.  Locate the black **male 3-pin XLR to female 3-pin XLR** cable and use it to connect the IR beam-break unit (alternatively, a tape-switch) to the XLR socket on the Trigger-O-Matic.
 1. Optional: Erect the **Race Clock**'s stand (ensuring that the clamps are tightened and securing pins are in place, and fit the clock to it.  Rotate the clock gently until you feel the hole in the base of the top-hat drop into place around the excentric allen bolt on the end of the stand (this prevents it rotating in the wind).  Pick up and rotate the entire stand to point the clock in the right direction - **do not force it to rotate on the stand, or the securing pins will be damaged**.  Do not use the stand in strong winds - the clock may fall over and be damaged.
-1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the female PowerCon connector to the back of the clock (again, twisting clockwise to click into place).  Connect the mains plug to AC power.  The clock should boot up and display the time of day and temperature as it searches for a WiFi network.
+1. Locate the **Race Clock power cable** (stored separately in the crate of timing stuff), and connect the female PowerCon connector to the back of the clock (again, twisting clockwise to click into place).  Connect the mains plug to AC power.  The clock should boot up and display "`bhpc`" and then alternate between the time of day and temperature as it searches for a WiFi network.
 
-### Stourport (far side of track close to finish line) variation
+### Far side of track close to finish line (Stourport) variation
 
 * Due to problems caused by reading tags of riders on the far side of the track, we have found that it works better to use the **desktop aerial**, lying on the ground **facing upwards** at the trackside in place of the usual **nearside** aerial.
-* This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads.
+* This limits the pickup range to approximately 3 metres horizontally (about half the width of the track), and prevents spurious reads from riders on the far side.
 * Connect it to port 1 of the tag reader, and the software will not need to be re-configured.
 
 ### Sprint Timer
@@ -362,7 +364,7 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. Set **Connection Timeout** to `3` seconds, **Keepalive** to `2` seconds, and **Repeat** to `3` seconds.
 1. Enable **Recalculate clock offset...** and **Beep on Read**
 1. Click OK, and OK to "*Reset reader now?*".
-1. If riders are milling around, you should start to see tag reads in the left hand pane, confirming that the RFID system is operating.  Otherwise, grab a tag and bring it in and out of range.  Ensure that you see reads from both antennas.
+1. If riders are milling around, you should start to see tag reads in the left hand pane, confirming that the RFID system is operating.  Otherwise, grab a tag and bring it in and out of range.  Ensure that you see reads from both antennas, confirming that they're properly connected.
 1. Minimise CrossMgrImpinj and leave it running in the background.
 
 ### Internet Connection (Optional)
@@ -379,25 +381,52 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. If you will be using live results, confirm that the FTP upload works.  **Check that an `index.html` page linking to the race file(s) is present on the web server**: You may need to perform a batch publish of the un-started race(s).
 1. If this is all okay, go to the [RFID][RFID] tab on the [Properties][] screen, and click **Setup/Test RFID Reader...**
 1. Start the **RFID test**.  CrossMgrImpinj should establish a connection and you should start to see tag reads in the **Messages** pane.
-1. You can **leave the RFID test running** until the race is about to start.  This allows you to check that rider's tags are working.
+1. You can **leave the RFID test running** until the race is about to start.  This allows you to check that riders' tags are working.
 
 ### Race Clock
 
 * With the **RFID test running**, now is a good time to check the **Race Clock**:  Look at the display on the back of the clock.  By now it should have connected to the `BHPC_Timing` WiFi network, and have established a WebSocket connection to CrossMgr, causing the respective LEDs to illuminate.
-* Check the LED display is working properly.  If the heartbeat is enabled, you should see the last LED in the display (middle of the leftmost digit) flashing red a couple of times a second.  This confirms that data is making its way to all pixels in the display.
+* Check the LED display is working properly.  If the heartbeat is enabled, you should see the last LED in the display (lefmost LED of middle segment of the leftmost digit) flashing red a couple of times a second.  This confirms that data is making its way to all pixels in the display.
 * If there are problems, check the [BHPC troubleshooting guide][Clock Issues] for more details.
 * Ensure that the clock is facing in a direction that allows racers to see it properly, that the stand is secure, that the power cable is not a trip hazard, and that people aren't standing in front of the display.
 
 ### Someone needs tags!
 
-* This is usually the point in proceedings where someone will come to you with a sob story about having to remove their timing tags for a pedal car race, leaving them on their other helmet or their fairing being eaten by a grue.  Alternately, you may have established that their existing tags are not working properly during the RFID test, or are in danger of peeling off.  Either way, they need new timing tags.
+* This is usually the point in proceedings where someone will come to you with a sob story about having to remove their timing tags for a pedal car race, shipping their helmet to Battle Mountain or their fairing being eaten by a grue.  Alternately, you may have established that their existing tags are not working properly during the RFID test, or are in danger of peeling off.  Either way, they need new timing tags.
 
-* First, **check that you haven't already got a set of new tags** for them in the tag bag - riders will not always remember if they asked for new tags at sign on.  If you have to write new tags:
+* First, **check that you haven't already got a set of new tags** for them in the tag bag - riders will not always remember if they asked for new tags at sign on.
+
+If you do have to write new tags:
+
+#### Using HPVMgr
+
+**HPVMgr** is the new dedicated BHPC sign-on application.  As well as managing the rider database and sign-on sheets, it can control the Impinj reader directly in order to write RFID tags.  This has the advantage of a less fiddly user interface, and not having to deal with hexadecimal numbers manually.  It also keeps a record of when tags were last written for each rider, useful when working with unique tag numbers.  For more information about HPVMgr, see its own help documentation.
+
+1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
+1. **Close CrossMgrImpinj**, if it is running, to free up the tag reader.
+1. Open the **HPVMgr** application.  It should load the rider database automatically.
+1. Switch to the **WriteTags** screen and ensure the RFID reader is configured correctly.  (The settings should be saved after a successful connection to the reader.)
+1. Click the "**Connect**" button to connect to the reader.  If this is not successful, you probably have an incorrect address or a network problem.
+1. Select the **antenna** that you want to write tags with.  The Desktop antenna is usually **Antenna 3**, while the patch antenna built into the RFID reader flightcase is **Antenna 4**.
+1. Ensure that "**Write to ALL tags within range**" is disabled, unless you know what you are doing!
+1. With the connection to the reader established, switch to the **RiderDetail** screen and select the rider whose tags you need to write.  (If you do not know their **Bib** number, you may find it easier to select the rider from the list on the **Riders** screen first.)
+1. Examine the rider's list of tag numbers, and decide which you are going to write.  The last-written dates may be hepful to avoid clashes with an existing tag on a spare helmet or similar.  (Unique numbers for each tag improve QuadReg performance and mean that stray tags can be excluded from a race retrospectively.)
+1. Click the "**Write**" button.  You will be taken back to the **WriteTags** screen, and the "**EPC to write**" field will be populated with the rider's tag number.
+1. Ensure the tag you wish to write to is in place near the selected antenna, click "**Read Tags**" to refresh the inventory list.
+1. Select the relevant tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
+1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.
+1. Give the tags to the rider.
+1. Save changes before exiting the HPVMgr application, so the tag write dates are stored in the database.
+1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
+
+
+#### Using MultiReader
+
+The older method uses the **Impinj MultiReader** application to write the tags, which means you need to be able to enter the hexadecimal EPC number for the tag manually.  HPVMgr might be used to copy the correct EPC to the Windows clipboard in order that it may be pasted into MultiReader.
 
 1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
 1. Establish what the rider's **tag numbers** should be in hexadecimal (refer to the sign-on sheet if necessary), and write this on the **back** of the tags' backing sheet.  *Do not trust yourself to hold this in short-term memory; someone will distract you and this is how mistakes get made*.
-1. Stop the RFID test, if running, and **close CrossMgr**.
-1. **Close CrossMgrImpinj** to free up the tag reader.
+1. **Close CrossMgrImpinj**, if it is running, to free up the tag reader.
 1. If the desktop aerial is not connected to port 3, follow the instructions above to connect it.
 1. Start the Impinj **MultiReader** application, and *connect to the configured reader*.
 1. Place the tags on top of the desktop aerial (weighing them down with something non-conductive so they don't blow away).
@@ -409,16 +438,68 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. Do the **inventory run** again; you should only see the correct tag number.
 1. Give the tags to the rider, **close MultiReader**.
 1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
-1. **Reopen the CrossMgr race file** and re-start the **RFID test**.  If carbon fibre or similar are involved, this might be a good time to check the new tags work actually work once attached to the HPV.
+
+### A rider has changed their Category/Machine/Timing tags
+
+Sometimes a rider changes machine or category (eg. swapping machines or removing a fairing due to mechanical problems) immediately before or during a race...
+
+*Don't panic!*
+
+These changes can be made retrospectively after the race, so if the race is about to start, it's best to make an accurate paper note of which rider (get their bib number) and what they're riding, and worry about updating the sign-on sheet later.
+
+#### Using HPVMgr:
+
+**HPVMgr** makes it simple to manage these changes and re-write the sign-on sheet, so you shouldn't ever need to edit the sign-on sheet manually in Excel.  See the **HPVMgr help documentation** for more details.
+
+##### If the change applies to the whole event...
+
+1. Open **HPVMgr**.
+1. Select the relevant Season and Event on the **Events** screen.
+1. Switch to the **EventEntry** screen.
+1. Right-click on the racer and select "Edit details" from the context menu.  The racer's entry will be highlighted in **Orange**
+1. Make changes to the machine and category details at the top of the screen.
+1. Click "**Enter/Update racer**" and then "OK" to update their entry.  The racer's entry will no longer be highlighted, and the entry will reflect the changes.
+1. Re-write the sign-on sheet using the option from the **"Tools**" menu.
+1. Save changes to the database and quit HPVMgr.
+
+If you need to make global changes to a rider's tag numbers, do so on the **RiderDetail** screen, and re-write the sign-on sheet.
+
+##### If the change only applies to a specific round/race...
+
+1. Select the relevant Season, Event and Round on the **Events** screen.
+1. Switch to the **RaceAllocation** screen.
+1. Right-click on the racer in the allocation list and select either "**Change machine**" or "**Change categories**" from the context menu.
+1. This change will only affect the selected round/race; other rounds in the Event will continue to use the machine and categories as they were entered on the **EventEntry** screen.
+1. Re-write the sign-on sheet.
+1. Save changes to the database and quit HPVMgr.
+
+#### Using the old sign-on system:
+
+##### If the change applies to the whole event...
+
+1. Open the BHPC organiser spreadsheet in Excel, and use the macros to remove the rider from the race.
+1. Re-add them with the correct details.
+1. Re-allocate them to the correct races.
+1. Write the CrossMgr sign-on sheet.
+1. Save changes and quit Excel.
+
+##### If the change only applies to a specific round/race...
+
+You will have to edit the sign-on spreadsheet manually using Excel.
+
+* Take care to ensure that category names are spelled consistently, otherwise CrossMgr will consider it a new category.
+* Ensure that changes are propagated into the combined sheets when merging races (see [Merging races][] below).
+
+**If you have edited the sign-on sheet, subsequent use of the BHPC organiser spreadsheet to re-write the sign-on sheet will lose your changes!**
 
 ## Timing a race
 
 ### Final checklist:
-* **Timing tent** guy ropes etc secure?  Are the table legs weighed down? (Eg. with the flightcase or cable reel)
+* **Timing tent** guy ropes etc secure?  Are the table legs locked and weighed down? (Eg. with the flightcase or cable reel)
 * Are the **RFID aerials** pegged or weighed down?
 * Does the organiser have the **bell** and **flags**?
 * Do you know where the **first aid kit** is?
-* If you are using a **generator**, does it have plenty of **fuel and oil**?  Do you know how to refuel and restart it?
+* If you are using a **generator**, does it have plenty of **fuel and oil**?  Do you know how to refuel and restart it? (Do not refuel a running generator!)
 * If you're racing, **is your bike ready**, do you have your helmet and elbow pads on?
 * Place any **spare live tags** in the **RF-blocking tag bag** to prevent spurious reads.
 ![Tag bag with tag](./images/tag_bag.jpg "The tag bag is made of a material that blocks radio signals")
@@ -436,6 +517,7 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 * Does someone have a **backup stopwatch** ready?
 * Get a **headcount of riders**  on the start line.  Does it match your sign-on sheet?  Establish the **known DNSes**.
 * Do you have a **pen and paper** ready to note down anything of importance during the race (eg. DNFs, incidents, HPV changes, etc.)  *Write the race name on it clearly, and start a new sheet for each race.*
+* Do you have someone who can read race numbers out to you for manual entry if the RFID system fails?
 * Do you have a device that can **video the finish** if the timing system fails?
 
 ### Starting the mass-start race
@@ -527,9 +609,8 @@ At the end of the final race, close CrossMgr and ensure that **all race data is 
 * The camera, Trigger-O-Matic and IR beam break sensor live in the flight-case with the RFID reader, along with a 4-way mains adaptor.
 ![Flight-case packed](./images/flightcase_packed.jpg "Flight-case packed")
 * Note the camera only fits properly in the labelled orientation (lying on its right side in front of the power supply, facing right), and **ensure that the WiFi aerial on the left of the router is folded downwards** so as not to be crushed by the camera when the lid is closed.
-* Plug the AC power cable into the 4-way, along with the 4-way's own plug (this makes them more compact), and place the 4-way along the right-hand side of the case beside the tag reader.
-* The Trigger-O-Matic fits in front of the tag reader, with the IR beam-break on top of it.
-* Coil the assorted cables into the remaining space on top of the tag reader, trying to make the pile as flat as possible so the lid can close.  **DO NOT force the lid closed, you may damage something expensive!**
+* Take care to avoid damaging the thin coaxial cable connecting the **patch antenna** to Antenna port 4 of the **Tag reader**.
+* Coil the assorted cables into the remaining space on top of the tag reader, trying to make the pile as flat as possible so the lid can close.  **DO NOT force the lid closed, you may damage something important and/or expensive!**
 
 Item|Location
 :---|:------
@@ -540,13 +621,14 @@ IR Beam break|Flight-case
 Flight-case AC power cable|Flight-case
 2.5mm to 2.1mm DC barrel jack cable|Flight-case
 XT60 to spade connector cable|Flight-case
-XT60 to cigarette lighter cable|Flight-case
-Short TNC to RP-TNC coaxial cable|Flight-case
+XT60 to car cigarette lighter cable|Flight-case
+Short TNC to RP-TNC coaxial cable|**Must** go in flight-case for writing tags for next race
 Red Ethernet cable|Flight-case
 5m male XLR to female XLR cable|Flight-case
 Male USB-A to male USB-B cable|Flight-case
 Laptop|Laptop bag
 Laptop power supply|Laptop bag
+USB-C to Acer DC jack adaptor|Laptop bag
 HDMI cable|Laptop bag
 Misc USB cables|Laptop bag
 Mouse|Laptop bag
@@ -566,10 +648,10 @@ Foam pads for spacing tags off conductive materials|Timing crate
 Steel tent pegs for aerials|Timing crate
 Mallet|Timing crate
 Aluminium tent pegs for timing tent|**Must** go in tent bag
-Right-angle N-connector adaptors|Leave attached to back of trackside aerials
+Right-angle N-connector adaptors|Leave attached to back of trackside aerials so they don't get lost
 Stopwatches|First-aid kit (So they travel separately from the rest of the timing equipment.)
-Trackside aerials|Travel separately in reinforced Jiffy bags
-Desktop aerial|Must go with flight-case and laptop bag for writing tags for next race
+Trackside antennas|Travel separately in reinforced Jiffy bags
+Desktop antenna|**Must** go with flight-case and laptop bag for writing tags for next race
 
 # Post-processing results
 
@@ -610,7 +692,8 @@ Once you have selected the triggers for all races (possibly after you finish pro
 Keeping CrossMgrVideo open in the background (or even better, on another display device) for reference, open the `.cmn` file for the race.
 Fixing the race data is not an exact science, but:
 
-* First, ensure the **leader's finish time** is correct (hopefully corroborated by the video timestamp showing them passing the chequered flag).
+* If you have Category/Machine or Tag changes to do, refer to the section [A rider has changed their Category/Machine/Timing tags][Category Changes] above.
+* Ensure the **leader's finish time** is correct (hopefully corroborated by the video timestamp showing them passing the chequered flag).
 * For a criterium, check the **race duration **is adjusted so that this is the leader's final lap time.
 * If you have **DNF riders**, ensure their status is set to DNF at an appropriate time.
 * Now check you have good **finish times for all the other riders**.  If there is no tag read, you may be able to find them on the video (either triggered by another rider, or auto-captured).
@@ -632,13 +715,13 @@ Where a **round** has been split into more than one **race**, it is necessary to
 
 Instead, this functionality [is now built into our version of CrossMgr][Merging].  This simplifies the workflow, as you do not have to generate several Excel files in order to combine results, and you can make late adjustments to lap times etc. in the combined file without having to re-do the merge.  It's also programmatically simpler, as the recorded lap time data is merged before CrossMgr performs its filtering, category and ranking calculations, which should hopefully make it more robust.
 
-Our merging procedure effectively imports subsequent races in a round as additional **start waves** of the first race, with a very long gap between them.  CrossMgr's **CustomCategory** logic then combines the results of riders from multiple start waves who share that CustomCategory.  For this to work, we need a unified sign-on sheet for the round, with riders in each race having a different **EventCategory**.
+Our merging procedure effectively imports subsequent races in a round as additional **start waves** of the first race, with a very long gap between them.  CrossMgr's **CustomCategory** logic then combines the results of riders from multiple start waves who share that CustomCategory.  For this to work, we need a **unified sign-on sheet** for the round, with riders in each race having a different **EventCategory**.
 
 1. Ensure you have backup copies of all the race data.  There's great potential for corruption if something goes wrong!
 1. Open the **chronologically first** (usually slower group) race.  Change the [Event Name][General Info] to something appropriate for the combined results.  CrossMgr will warn that it is saving to a new filename.  This will create a copy of the existing race data.  Close CrossMgr.
-1. Combine the sign-on sheets for the individual races into a new sheet in the sign-on Excel file.  (For example, copy the `Round1Race1` sheet to a `Round1Combined` sheet, then copy&paste the data from the Round1Race2 sheet into it.)  This is simply a matter of carefuly copy&pasting, though it's hoped that the sign-on system will be able to generate this automatically in future.  Note that if the sign-on sheet for a race has been edited manually (eg. to reflect a change of machine), these will need to be preserved in the sheet for the combined results.
+1. If necessary combine the sign-on sheets for the individual races into a new sheet in the sign-on Excel file.  If HPVMgr was used to generate the sign-on sheets, this will have been created automatically).  This is simply a matter of copy&pasting:  For example, copy the `Round1Race1` sheet (inclding headers) to a new `Round1Combined` sheet, then copy&paste the data from the Round1Race2 sheet into it.  Note that if the sign-on sheet for a race has been edited manually (eg. to reflect a change of machine), these will need to be preserved in the sheet for the combined results.
 1. Open the .cmn file for the combined results.  At this point, it will just be a copy of the first race.
-1. Use [Link External Excel Sheet][External Excel] to select the new combined sign-on sheet.  Ensure that "**Initialize CrossMgr Categories from Excel EventCategory and Bib# columns**" at the relevant stage.
+1. Use [Link External Excel Sheet][External Excel] to select the combined sign-on sheet.  Ensure that "**Initialize CrossMgr Categories from Excel EventCategory and Bib# columns**" at the relevant stage.
 1. The [Categories][Category Screen] may need rearranging, lap distances and genders set, etc.  Note that you now have a **Start Wave** for each race.
 1. The [Results][] may show nonsense lap times for some of the fast race riders.  This is because their tags were read during the slow race, and is harmless.
 1. Select [Import from another CrossMgr race...][Merging] from the [DataMgmt][] Menu.  Browse to the `.cmn` file of the fast race.
@@ -709,14 +792,15 @@ To avoid confusion, we have tried to be consistent with the CrossMgr suite's use
 
 Term|Meaning
 :---|:------
-Alias|In SeriesMgr, aliases are used to unify different spellings of a **rider**, **machine** or **team** name across a **series**, for when a rider appears as "Joe Bloggs", "Joe Blogs" and "Joseph B" in the results of different races.
+Alias|In SeriesMgr, aliases are used to unify different spellings of a **rider**, **machine** or **team** name across a **series**.  For example, when a rider appears as "Joe Bloggs", "Joe Blogs" and "Joseph B" in the results of different races, *Name Aliases* can be used to consolidate their results.
+Antenna|American for 'aerial', in the radio sense.  (In the interests of consistency with the CrossMgr documentation, we've tried to use this term throughout.)  The RFID system uses a pair of **track-side antennas** on stands either side of the finish line to communicate with riders' **RFID tags**.  A smaller 'desktop' antenna is also available: This is useful for writing tags, and for its reduced range when it is important to avoid reading tags from riders on the far side of the track.  A small **PCB patch antenna** is built into the flightcase in front of the **tag reader**, covered with foam to keep tags at a suitable distance.  This is useful for writing tags.
 Bell|In cycle racing, a bell is rung to indicate that a **rider** has one **lap** remaining.
 Bell Lap|The race leader's last **lap**.
 BHPC|The [British Human Power Club](https://www.bhpc.org.uk/)
 Bib, number|A rider's race number, as printed on the side of their HPV, and used for manual entry into CrossMgr/SprintTimer
 Carbon fibre|Lightweight composite material notable for its radio-blocking properties.  Do not attach RFID tags directly to carbon fibre.
 Category|A class of rider (eg. Junior) or HPV (eg. Part-Faired).  In CrossMgr terms a [Category][Category Screen] is a list of bib numbers and associated meta-data that defines how they are timed and scored.
-Class|Historical **BHPC** term equivalent to **category** that we try to avoid using.
+Class|Historical **BHPC** term equivalent to **category** that, in the interests of clarity, we've tried to avoid using in this documentation.
 Coaxial|A type of electrical cable or connector in which one conductor completely surrounds another.  Used for radio-frequency signals, because physics.  The connections between the **RFID tag reader** and its aerials are coaxial.
 Component Category|A sub-category that makes up a **Start Wave**.  We don't usually use these in **BHPC** racing, as unlike **CustomCategory** they cannot overlap.
 Criterium|A type of cycle race where riders race for a certain period of time, and then complete an extra lap.  **CrossMgr** cannot handle this on its own, as it cannot know whether the leader will cross the finish line before or after the time period has elapsed until after it has happened.
@@ -744,7 +828,9 @@ Global Shutter|A type of electronic camera where the state of every pixel in the
 GPS|*Global Positoning System*.  A satellite navigation system that can be used to determine positions in space and time.
 GPX (track)|A standard file format used by **GPS** receivers to record positions over a period of time.  Used by **CrossMgr** to draw the race animation, and to import lap times for riders.
 Hexadecimal, Hex|Numbers in base 16 (0-F), rather than the usual base 10 (0-9).  Used for tag numbers.
+HID|*Human Interface Device*.  A standard for **USB** keyboards, mice, joysticks, etc.  CrossMgrVideo can be triggered by a HID Joystick.
 HPV|*Human Powered Vehicle*, for example a bicycle, tricycle, handcycle, wheelchair, velomobile, streamliner or pedal car.
+HPVMgr|A software application for managing the BHPC riders database, creating **sign-on sheets** for **CrossMgr**, and writing **RFID tags**.  Written in 2024 by Kim Wall of the BHPC.
 Impinj|The manufacturer of the *Speedway* **RFID** reader we use for timing races, and by extension their tag/hardware/software/protocol ecosystem.
 IP address|A numerical address used to uniquely identify a device on a **TCP/IP** network.
 JChip|An electronic timing system designed for sports events.  CrossMgrImpinj converts **LLRP** data from the **Impinj** reader into JChip protocol data for **CrossMgr**.
@@ -806,16 +892,16 @@ Time of day, Wall time|The time of day, possibly including the date.  May be UTC
 Time Trial|A type of **race** where **riders** start at different times, and compete against the clock.
 TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC** ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - TNC on the bottom")
 Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from **CrossMgr** over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
-Trigger-O-Matic|A hardware device that generates HID joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.  ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
+Trigger-O-Matic|A hardware device that generates **HID** joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.  ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
 UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things, and have a strange obsession with socks.
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.  ![USB connectors](./images/usb_connectors.webp "Spotters' guide to USB connectors")
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.
 USB-B|The large square USB connector usually found on printers and scanners.  The Trigger-O-Matic, Race Clock and Sprint Timer Unit have USB-B connectors in the interests of durability.
-USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.  (A dongle to allow a USB-C power source to be used with it is in the laptop bag.)
+USB-C, Micro USB-B, Mini USB-B|Various (incompatible) smaller USB connectors, usually found on small battery-powered computing devices like mobile phones and **GPS** receivers.  Some laptops use USB-C as a power connector, but notably not the *Acer Aspire 5* that the **BHPC** uses for race timing at the time of writing; its USB-C port is for data only.  (An adaptor to allow it to be powered from a USB-C power source is in the laptop bag.)
 UTC|*Universal Time Coordinated*.  A pedant would point out that it's not technically the same thing as *Greenwich Mean Time*, but effectively that.  Software that has any sense tends to work with UTC internally, and only convert to local time for input and output.  **LLRP** always uses UTC time; **CrossMgrImpinj** calculates the offset to local time.
 Webserver|**CrossMgr** and **SprintTimer** run a local web server on **port** `8765`.  This can be used to view live results or a browser-based verison of the **race clock**.
-WiFi|In this context, the IEEE 802.11 standard for Ethernet-like data communications over spread-spectrum radio.
+WiFi|In this context, the IEEE 802.11 standard for Ethernet-like data communications over spread-spectrum radio.  The **Race Clock** connects to the timing system using WiFi.
 WiFi Access Point|The base station of a **WiFi** network.  Usually bridges to a wired **Ethernet** network.  Consumer-grade **routers** often have an access point built-in.
-XLR|A latching electrical connector commonly used for signals on professional audio, video and lighting equipment.  It is robust and easily repaired in the field.
+XLR|A latching electrical connector commonly used for communication signals on professional audio, video and lighting equipment.  It is robust and easily repaired in the field.  We use XLR connectors for the **Sprint Timer** and **Trigger-O-Matic**
 
 
