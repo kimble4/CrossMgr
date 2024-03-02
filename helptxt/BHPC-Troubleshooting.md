@@ -10,48 +10,51 @@ Topics are listed in approximate order of urgency.  The search facility may be u
 
 ### Changing a rider's race categories
 
-This can be done in the sign-on system, or by editing the racers spreadsheet.  If you edit the spreadsheet your changes will be lost if it is re-written by the sign-on system.  Be careful with the spelling of category names, if they do not match, additional categories will be created.
+This can be done in the sign-on system, or by editing the racers spreadsheet.  (See [A rider has changed their Category/Machine/Timing tags][Category Changes] for details.)  If you edit the spreadsheet your changes will be lost if it is re-written by the sign-on system.  Be careful with the spelling of category names, if they do not match, additional categories will be created.
 
 This may be done retrospectively, so if you're short of time, make a pen & paper note of the change, and worry about it after the race.
 
 ### Moving a rider between fast and slow groups
 
-As above, this can be done in the sign-on system or by editing the spreadsheet.  If done by editing the spreadsheet be sure to change the rider's EventCategory to match the destination race, otherwise CrossMgr will put them in their own start wave.
+As above, this can be done in the sign-on system or by editing the spreadsheet.  (See [Moving a rider to a different race within a round
+][Race Reallocation] for details.)  If done by editing the spreadsheet be sure to change the rider's EventCategory to match the destination race, otherwise CrossMgr will put them in their own start wave.
 
 
 ## During the race
+
+### If in doubt: Shoot video
 
 The golden rule for when things go wrong during the race is that **if in doubt, get someone to video the riders crossing the finish line** (as a continuous recording) with a phone or whatever.  Have the race clock visible at some point in the recording so time indexes can be synced up later.
 
 If CrossMgrVideo is functioning, manually triggering it will achieve this in an easier to process way.
 
-### Tags aren't reading...
+### Tags aren't reading
 
-Yellow times on the [Results][] page are extrapolated times.  **If everything is yellow, it means that tags are not being read!**
+Yellow times on the [Results][] page are extrapolated times.  **If everything is coming up yellow, it means that tags are not being read!**
 
-#### For a specific rider
+#### For a specific rider...
 
-Check RiderDetail.   Does the rider exist?  (If not, check the sign-on sheet.)
+Check [RiderDetail][].   Does the rider exist?  (If not, check the sign-on sheet.)
 
 Check the list of lap times...
 
-If times are being recorded, but filtered:
+##### If times are being recorded, but filtered:
 
 - Check the **minimum possible lap time** (see [Properties/Race Options][Race Options])
 - If spurious reads are being accumulated, search the area around the finish line for spare tags/helmets/bikes.  Ensure that unclaimed tags are in the RF-blocking bag.
 - If the track layout means that riders pass close to the finish line on the far section of the track (eg. Stourport, occasionally Lancaster), their tags may be picked up twice.  This is not a problem when they pass through the finish line first (eg. anticlockwise at Stourport), as the **minimum possible lap time** filtering will ignore the subsequent read.  In the other direction, however, it can cause chaos with inconsistent lap times.  The only real solution (other than spending a lot of time inspecting video) is to reduce the performace of the offending RFID aerial.  (We've found that using the desktop aerial facing **upwards** at the trackside gives a range of about 3 metres horizontally, which works as a near-side aerial at Stourport.)
 
-If times are not being recorded, check CrossMgrImpinj:
+##### If times are not being recorded, check CrossMgrImpinj:
 
 Are their tags being read?|Resolution
 :----|:---------
 Yes|Check the rider's details in the sign-on sheet - are the 'Tag' field(s) correct?
-No|Probably a dodgy, badly positioned or missing tag.  (Has the rider removed a hood or fairing?)  Enter the rider's times manually until the end of the race.
+No|Probably a dodgy, badly positioned or missing tag.  (Has the rider removed a hood or fairing with the tags attached?)  Enter the rider's times manually until the end of the race.
 Yes, but it's the wrong number|You can change this in the sign-on sheet and it will be applied retrospectively.
 The tag is listed as 'stray'|A tag with the rider's number is within range of the RFID aerials and has been for some time.  Remove it from the area or place it in the RF-blocking bag.
 The tag is being 'skipped'|As above.  Can also be a symptom of the tag reader's clock drifting into the future with respect to the computer's.  Try pressing 'reset' in CrossMgrImpinj.  If this solves the problem, you have a clock drift issue, try enabling "**Recalculate clock offset as tag reads are reported**" or setting "**Repeat Seconds**" to zero in CrossMgrImpinj's Advanced settings.
 
-#### For everyone
+#### For everyone...
 
 Check there are riders in the race.  There could be a problem with the sign-on sheet.
 
@@ -59,11 +62,11 @@ Otherwise, this is likely a problem with the RFID system.
 
 ##### RFID troubleshooting
 
-###### Check CrossMgrImpinj is running
+**Check CrossMgrImpinj is running**
 
 The CrossMgrImpinj helper application is required for CrossMgr to communicate with the tag reader.
 
-###### Communications with tag reader
+**Communications with tag reader**
 
 If the left pane of the CrossMgrImpinj screen is green, skip to the next section.
 
@@ -107,7 +110,7 @@ If there is a problem between the laptop and the router, you will not be able to
 
 If you can reach the router but not the tag reader, try power-cycling the tag reader.  Again, it takes a minute or so to boot.
 
-###### Communications with CrossMgr
+**Communications with CrossMgr**
 
 Assuming CrossMgrImpinj is connected to the tag reader successfully, is it forwarding tag reads to CrossMgr?
 
@@ -119,20 +122,18 @@ The right pane of the CrossMgrImpinj window turns green when the connection is e
 - In CrossMgr, go to [Properties/RFID][RFID].  Check that "**Use RFID reader During Race**" is enabled.  Click "**Setup/Test RFID Reader...**"
 - Check the reader type is set to "**JChip/Impinj/Alien**"  The remote IP address and port fields will be greyed out, because CrossMgr does not originate the TCP/IP connection when using the JChip protocol.  If a race is not in progress, start an RFID test.  You should see a connection established in the Messages pane.
 - Go back to CrossMgrImpinj.  At this point a connection to CrossMgr should be established and the right pane should have turned green.  If it isn't working, try restarting CrossMgrImpinj and CrossMgr.
+- If all else fails, it's always worth rebooting Windows.
 
 ### Trigger-O-Matic isn't triggering
 
-Ensure the **Auto-Capture** toggle switch is not in the 'disable' position.
-v
-The IR beam-break is a useful backup against RFID problems, but isn't reliable when the track is wide (eg. Darley Moor) or in bright sunlight.  The 'auto capture' push button will trigger a recording manually, and its use should be encouraged for close finishes and where a rider's tags aren't reading.
-
-The Trigger-O-Matic is compatible with the sprint timer's tape switches.  They might be an alternative option?
+- Ensure the **Auto-Capture** toggle switch is not in the 'disable' position.
+- The IR beam-break is a useful backup against RFID problems, but isn't reliable when the track is wide (eg. Darley Moor) or in bright sunlight.  The 'auto capture' push button will trigger a recording manually, and its use should be encouraged for close finishes and where a rider's tags aren't reading.
+- The Trigger-O-Matic is compatible with the sprint timer's tape switches.  They might be an alternative option?
 
 ### CrossMgrVideo isn't receiving triggers from CrossMgr
 
-Ensure that "**Photos on Every Lap**" is enabled in [Properties/Camera][Camera].
-
-This stopped working once during the 2023 season, and we have not been able to reproduce the behaviour.  Restarting CrossMgrVideo solved the problem in that instance, so try that?
+- Ensure that "**Photos on Every Lap**" is enabled in [Properties/Camera][Camera].
+- This stopped working once during the 2023 season, and we have not been able to reproduce the behaviour.  Restarting CrossMgrVideo solved the problem in that instance, so try that?
 
 ### Murky images in CrossMgrVideo
 
@@ -140,24 +141,21 @@ The finish line camera has a manual aperture.  If the amount of ambient light ch
 
 ![Camera focus and aperture adjustment](./images/finish_line_camera.jpg "Camera focus and aperture adjustment")
 
-While watching the CrossMgrVideo preview window, open the cover of the camera enclosure and gently rotate the aperture ring (this is the part in the middle of the lens that does not have a locking 'peg' on it).  (The focus and zoom settings should not normally require adjustment). Ensure the camera is correctly aligned with the finish line after closing the cover.
+- While watching the CrossMgrVideo preview window, open the cover of the camera enclosure and gently rotate the aperture ring.  (This is the part in the middle of the lens that does not have a locking 'peg' on it.  The focus and zoom settings should not normally require adjustment.)
+- Ensure the camera is correctly aligned with the finish line** after closing the cover.
 
 ### Power failure
 
-If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  The laptop powers the camera and Trigger-O-Matic (or sprint timer unit), and should be sufficient for a couple of hours.  If a USB-C power bank that is able to power a laptop is available, there is a dongle in the laptop bag to adapt USB-C to the tiny Acer DC barrel jack.
+If AC power (eg. from a generator or inverter) fails, the laptop will continue to operate on its internal battery.  The laptop powers the camera and Trigger-O-Matic (or sprint timer unit), and should be sufficient for a couple of hours.  If a USB-C power bank that is able to power a laptop is available, there is an adaptor in the laptop bag to convert USB-C to the tiny Acer DC barrel jack.
 
 The RFID tag reader, wireless router and GPS time source are powered by a redundant power supply.  If a DC (battery) source is present, they will continue to operate on DC power when the AC power fails.  If enabled, the AC power failure alarm should sound, and CrossMgrImpinj will pop up a warning message.  The race clock is powered by AC power alone, and will cease functioning.
 
 ![AC power failure](./images/AC_power_failure.jpg "AC power failure")
 
-To avoid risk of damage from voltage fluctuations, **disconnect all the timing equipment before attempting to restart a generator**.  Reconnect only after the generator output has stabilised.
-
-If power to the tag reader and router was completely lost, keep an eye on CrossMgrImpinj and make sure the connection is restored on boot-up (the old laptop had a quirk in its Ethernet driver whereby the USB dongle needed to be hot-plugged before it would bring up the connection).
-
-When AC power is successfully restored, remember to re-enable the power failure alarm for next time.
-
-If the redundant power supply fails, the router (15V, centre positive) and tag reader (24V, centre positive) may be powered by their own wall-wart adaptors.  The tag reader may also be powered using 802.3af Power-over-Ethernet from a suitable 48V injector or POE switch.
-
+- To avoid risk of damage from voltage fluctuations, **disconnect all the timing equipment before attempting to restart a generator**.  Reconnect only after the generator output has stabilised.
+- If power to the tag reader and router was completely lost, keep an eye on CrossMgrImpinj and make sure the connection to the tag reader is restored on boot-up (the old laptop had a quirk in its Ethernet driver whereby the USB dongle needed to be hot-plugged before it would bring up the connection).
+- When AC power is successfully restored, remember to re-enable the power failure alarm for next time.
+- If the redundant power supply fails, the router (15V, centre positive) and tag reader (24V, centre positive) may be powered by their own wall-wart adaptors.  The tag reader may also be powered using 802.3af Power-over-Ethernet from a suitable 48V injector or POE switch.
 
 ### Results look wrong
 
@@ -171,7 +169,7 @@ If the redundant power supply fails, the router (15V, centre positive) and tag r
 - Has he crashed into a hedge?
 - Problem with the fundamental laws of physics?
 
-#### Only recording alternate laps
+#### CrossMgr only recording alternate laps
 
 This is usually caused by the **minimum possible lap time** (see [Properties/Race Options][Race Options]) being set too high.  Typically a value that worked for the slow race is then too high for the faster riders in the fast race.
 
@@ -189,11 +187,9 @@ Check the "**Lapped Riders Continue**" settings in the [Category Screen][].  In 
 
 #### Time trial: False start
 
-In a manually/RFID started time trial you can [delete a rider from the race][Edit Rider] and start them again.  (This does not delete the rider from the sign-on sheet; CrossMgr will recognise their bib number/RFID tags if they reappear.)
-
-Alternatively, a safer approach (for example, if a rider is having a second attempt after a crash) is to time them with a stopwatch, pen and paper then fudge the results afterwards.
-
-If multiple riders want a second attempt, it may be worth using [New Next][File] to create a separate race file for second attempts, and manually combining the data later.  (Alternatively, consider running a [Best n Laps][Category Screen] event.)
+- In a manually/RFID started time trial you can [delete a rider from the race][Edit Rider] and start them again.  (This does not delete the rider from the sign-on sheet; CrossMgr will recognise their bib number/RFID tags if they reappear.)
+- Alternatively, a safer approach (for example, if a rider is having a second attempt after a crash) is to time them with a stopwatch, pen and paper then fudge the results afterwards.
+- If multiple riders want a second attempt, it may be worth using [New Next][File] to create a separate race file for second attempts, and manually combining the data later.  (Alternatively, consider running a [Best n Laps][Category Screen] event.)
 
 #### Spurious RFID reads during sprints
 
@@ -211,14 +207,15 @@ I can't think of any error messages that CrossMgr generates during a race?
 
 #### From CrossMgrImpinj
 
-CrossMgrImpinj is the application that allows CrossMgr to communicate with the Impinj RFID reader.  It can produce warning messages if something goes wrong with the RFID system.  It also monitors the redundant power supply via its GPIO port.
+CrossMgrImpinj is the application that allows CrossMgr to communicate with the Impinj RFID reader.  It can produce warning messages if something goes wrong with the RFID system.  It also monitors the redundant power supply via the tag reader's GPIO port.
 
 Error|Course of action
 :----|:---------
 Tag reader has disconnected (red pane on left)|Check the tag reader and router have power.  Check the relevant Ethernet blinkenlights.  Check the wiring.  Try resetting CrossMgrImpinj.  Attempt TCP/IP diagnostics using `ping` and/or a web browser (FireFox has shortcuts to the router and tag reader's web interfaces).  Power-cycle whatever isn't working and pray.
 Not connected to CrossMgr (red pane on right)|This is normal if no race or RFID test is in progress; CrossMgr only listens for connections during a race or test.  If the race is running but it still fails to connect, check the [RFID properties][RFID] in CrossMgr.
 An aerial has disconnected|Check the coaxial cables to the aerials.  Try another cable (coax is easily damaged, and water ingress through a nick in the jacket will obliterate its RF performance).  Reset CrossMgrImpinj.
-A power source has disconnected|Check the power meters and blinkenlights to confirm.  Check the relevant power wiring.  Check that the generator is working (fuel/oil supply) and is on a level surface; that the battery is not depleted or that the mains supply hasn't tripped out or been switched off / unplugged at the far end.  Beware of tea urns.
+AC power has disconnected|Check the AC power meter and blinkenlights to confirm.  Check the relevant power wiring.  Check that the generator is working (fuel/oil supply) and is on a level surface; that the battery is not depleted or that the mains supply hasn't tripped out or been switched off / unplugged at the far end.  Beware of hoovers and tea urns.
+A DC power source has disconnected|Check the battery is not depleted (bear in mind that the DC power supply does not charge the batteries).  Check that a USB power bank has not gone to sleep due to negligable current draw.  Check the relevant power wiring.
 
 #### From CrossMgrVideo
 
@@ -230,7 +227,7 @@ CrossMgrVideo will begin listening for triggers as soon as it has started up.
 
 ##### Not Responding
 
-While it may become (harmlessly) sluggish at busy times, CrossMgr freezing or going "Not Responding" is bad.  If it doesn't recover within 30 seconds, it's better to kill the process and restart CrossMgr than to continue waiting.  Under normal circumstances, CrossMgr writes race data to disk every minute, so you won't lose the whole race if you have to kill it.  If CrossMgrImpinj is still working, it will continue to log tag reads to its own file, so lost data can be reconstructed with a bit of effort.
+While it may become (harmlessly) sluggish at busy times, CrossMgr freezing or going "Not Responding" is bad.  If it doesn't recover within 30 seconds, it's better to kill the process and restart CrossMgr than to continue waiting.  Under normal circumstances, CrossMgr writes race data to disk every minute, so you won't lose the whole race if you have to kill the process and restart.  If CrossMgrImpinj is still working, it will continue to log tag reads to its own file, so lost data can be reconstructed with a bit of effort.
 
 Historically CrossMgrVideo would go "Not Responding" during intensive database access.  It would eventually recover on its own.  Setting it to 'Fast Preview' mode should avoid this happening.
 
@@ -240,7 +237,7 @@ Windows Defender sometimes false-positives on the CrossMgr suite applications an
 
 ##### Windows update
 
-This *should* be set to not install updates during racing hours.  Don't start a race while it's pestering for updates, in case it decides to unilaterally reboot the system.  Better to make everyone wait while Windows restarts.
+This *should* be set to not install updates during racing hours.  Don't be tempted to start a race while it's pestering for updates, in case it decides to unilaterally reboot the system.  Better to make everyone wait while Windows restarts.
 
 ### Dealing with DNFs
 
@@ -252,7 +249,7 @@ In a fixed-laps race, it's better to set riders who abandon to PUL rather than D
 
 ### Race clock issues
 
-As long as it has power and a WiFi signal the race clock *should* operate without any manual intervention.
+As long as it has power and a WiFi signal the race clock *should* operate without any user intervention.
 
 When CrossMgr is running, the clock should connect to the WebSocket for the lap counter, and the `WebSock` LED will illuminate.  During the race, the `Net Act` LED should flash approximately once per second, as the race data is refreshed.
 
@@ -263,7 +260,7 @@ LED displays `i2cEr`, LCD blank or corrupt|Internal problem with the clock elect
 Time and temperature displayed but not race time during race|Check the race is running.  Check the display on the back of the clock and confirm that it has a WiFi connection to the `BHPC_Timing` SSID (as broadcast by the wireless router in the flightcase with the tag reader).  The `WiFi` LED should illuminate steadily to indicate a connection.  If it fails to connect, check the router is operating and that its 2.4G WiFi LED is lit.  Perhaps move the clock closer to the router.
 WiFi connected, but still no race time|If the `WebSock` LED does not light, the clock's connection to the CrossMgr PC may be misconfigured.  Check the clock documentation for more information.
 Incorrect time of day|This should resolve itself automatically within a couple of minutes of connecting to the laptop and/or GPS time source via the wireless network.  The clock has its own battery-backed real-time clock; if this happens repeatedly the battery may need replacing.
-Incorrect race time|This should only happen if the network connection has been lost during a race, and even then it should only drift by a matter of seconds.  Check the wireless router and try rebooting the clock or cycling power to re-establish the connection.  Otherwise, something may have gone hideously wrong with CrossMgr, and you have bigger issues.
+Incorrect race time|This should only happen if the network connection has been lost during a race, and even then it should only drift by a matter of seconds.  Check the wireless router and try rebooting the clock or cycling power to re-establish the connection.  Otherwise, something may have gone hideously wrong with CrossMgr, and you have more important issues to deal with.
 Race time 'jumps'|Not a fault; the latency of the connection to CrossMgr is unpredictable, and the time may be stepped if it drifts too far.
 LED display corrupted (part of it refreshing, while other parts remain unchanged)|This is a hardware fault, likely with one of the dozens of delicate solder joints that make up the LED display, and not the sort of thing that can be repaired at the track-side.  Disconnect the power so that riders aren't mislead by the corrupt display.
 Clock rotates in the wind|The interface with the clock stand is keyed to prevent rotation by means of an allen bolt protruding from the end of the stand.  Ensure that the bolt has aligned with the hole in the bottom of the 'top hat' by slowly rotating the clock on the stand until you feel it drop into place.  Further rotation is still possible by hand (at risk of damage to the retaining pins), but the additional friction of the stand's clamps should be sufficient to keep it in place.  If the wind is particularly strong, remove the clock from the stand so it can't fall over.
@@ -318,11 +315,10 @@ In an attempt to mitigate these problems, our version of CrossMgrImpinj has been
 
 Additionally, a GPS-based stratum 1 NTP time server has been installed in the flightcase with the tag reader.  Once it has obtained a time signal, the laptop, router, tag reader and race clock should synchronise their real-time clocks to it over the course of a few minutes.  If this is done before the start of a race, everything should stay synchronised to within a few milliseconds.  On this basis, it is important to power up the flightcase as early as possible in the setup process, so it may begin to acquire a GPS fix.
 
-
 ### Dodgy Ethernet cable
 
 If you need to mate an XLR-style Ethernet plug with a normal socket for troubleshooting, you can unscrew the shell by hand to reveal a conventional RJ45 plug.  Don't lose the shell.  RJ45 connectors don't react well to mud or having their tabs snapped off, so it's worth having a spare Ethernet cable to hand.
 
 ### Laptop power supply
 
-The delicate Acer 3x1.1mm DC barrel connector is a conspicuous single point of failure.  Treat it with care.  A dongle to allow the use of an alternative power supply is a work in progress.
+The delicate Acer 3x1.1mm DC barrel connector is a conspicuous single point of failure.  Treat it with care.  A adaptor to allow the use of a standard USB-C laptop power supply is in the laptop bag (the Acer laptop cannot accept power on its USB-C port).

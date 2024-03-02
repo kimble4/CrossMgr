@@ -28,16 +28,15 @@ We do not fully automate the sign-on process, as it is felt that BHPC members ma
 1. If you have new Riders who are not listed on the [Riders][] screen, add them to the database and fill in their details using the [RiderDetail][] page.
 1. Select the **Event** on the [Events][] screen.
 1. Switch to the [EventEntry][] screen.  The event name will appear at the top of the screen.
-1. Select a **Rider** using the "**Bib**" drop-down, or by entering their name (last name first) in the "**Name**" field.
-1. Select a previously-used **Machine** (or enter the name of a new one) in the "**Machine**" combobox.
-1. Enter the name of the **Team** the rider is racing for in the "**Team**" field; leave blank if none.
+1. Select a **Rider** using the "**Bib**" drop-down, or by entering their name in the "**Name**" field.  If the bib does not exist you will be asked if you would like to create a new rider.
+1. Select a previously-used **Machine**, or enter the name of a new one, in the "**Machine**" combobox.
+1. Enter the name of the **Team** the rider is racing for in the "**Team**" combobox; leave blank if none.
 1. Select the rider's [Categories][] for this event.
 1. Click the "**Enter rider**" button to add them to the racers list.
 
 ### Allocating riders to races
 
-1. Select the first round of the event on the [Events][] screen.
-1. Switch to the [RaceAllocation][] screen.  The round name will appear at the top of the screen.
+1. Switch to the [RaceAllocation][] screen.  Ensure the correct round name is selected at the top of the screen.
 1. The **Number of races in this round** field will read `0`.  Change it to the appropriate number of races.  Don't worry about the warning at this point, as there is no allocation data to lose.
 1. Using the right-click context menu options, move racers between races until you are happy with the allocation.  Usually slower and inexperienced racers are allocated to the first group (but exceptions may be made for logistical reasons).
 1. Return to the [Events][] screen and select the next round.  Go to [RaceAllocation][] again.
@@ -70,8 +69,9 @@ If a rider changes machine or category (eg. Swapping machines or removing a fair
 
 1. Select the relevant Season and Event on the [Events][] screen.
 1. Switch to the [EventEntry][] screen.
-1. Delete the rider from the list using the right-click context menu.
-1. Re-add the rider using their bib number or name, entering the new machine and category details.
+1. Right-click on the racer and select "Edit details" from the context menu.  The racer's entry will be highlighted in **Orange**
+1. Make changes to the machine and category details at the top of the screen.
+1. Click "**Enter/Update racer**" to update their entry.
 1. Re-write the sign-on sheet.
 
 #### If the change only applies to one round/race:

@@ -1,5 +1,8 @@
 [Quick Start]:		QuickStart.html
 [BHPC Workflow]:	BHPC-Workflow.html
+[Category Changes]:	BHPC-Workflow.html#a-rider-has-changed-their-categorymachinetiming-tags
+[Race Reallocation]: BHPC-Workflow.html#moving-a-rider-to-a-different-race-within-a-round
+[Merging Races]:	BHPC-Workflow.html#merging-races
 [BHPC Troubleshooting]:	BHPC-Troubleshooting.html
 [Communications Tagreader]:	BHPC-Troubleshooting.html#communications-with-tag-reader
 [Clock Issues]:		BHPC-Troubleshooting.html#race-clock-issues
@@ -66,5 +69,6 @@
 [Category Screen]:	Categories.html#category-screen
 [Merging]:			Menu-DataMgmt.html#import-from-another-crossmgr-race
 [Give Unfinished]:	Menu-Edit.html#give-unfinshed-riders-a-finish-time
+
 
 [CrossMgrIntegration]: CrossMgrIntegration.html
