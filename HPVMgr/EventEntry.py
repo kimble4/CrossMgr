@@ -118,7 +118,7 @@ class EventEntry( wx.Panel ):
 		gbs.Add( wx.StaticText( self, label='Name:' ), pos=(0,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.riderNameEntry = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(300,-1))
 		self.riderNameEntry.SetValue( '' )
-		self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEnterRiderName )
+		#self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEnterRiderName )
 		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRiderName )
 		gbs.Add( self.riderNameEntry, pos=(0,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( wx.StaticText( self, label='Bib:' ), pos=(0,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
@@ -644,12 +644,12 @@ class EventEntry( wx.Panel ):
 					self.riderBibNames.append((bib, name))
 			self.riderBibEntry.AppendItems( list(map(str ,sorted([bibName[0] for bibName in self.riderBibNames]))) )
 			#add the riders again in firstname lastname order - this seems to be a hot mess under windows?
-			# lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=False))
-			# sortedRiders = dict(sorted(lastNameSortedRiders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
-			# for bib in sortedRiders:
-			# 	name = database.getRiderName(bib, True)
-			# 	if name:
-			# 		self.riderBibNames.append((bib, name))
+			lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=False))
+			sortedRiders = dict(sorted(lastNameSortedRiders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
+			for bib in sortedRiders:
+				name = database.getRiderName(bib, True)
+				if name:
+					self.riderBibNames.append((bib, name))
 			#populate the AutoCompleter
 			names = []
 			[names.append(bibName[1]) for bibName in self.riderBibNames if bibName[1] not in names] #copy without duplicates (riders with only one name field)
