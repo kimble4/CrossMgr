@@ -618,11 +618,10 @@ class RaceAllocation( wx.Panel ):
 							raceEntryDict['startTime'] = lastStartTime
 							lastStartTime += database.ttInterval
 				db.setChanged()
-			if event is not None:  # called by menu
-				self.refreshRaceTables()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
-			
+		self.refreshRaceTables()
+		
 	def refreshRaceTables( self, event=None ):
 		for i in range(RaceAllocation.maxRaces):
 			self.clearGrid( getattr(self, 'raceGrid' + str(i), None) )
