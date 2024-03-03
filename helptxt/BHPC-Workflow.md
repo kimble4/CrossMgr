@@ -881,7 +881,7 @@ DQ|*Disqualified* - status given to **riders** who will not be **ranked** due to
 Ethernet|The IEEE 802.3 standard for data communications (usually on twisted-pair cable, terminated with RJ45 modular connectors).  Ethernet is is typically used to carry TCP/IP.
 Ethernet Switch|A device that forwards Ethernet packets from one wired network segment to another.  The **router** built into the flight-case with the **BHPC**'s tag reader includes a 4-port Ethernet switch.
 Event|In this context, a day of racing.  Particularly for **points** purposes.
-Excel|A functional programming language masquerading as a piece of accountancy software that's commonly used for managing databases.  **CrossMgr** reads its **sign-on sheet** in Excel format, and can also use it to output results.
+Excel|A functional programming language masquerading as a piece of accountancy software that's commonly used for managing databases.  **CrossMgr** reads its **sign-on sheet** in Excel format, and can also output results in Excel format.
 Fast Race|A **BHPC** **race** composed of mainly faster, or more experienced, riders.
 Filtering|When **CrossMgr** ignores tag reads due to some internal logic  (eg. multiple tag reads occurring too close together to be distinct laps)
 Finisher|Status given to **riders** who complete (or are expected to complete) a **race**.

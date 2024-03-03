@@ -450,9 +450,14 @@ class MainWin( wx.Frame ):
 		database = Model.database
 		if database:
 			if database.hasChanged():
-				if Utils.MessageOKCancel( self, _('Quit without saving changes?'), _('Changes unsaved') ):
+				ret = Utils.MessageYesNoCancel( self, _('Save changes before exiting?'), _('Changes unsaved'), iconMask = wx.ICON_QUESTION)
+				if ret == wx.ID_YES:
+					Utils.writeLog( 'Saving changes before exiting' )
+					self.saveDatabase()
+				elif ret == wx.ID_NO:
 					Utils.writeLog( 'Exiting without saving changes!' )
 				else:
+					Utils.writeLog( 'Exit aborted' )
 					return
 		wx.Exit()
 
