@@ -118,7 +118,7 @@ class RiderDetail( wx.Panel ):
 		#machines list
 		self.machinesGrid = wx.grid.Grid( self )
 		self.machinesGrid.CreateGrid(0, 3)
-		self.machinesGrid.SetColLabelValue(0, 'Machines')
+		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
 		self.machinesGrid.SetColLabelValue(1, 'Categories')
 		self.machinesGrid.SetColLabelValue(2, 'Last Entered')
 		self.machinesGrid.HideRowLabels()
@@ -387,7 +387,7 @@ class RiderDetail( wx.Panel ):
 		rows = self.machinesGrid.GetNumberRows()
 		if rows:
 			self.machinesGrid.DeleteRows( 0, rows )
-		self.machinesGrid.SetColLabelValue(0, 'Machines')
+		self.machinesGrid.SetColLabelValue(0, 'Rider\'s Machines')
 			
 	def refreshMachinesGrid( self ):
 		self.clearMachinesGrid()
@@ -399,7 +399,7 @@ class RiderDetail( wx.Panel ):
 			bib = int(self.bib)
 			rider = database.getRider(bib)
 			if rider is not None:
-				self.machinesGrid.SetColLabelValue(0, rider['FirstName'] + ' ' + rider['LastName'] + '\'s Machines')
+				self.machinesGrid.SetColLabelValue(0, database.getRiderName(bib, True) + '\'s Machines')
 				if 'Machines' in rider:
 					for machineCategoriesDate in sorted(rider['Machines'], key=lambda item: (item[2] if len(item) >= 3 and item[2] else 0)):
 						self.machinesGrid.AppendRows(1)
@@ -415,10 +415,8 @@ class RiderDetail( wx.Panel ):
 							dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(machineCategoriesDate[2])) if machineCategoriesDate[2] is not None else ''
 							self.machinesGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 						self.machinesGrid.SetCellValue(row, col, dt)
-			else:
-				self.machinesGrid.SetColLabelValue(0, 'Machines')
-			self.machinesGrid.AutoSize()
-			self.Layout()
+				self.machinesGrid.AutoSize()
+				self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 	
