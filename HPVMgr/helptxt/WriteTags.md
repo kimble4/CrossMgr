@@ -2,27 +2,27 @@
 
 ## Impinj RFID tag Reading and Writing
 
-HPVMgr can read and write the EPC field of RFID tags directly using a suitable tag reader, without any additional software.  This should greatly streamline the process of issuing tags to racers, as tag numbers can be taken directly from the rider database without having to enter them by hand.
+HPVMgr can read and write the EPC field of RFID tags directly using a suitable LLRP tag reader, without any additional software.  This should greatly streamline the process of issuing tags to racers, as tag numbers can be taken directly from the rider database without having to enter them by hand.
 
 ### Configuring the RFID reader
 
-These settings are similar to those of the **CrossMgrImpinj** and **TagReadWrite** applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically.  Otherwise you will get some sort of error message (possibly after a timeout).
+These settings are similar to those of the **CrossMgrImpinj** and **TagReadWrite** applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically, if this fails you will get anerror message after a timeout.
 
 Once the details are entered, click the "**Connect**" button to attempt to connect to the tag reader.  If this is successful, you should see the **Reader status** change to "**Connected**".
 
-If you need to adjust the transmit power or receiver gain, these settings can be accessed via the "**Advanced**" button.  Click "**Reset Connection**" after making changes.
+If you need to adjust the transmit power or receiver gain, these settings can be accessed via the "**Advanced**" button.  Click "**Reset Connection**" after making changes.  *At time of writing, a bug in the LLRP library causes an error if you attempt to change the transmit power.*
 
 Select the antenna you want to use for reading and writing tags with the "**Use antenna**" dropdown.
 
 ### Reading tags
 
-To perform a tag inventory, click the "**Read Tags**" button (Ctrl-R).  The list at the bottom of the screen will be populated with the details of any tags found.  This can be refreshed at any time by clicking "**Read Tags**" again.
+To perform a tag inventory, click the "**Read Tags**" button (Ctrl-R).  The table at the bottom of the screen will be populated with the details of any tags found.  This can be refreshed at any time by clicking "**Read Tags**" again.
 
 Tag EPC numbers can be copied to the clipboard (either as hexadecimal or ASCII) by right-clicking on the tag table.
 
 ### Writing tags
 
-#### Writing to a specific tags:
+#### Writing to a specific tag:
 
 1. Ensure that "**Write to ALL tags within range**" is disabled.
 1. Perform a tag inventory using the "**Read Tags**" button, and ensure the tag you want to overwrite appears in the list.
@@ -31,7 +31,7 @@ Tag EPC numbers can be copied to the clipboard (either as hexadecimal or ASCII) 
 1. Click the "**Write**" button (Ctrl-W).  The reader will attempt to change the EPC of the tag, and then perform another inventory.
 1. If the write was successful, the tag will be highlighted in **green** and the "**Destination tag**" field will be cleared.
 1. If the write was unsuccessful, or the tag cannot be found, the tag will be highlighted in **red**.  Try moving the tag with respect to the aerial and attempt the write again. 
-1. If it still doesn't work, try writing the tag manually using the Impinj *MultiReader* application.
+1. If it still doesn't work, try writing the tag manually using the Impinj *MultiReader* application.  If that doesn't work, it's probably a faulty tag.
 
 #### Writing to all tags within range:
 
