@@ -118,7 +118,7 @@ class EventEntry( wx.Panel ):
 		gbs.Add( wx.StaticText( self, label='Name:' ), pos=(0,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.riderNameEntry = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_LEFT, size=(300,-1))
 		self.riderNameEntry.SetValue( '' )
-		#self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEnterRiderName )
+		self.riderNameEntry.Bind( wx.EVT_TEXT, self.onEditRiderName )
 		self.riderNameEntry.Bind( wx.EVT_TEXT_ENTER, self.onEnterRiderName )
 		gbs.Add( self.riderNameEntry, pos=(0,1), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		gbs.Add( wx.StaticText( self, label='Bib:' ), pos=(0,2), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
@@ -207,7 +207,7 @@ class EventEntry( wx.Panel ):
 				else:
 					self.enableRiderControls(enable=False)
 					return
-			riderName = dict(self.riderBibNames)[bib]
+			riderName = database.getRiderName(bib)
 			self.enableRiderControls()
 		except (ValueError, KeyError):
 			bib = None
@@ -239,7 +239,15 @@ class EventEntry( wx.Panel ):
 			for i in range(EventEntry.numCategories):
 				getattr(self, 'riderCategory' + str(i), None).SetValue(False)
 				getattr(self, 'riderCategory' + str(i), None).Disable()
-		
+	
+	def onEditRiderName( self, event ):
+		self.riderBibEntry.ChangeValue('')
+		self.enableRiderControls(enable=False, clearName=False)
+		self.updateMachinesChoices(None)
+		self.updateTeamSelection(None)
+		self.onSelectMachine(None)
+		self.highlightBib(None)
+	
 	def onEnterRiderName( self, event ):
 		name = re.sub("[^a-z ]", "", self.riderNameEntry.GetValue().lower())
 		for bibName in self.riderBibNames:
