@@ -10,6 +10,7 @@ import datetime
 import Model
 import wx.lib.intctrl as intctrl
 from ChangeTags import ChangeTagsDialog
+import copy
 
 class RaceAllocation( wx.Panel ):
 	
@@ -288,10 +289,10 @@ class RaceAllocation( wx.Panel ):
 								evt = season['events'][evtName]
 								rnd = evt['rounds'][rndName]
 								# delete all races from current round
-								rnd['races'].clear()
+								rnd['races'] = []
 								# copy the allocations
-								for sourceRace in evt['rounds'][sourceRound]:
-									rnd['races'].append(sourceRace)
+								for sourceRace in evt['rounds'][sourceRound]['races']:
+									rnd['races'].append(copy.deepcopy(sourceRace))
 								db.setChanged()
 							Utils.writeLog( 'copyAllocation: Copied race allocation in event "' + evtName + '" from round "' + sourceRound + '" to round "' + rndName + '"' )
 							wx.CallAfter( self.refresh )
@@ -506,6 +507,7 @@ class RaceAllocation( wx.Panel ):
 						for raceEntryDict in race:
 							if raceEntryDict['bib'] in missingBibs:
 								Utils.writeLog( 'addUnallocatedRiders: #' + str(raceEntryDict['bib']) + ' "' + database.getRiderName(raceEntryDict['bib'], True) + '" in race ' + str(iRace+1) + ' but not in event "' + evtName + '"!  Removing rider from race.' )
+								race.remove(raceEntryDict)
 						iRace += 1
 					db.setChanged()
 				# now add the unallocated racers to the first race
@@ -705,6 +707,7 @@ class RaceAllocation( wx.Panel ):
 										self.haveTTStartClash = True
 							else:
 								Utils.writeLog( 'refreshRaceTables: Bib #' + str(raceEntryDict['bib']) + ' in race ' + str(iRace) + ' but not in event, skipping.' )
+								
 						nrRacers = getattr(self, 'raceGrid' + str(iRace), None).GetNumberRows()
 						getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1) + ' (' + str(nrRacers) + ' racers)')
 						totalRacers += nrRacers
