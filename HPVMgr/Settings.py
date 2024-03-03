@@ -49,7 +49,7 @@ class Settings( wx.Panel ):
 		
 		row += 1
 		
-		self.copyTagsWithDelim = wx.CheckBox( self, label='Copy tags with delmiters (for MultiReader)' )
+		self.copyTagsWithDelim = wx.CheckBox( self, label='Copy tags with delimiters (for MultiReader)' )
 		self.copyTagsWithDelim.Bind( wx.EVT_CHECKBOX, self.onEdited)
 		gbs.Add( self.copyTagsWithDelim, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 
