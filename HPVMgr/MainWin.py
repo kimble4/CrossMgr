@@ -466,6 +466,7 @@ class MainWin( wx.Frame ):
 	def updateRecentFiles( self ):
 		self.filehistory.AddFileToHistory(Model.database.fileName)
 		self.filehistory.Save(self.config)
+		self.config.Write('dataFile', Model.database.fileName)
 		self.config.Flush()
 
 	@logCall

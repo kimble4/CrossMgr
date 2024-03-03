@@ -187,8 +187,17 @@ class Settings( wx.Panel ):
 
 	def commit( self, event=None ):
 		Utils.writeLog('Settings commit: ' + str(event))
+		config = Utils.getMainWin().config
+		fontSize = self.fontSize.GetValue()
+		if fontSize != Utils.getMainWin().defaultFontSize:
+			Utils.MessageOK( self, 'Font change will take when the application is restarted.' )
+		config.WriteInt('fontSize', fontSize)
 		database = Model.database
 		if database is None:
+			config.Flush()
+			if event: #called by button
+				self.refresh()
+				self.Layout()
 			return
 		with Model.LockDatabase() as db:
 			fn = self.dbFileName.GetValue()
@@ -222,13 +231,7 @@ class Settings( wx.Panel ):
 			db.ttInterval = self.ttInterval.GetValue()
 			db.useFactors = self.useFactors.IsChecked()
 			db.setChanged()
-			config = Utils.getMainWin().config
 			config.Write('dataFile', fn)
-			fontSize = self.fontSize.GetValue()
-			if fontSize != Utils.getMainWin().defaultFontSize:
-				Utils.MessageOK( self, 'Font change will take when the application is restarted.' )
-			config.WriteInt('fontSize', fontSize)
-			config.Flush()
 			self.onEdited(warn=False)
 		if event: #called by button
 			self.refresh()
@@ -236,18 +239,18 @@ class Settings( wx.Panel ):
 
 	def refresh( self ):
 		Utils.writeLog('Settings refresh')
+		config = Utils.getMainWin().config
+		self.fontSize.SetValue(config.ReadInt('fontSize') if config.ReadInt('fontSize') else Utils.getMainWin().defaultFontSize)
+		self.tagTemplates.clear()
 		database = Model.database
 		if database is None:
 			self.dbFileName.SetValue('')
 			return
-		config = Utils.getMainWin().config
 		fn = database.fileName
-		self.fontSize.SetValue(config.ReadInt('fontSize') if config.ReadInt('fontSize') else Utils.getMainWin().defaultFontSize)
 		self.dbFileName.SetValue( fn if fn else '' )
 		self.dbFileName.ShowPosition(self.dbFileName.GetLastPosition())
 		self.allocateBibsFrom.SetValue( getattr(database, 'allocateBibsFrom', '1') )
 		self.copyTagsWithDelim.SetValue( getattr(database, 'copyTagsWithDelim', False) )
-		self.tagTemplates.clear()
 		for k, v in database.tagTemplates.items():
 			self.tagTemplates[k] = v
 		self.onChangeTagTemplateNr()
