@@ -642,21 +642,20 @@ class EventEntry( wx.Panel ):
 			firstNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
 			sortedRiders = dict(sorted(firstNameSortedRiders.items(), key=lambda item: item[1]['LastName'], reverse=False))
 			for bib in sortedRiders:
-				rider = riders[bib]
-				name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+				name = database.getRiderName(bib, False)
 				if name:
 					self.riderBibNames.append((bib, name))
 			self.riderBibEntry.AppendItems( list(map(str ,sorted([bibName[0] for bibName in self.riderBibNames]))) )
-			#add the riders again in firstname latname order, populate the AutoComplete
-			lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=False))
-			sortedRiders = dict(sorted(lastNameSortedRiders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
-			for bib in sortedRiders:
-				rider = riders[bib]
-				name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
-				if name:
-					self.riderBibNames.append((bib, name))
+			#add the riders again in firstname lastname order - this seems to be a hot mess under windows?
+			# lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=False))
+			# sortedRiders = dict(sorted(lastNameSortedRiders.items(), key=lambda item: item[1]['FirstName'], reverse=False))
+			# for bib in sortedRiders:
+			# 	name = database.getRiderName(bib, True)
+			# 	if name:
+			# 		self.riderBibNames.append((bib, name))
+			#populate the AutoCompleter
 			names = []
-			[names.append(bibName[1]) for bibName in self.riderBibNames if bibName[1] not in names] #remove duplicates (riders with only one name field)
+			[names.append(bibName[1]) for bibName in self.riderBibNames if bibName[1] not in names] #copy without duplicates (riders with only one name field)
 			self.riderNameEntry.AutoComplete( riderNameCompleter(names) )
 			#get the teams database, populate the ComboBox
 			self.riderTeam.Set( [teamAbbrevEntered[0] for teamAbbrevEntered in database.teams] )
