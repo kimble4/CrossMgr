@@ -153,10 +153,10 @@ class EventEntry( wx.Panel ):
 			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+12), None), pos=(2,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		gbs.Add( categoriesSizer,  pos=(2,1), span=(1,3), flag=wx.EXPAND )
 		
-		self.deleteAllButton = wx.Button( self, label='Delete all')
-		self.deleteAllButton.SetToolTip( wx.ToolTip('Deletes all racers from the event'))
-		self.Bind( wx.EVT_BUTTON, self.deleteAllRiders, self.deleteAllButton )
-		gbs.Add( self.deleteAllButton, pos=(3,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
+		#self.deleteAllButton = wx.Button( self, label='Delete all')
+		#self.deleteAllButton.SetToolTip( wx.ToolTip('Deletes all racers from the event'))
+		#self.Bind( wx.EVT_BUTTON, self.deleteAllRiders, self.deleteAllButton )
+		#gbs.Add( self.deleteAllButton, pos=(3,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL )
 		self.deleteRiderButton = wx.Button( self, label='Delete racer')
 		self.deleteRiderButton.SetToolTip( wx.ToolTip('Deletes currently selected racer from the event'))
 		self.Bind( wx.EVT_BUTTON, self.deleteCurrentRider, self.deleteRiderButton )
@@ -310,8 +310,10 @@ class EventEntry( wx.Panel ):
 		menu.SetTitle('#' + str(bib) + ' ' + name)
 		ed = menu.Append( wx.ID_ANY, 'Edit details', 'Edit rider details...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.editRiderDetails(event, bib), ed )
-		delete = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
+		delete = menu.Append( wx.ID_ANY, 'Delete racer', 'Delete this racer...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), delete )
+		deleteAll = menu.Append( wx.ID_ANY, 'Delete all racers', 'Delete all racers from the event...' )
+		self.Bind( wx.EVT_MENU, lambda event: self.deleteAllRiders(event), deleteAll )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -356,11 +358,11 @@ class EventEntry( wx.Panel ):
 			evt = season['events'][evtName]
 			for bibMachineCategoriesTeam in evt['racers']:
 				if bibMachineCategoriesTeam[0] == bib:
-					if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' from this event?', 'Delete rider' ):
+					if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' from this event?', 'Delete racer' ):
 						self.deleteRider(event, bib)
 					return
 			else:
-				Utils.MessageOK( self, '#' + str(bib) + ' ' + database.getRiderName(bib, True) + ' is not entered in this event!', 'Cannot delete rider', iconMask=wx.ICON_ERROR)
+				Utils.MessageOK( self, '#' + str(bib) + ' ' + database.getRiderName(bib, True) + ' is not entered in this event!', 'Cannot delete racer', iconMask=wx.ICON_ERROR)
 		except ValueError:
 			return
 		except Exception as e:
@@ -409,11 +411,6 @@ class EventEntry( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		# iBib = self.riderBibEntry.GetSelection()
-		# if iBib == wx.NOT_FOUND:
-		#  	return
-		# bib = sorted([bibName[0] for bibName in self.riderBibNames])[iBib]
-		# riderName = dict(self.riderBibNames)[bib]
 		if self.season is not None and self.evt is not None:
 			try:
 				bib = int(self.riderBibEntry.GetValue())

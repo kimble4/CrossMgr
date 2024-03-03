@@ -17,7 +17,7 @@ To add a racer to the event:
 * Racers who have already been entered in the event may be selected for editing by clicking on them in the list, or by entering their name or bib number.
 * The "**Enter/Update racer**" button will update the selected racer's Machine/Team/Categories details.
 * The "**Delete racer**" button deletes the selected racer.
-* The "**Delete all**" button deletes all riders from the event.
 * If you need to edit a racer's **Name**, **Gender**, **Age** or **Nationality**, make the relevant changes using the [RiderDetail][] screen.
+* All racers can be deleted at once using the option in the right-click context menu.
 
 Adding and deleting racers manipulates the in-memory database directly.  There is no '**Commit**' button.
