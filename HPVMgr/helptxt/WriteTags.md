@@ -1,12 +1,12 @@
 [TOC]
 
-## Impinj RFID tag Reading and Writing
+## WriteTags
 
 HPVMgr can read and write the EPC field of RFID tags directly using a suitable LLRP tag reader, without any additional software.  This should greatly streamline the process of issuing tags to racers, as tag numbers can be taken directly from the rider database without having to enter them by hand.
 
 ### Configuring the RFID reader
 
-These settings are similar to those of the **CrossMgrImpinj** and **TagReadWrite** applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically, if this fails you will get anerror message after a timeout.
+These settings are similar to those of the **CrossMgrImpinj** and **TagReadWrite** applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically, if this fails you will get an error message after a timeout.
 
 Once the details are entered, click the "**Connect**" button to attempt to connect to the tag reader.  If this is successful, you should see the **Reader status** change to "**Connected**".
 

@@ -1,10 +1,11 @@
 [TOC]
 
 # Main Screen
-The Main Screen is divided into tabbed screens.  Each screen can be selected by clicking on the tab at the top of the screen, or pressing the function key corresponding to the number on the tab.  For example, F3 selects the Categories screen.
+The Main Screen is divided into tabbed screens.  Each screen can be selected by clicking on the tab at the top of the screen, or pressing the function key corresponding to the number on the tab.  For example, F5 selects the Categories screen.
 
 * [Riders][]
 * [RiderDetail][]
+* [Teams][]
 * [Events][]
 * [Categories][]
 * [EventEntry][]

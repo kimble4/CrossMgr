@@ -22,7 +22,7 @@ The first thing you will need to do to set up a race, is create a directory for 
 
 ## Creating a Sign-on sheet
 
-### Using the BHPC organisers' spreadsheet
+### Using the BHPC organisers' spreadsheet:
 
 Traditionally, sign-on sheets for CrossMgr have been generated using the macros in the **BHPC organisers' spreadsheet**.  However, this is somewhat clunky and has the limitation of only supporting a single tag number per rider.  As the HPVMgr application is preferred, we will not document the process in detail here.
 
