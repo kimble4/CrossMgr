@@ -118,17 +118,17 @@ class MainWin( wx.Frame ):
 		#-----------------------------------------------------------------------
 		self.fileMenu = wx.Menu()
 
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New..."), _("Create a new database"), Utils.GetPngBitmap('document-new.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_NEW, _("&New...\tCtrl+N"), _("Create a new database"), Utils.GetPngBitmap('document-new.png') )
 		self.Bind(wx.EVT_MENU, self.menuNew, item )
 
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVE, _("&Save..."), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVE, _("&Save...\tCtrl+S"), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
 		self.Bind(wx.EVT_MENU, self.menuSave, item )
 
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVEAS, _("Save &As..."), _("Save the database to a new file"), Utils.GetPngBitmap('document-save.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVEAS, _("Save &As...\tCtrl+Shift+S"), _("Save the database to a new file"), Utils.GetPngBitmap('document-save.png') )
 		self.Bind(wx.EVT_MENU, self.menuSaveAs, item )
 
 		self.fileMenu.AppendSeparator()
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_OPEN, _("&Open..."), _("Open a database"), Utils.GetPngBitmap('document-open.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_OPEN, _("&Open...\tCtrl+O"), _("Open a database"), Utils.GetPngBitmap('document-open.png') )
 		self.Bind(wx.EVT_MENU, self.menuOpen, item )
 
 		recent = wx.Menu()
@@ -137,7 +137,7 @@ class MainWin( wx.Frame ):
 		self.filehistory.UseMenu( recent )
 		self.filehistory.AddFilesToMenu()
 		
-		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit"), _("Exit HPVMgr"), Utils.GetPngBitmap('exit.png') )
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_EXIT, _("E&xit\tCtrl+Q"), _("Exit HPVMgr"), Utils.GetPngBitmap('exit.png') )
 		self.Bind(wx.EVT_MENU, self.menuExit, item )
 		
 		self.Bind(wx.EVT_MENU_RANGE, self.menuFileHistory, id=wx.ID_FILE1, id2=wx.ID_FILE9)
@@ -159,6 +159,10 @@ class MainWin( wx.Frame ):
 # 		self.Bind(wx.EVT_MENU, self.menuRedo, item )
 # 		self.redoMenuButton.Enable( False )
 # 		self.editMenu.AppendSeparator()
+		
+		item = self.editMenu.Append( wx.ID_ANY, _("&Commit changes...\tCtrl+O"), _("Commit changes...") )
+		self.menuCommitID = item.GetId()
+		self.Bind(wx.EVT_MENU, self.menuCommit, item )
 		
 		item = self.editMenu.Append( wx.ID_ANY, _("&Add Rider...\tCtrl+A"), _("Add a new Rider...") )
 		self.menuAddID = item.GetId()
@@ -213,12 +217,12 @@ class MainWin( wx.Frame ):
 		
 		self.toolsMenu = wx.Menu()
 		
-		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("&Write Sign-on-sheet..."), _("Write the CrossMgr sign-on sheet for current event") )
+		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("Write Sign-on-shee&t...\tCtrl+T"), _("Write the CrossMgr sign-on sheet for current event") )
 		self.Bind(wx.EVT_MENU, self.menuWriteSignon, self.writeSignonMenuItem )
 		
 		self.toolsMenu.AppendSeparator()
 
-		item = self.toolsMenu.Append( wx.ID_ANY, _("Copy Log File to &Clipboard..."), _("Copy Log File to Clipboard") )
+		item = self.toolsMenu.Append( wx.ID_ANY, _("Copy &Log File to Clipboard...\tCtrl+L"), _("Copy Log File to Clipboard") )
 		self.Bind(wx.EVT_MENU, self.menuCopyLogFileToClipboard, item )
 
 		self.toolsMenu.AppendSeparator()
@@ -283,7 +287,7 @@ class MainWin( wx.Frame ):
 		self.Bind(wx.EVT_MENU, self.onContextHelp, id=self.contextHelpID )
 		accTable.append( (wx.ACCEL_CTRL, ord('H'), self.contextHelpID) )
 		accTable.append( (wx.ACCEL_SHIFT, wx.WXK_F1, self.contextHelpID) )
-		#accTable.append( (wx.ACCEL_CTRL, ord('F'), self.menuFindID) )
+		accTable.append( (wx.ACCEL_CTRL, ord('O'), self.menuCommitID) )
 		aTable = wx.AcceleratorTable( accTable )
 		self.SetAcceleratorTable(aTable)
 		
@@ -373,15 +377,23 @@ class MainWin( wx.Frame ):
 	
 	#--------------------------------------------------------------------------------------------
 	
+	@logCall
 	def menuWriteSignon( self, event ):
 		self.events.writeSignonSheet()
 		
+	@logCall
+	def menuCommit( self, event ):
+		self.commit()
+	
+	@logCall
 	def menuAddRider( self, event ):
 		self.riders.addNewRider( None, None )
 	
+	@logCall
 	def menuDeleteRider( self, event):
 		self.riders.deleteRider( None, None )
 	
+	@logCall
 	def menuCopyLogFileToClipboard( self, event ):
 		try:
 			with open(redirectFileName) as f:
