@@ -124,7 +124,8 @@ class MainWin( wx.Frame ):
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVE, _("&Save..."), _("Save the database"), Utils.GetPngBitmap('document-save.png') )
 		self.Bind(wx.EVT_MENU, self.menuSave, item )
 
-		
+		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_SAVEAS, _("Save &As..."), _("Save the database to a new file"), Utils.GetPngBitmap('document-save.png') )
+		self.Bind(wx.EVT_MENU, self.menuSaveAs, item )
 
 		self.fileMenu.AppendSeparator()
 		item = AppendMenuItemBitmap( self.fileMenu, wx.ID_OPEN, _("&Open..."), _("Open a database"), Utils.GetPngBitmap('document-open.png') )
@@ -508,6 +509,7 @@ class MainWin( wx.Frame ):
 								db.setChanged( False )
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				self.refreshAll()
 				if silent:
 				 	return
 				Utils.MessageOK(self, '{} "{}"\n\n{}.'.format(_('Cannot Open File'), fileName, e), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
@@ -521,6 +523,32 @@ class MainWin( wx.Frame ):
 							style=wx.FD_OPEN | wx.FD_CHANGE_DIR )
 		if dlg.ShowModal() == wx.ID_OK:
 			self.openDatabase( dlg.GetPath() )
+	
+	@logCall
+	def menuSaveAs( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		self.commit()
+		with wx.FileDialog( self, message=_("Choose Database File"),
+							defaultDir=Utils.getFileDir(), 
+							defaultFile='new_database',
+							wildcard=_("HPV database (*.hdb)|*.hdb"),
+							style=wx.FD_SAVE ) as dlg:
+			if dlg.ShowModal() == wx.ID_OK:
+				fn = dlg.GetPath()
+				if not fn.lower().endswith('.hdb'):
+					fn += '.hdb'
+				if os.path.exists(fn):
+					if not Utils.MessageOKCancel(self.parent, '\n\n'.join( [
+							_("This file already exists:"),
+							'{}',
+							_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
+						return
+				Utils.writeLog('filename is now: ' + str(fn))
+				database.fileName = fn
+				database.setChanged()
+				self.saveDatabase()
 	
 	@logCall
 	def menuSave( self, event ):

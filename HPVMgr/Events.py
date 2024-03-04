@@ -817,32 +817,34 @@ class Events( wx.Panel ):
 			
 	def refreshCurrentSelection( self ):
 		database = Model.database
-		if database is None:
-			return
 		selection = []
 		title = None
-		if self.season is not None:
-			seasonName = database.getSeasonsList()[self.season]
-			selection.append( seasonName )
-			season = database.seasons[seasonName]
-			if self.evt is not None:
-				evtName = list(season['events'])[self.evt]
-				selection.append( evtName )
-				evt = season['events'][evtName]
-				self.editEntryButton.Enable()
-				if self.rnd is not None and 'rounds' in evt:
-					rndName = list(evt['rounds'])[self.rnd]
-					selection.append( rndName )
-					self.editRacesButton.Enable()
+		if database is None:
+			title = 'No Database'
+		else:
+			if self.season is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				selection.append( seasonName )
+				season = database.seasons[seasonName]
+				if self.evt is not None:
+					evtName = list(season['events'])[self.evt]
+					selection.append( evtName )
+					evt = season['events'][evtName]
+					self.editEntryButton.Enable()
+					if self.rnd is not None and 'rounds' in evt:
+						rndName = list(evt['rounds'])[self.rnd]
+						selection.append( rndName )
+						self.editRacesButton.Enable()
+					else:
+						self.editRacesButton.Disable()
 				else:
+					self.editEntryButton.Disable()
 					self.editRacesButton.Disable()
-			else:
-				self.editEntryButton.Disable()
-				self.editRacesButton.Disable()
-			title = ', '.join(n for n in selection)
-		self.currentSelection.SetLabel( title if title else '')
-		Utils.getMainWin().SetTitle( ' — '.join( n for n in [title, Version.AppVerName] if n ) )
-		database.selection = selection
+				title = ', '.join(n for n in selection)
+			database.selection = selection
+		self.currentSelection.SetLabel( title if title else 'No selection')
+		Utils.getMainWin().SetTitle( ' — '.join( n for n in [title if title else 'No selection', Version.AppVerName] if n ) )
+		
 		
 	def commit( self, event=None ):
 		Utils.writeLog('Events commit: ' + str(event))

@@ -737,6 +737,7 @@ class RaceAllocation( wx.Panel ):
 		else:
 			for iRace in range(RaceAllocation.maxRaces):
 				getattr(self, 'raceGridTitle' + str(iRace), None).SetLabel('Race ' + str(iRace + 1))
+			self.totalRacers.SetLabel('')
 		
 	def refreshNumberOfRaces( self ):
 		self.numberOfRaces.SetValue(self.nrRaces)

@@ -7,7 +7,11 @@
 Creates a new, empty database.
 
 ## Save...
-Writes the current database to disk.  The filename is defined in [Settings][]
+Writes the current database to disk, using the filename defined in [Settings][]
+
+## Save As...
+
+Writes the current database to disk with a new filename.
 
 ## Open...
 Open a database from disk.  A backup file will be created automatically the first time a file is opened on a new day.

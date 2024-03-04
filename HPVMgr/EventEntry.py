@@ -560,7 +560,7 @@ class EventEntry( wx.Panel ):
 		if database is None:
 			return
 		selection = []
-		title = 'No round selected'
+		title = 'No event selected'
 		if self.season is not None and self.evt is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			selection.append( seasonName )
