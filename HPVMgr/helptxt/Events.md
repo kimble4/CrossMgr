@@ -2,7 +2,7 @@
 
 ## Events
 
-This screen displays a list of all **Seasons**, **Events** and **Rounds**:
+This screen displays lists of all **Seasons**, **Events** and **Rounds**:
 
 #### Seasons
 A **Season** represents a championship series, which consiststs of a number of individual **Events**.  A season will have a common set of [Categories][].
@@ -16,7 +16,11 @@ An **Event** typically represents a day of racing.  It will contain at least one
 A **Round** is an individual competition, for example a *30 minute criterium* or a *1-lap time trial*.  A **Round** may optionally be split into more than one **Race** to reduce the number of riders on the track simultaneously.
 
 ### Seasons/Events/Rounds tables
-Click on table items to select a current **Season**, **Event** and **Round**, which will be highlighted in orange and displayed below the tables as the **Current selection**.  This will be used by the [EventEntry][] and [RaceAllocation][] screens.
+
+There are three tables at the top of the [Events][] screen, listing **Seasons** (along with the number of events in each season), **Events** (along with the number of rounds in each event) and **Rounds** (along with the number of races in each round.
+
+Click on table items to select a current **Season**, **Event** and **Round**, which will be highlighted in orange and displayed below the tables as the **Current selection**.  This will be used by the [EventEntry][] and [RaceAllocation][] screens.  For convenience, the currently selected **round** may also be changed from the [RaceAllocation][] screen.
+
 Right-click to add, remove or rename items in the tables.
 
 The "**Edit entries**" and "**Edit races**" buttons take you to the [EventEntry][] and [RaceAllocation][] screens respectively.
