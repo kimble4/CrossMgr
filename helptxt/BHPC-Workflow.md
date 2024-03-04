@@ -760,6 +760,7 @@ Fixing the race data is not an exact science, but:
 * If you have Category/Machine or Tag changes to do, refer to the section [A rider has changed their Category/Machine/Timing tags][Category Changes] above.
 * Ensure the **leader's finish time** is correct (hopefully corroborated by the video timestamp showing them passing the chequered flag).
 * For a criterium, check the **race duration **is adjusted so that this is the leader's final lap time.
+* If you have tandem riders, you may want to copy the times from one rider to the other, especially if they don't all have timing tags.
 * If you have **DNF riders**, ensure their status is set to DNF at an appropriate time.
 * Now check you have good **finish times for all the other riders**.  If there is no tag read, you may be able to find them on the video (either triggered by another rider, or auto-captured).
 * If there is a **close finish** (CrossMgr will highlight this in blue), refer to the video, and edit the finish times to match the video timestamps (this is higher precision than the RFID).
