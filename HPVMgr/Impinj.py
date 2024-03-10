@@ -372,12 +372,26 @@ class Impinj( wx.Panel ):
 						self.antennaChoice.AppendItems( self.antennasAvailable )
 						self.antennaChoice.SetSelection(self.useAntenna if self.useAntenna < v+1 else 0 )
 				self.writeOptions()
-			except Exception as e:
-				Utils.logException( e, sys.exc_info() )
-				
+			except TimeoutError:
+				Utils.writeLog('Impinj: Connection timed out.')
 				self.setStatus( self.StatusError )
 				
-				Utils.MessageOK( self, 'Reader Connection Failed to "{}": {}\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost(), e),
+				Utils.MessageOK( self, 'Reader connection to "{}" timed out: {}\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost(), e),
+								'Reader Connection Failed' )
+				self.tagWriter = None
+				self.readButton.Disable()
+				self.writeButton.Disable()
+				return
+			except Exception as e:
+				Utils.writeLog('Impinj: Connection error...')
+				Utils.logException( e, sys.exc_info() )
+				self.setStatus( self.StatusError )
+				
+				#clear advanced settings here, as they might have caused the error
+				self.receiveSensitivity_dB.SetLabel('Max')
+				self.transmitPower_dBm.SetLabel('Max')
+				
+				Utils.MessageOK( self, 'Reader connection to "{}" Failed: {}\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost(), e),
 								'Reader Connection Failed' )
 				self.tagWriter = None
 				self.readButton.Disable()
@@ -402,6 +416,7 @@ class Impinj( wx.Panel ):
 			self.doReset()
 			wx.Bell()
 		else:
+			self.setStatus( self.StatusError )
 			dlg = wx.MessageDialog(self, 'Auto Detect Failed.\nCheck that reader has power and is connected to the router.',
 									'Auto Detect Failed',
 									wx.OK|wx.ICON_INFORMATION )
