@@ -376,7 +376,7 @@ class Impinj( wx.Panel ):
 				Utils.writeLog('Impinj: Connection timed out.')
 				self.setStatus( self.StatusError )
 				
-				Utils.MessageOK( self, 'Reader connection to "{}" timed out: {}\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost(), e),
+				Utils.MessageOK( self, 'Reader connection to "{}" timed out.\n\nCheck the reader connection and configuration.\nThen press "Retry Connection"'.format(self.getHost()),
 								'Reader Connection Failed' )
 				self.tagWriter = None
 				self.readButton.Disable()
@@ -510,6 +510,7 @@ class Impinj( wx.Panel ):
 				self.tagWriter.WriteTag( destination, writeValue, antenna )
 				Utils.writeLog('Impinj: Writing EPC: ' + writeValue + ' to current tag ' + destination)
 			except Exception as e:
+				self.setStatus( self.StatusError )
 				Utils.MessageOK( self, 'Write Failed: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Write Failed' )
 				Utils.writeLog('Impinj:Failed writing tag 0x' + writeValue)
@@ -555,6 +556,7 @@ class Impinj( wx.Panel ):
 				self.tagsFound.SetLabel('')
 				return
 			except Exception as e:
+				self.setStatus( self.StatusError )
 				Utils.MessageOK( self, 'Read Failed: {}\n\nCheck the reader connection.\n\n{}'.format(e, traceback.format_exc()),
 								'Read Failed' )
 				Utils.logException( e, sys.exc_info() )
