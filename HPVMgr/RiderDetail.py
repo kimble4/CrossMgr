@@ -138,7 +138,7 @@ class RiderDetail( wx.Panel ):
 		hs = wx.BoxSizer( wx.HORIZONTAL )
 		#commit button
 		self.commitButton = wx.Button( self, label='Commit')
-		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
+		self.commitButton.SetToolTip( wx.ToolTip('Saves changes (CTRL-O)'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
 		hs.Add( self.commitButton, flag=wx.ALIGN_CENTRE_VERTICAL )
 		

@@ -72,7 +72,7 @@ class Categories( wx.Panel ):
 		
 		#commit button
 		self.commitButton = wx.Button( self, label='Commit')
-		self.commitButton.SetToolTip( wx.ToolTip('Saves changes'))
+		self.commitButton.SetToolTip( wx.ToolTip('Stores changes (Ctrl-O)'))
 		self.Bind( wx.EVT_BUTTON, self.commit, self.commitButton )
 		hs.Add( self.commitButton, flag=wx.ALIGN_LEFT )
 		
