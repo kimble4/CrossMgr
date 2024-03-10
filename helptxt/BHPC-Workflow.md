@@ -323,6 +323,86 @@ At this point your race file should be ready for use.
 
 If you change a race's filename, the original file will be left in place.  You may want to delete the old file now so as not to use the wrong one by mistake on race day.
 
+# Writing RFID timing tags
+
+## Tag number schema
+
+Impinj RFID tags have a programmable EPC field that allows up to 96 bits of arbitrary data to be stored.  When tags are read by CrossMgrImpinj during a race, this data is passed to CrossMgr as a hexadecimal string of up to 24 characters, along with the time the tag is read.  This allows tags - and by implication the rider or machine they're attached to - to be identified.
+
+### Old system (pre 2024 season)
+
+Pre-2024, the BHPC would **directly encode the rider's bib number on the tag, as a hexadecimal value**.  For example rider #10 would have `a` encoded on their tag, and rider #136 would have `88` encoded on their tag.  Riders would be issued with multiple tags containing the same number.
+
+This made life easier for Excel, but was a pain for the timing team, as we would have to convert decimal to hexadecimal when writing tags manually.
+
+### New (v2) system
+
+In an attempt to address some of the inadequaces in the above system, from 2024 onwards, we are using the following schema:
+
+- **The first 16 characters** of the EPC will **always contain `4248504376322074`**.  This identifies a tag as belonging to the BHPC, and reads "**`BHPCv2 t`**" when rendered as ASCII.
+- The **17th character** contains **`3`**.  This combines with the 18th character to make an ASCII digit.
+- The **18th character** contains the **unique tag number**, from `0-9`.
+- The **19th and 20th** characters contain **`6E`** ('`n`' in ASCII)
+- **Characters 21-24** contain the rider's **bib** number **as a decimal string** eg. rider #136 would be encoded as `0136`.  (This does not convert to ASCII in a meaningful way.)
+
+So, for example `4248504376322074316E0001` would be rider #1's tag number 1.  When displayed as ASCII, it would read `"BHPCv2 t1n"` (last two characters unprintable).  `4248504376322074346E0102` would be rider #102's tag no 4.  When displayed as ASCII, it would read `"BHPCv2 t4n"` (last two characters unprintable).
+
+The advantages of this approach are:
+
+- Reduced risk of overlapping with another event's tag schema, so our tags are less likely to cause problems at other events.
+- Individual tags having their own numbers mean that the QuadReg algorithm can process them separately, which should improve the timing accurcy.
+- We can elminate a specific tag from the sign-on sheet while still using the rider's other tags - useful if they leave a spare helmet or fairing near the finish line during the race.
+- As the last 4 characters of the EPC string are decimal-encoded, it becomes immediately obvious which rider a tag belongs to when viewed in the sign-on sheet, [Unmatched RFID Tags][Windows] window or CrossMgrImpinj log.
+- Supports up to 10,000 riders, with up to 16 tags each (although CrossMgr and HPVMgr can only support 10 tags per rider).
+
+
+### Use of tag numbers
+
+In the interests of **backward compatibility**, we continue to support the **old bib-as-hexadecimal schema using the first tag field** in the sign-on sheet ('**Tag0**' in HPVMgr).  We will use the **new schema for tags 1-9**, and try to use a least-recently-used tag number when issuing new tags.  As HPVMgr records when tag numbers were last written, it should be possible to avoid too many tags with identical numbers in circulation.
+
+## Writing tags using HPVMgr
+
+**HPVMgr** is the new dedicated BHPC sign-on application.  As well as managing the rider database and sign-on sheets, it can control the Impinj reader directly in order to write RFID tags.  This has the advantage of a less fiddly user interface, and not having to deal with hexadecimal numbers manually.  It also keeps a record of when tags were last written for each rider, useful when working with unique tag numbers.  For more information about HPVMgr, see its own help documentation.
+
+1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
+1. Ensure that the **CrossMgrImpinj** application is not running.
+1. Open the **HPVMgr** application.  It should load the rider database automatically.
+1. Switch to the **WriteTags** screen and ensure that it is configured to connect to the reader using the IPv4 address `192.168.1.250`  (The settings from the last successful connection to the reader shuold be restored.)
+1. Click the "**Connect**" button to connect to the reader.  If this is not successful, you probably have an incorrect address or a network problem.
+1. Select the **antenna** that you want to write tags with.  The Desktop antenna is usually **Antenna 3**, while the patch antenna built into the RFID reader flightcase is **Antenna 4**.
+1. Ensure that "**Write to ALL tags within range**" is disabled, unless you know what you are doing!
+1. With the connection to the reader established, switch to the **RiderDetail** screen and select the rider whose tags you need to write.  (If you do not know their **Bib** number, you may find it easier to select the rider from the list on the **Riders** screen first.)
+![HPVMgr RiderDetail screen](./images/hpvmgr_riderdetail.png "HPVMgr RiderDetail screen")
+1. Examine the rider's list of tag numbers, and decide which you are going to write.  The last-written dates may be hepful to avoid clashes with an existing tag on a spare helmet or similar.  (Unique numbers for each tag improve QuadReg performance and mean that stray tags can be excluded from a race retrospectively.)
+1. Click the "**Write**" button.  You will be taken back to the **WriteTags** screen, and the "**EPC to write**" field will be populated with the rider's tag number.
+![HPVMgr WriteTags screen](./images/hpvmgr_writetags.png "HPVMgr WriteTags screen")
+1. Ensure the tag you wish to write to is in place near the selected antenna, click "**Read Tags**" to refresh the inventory list.
+1. Select the relevant tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
+1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.
+1. Give the tags to the rider.
+1. Save changes before exiting the HPVMgr application, so the tag write dates are stored in the database.
+1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
+
+## Writing tags using MultiReader
+
+The older method uses the **Impinj MultiReader** application to write the tags, which means you need to be able to enter the hexadecimal EPC number for the tag manually.  HPVMgr might be used to copy the correct EPC to the Windows clipboard in order that it may be pasted into MultiReader.
+
+1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
+1. Ensure that the **CrossMgrImpinj** application is not running.
+1. Establish what the rider's **tag numbers** should be in hexadecimal (refer to the sign-on sheet if necessary), and write this on the **back** of the tags' backing sheet.  *Do not trust yourself to hold this in short-term memory; someone will distract you and this is how mistakes get made*.
+1. **Close CrossMgrImpinj**, if it is running, to free up the tag reader.
+1. If the desktop aerial is not connected to port 3, follow the instructions above to connect it.
+1. Start the Impinj **MultiReader** application, and *connect to the configured reader*.
+1. Place the tags on top of the desktop aerial (weighing them down with something non-conductive so they don't blow away).
+1. Click the **START Inventory Run** button.  Two tag numbers shold appear in the list to the left.  Stop the inventory run.
+1. Right-click on one of the tag numbers, and select **Change EPC**.
+![MultiReader Change EPC dialog](./images/multireader_change_epc.png "MultiReader Change EPC dialog")
+1. Referring to the tag's backing sheet, enter the new tag number as a hexadecimal number, including leading zeroes (delimiting each group of 4 hexadecimal digits with a '-'), and click **Write tag**.  Check the **Log** pane to confirm this has worked.
+1. Close the window, and change the EPC of the *other* tag in the same way.  (Note that if you attempt to write a tag twice, the subsequent attempts will fail, as the current EPC of the tag will have changed on the first successful attempt.)
+1. Do the **inventory run** again; you should only see the correct tag number.
+1. Give the tags to the rider, **close MultiReader**.
+1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
+
 #  Race Day
 
 ## Hardware setup
@@ -433,50 +513,9 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 
 * This is usually the point in proceedings where someone will come to you with a sob story about having to remove their timing tags for a pedal car race, shipping their helmet to Battle Mountain or their fairing being eaten by a grue.  Alternately, you may have established that their existing tags are not working properly during the RFID test, or are in danger of peeling off.  Either way, they need new timing tags.
 
-* First, **check that you haven't already got a set of new tags** for them in the tag bag - riders will not always remember if they asked for new tags at sign on.
+* First, **check that you haven't already got a set of new tags** for them in the tag bag - riders will not always remember if they asked for new tags at sign on, and neither will you.
 
-If you do have to write new tags:
-
-#### Using HPVMgr
-
-**HPVMgr** is the new dedicated BHPC sign-on application.  As well as managing the rider database and sign-on sheets, it can control the Impinj reader directly in order to write RFID tags.  This has the advantage of a less fiddly user interface, and not having to deal with hexadecimal numbers manually.  It also keeps a record of when tags were last written for each rider, useful when working with unique tag numbers.  For more information about HPVMgr, see its own help documentation.
-
-1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
-1. **Close CrossMgrImpinj**, if it is running, to free up the tag reader.
-1. Open the **HPVMgr** application.  It should load the rider database automatically.
-1. Switch to the **WriteTags** screen and ensure the RFID reader is configured correctly.  (The settings should be saved after a successful connection to the reader.)
-1. Click the "**Connect**" button to connect to the reader.  If this is not successful, you probably have an incorrect address or a network problem.
-1. Select the **antenna** that you want to write tags with.  The Desktop antenna is usually **Antenna 3**, while the patch antenna built into the RFID reader flightcase is **Antenna 4**.
-1. Ensure that "**Write to ALL tags within range**" is disabled, unless you know what you are doing!
-1. With the connection to the reader established, switch to the **RiderDetail** screen and select the rider whose tags you need to write.  (If you do not know their **Bib** number, you may find it easier to select the rider from the list on the **Riders** screen first.)
-1. Examine the rider's list of tag numbers, and decide which you are going to write.  The last-written dates may be hepful to avoid clashes with an existing tag on a spare helmet or similar.  (Unique numbers for each tag improve QuadReg performance and mean that stray tags can be excluded from a race retrospectively.)
-1. Click the "**Write**" button.  You will be taken back to the **WriteTags** screen, and the "**EPC to write**" field will be populated with the rider's tag number.
-1. Ensure the tag you wish to write to is in place near the selected antenna, click "**Read Tags**" to refresh the inventory list.
-1. Select the relevant tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
-1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.
-1. Give the tags to the rider.
-1. Save changes before exiting the HPVMgr application, so the tag write dates are stored in the database.
-1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
-
-
-#### Using MultiReader
-
-The older method uses the **Impinj MultiReader** application to write the tags, which means you need to be able to enter the hexadecimal EPC number for the tag manually.  HPVMgr might be used to copy the correct EPC to the Windows clipboard in order that it may be pasted into MultiReader.
-
-1. Dig out the blank tags, and cut a pair of them off the roll.  Mark the **front** of the tags with **the rider's bib number** in permanent marker pen.
-1. Establish what the rider's **tag numbers** should be in hexadecimal (refer to the sign-on sheet if necessary), and write this on the **back** of the tags' backing sheet.  *Do not trust yourself to hold this in short-term memory; someone will distract you and this is how mistakes get made*.
-1. **Close CrossMgrImpinj**, if it is running, to free up the tag reader.
-1. If the desktop aerial is not connected to port 3, follow the instructions above to connect it.
-1. Start the Impinj **MultiReader** application, and *connect to the configured reader*.
-1. Place the tags on top of the desktop aerial (weighing them down with something non-conductive so they don't blow away).
-1. Click the **START Inventory Run** button.  Two tag numbers shold appear in the list to the left.  Stop the inventory run.
-1. Right-click on one of the tag numbers, and select **Change EPC**.
-![MultiReader Change EPC dialog](./images/multireader_change_epc.png "MultiReader Change EPC dialog")
-1. Referring to the tag's backing sheet, enter the new tag number as a hexadecimal number, including leading zeroes (delimiting each group of 4 hexadecimal digits with a '-'), and click **Write tag**.  Check the **Log** pane to confirm this has worked.
-1. Close the window, and change the EPC of the *other* tag in the same way.  (Note that if you attempt to write a tag twice, the subsequent attempts will fail, as the current EPC of the tag will have changed on the first successful attempt.)
-1. Do the **inventory run** again; you should only see the correct tag number.
-1. Give the tags to the rider, **close MultiReader**.
-1. **Restart CrossMgrImpinj** and ensure it connects to the tag reader.
+If you do have to write new tags, see the section on [Writing RFID timing tags][Writing Tags] above.
 
 ### Moving a rider to a different race within a round
 

@@ -4,6 +4,8 @@
 
 HPVMgr can read and write the EPC field of RFID tags directly using a suitable LLRP tag reader, without any additional software.  This should greatly streamline the process of issuing tags to racers, as tag numbers can be taken directly from the rider database without having to enter them by hand.
 
+![HPVMgr WriteTags screen](./images/hpvmgr_writetags.png "HPVMgr WriteTags screen")
+
 ### Configuring the RFID reader
 
 These settings are similar to those of the **CrossMgrImpinj** and **TagReadWrite** applications.  Enter the host name or IPv4 address of the tag reader in the relevant fields.  The "**Auto Detect Reader**" button will attempt to determine the correct settings automatically, if this fails you will get an error message after a timeout.

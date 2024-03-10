@@ -26,6 +26,7 @@ We do not fully automate the sign-on process, as it is felt that BHPC members ma
 ### Entering riders in the Event
 
 1. If you have new Riders who are not listed on the [Riders][] screen, add them to the database and fill in their details using the [RiderDetail][] page.
+![HPVMgr RiderDetail screen](./images/hpvmgr_riderdetail.png "HPVMgr RiderDetail screen")
 1. Select the **Event** on the [Events][] screen.
 1. Switch to the [EventEntry][] screen.  The event name will appear at the top of the screen.
 1. Select a **Rider** using the "**Bib**" drop-down, or by entering their name in the "**Name**" field.  If the bib does not exist you will be asked if you would like to create a new rider.
@@ -55,6 +56,7 @@ HPVMgr can control the Impinj reader directly in order to write RFID tags.  No m
 1. With the connection to the reader established, switch to the [RiderDetail][] screen and select the rider whose tags you need to write.  (If you do not know their **Bib** number, you may find it easier to select the rider from the list on the [Riders][] screen first.)
 1. Select a tag from the list.  The last-written dates may be hepful to avoid clashes with an existing tag on a spare helmet or similar.  (Unique tag numbers improve QuadReg performance and mean that stray tags can be excluded from a race retrospectively.)
 1. Click the "**Write**" button.  You will be taken back to the [WriteTags][] screen, and the "**EPC to write**" field will be populated with the rider's tag number.
+![HPVMgr WriteTags screen](./images/hpvmgr_writetags.png "HPVMgr WriteTags screen")
 1. Ensure the tag you wish to write to is in place near the selected antenna, click "**Read Tags**" to refresh the inventory list.
 1. Select the relevant tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
 1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.

@@ -4,6 +4,8 @@
 
 This alows you to view and edit the details of a rider.  Click the "**Commit**" button after making changes.
 
+![HPVMgr RiderDetail screen](./images/hpvmgr_riderdetail.png "HPVMgr RiderDetail screen")
+
 ## Fields
 
 Field|Description

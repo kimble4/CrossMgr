@@ -1,5 +1,6 @@
 [Quick Start]:		QuickStart.html
 [BHPC Workflow]:	BHPC-Workflow.html
+[Writing Tags]:		BHPC-Workflow.html#writing-rfid-timing-tags
 [Category Changes]:	BHPC-Workflow.html#a-rider-has-changed-their-categorymachinetiming-tags
 [Race Reallocation]: BHPC-Workflow.html#moving-a-rider-to-a-different-race-within-a-round
 [Merging Races]:	BHPC-Workflow.html#merging-races
