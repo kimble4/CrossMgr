@@ -843,7 +843,7 @@ class Events( wx.Panel ):
 				title = ', '.join(n for n in selection)
 			database.selection = selection
 		self.currentSelection.SetLabel( title if title else 'No selection')
-		Utils.getMainWin().SetTitle( ' — '.join( n for n in [title if title else 'No selection', Version.AppVerName] if n ) )
+		Utils.getMainWin().SetTitle( ('* ' if database.hasChanged() else '' ) + ' — '.join( n for n in [title if title else 'No selection', Version.AppVerName] if n ) )
 		
 		
 	def commit( self, event=None ):

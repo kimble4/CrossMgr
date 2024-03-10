@@ -495,6 +495,7 @@ class Database:
 	def setChanged( self, changed=True ):
 		self.changed = changed
 		self.resetCache()
+		Utils.getMainWin().events.refreshCurrentSelection()
 		
 	def hasChanged( self ):
 		return self.changed
