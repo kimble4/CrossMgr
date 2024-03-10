@@ -175,6 +175,8 @@ class RaceAllocation( wx.Panel ):
 	def onRacerRightClick( self, event, iRace ):
 		row = event.GetRow()
 		col = event.GetCol()
+		for i in range(RaceAllocation.maxRaces):
+			getattr(self, 'raceGrid' + str(i), None).ClearSelection()
 		try:
 			bib = int(getattr(self, 'raceGrid' + str(iRace), None).GetCellValue(row, self.colnames.index('Bib')))
 			name = getattr(self, 'raceGrid' + str(iRace), None).GetCellValue(row, self.colnames.index('Name'))

@@ -83,6 +83,7 @@ class Teams( wx.Panel ):
 		if database is None:
 			return
 		row = event.GetRow()
+		self.teamsGrid.ClearSelection()
 		menu = wx.Menu()
 		menu.SetTitle('Teams')
 		if row >= 1 or (row == 0 and len(self.teamsGrid.GetCellValue(row, 0).strip()) > 0):

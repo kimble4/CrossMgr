@@ -96,6 +96,7 @@ class Categories( wx.Panel ):
 		if database is None:
 			return
 		row = event.GetRow()
+		self.categoriesGrid.ClearSelection()
 		menu = wx.Menu()
 		menu.SetTitle('Categories')
 		add = menu.Append( wx.ID_ANY, 'Add new category', 'Add a new category...' )

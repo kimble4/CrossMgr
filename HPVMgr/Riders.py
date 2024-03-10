@@ -128,6 +128,7 @@ class Riders( wx.Panel ):
 	def onRightClick( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
+		self.ridersGrid.ClearSelection()
 		menu = wx.Menu()
 		if row == -1: # header row
 			menu.SetTitle('Riders')

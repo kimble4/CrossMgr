@@ -309,6 +309,7 @@ class EventEntry( wx.Panel ):
 	def onRacerRightClick( self, event ):
 		row = event.GetRow()
 		col = event.GetCol()
+		self.racersGrid.ClearSelection()
 		try:
 			bib = int(self.racersGrid.GetCellValue(row, 0))
 			name = self.racersGrid.GetCellValue(row, 1)
@@ -338,6 +339,7 @@ class EventEntry( wx.Panel ):
 		self.onSelectBib()
 		
 	def highlightBib( self, bibStr):
+		self.racersGrid.ClearSelection()
 		bibRow = -1
 		for row in range(self.racersGrid.GetNumberRows()):
 			if self.racersGrid.GetCellValue(row, 0) == bibStr:
@@ -616,6 +618,7 @@ class EventEntry( wx.Panel ):
 		#print('clearGrid deleting rows: ' + str(rows))
 		if rows:
 			grid.DeleteRows( 0, rows )
+		self.racersGrid.ClearSelection()
 
 	def commit( self, event=None ):
 		Utils.writeLog('EventEntry commit: ' + str(event))
