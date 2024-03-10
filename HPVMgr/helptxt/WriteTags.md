@@ -27,7 +27,7 @@ Tag EPC numbers can be copied to the clipboard (either as hexadecimal or ASCII) 
 1. Ensure that "**Write to ALL tags within range**" is disabled.
 1. Perform a tag inventory using the "**Read Tags**" button, and ensure the tag you want to overwrite appears in the list.
 1. Click on the row of the desired tag.  It should be highlighted in orange, and the "**Destination tag**" field will be populated with its EPC.
-1. Enter the new EPC in the "**EPC to write**" field as a hexadecimal number of up to 24 characters.  Alternatively, this may be automatically populated by clicking on one of the "**Write**" buttons on the [RiderDetail][] screen.
+1. The new EPC should go in the "**EPC to write**" field:  You can either select a rider's tag number from the database by clicking on one of the "**Write**" buttons on the [RiderDetail][] screen, or enter the EPC directly as a hexadecimal number of up to 24 characters.
 1. Click the "**Write**" button (Ctrl-W).  The reader will attempt to change the EPC of the tag, and then perform another inventory.
 1. If the write was successful, the tag will be highlighted in **green** and the "**Destination tag**" field will be cleared.
 1. If the write was unsuccessful, or the tag cannot be found, the tag will be highlighted in **red**.  Try moving the tag with respect to the aerial and attempt the write again. 
@@ -43,3 +43,4 @@ It is possible to write tags without specifying the EPC of the tag you want to w
 
 * Tags embedded in items for retail tracking are usually read-only and cannot be re-written - you may come across one of these in a cycle helmet or similar (the EPC may be markedly different from those of unwritten tags from the usual supplier).  In principle you could use this for timing by adding it to a rider's tag numbers; in practice the RF performance may be inadequate to detect the tag at a distance.
 * Occasionally tags become faulty and refuse to change their EPC.  Bin them.
+* If the connection to the tag reader fails when reading or writing tags, this is likely to be a network issue.
