@@ -50,6 +50,7 @@
 [Restart]:			Restart.html
 [TimeTrial]:		TimeTrial.html
 [FinishLynx]:		FinishLynx.html
+[WebIntegration]:	WebIntegration.html
 [FAQ]:				FAQ.html
 
 [SetLaps]:			SetLaps.html
