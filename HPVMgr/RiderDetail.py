@@ -292,7 +292,7 @@ class RiderDetail( wx.Panel ):
 				with Model.LockDatabase() as db:
 					db.riders[int(self.bib)]['Tag' + (str(tag) if tag > 0 else '') + 'LastWritten'] = int(datetime.datetime.now().timestamp())
 					db.setChanged()
-					
+					wx.CallAfter( self.refresh )
 		else:
 			Utils.writeLog('Tag'+ str(tag) + ': Nothing to copy!')
 			

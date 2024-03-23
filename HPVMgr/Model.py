@@ -177,12 +177,12 @@ class Database:
 		return ''
 		
 	@memoize
-	def getRiderAge( self, bib ):
+	def getRiderAge( self, bib, atDate=datetime.datetime.now() ):
 		if bib in self.riders:
 			rider = self.riders[bib]
 			if 'DOB' in rider:
 				dob = datetime.datetime.fromtimestamp(rider['DOB'])
-				return int((datetime.datetime.now() - dob).days/365)
+				return int((atDate - dob).days/365)
 		return None
 		
 	def getRiderFactor( self, bib):
@@ -263,6 +263,21 @@ class Database:
 		except KeyError:
 			return []
 			
+	def getCurEvtDate( self ):
+		if self.curSeason is not None:
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			if self.curEvt is not None:
+				evtName = list(season['events'])[self.curEvt]
+				evt = season['events'][evtName]
+				if 'date' in evt:
+					try:
+						dt = datetime.datetime.fromtimestamp(evt['date'])
+						return dt
+					except Exception:
+						return None
+		return None
+		
 	def getRoundAsExcelSheetXLSX( self, rndName, formats, sheet, raceNr=None ):
 		try:
 			''' Write a round to an xlwt excel sheet. '''
@@ -417,7 +432,7 @@ class Database:
 							#age
 							if haveAge:
 								if self.getRiderAge(raceEntryDict['bib']) is not None:
-									sheetFit.write( row, col, self.getRiderAge(raceEntryDict['bib']), styleAlignRight )
+									sheetFit.write( row, col, self.getRiderAge(raceEntryDict['bib'], datetime.datetime.fromtimestamp(evt['date']) if 'date' in evt else datetime.datetime.now()), styleAlignRight )
 								col += 1
 							#natcode
 							if haveNatCode:

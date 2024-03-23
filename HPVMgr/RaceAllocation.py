@@ -763,7 +763,7 @@ class RaceAllocation( wx.Panel ):
 			season = database.seasons[seasonName]
 			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
-			title = ', '.join(n for n in selection)
+			title = ('{:%Y-%m-%d: }'.format(database.getCurEvtDate()) if database.getCurEvtDate() is not None else '') + ', '.join(n for n in selection)
 		self.currentSelection.SetLabel( title + ', ' )
 		database.selection = selection
 		

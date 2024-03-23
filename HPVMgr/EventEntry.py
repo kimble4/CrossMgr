@@ -424,6 +424,9 @@ class EventEntry( wx.Panel ):
 		if self.season is not None and self.evt is not None:
 			try:
 				bib = int(self.riderBibEntry.GetValue())
+				dt = database.getCurEvtDate()
+				if dt is None:
+					dt = datetime.datetime.now()
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
 					season = db.seasons[seasonName]
@@ -447,11 +450,11 @@ class EventEntry( wx.Panel ):
 					foundTeam = False
 					for teamAbbrevEntered in db.teams:
 						if teamAbbrevEntered[0] == team:  #update entered date for team
-							teamAbbrevEntered[2] = int(datetime.datetime.now().timestamp())
+							teamAbbrevEntered[2] = int(dt.timestamp())
 							foundTeam = True
 							break
 					if not foundTeam and len(team) > 0:  #add a new team
-						db.teams.append([team, team[0:6].strip().upper(), int(datetime.datetime.now().timestamp())])
+						db.teams.append([team, team[0:6].strip().upper(), int(dt.timestamp())])
 					categories = []
 					for i in range(EventEntry.numCategories):
 						if getattr(self, 'riderCategory' + str(i), None).IsChecked():
@@ -459,7 +462,7 @@ class EventEntry( wx.Panel ):
 					if len(categories) == 0:
 						Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' has no categories!', 'No categories' )
 					evt['racers'].append([bib, machine, categories, team])
-					db.riders[bib]['LastEntered'] = int(datetime.datetime.now().timestamp())
+					db.riders[bib]['LastEntered'] = int(dt.timestamp())
 					if 'Machines' not in db.riders[bib]:
 						db.riders[bib]['Machines'] = []
 					found = False
@@ -467,14 +470,14 @@ class EventEntry( wx.Panel ):
 						if machine == machineCategoriesDate[0]:
 							machineCategoriesDate[1] = categories
 							if len(machineCategoriesDate) < 3:  #backwards compatibility with old format
-								machineCategoriesDate.append( int(datetime.datetime.now().timestamp()) )
+								machineCategoriesDate.append( int(dt.timestamp()) )
 							else:
-								machineCategoriesDate[2] = int(datetime.datetime.now().timestamp())
+								machineCategoriesDate[2] = int(dt.timestamp())
 							found = True
 							break
 					if not found:
 						if len(machine) > 0:
-							db.riders[bib]['Machines'].append([machine, categories, int(datetime.datetime.now().timestamp())])
+							db.riders[bib]['Machines'].append([machine, categories, int(dt.timestamp())])
 					if len(team) > 0:
 						db.riders[bib]['Team'] = team
 					elif 'Team' in db.riders[bib]:
@@ -570,9 +573,9 @@ class EventEntry( wx.Panel ):
 			evtName = list(season['events'])[self.evt]
 			selection.append( evtName )
 			evt = season['events'][evtName]
-			title = ', '.join(n for n in selection)
+			title = ('{:%Y-%m-%d: }'.format(database.getCurEvtDate()) if database.getCurEvtDate() is not None else '') + ', '.join(n for n in selection)
 			if 'racers' in evt:
-				title += ': ' + str(len(evt['racers'])) + ' racers'
+				title += ' (' + str(len(evt['racers'])) + ' racers)'
 		self.currentSelection.SetLabel( title )
 		database.selection = selection
 		

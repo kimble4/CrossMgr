@@ -10,7 +10,7 @@ A **Season** represents a championship series, which consiststs of a number of i
 If you will be recycling bib numbers, it is not recommended to have more than one or two seasons per HPVMgr database file, as older sign-on sheets will become out of sync with the bib numbers in Riders list.
 
 #### Events
-An **Event** typically represents a day of racing.  It will contain at least one **Round**.  There will be a number of **Events** in a **Season**.
+An **Event** typically represents a day of racing.  It has a date (used for calculating rider ages and the default sign-on sheet filename), and will contain at least one **Round**.  There will be a number of **Events** in a **Season**.
 
 #### Rounds
 A **Round** is an individual competition, for example a *30 minute criterium* or a *1-lap time trial*.  A **Round** may optionally be split into more than one **Race** to reduce the number of riders on the track simultaneously.
@@ -21,7 +21,7 @@ There are three tables at the top of the [Events][] screen, listing **Seasons** 
 
 Click on table items to select a current **Season**, **Event** and **Round**, which will be highlighted in orange and displayed below the tables as the **Current selection**.  This will be used by the [EventEntry][] and [RaceAllocation][] screens.  For convenience, the currently selected **round** may also be changed from the [RaceAllocation][] screen.
 
-Right-click to add, remove or rename items in the tables.
+Use the right-click context menu to add, remove or rename items in the tables.  Event dates may be also be edited via the context menu option.
 
 The "**Edit entries**" and "**Edit races**" buttons take you to the [EventEntry][] and [RaceAllocation][] screens respectively.
 

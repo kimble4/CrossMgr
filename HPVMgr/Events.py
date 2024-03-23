@@ -137,9 +137,10 @@ class Events( wx.Panel ):
 		
 		#events list
 		self.eventsGrid = wx.grid.Grid( self )
-		self.eventsGrid.CreateGrid(0, 2)
+		self.eventsGrid.CreateGrid(0, 3)
 		self.eventsGrid.SetColLabelValue(0, 'Season\'s events')
-		self.eventsGrid.SetColLabelValue(1, 'Rounds in event')
+		self.eventsGrid.SetColLabelValue(1, 'Date')
+		self.eventsGrid.SetColLabelValue(2, 'Rounds in event')
 		self.eventsGrid.HideRowLabels()
 		self.eventsGrid.SetRowLabelSize( 0 )
 		self.eventsGrid.SetMargins( 0, 0 )
@@ -452,6 +453,8 @@ class Events( wx.Panel ):
 			evtName = list(season['events'])[row]
 			rename = menu.Append( wx.ID_ANY, 'Rename ' + evtName, 'Rename this event...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.renameEvent(event, row), rename )
+			changeEventDate = menu.Append( wx.ID_ANY, 'Change ' + evtName + '\'s date', 'Change event date...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.changeEventDate(event, row), changeEventDate )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + evtName + ' from list', 'Delete this event...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteEvent(event, row), delete )
 		try:
@@ -475,6 +478,8 @@ class Events( wx.Panel ):
 						if 'events' not in season:
 							season['events'] = {}
 						if newEvent not in season['events']:
+							#init date field with today's date
+							#season['events'][newEvent] = {"date":int(datetime.datetime.combine(datetime.date.today(), datetime.datetime.min.time()).timestamp())}
 							season['events'][newEvent] = {}
 							db.setChanged()
 							self.evt = len(season['events']) - 1
@@ -517,6 +522,37 @@ class Events( wx.Panel ):
 				self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
+			
+	def changeEventDate( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is None:
+			return
+		try:
+			oldDate = self.eventsGrid.GetCellValue(row, 1)
+			with wx.TextEntryDialog(self, 'Enter the new date for "' + self.eventsGrid.GetCellValue(row, 0) + '"\nin the format YYYY-MM-DD:', caption='Change event date', value=oldDate, style=wx.OK|wx.CANCEL) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					newDate = dlg.GetValue()
+					with Model.LockDatabase() as db:
+						try:
+							ts = int(datetime.datetime.strptime(newDate, '%Y-%m-%d').timestamp())
+							seasonName = db.getSeasonsList()[self.season]
+							season = db.seasons[seasonName]
+							evtName = list(season['events'])[row]
+							evt = season['events'][evtName]
+							evt['date'] = ts
+							db.setChanged()
+							wx.CallAfter( self.commit )
+						except ValueError:
+							Utils.MessageOK( self, '"' + newDate + '" is not a valid date!', title = 'Invalid date', iconMask = wx.ICON_ERROR, pos = wx.DefaultPosition )
+				self.refreshEventsGrid()
+				self.refreshRoundsGrid()
+				self.refreshCurrentSelection()
+				self.Layout()
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+		
 						
 	def deleteEvent( self, event, row ):
 		database = Model.database
@@ -687,7 +723,13 @@ class Events( wx.Panel ):
 			if self.season is not None and self.evt is not None:
 				seasonName = database.getSeasonsList()[self.season]
 				season = database.seasons[seasonName]
-				fileName = 'racers_' + list(season['events'])[self.evt].lower().replace(' ', '_') + '.xlsx'
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				try:
+					dt = '{:%Y-%m-%d_}'.format(datetime.datetime.fromtimestamp(evt['date']))
+				except:
+					dt = ''
+				fileName = 'racers_' + dt + list(season['events'])[self.evt].lower().replace(' ', '_') + '.xlsx'
 			else:
 				fileName = ''
 			if not dirName:
@@ -772,6 +814,13 @@ class Events( wx.Panel ):
 					row = self.eventsGrid.GetNumberRows() -1
 					col = 0
 					self.eventsGrid.SetCellValue(row, col, eventName )
+					self.eventsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curEvt else wx.WHITE)
+					col += 1
+					try:
+						dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(season['events'][eventName]['date']))
+					except:
+						dt = ''
+					self.eventsGrid.SetCellValue(row, col, str(dt) if 'date' in season['events'][eventName] else '' )
 					self.eventsGrid.SetCellBackgroundColour(row, col, self.OrangeColour if row == database.curEvt else wx.WHITE)
 					col += 1
 					self.eventsGrid.SetCellValue(row, col, str(len(season['events'][eventName]['rounds'])) if 'rounds' in season['events'][eventName] else '')
