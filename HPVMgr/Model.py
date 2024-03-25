@@ -83,6 +83,7 @@ class Database:
 		self.fileName = fileName
 		self.copyTagsWithDelim = False
 		self.writeAbbreviatedTeams = False
+		self.useAge = True
 		self.useFactors = False
 		self.allocateBibsFrom = 1
 		self.ttStartDelay = 60
@@ -101,6 +102,7 @@ class Database:
 				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
+				self.useAge = data['useAge'] if 'useAge' in data else True
 				self.useFactors = data['useFactors'] if 'useFactors' in data else False
 				self.allocateBibsFrom = data['allocateBibsFrom'] if 'allocateBibsFrom' in data else 1
 				self.ttStartDelay = data['ttStartDelay'] if 'ttStartDelay' in data else 60
@@ -371,6 +373,10 @@ class Database:
 								haveTeam = True
 				iRace += 1
 			
+			#override presence of ages if diabled in settings
+			if not self.useAge:
+				haveAge = False
+			
 			#override presence of factors if disabled in settings
 			if not self.useFactors:
 				haveFactor = False
@@ -520,6 +526,7 @@ class Database:
 		db = {}
 		db['copyTagsWithDelim'] = self.copyTagsWithDelim
 		db['writeAbbreviatedTeams'] = self.writeAbbreviatedTeams
+		db['useAge'] = self.useAge
 		db['useFactors'] = self.useFactors
 		db['allocateBibsFrom'] = self.allocateBibsFrom
 		db['ttStartDelay'] = self.ttStartDelay

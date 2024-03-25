@@ -100,9 +100,17 @@ class Settings( wx.Panel ):
 		
 		row += 1
 		
+		self.useAge = wx.CheckBox( self, label='Include riders\' ages in sign-on sheet' )
+		self.useAge.Bind( wx.EVT_CHECKBOX, self.onEdited)
+		gbs.Add(self.useAge, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		
+		row += 1
+		
 		self.useFactors = wx.CheckBox( self, label='Include para-cycling Factors in sign-on sheet' )
 		self.useFactors.Bind( wx.EVT_CHECKBOX, self.onEdited)
 		gbs.Add(self.useFactors, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		
+		
 		
 		vs.Add(gbs, flag=wx.EXPAND )
 		vs.AddStretchSpacer()
@@ -229,6 +237,7 @@ class Settings( wx.Panel ):
 			db.writeAbbreviatedTeams = self.writeAbbreviatedTeams.IsChecked()
 			db.ttStartDelay = self.ttStartDelay.GetValue()
 			db.ttInterval = self.ttInterval.GetValue()
+			db.useAge = self.useAge.IsChecked()
 			db.useFactors = self.useFactors.IsChecked()
 			db.setChanged()
 			config.Write('dataFile', fn)
@@ -258,5 +267,6 @@ class Settings( wx.Panel ):
 		self.ttStartDelay.SetValue( getattr(database, 'ttStartDelay', 60) )
 		self.ttInterval.SetValue( getattr(database, 'ttInterval', 30) )
 		self.writeAbbreviatedTeams.SetValue( getattr(database, 'writeAbbreviatedTeams', False) )
+		self.useAge.SetValue( getattr(database, 'useAge', True) )
 		self.useFactors.SetValue( getattr(database, 'useFactors', False) )
 		self.onEdited(warn=False)

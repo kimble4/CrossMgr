@@ -18,6 +18,7 @@ EventCategory template|Configures a Python format string used to generate the `E
 Seconds before first TT rider start|When generating time trial start times, this sets the delay in seconds between the race clock starting and the first time trial rider's allocated start time.
 Seconds between TT riders|Sets the interval between time trial riders when automatically allocating start times.
 Use abbreviated team names in sign-on-sheet|If selected, team names will be written to the sign-on sheet in the abbreviated form defined on the [Teams][] screen.  Otherwise the full team name is used.  Useful if there are teams with very long names.
+Include riders' ages in sign-on sheet|If selected, a column for riders' ages, as of the date of the Event, will be included in the sign-on sheet.  If the event does not have an associated date, the system date at time of generating the sign-on sheet will be used.
 Include para-cycling Factors in sign-on sheet|If selected, rider Factors will be displayed in the [EventEntry][] and [RaceAllocation][] screens, and an appropriate column will be included in the sign-on sheet.  Otherwise, Factors are not used.
 
 The "**Commit**" button saves edits to the in-memory database, but does not write them to disk.
