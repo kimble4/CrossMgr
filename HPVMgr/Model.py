@@ -182,7 +182,7 @@ class Database:
 			rider = self.riders[bib]
 			if 'DOB' in rider:
 				dob = datetime.datetime.fromtimestamp(rider['DOB'])
-				return int((atDate - dob).days/365)
+				return int((atDate - dob).days/365.2425)
 		return None
 		
 	def getRiderFactor( self, bib):

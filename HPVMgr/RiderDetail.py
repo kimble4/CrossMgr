@@ -45,7 +45,7 @@ class RiderDetail( wx.Panel ):
 		row += 1
 		gbs.Add( wx.StaticText( self, label='DOB:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		hs = wx.BoxSizer(wx.HORIZONTAL)
-		self.riderDOB = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_SHOWCENTURY|wx.adv.DP_ALLOWNONE, name="Date of Birth")
+		self.riderDOB = wx.adv.DatePickerCtrl(self, style=wx.adv.DP_SHOWCENTURY|wx.adv.DP_ALLOWNONE, size=(200,-1), name="Date of Birth")
 		self.riderDOB.SetNullText('Unset')
 		self.Bind( wx.adv.EVT_DATE_CHANGED, self.onDOBChanged, self.riderDOB )
 		hs.Add( self.riderDOB, flag=wx.ALIGN_CENTRE_VERTICAL )
@@ -55,7 +55,7 @@ class RiderDetail( wx.Panel ):
 		row += 1
 		gbs.Add( wx.StaticText( self, label='NatCode:'), pos=(row,0), span=(1,1), flag=labelAlign )
 		ncs = wx.BoxSizer(wx.HORIZONTAL)
-		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(100,-1))
+		self.riderNat = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER, size=(200,-1))
 		self.riderNat.SetToolTip( wx.ToolTip('IOC country code'))
 		self.Bind( wx.EVT_TEXT_ENTER, self.onNatCodeChanged, self.riderNat )
 		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderNat )
@@ -422,7 +422,6 @@ class RiderDetail( wx.Panel ):
 	
 	def setBib( self, bib ):
 		self.bib = str(bib)
-		wx.CallAfter( self.refresh )
 		
 	def deleteRider( self, event=None ):
 		if Utils.MessageOKCancel( self, 'Are you sure you want to delete #' + self.bib + ' ' + self.riderLastName.GetValue() + ', ' + self.riderFirstName.GetValue() + '?', title = 'Confirm delete?', iconMask = wx.ICON_QUESTION):
@@ -450,7 +449,7 @@ class RiderDetail( wx.Panel ):
 					dob = self.riderDOB.GetValue()
 					if dob.IsValid():
 						if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
-							db.riders[bib]['DOB'] = dob.GetTicks()
+							db.riders[bib]['DOB'] = int(dob.GetValue()/1000)
 					db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
 					if 'License' in db.riders[bib]:
 						del db.riders[bib]['License']
@@ -492,9 +491,9 @@ class RiderDetail( wx.Panel ):
 	def refresh( self ):
 		database = Model.database
 		if database is None:
+			self.riderBib.Clear()
 			return
 		bibs = list(map(str, database.getBibs()))
 		bib = self.bib
-		self.riderBib.Clear()
 		self.riderBib.Set( bibs )
 		self.riderBib.SetValue(bib)
