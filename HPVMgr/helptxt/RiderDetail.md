@@ -14,7 +14,7 @@ Bib|The rider's unique bib number.  Edit this field to select a different rider.
 FirstName|The rider's first name.  May contain any UTF-8 character.
 LastName|The rider's lat name.  May contain any UTF-8 character.
 Gender|The rider's gender.  CrossMgr supports 'Open', 'Men' and 'Women'.
-DOB|The rider's date of birth, used to calculate their age.  Optional.
+DOB|The rider's date of birth, used to calculate their age.  Optional.  (Where an age is shown on this screen, it is caluclated using the current system date.)
 NatCode|The rider's nationality as a three-letter IOC code.  Optional.
 License|The rider's license(sic).  This is passed directly to CrossMgr.  Optional.
 Factor|The rider's factor (for para-cycling).  If the use of factors is enabled in [Settings][] this is passed directly to CrossMgr.  Optional.

@@ -29,7 +29,7 @@ class RaceAllocation( wx.Panel ):
 		self.rnd = None
 		self.race = 0
 		self.nrRaces = 0
-		self.colnames = ['Start', 'Bib', 'Name', 'Factor', 'Machine', 'Categories']
+		self.colnames = ['Start', 'Bib', 'Name', 'Age', 'Factor', 'Machine', 'Categories']
 		self.haveTTStartClash = False
 		
 		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
@@ -79,7 +79,7 @@ class RaceAllocation( wx.Panel ):
 		hs.AddStretchSpacer()
 		hs.Add( self.writeSignonButton,  flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
-		self.showDetails = wx.CheckBox( self, label='Show machine/category details' )
+		self.showDetails = wx.CheckBox( self, label='Show extended rider details' )
 		self.showDetails.Bind( wx.EVT_CHECKBOX, self.onShowDetails )
 		hs.Add( self.showDetails, flag=wx.ALIGN_CENTER_VERTICAL )
 
@@ -121,7 +121,9 @@ class RaceAllocation( wx.Panel ):
 		
 	def getGridToolTip( self, grid, row, col ):
 		if not self.showDetails.IsChecked():
-			text = '\"' + grid.GetCellValue(row, self.colnames.index('Machine')) + '\": ' + grid.GetCellValue(row, self.colnames.index('Categories'))
+			text = ''
+			
+			text = grid.GetCellValue(row, self.colnames.index('Age')) + ', ' + grid.GetCellValue(row, self.colnames.index('Factor')) + ', "' + grid.GetCellValue(row, self.colnames.index('Machine')) + '\": ' + grid.GetCellValue(row, self.colnames.index('Categories'))
 			return text
 		else:
 			return None
@@ -676,6 +678,8 @@ class RaceAllocation( wx.Panel ):
 								col += 1
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, database.getRiderName(raceEntryDict['bib']) if database.isRider(raceEntryDict['bib']) else '[DELETED RIDER]' )
 								col += 1
+								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderAge(raceEntryDict['bib'], database.getCurEvtDate() if database.getCurEvtDate() is not None else datetime.datetime.now())) if database.getRiderAge(raceEntryDict['bib']) is not None else '' )
+								col += 1
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellValue(row, col, str(database.getRiderFactor(raceEntryDict['bib'])) if database.getRiderFactor(raceEntryDict['bib']) is not None else '' )
 								getattr(self, 'raceGrid' + str(iRace), None).SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 								col += 1
@@ -717,6 +721,10 @@ class RaceAllocation( wx.Panel ):
 						else:
 							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Start'))
 						if self.showDetails.IsChecked():
+							if database.useAge:
+								getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Age'))
+							else:
+								getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Age'))
 							if database.useFactors:
 								getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Factor'))
 							else:
@@ -724,6 +732,7 @@ class RaceAllocation( wx.Panel ):
 							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Machine'))
 							getattr(self, 'raceGrid' + str(iRace), None).ShowCol(self.colnames.index('Categories'))
 						else:
+							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Age'))
 							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Factor'))
 							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Machine'))
 							getattr(self, 'raceGrid' + str(iRace), None).HideCol(self.colnames.index('Categories'))

@@ -522,7 +522,7 @@ class EventEntry( wx.Panel ):
 							col += 1
 							self.racersGrid.SetCellValue(row, col, Model.Genders[rider['Gender']] if 'Gender' in rider else '')
 							col += 1
-							self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib)) if database.getRiderAge(bib) else '' )
+							self.racersGrid.SetCellValue(row, col, str(database.getRiderAge(bib, database.getCurEvtDate() if database.getCurEvtDate() is not None else datetime.datetime.now()) if database.getRiderAge(bib) else '' ) )
 							self.racersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 							col += 1
 							self.racersGrid.SetCellRenderer(row, col, IOCCodeRenderer() )
