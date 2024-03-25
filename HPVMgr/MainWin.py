@@ -552,7 +552,7 @@ class MainWin( wx.Frame ):
 				if not fn.lower().endswith('.hdb'):
 					fn += '.hdb'
 				if os.path.exists(fn):
-					if not Utils.MessageOKCancel(self.parent, '\n\n'.join( [
+					if not Utils.MessageOKCancel(self, '\n\n'.join( [
 							_("This file already exists:"),
 							'{}',
 							_("Overwrite?")]).format(fn), _("Overwrite Existing File?")):
