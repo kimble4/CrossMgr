@@ -802,6 +802,7 @@ class RaceAllocation( wx.Panel ):
 			self.rnd = database.curRnd
 			self.refreshCurrentSelection()
 			self.chooseRound.Clear()
+			self.nrRaces = 0
 			#number of races
 			if self.season is not None and self.evt is not None:
 				seasonName = database.getSeasonsList()[self.season]
@@ -837,7 +838,7 @@ class RaceAllocation( wx.Panel ):
 					#check for TT start times
 					self.checkRacersNoTTStart()
 			self.refreshRaceTables()
+			self.refreshNumberOfRaces()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
-			self.nrRaces = 0
 		self.Layout()

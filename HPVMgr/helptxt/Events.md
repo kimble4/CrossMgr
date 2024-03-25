@@ -21,7 +21,7 @@ There are three tables at the top of the [Events][] screen, listing **Seasons** 
 
 Click on table items to select a current **Season**, **Event** and **Round**, which will be highlighted in orange and displayed below the tables as the **Current selection**.  This will be used by the [EventEntry][] and [RaceAllocation][] screens.  For convenience, the currently selected **round** may also be changed from the [RaceAllocation][] screen.
 
-Use the right-click context menu to add, remove or rename items in the tables.  Event dates may be also be edited via the context menu option.
+Use the right-click context menu to add, remove, duplicate or rename items in the tables.  Event dates may be also be edited via the context menu option.  (There is no duplicate option for rounds: Create a new round and use the "**Copy Allocation**" button on the [RaceAllocation][] screen instead.)
 
 The "**Edit entries**" and "**Edit races**" buttons take you to the [EventEntry][] and [RaceAllocation][] screens respectively.
 

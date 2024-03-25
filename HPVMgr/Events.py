@@ -3,14 +3,13 @@ import re
 import os
 import sys
 import Utils
-#import ColGrid
 from collections import defaultdict
-#from Undo import undo
 import datetime
 import Model
 import xlsxwriter
 from AddExcelInfo import AddExcelInfo 
 import Version
+import copy
 
 class Events( wx.Panel ):
 	
@@ -320,6 +319,8 @@ class Events( wx.Panel ):
 		if row >= 1 or (row == 0 and len(self.seasonsGrid.GetCellValue(row, 0).strip()) > 0):
 			rename = menu.Append( wx.ID_ANY, 'Rename ' + database.getSeasonsList()[row], 'Rename this season...' )
 			self.Bind( wx.EVT_MENU, lambda event, r=row: self.renameSeason(event, r), rename )
+			duplicate = menu.Append( wx.ID_ANY, 'Duplicate ' + database.getSeasonsList()[row], 'Duplicate this season...' )
+			self.Bind( wx.EVT_MENU, lambda event, r=row: self.duplicateSeason(event, r), duplicate )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + database.getSeasonsList()[row] + ' from list', 'Delete this season...' )
 			self.Bind( wx.EVT_MENU, lambda event, r=row: self.deleteSeason(event, r), delete )
 			
@@ -376,6 +377,25 @@ class Events( wx.Panel ):
 					self.Layout()
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
+			
+	def duplicateSeason( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		try:
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[row]
+				newSeason = 'Copy of ' + seasonName
+				if newSeason not in db.seasons:
+					season = db.seasons[seasonName]
+					db.seasons[newSeason] = copy.deepcopy(season)
+					db.setChanged()
+					Utils.writeLog( 'duplicateSeason: Copied season "' + seasonName + '" to "' + newSeason +'"' )
+					wx.CallAfter( self.refresh )
+				else:
+					Utils.MessageOK( self, 'Season "' + newSeason + '" already exists!', title = 'Season exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+		except Exception as e:
+				Utils.logException( e, sys.exc_info() )
 	
 	def deleteSeason( self, event, row ):
 		database = Model.database
@@ -455,6 +475,8 @@ class Events( wx.Panel ):
 			self.Bind( wx.EVT_MENU, lambda event: self.renameEvent(event, row), rename )
 			changeEventDate = menu.Append( wx.ID_ANY, 'Change ' + evtName + '\'s date', 'Change event date...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.changeEventDate(event, row), changeEventDate )
+			duplicateEvent = menu.Append( wx.ID_ANY, 'Duplicate ' + evtName, 'Duplicate event' )
+			self.Bind( wx.EVT_MENU, lambda event: self.duplicateEvent(event, row), duplicateEvent )
 			delete = menu.Append( wx.ID_ANY, 'Delete ' + evtName + ' from list', 'Delete this event...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteEvent(event, row), delete )
 		try:
@@ -515,7 +537,7 @@ class Events( wx.Panel ):
 							self.editEntryButton.Enable()
 							wx.CallAfter( self.commit )
 						else:
-							Utils.MessageOK( self, 'Event ' + newEvent +' already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+							Utils.MessageOK( self, 'Event "' + newEvent +'" already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
 				self.refreshEventsGrid()
 				self.refreshRoundsGrid()
 				self.refreshCurrentSelection()
@@ -553,7 +575,28 @@ class Events( wx.Panel ):
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
 		
-						
+	def duplicateEvent( self, event, row ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None and self.evt is not None:
+			try:
+				with Model.LockDatabase() as db:
+					seasonName = db.getSeasonsList()[self.season]
+					season = db.seasons[seasonName]
+					evtName = list(season['events'])[row]
+					newEvent = 'Copy of ' + evtName
+					if newEvent not in season['events']:
+						evt = season['events'][evtName]
+						season['events'][newEvent] = copy.deepcopy(evt)
+						db.setChanged()
+						Utils.writeLog( 'duplicateEvent: Copied event in season "' + seasonName + '" from event "' + evtName + '" to "' + newEvent + '"' )
+						wx.CallAfter( self.refresh )
+					else:
+						Utils.MessageOK( self, 'Event "' + newEvent + '" already exists!', title = 'Event exists', iconMask = wx.ICON_INFORMATION, pos = wx.DefaultPosition )
+			except Exception as e:
+					Utils.logException( e, sys.exc_info() )
+					
 	def deleteEvent( self, event, row ):
 		database = Model.database
 		if database is None:
