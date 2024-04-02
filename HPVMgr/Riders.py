@@ -77,11 +77,19 @@ class Riders( wx.Panel ):
 		self.sortBy = 0
 		self.reverseSort = False
 		
+		bigFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
+		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
+		
 		bs = wx.BoxSizer(wx.VERTICAL)
 		
 		self.SetDoubleBuffered( True )
 		self.SetSizer(bs)
 		bs.SetSizeHints(self)
+	
+		self.riderCount = wx.StaticText( self, label='' )
+		self.riderCount.SetFont( bigFont )
+		bs.Add( self.riderCount, 1, wx.GROW|wx.ALL, 5)
 	
 		self.ridersGrid = wx.grid.Grid( self )
 		self.ridersGrid.CreateGrid(0, len(self.colnames))
@@ -210,9 +218,15 @@ class Riders( wx.Panel ):
 		database = Model.database
 		
 		if database is None:
+			self.riderCount.SetLabel('No database')
 			return
 		
-		riders = database.getRiders()
+		#initial forward sort by bib
+		riders = dict(sorted(database.getRiders().items()))
+		
+		self.riderCount.SetLabel(os.path.basename(database.fileName) + ': ' + str(len(riders)) + ' riders available')
+		
+		now = datetime.datetime.now().timestamp()
 		
 		if self.sortBy == 1: # first name
 			lastNameSortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastName'], reverse=self.reverseSort))
@@ -223,13 +237,13 @@ class Riders( wx.Panel ):
 		elif self.sortBy == 3: # Gender
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Gender']) if 'Gender' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 4: # Age
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['DOB']) if 'DOB' in item[1] else 0, reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['DOB']) if 'DOB' in item[1] else now, reverse=self.reverseSort))
 		elif self.sortBy == 5: # Natcode
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['NatCode']) if 'NatCode' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 6: # License
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['License']) if 'License' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 7: # Factor
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: (str(item[1]['Factor'])) if 'Factor' in item[1] else '', reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Factor']) if 'Factor' in item[1] else 1, reverse=self.reverseSort))
 		elif self.sortBy == 8: # Team
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Team']) if 'Team' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 9: # Last entered

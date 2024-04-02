@@ -2,7 +2,7 @@
 
 ## Riders
 
-This displays a list of all riders, which may be sorted by clicking on the column headings.
+This displays a list of all riders in the database, which may be sorted by clicking on the column headings.
 
 Double-click on a rider [to edit their details][RiderDetail].
 
@@ -21,4 +21,4 @@ Nat|The rider's nationality code
 License|The rider's license
 Factor|The rider's Factor
 Team|The team the rider last raced for.
-Last Entered|The date that the rider was last added to an [Event][Events] in HPVMgr, even if they were subsequently removed.  (Not the date of the event itself.)
+Last Entered|The date that the rider was last entered in an [Event][Events] in HPVMgr, even if they were subsequently removed.

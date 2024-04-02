@@ -101,7 +101,7 @@ class EventEntry( wx.Panel ):
 		self.evt = None
 		self.colnames = ['Bib', 'Name', 'Gender', 'Age', 'Nat', 'Factor', 'Machine', 'Categories', 'Team']
 		
-		bigFont =  wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
+		bigFont = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
 		bigFont.SetFractionalPointSize( Utils.getMainWin().defaultFontSize + 4 )
 		bigFont.SetWeight( wx.FONTWEIGHT_BOLD )
 		
