@@ -6,7 +6,9 @@ This displays a list of all riders in the database, which may be sorted by click
 
 Double-click on a rider [to edit their details][RiderDetail].
 
-Right-click to add or delete riders.
+Right-click to add, renumber or delete riders.
+
+When changing a rider's bib number, you will be prompted for whether you want to re-initialise their tag numbers (using the new bib and the [templates][Settings]) or not.  Think carefully when re-numbering existing riders: Do you really want to replace all their number boards and timing tags?  Also note that changing a rider's bib number will not affect existing race allocations.
 
 ## Columns
 

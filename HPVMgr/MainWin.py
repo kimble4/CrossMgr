@@ -168,7 +168,12 @@ class MainWin( wx.Frame ):
 		self.menuAddID = item.GetId()
 		self.Bind(wx.EVT_MENU, self.menuAddRider, item )
 		
+		item = self.editMenu.Append( wx.ID_ANY, _("&Renumber rider...\tCtrl+R"), _("Change rider's bib number...") )
+		self.menuRenumberID = item.GetId()
+		self.Bind(wx.EVT_MENU, self.menuRenumberRider, item )
+		
 		item = self.editMenu.Append( wx.ID_ANY, _('&Delete Rider...\tCtrl+D'), _('Delete a rider...') )
+		self.menuDeleteID = item.GetId()
 		self.Bind( wx.EVT_MENU, self.menuDeleteRider, item )
 		
 		self.editMenuItem = self.menuBar.Append( self.editMenu, _("&Edit") )
@@ -388,6 +393,10 @@ class MainWin( wx.Frame ):
 	@logCall
 	def menuAddRider( self, event ):
 		self.riders.addNewRider( None, None )
+		
+	@logCall
+	def menuRenumberRider( self, event ):
+		self.riders.renumberRider( None, None )
 	
 	@logCall
 	def menuDeleteRider( self, event):

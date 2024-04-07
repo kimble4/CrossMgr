@@ -138,7 +138,6 @@ class Database:
 			bib = startBib
 		else:
 			bib = self.allocateBibsFrom
-		print(bib)
 		while bib in bibs:
 			bib += 1
 		return bib
@@ -207,6 +206,24 @@ class Database:
 				tagsNoInit.append(i)
 		if len(tagsNoInit) > 0:
 			Utils.writeLog('Not initialising ' + ', '.join(['Tag' + str(tag) for tag in tagsNoInit]) + ' for rider #' + str(bib) + ': no Tag Template defined.')
+		self.setChanged()
+		
+	def renumberRider(self, bib, newbib, initTags=False):
+		if newbib in self.riders:
+			Utils.writeLog( 'Tried to change to an existing rider\'s number!' )
+			return
+		if newbib == bib:
+			return
+		self.riders[newbib] = self.riders.pop(bib)
+		if initTags:
+			tagsNoInit = []
+			for i in range(10):
+				try:
+					self.riders[newbib]['Tag' + (str(i) if i > 0 else '')] = self.tagTemplates[i].format(newbib)
+				except KeyError:
+					tagsNoInit.append(i)
+			if len(tagsNoInit) > 0:
+				Utils.writeLog('Not initialising ' + ', '.join(['Tag' + str(tag) for tag in tagsNoInit]) + ' for rider #' + str(newbib) + ': no Tag Template defined.')
 		self.setChanged()
 		
 	def deleteRider( self, bib ):

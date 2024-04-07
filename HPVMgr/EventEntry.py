@@ -93,7 +93,8 @@ class EventEntry( wx.Panel ):
 	
 	numCategories = 18
 	yellowColour = wx.Colour( 255, 255, 0 )
-	OrangeColour = wx.Colour( 255, 165, 0 )
+	orangeColour = wx.Colour( 255, 165, 0 )
+	lightBlueColour = wx.Colour( 153, 205, 255 )
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
@@ -345,7 +346,7 @@ class EventEntry( wx.Panel ):
 			if self.racersGrid.GetCellValue(row, 0) == bibStr:
 				bibRow = row
 				for col in range(self.racersGrid.GetNumberCols()):
-					self.racersGrid.SetCellBackgroundColour(row, col, self.OrangeColour)
+					self.racersGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			else:
 				for col in range(self.racersGrid.GetNumberCols()):
 					self.racersGrid.SetCellBackgroundColour(row, col, wx.WHITE)
@@ -546,7 +547,7 @@ class EventEntry( wx.Panel ):
 						col += 1
 						if rider is None:
 							for c in range(col):
-								self.racersGrid.SetCellBackgroundColour(row, c, self.yellowColour)
+								self.racersGrid.SetCellBackgroundColour(row, c, self.lightBlueColour)
 				if database.useFactors:
 					self.racersGrid.ShowCol(5)
 				else:

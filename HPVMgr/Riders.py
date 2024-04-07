@@ -159,6 +159,8 @@ class Riders( wx.Panel ):
 				self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, bib+1), ada )
 			de = menu.Append( wx.ID_ANY, 'Delete rider', 'Delete this rider...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.deleteRider(event, bib), de )
+			rn = menu.Append( wx.ID_ANY, 'Change bib', 'Renumber this rider...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.renumberRider(event, bib), rn )
 			add = menu.Append( wx.ID_ANY, 'Add new rider', 'Add a new rider...' )
 			self.Bind( wx.EVT_MENU, lambda event: self.addNewRider(event, None), add )
 		try:
@@ -183,6 +185,32 @@ class Riders( wx.Panel ):
 			wx.CallAfter( self.refresh )
 		else:
 			Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' already exists!', title='Failed to add rider')
+			
+	def renumberRider( self, event, bib):
+		database = Model.database
+		if database is None:
+			return
+		if bib is None:
+			with wx.NumberEntryDialog(self, 'Enter bib for rider to renumber:', 'Bib#:', 'Change bib', 0, 1, 65535) as dlg:
+				if dlg.ShowModal() == wx.ID_OK:
+					bib = dlg.GetValue()
+				else:
+					return
+		newbib = database.getNextUnusedBib()
+		with wx.NumberEntryDialog(self, 'Enter new number for #' + str(bib) + ' ' + database.getRiderName(bib, True) + ':', 'Bib#:', 'Change bib', newbib, 1, 65535) as dlg:
+			if dlg.ShowModal() == wx.ID_OK:
+				newbib = dlg.GetValue()
+				if not database.isRider( newbib ):
+					with Model.LockDatabase() as db:
+						if Utils.MessageYesNo( self, 'Do you want to re-initialise ' + database.getRiderName(bib, True) + '\'s timing tags to match bib #' + str(newbib) + '?'  , title = 'Re-initialise tags?', iconMask = wx.ICON_QUESTION):
+							db.renumberRider(bib, newbib, initTags=True)
+						else:
+							db.renumberRider(bib, newbib)
+						wx.CallAfter( self.refresh )
+				elif newbib == bib:
+					Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' bib unchanged.', title='Did not change bib')
+				else:
+					Utils.MessageOK( self, 'Rider #' + str(newbib) + ' is ' + database.getRiderName(newbib, True) + '!', title='Failed to change bib')
 		
 	def deleteRider( self, event, bib ):
 		database = Model.database

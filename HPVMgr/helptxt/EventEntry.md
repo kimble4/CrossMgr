@@ -4,7 +4,7 @@
 
 This screen allows you to add riders to the currently selected [Event][Events], which will be shown at the top of the screen.
 
-The table lists the currently entered racers.
+The table lists the currently entered racers.  If a racer does not exist in the [Riders][] database, their race entry will be preserved but they will not be included in the sign-on sheet.  Such entries will be highlighted in **blue**.
 
 To add a racer to the event:
 
@@ -18,6 +18,7 @@ To add a racer to the event:
 * The "**Enter/Update racer**" button will update the selected racer's Machine/Team/Categories details.
 * The "**Delete racer**" button deletes the selected racer.
 * If you need to edit a racer's **Name**, **Gender**, **Age** or **Nationality**, make the relevant changes using the [RiderDetail][] screen.  (Note that riders' ages on this screen are calculated using the [Event][Events] date, if it is set.)
+
 * All racers can be deleted at once using the option in the right-click context menu.
 
 Adding and deleting racers manipulates the in-memory database directly.  There is no '**Commit**' button.
