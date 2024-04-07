@@ -168,6 +168,9 @@ class RaceAllocation( wx.Panel ):
 					rnd = evt['rounds'][rndName]
 					rnd['useStartTimes'] = self.useStartTimes.IsChecked()
 					db.setChanged()
+					if not self.useStartTimes.IsChecked():
+						if not Utils.MessageYesNo( self, 'Do you want to preserve the allocated start times in the database?', title = 'Keep start times', iconMask = wx.ICON_QUESTION):
+							self.allocateStartTimes( self, clearStartTimes=True )
 				self.refreshRaceTables()
 				if self.useStartTimes.IsChecked() and self.nrRaces > 1:
 					Utils.MessageOK(self, 'Round "' + rndName + '" has more than one race.\nThis is allowed, but is probably not what you want for a time trial.', title='TT has more than one race')
@@ -202,9 +205,9 @@ class RaceAllocation( wx.Panel ):
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerCategories(event, bib, iRace), editCategories )
 		editTags = menu.Append( wx.ID_ANY, 'Change tags', 'Change tags for this race only...' )
 		self.Bind( wx.EVT_MENU, lambda event: self.editRacerTags(event, bib, iRace), editTags )
-		reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times' if self.useStartTimes.IsChecked() else 'Delete all TT start times'
-								  , 'Reallocate the Time Trial start times...' if self.useStartTimes.IsChecked() else 'Delete the Time Trial start times...' )
-		self.Bind( wx.EVT_MENU, lambda event: self.allocateStartTimes(event, clearStartTimes = not self.useStartTimes.IsChecked()), reallocateTTStart )
+		if self.useStartTimes.IsChecked():
+			reallocateTTStart = menu.Append( wx.ID_ANY, 'Reallocate all TT start times', 'Reallocate the Time Trial start times...' )
+			self.Bind( wx.EVT_MENU, lambda event: self.allocateStartTimes(event), reallocateTTStart )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
