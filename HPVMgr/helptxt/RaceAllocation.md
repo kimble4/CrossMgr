@@ -8,7 +8,7 @@ The currently selected **Round** can be changed at the top of the screen.  To ch
 
 To allocate racers to races:
 
-1. Set the "**Number of races in this round**" field to the appropriate number, and press Enter.  Setting this to zero (the default) will de-allocate all racers and prevent the round being added to the sign-on sheet.  This may prove useful to somebody some day perhaps, in a somewhat bizarre set of circumstances.
+1. Set the "**Number of races in this round**" drop-down to the appropriate number, and press Enter.  Setting this to zero (the default) will de-allocate all racers and prevent the round being added to the sign-on sheet.  This may prove useful to somebody some day perhaps, in a somewhat bizarre set of circumstances.
 1. A warning that current allocations will be lost if you change the number of rounds will appear.  Click OK.
 1. All **unallocated racers** will initially be added to **Race 1** and highlighted in **yellow**.
 1. You can move racers between races by using the options in the right-click context menu.

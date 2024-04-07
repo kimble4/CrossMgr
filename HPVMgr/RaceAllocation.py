@@ -61,10 +61,11 @@ class RaceAllocation( wx.Panel ):
 		
 		hs.Add( wx.StaticText( self, label='Races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )
 		
-		self.numberOfRaces = intctrl.IntCtrl( self, value=self.nrRaces, name='Number of races', min=0, max=RaceAllocation.maxRaces, limited=1, allow_none=1, style=wx.TE_PROCESS_ENTER )
-		self.numberOfRaces.Bind( wx.EVT_TEXT_ENTER, self.onChangeNumberOfRaces )
+		self.numberOfRaces = wx.Choice(self, choices=[str(x) for x in range(0,6)], name='Races in this round')
+		self.numberOfRaces.Bind( wx.EVT_CHOICE, self.onChangeNumberOfRaces )
 		hs.Add( self.numberOfRaces, flag=wx.ALIGN_CENTER_VERTICAL )
 		
+		hs.AddStretchSpacer()
 		self.useStartTimes = wx.CheckBox( self, label='TT start times' )
 		self.useStartTimes.Bind( wx.EVT_CHECKBOX, self.onToggleStartTimes )
 		hs.Add( self.useStartTimes, flag=wx.ALIGN_CENTER_VERTICAL )
@@ -441,11 +442,11 @@ class RaceAllocation( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		if self.numberOfRaces.GetValue() != self.nrRaces:
+		if self.numberOfRaces.GetCurrentSelection() != self.nrRaces:
 			if not Utils.MessageOKCancel( self, 'Are you sure you want to change the number of races?\nExisting race allocations will be lost!', title='Change number of races', iconMask=wx.ICON_QUESTION):
-				self.numberOfRaces.SetValue(self.nrRaces)
+				self.numberOfRaces.SetSelection(self.nrRaces)
 				return
-			self.nrRaces = self.numberOfRaces.GetValue()
+			self.nrRaces = self.numberOfRaces.GetCurrentSelection()
 			if self.season is not None and self.evt is not None and self.rnd is not None:
 				try:
 					with Model.LockDatabase() as db:
@@ -514,13 +515,14 @@ class RaceAllocation( wx.Panel ):
 								race.remove(raceEntryDict)
 						iRace += 1
 					db.setChanged()
-				# now add the unallocated racers to the first race
+				# now add the unallocated racers to the (left of) middle race
 				if len(self.unallocatedBibs) > 0:
 					if 'races' in rnd:
 						if len(rnd['races']) > 0:
-							race = rnd['races'][0] # first race
+							allocateTo = int(len(rnd['races'])/2 - 0.5)
+							race = rnd['races'][allocateTo]
 							for bib in self.unallocatedBibs:
-								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race 1.' )
+								Utils.writeLog( 'addUnallocatedRiders: #' + str(bib) + ' "' + database.getRiderName(bib, True) + '" in event "' + evtName + '" but not in any race, allocating them to race ' + str(allocateTo + 1) + '.' )
 								raceEntryDict = {'bib': bib}
 								race.append(raceEntryDict)
 							db.setChanged()
@@ -751,7 +753,7 @@ class RaceAllocation( wx.Panel ):
 			self.totalRacers.SetLabel('')
 		
 	def refreshNumberOfRaces( self ):
-		self.numberOfRaces.SetValue(self.nrRaces)
+		self.numberOfRaces.SetSelection(self.nrRaces)
 		for i in range(self.nrRaces):
 			getattr(self, 'raceGrid' + str(i), None).Show()
 			getattr(self, 'raceGridTitle' + str(i), None).Show()
@@ -830,7 +832,7 @@ class RaceAllocation( wx.Panel ):
 					rnd = evt['rounds'][rndName]
 					self.useStartTimes.SetValue( rnd['useStartTimes'] if 'useStartTimes' in rnd else False )
 					self.nrRaces = len(rnd['races']) if 'races' in rnd else 0
-					self.numberOfRaces.ChangeValue(self.nrRaces)
+					self.numberOfRaces.SetSelection(self.nrRaces)
 					self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
 					self.refreshNumberOfRaces()
 					#process unallocated/missing Riders
