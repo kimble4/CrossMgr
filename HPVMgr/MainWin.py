@@ -39,7 +39,7 @@ from RaceAllocation		import RaceAllocation
 from Impinj				import Impinj
 from Settings			import Settings
 import Model
-
+import SeedAllocationFromResults
 
 now = datetime.datetime.now
 
@@ -225,6 +225,9 @@ class MainWin( wx.Frame ):
 		self.writeSignonMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("Write Sign-on-shee&t...\tCtrl+T"), _("Write the CrossMgr sign-on sheet for current event") )
 		self.Bind(wx.EVT_MENU, self.menuWriteSignon, self.writeSignonMenuItem )
 		
+		self.seedAllocationMenuItem = self.toolsMenu.Append( wx.ID_ANY, _("Seed race allocation from res&ults sheet...\tCtrl+U"), _("Seed the current race allocation using a results spreadsheet") )
+		self.Bind(wx.EVT_MENU, self.menuSeedAllocation, self.seedAllocationMenuItem )
+		
 		self.toolsMenu.AppendSeparator()
 
 		item = self.toolsMenu.Append( wx.ID_ANY, _("Copy &Log File to Clipboard...\tCtrl+L"), _("Copy Log File to Clipboard") )
@@ -309,82 +312,28 @@ class MainWin( wx.Frame ):
 	def menuRedo( self, event ):
 		undo.doRedo()
 		self.refresh()
-		
-	
-	@logCall
-	def menuRestartRace( self, event ):
-		race = Model.race
-		if not race:
-			return
-		if race.isUnstarted():
-			Utils.MessageOK( self, _('Cannot restart an Unstarted Race.'), _('Race Not Restarted') )
-			return
-		if race.isRunning():
-			Utils.MessageOK( self, _('Race is already running.'), _('Race Not Restarted') )
-			return
-		
-		if not Utils.MessageOKCancel(
-				self,
-				'{}'.format(_('Restart the Race Now?'),
-				),
-					_('Restart race')
-				):
-				return
-		with Model.LockRace() as race:
-			race.resumeRaceNow()
-			Model.resetCache()
-			self.startRaceMenuItem.Enable(False)
-			self.resumeRaceMenuItem.Enable(False)
-			self.finishRaceMenuItem.Enable(True)
-			
-		
-		self.writeRace()
-		self.refresh()
-		
-		# For safety, clear the undo stack after 8 seconds.
-		undoResetTimer = wx.CallLater( 8000, undo.clear )
-		
-	def menuPlaySounds( self, event ):
-		self.playSounds = self.menuItemPlaySounds.IsChecked()
-		self.config.WriteBool( 'playSounds', self.playSounds )
-		
-	def menuLaunchExcelAfterPublishingResults( self, event ):
-		self.launchExcelAfterPublishingResults = self.menuItemLaunchExcelAfterPublishingResults.IsChecked()
-		self.config.WriteBool( 'launchExcelAfterPublishingResults', self.launchExcelAfterPublishingResults )
-			
-	
-	def menuSetContactEmail( self, event = None ):
-		if Model.race and Model.race.email:
-			email = Model.race.email
-		else:
-			email = self.config.Read( 'email', 'results_name@results_address' )
-		with wx.TextEntryDialog( self, message=_('Results Contact Email'), caption=_('Results Contact Email'), value=email ) as dlg:
-			if dlg.ShowModal() != wx.ID_OK:
-				return
-			value = dlg.GetValue()
-			if Model.race:
-				Model.race.email = value
-				Model.race.setChanged()
-	
-	def menuSetGraphic( self, event ):
-		imgPath = self.getGraphicFName()
-		with SetGraphicDialog( self, graphic = imgPath ) as dlg:
-			if dlg.ShowModal() != wx.ID_OK:
-				return
-			imgPath = dlg.GetValue()
-			self.config.Write( 'graphic', imgPath )
-			self.config.Flush()
-			if Model.race:
-				try:
-					Model.race.headerImage = ImageIO.toBufFromFile( imgPath )
-				except Exception as e:
-					print(e)
 	
 	#--------------------------------------------------------------------------------------------
 	
 	@logCall
 	def menuWriteSignon( self, event ):
 		self.events.writeSignonSheet()
+		
+	@logCall
+	def menuSeedAllocation( self, event ):
+		database = Model.database
+		if database is None:
+			Utils.MessageOK(self, _("You must have a valid database."), _("No Database"), iconMask=wx.ICON_ERROR)
+			return
+		try:
+			self.showRaceAllocationPage()
+			with Model.LockDatabase() as db:
+				wiz = SeedAllocationFromResults.GetAllocation( self, db )
+				wiz.show()
+		except TypeError:
+			#wizard has been cancelled
+			pass
+		self.refresh()
 		
 	@logCall
 	def menuCommit( self, event ):

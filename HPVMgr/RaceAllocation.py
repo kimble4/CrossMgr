@@ -49,6 +49,7 @@ class RaceAllocation( wx.Panel ):
 		hs.Add( self.currentSelection, flag=wx.ALIGN_CENTRE )
 		self.chooseRound = wx.Choice( self, choices=[], name='Select round' )
 		self.chooseRound.SetFont( bigFont )
+		self.chooseRound.Bind( wx.EVT_CHOICE, self.onChooseRound )
 		hs.Add( self.chooseRound, flag=wx.ALIGN_CENTER_VERTICAL )
 		self.totalRacers = wx.StaticText( self, label='' )
 		self.totalRacers.SetFont( bigFont )
@@ -56,9 +57,6 @@ class RaceAllocation( wx.Panel ):
 		vs.Add( hs, flag=wx.ALIGN_CENTRE )
 		
 		hs = wx.BoxSizer( wx.HORIZONTAL )
-		
-		self.chooseRound.Bind( wx.EVT_CHOICE, self.onChooseRound )
-		
 		hs.Add( wx.StaticText( self, label='Races in this round:' ), flag=wx.ALIGN_CENTER_VERTICAL )
 		
 		self.numberOfRaces = wx.Choice(self, choices=[str(x) for x in range(0,6)], name='Races in this round')
