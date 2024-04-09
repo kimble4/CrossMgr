@@ -238,6 +238,23 @@ class UseResultsPage(adv.WizardPageSimple):
 		self.rankedFound.SetLabel('Ranked ' + str(len(self.ranking)) + ' riders:\n' + outString[:-1])
 		
 		self.Layout()
+		
+	def setInfo( self, database ):
+		if database is None:
+			return
+		selection = []
+		title = 'No round selected'
+		seasonName = database.getSeasonsList()[database.curSeason]
+		selection.append( seasonName )
+		season = database.seasons[seasonName]
+		evtName = list(season['events'])[database.curEvt]
+		selection.append( evtName )
+		evt = season['events'][evtName]
+		rndName = list(evt['rounds'])[database.curRnd]
+		selection.append( rndName )
+		title = ', '.join(n for n in selection) + '{: (%Y-%m-%d) }'.format(database.getCurEvtDate()) if database.getCurEvtDate() is not None else ''
+		self.currentSelection.SetLabel( title )
+		self.refresh()
 	
 	def getRanking( self ):
 		return [n[1] for n in self.ranking]
@@ -245,6 +262,7 @@ class UseResultsPage(adv.WizardPageSimple):
 class SummaryPage(adv.WizardPageSimple):
 	def __init__(self, parent):
 		super().__init__(parent)
+		self.sheetRanking = []
 		self.ranking = []
 		self.nrRaces = 0
 		border = 4
@@ -274,7 +292,8 @@ class SummaryPage(adv.WizardPageSimple):
 		
 		vbs.AddStretchSpacer()
 		
-		vbs.Add( wx.StaticText( self, label='Racers in the spreadsheet who are not entered in the current race will be ignored.') )
+		self.ignoredRiders = wx.StaticText( self, label='Racers in the spreadsheet who are not entered in the current race will be ignored.' )
+		vbs.Add( self.ignoredRiders )
 		
 		self.SetSizer(vbs)
 		
@@ -300,16 +319,42 @@ class SummaryPage(adv.WizardPageSimple):
 		selection.append( rndName )
 		title = ', '.join(n for n in selection) + '{: (%Y-%m-%d) }'.format(database.getCurEvtDate()) if database.getCurEvtDate() is not None else ''
 		self.currentSelection.SetLabel( title )
+		self.evtBibs = []
+		if database.curSeason is not None and database.curEvt is not None:
+			seasonName = database.getSeasonsList()[database.curSeason]
+			season = database.seasons[seasonName]
+			evtName = list(season['events'])[database.curEvt]
+			evt = season['events'][evtName]
+			if 'racers' in evt:
+				for bibMachineCategoriesTeam in evt['racers']:
+					self.evtBibs.append(bibMachineCategoriesTeam[0])
+			print(self.evtBibs)
 		self.refresh()
 		
 	def setRanking( self, ranking ):
-		self.ranking = ranking
+		self.sheetRanking = ranking
+		self.refresh()
+		
+	def getRanking( self ):
+		return self.ranking
 		
 	def refresh( self, event=None):
+		ignoredRacers = []
+		self.ranking = []
+		for bib in self.sheetRanking:
+			if bib in self.evtBibs:
+				self.ranking.append(bib)
+			else:
+				ignoredRacers.append(bib)
+		missingRacers = []
+		for bib in self.evtBibs:
+			if bib not in self.ranking:
+				missingRacers.append(bib)
 		if self.nrRaces > 0:
 			self.numberOfRiders.SetLabel('Of approximately ' + str(int(len(self.ranking)/self.nrRaces)) + ' racers')
 		else:
 			self.numberOfRiders.SetLabel('')
+		self.ignoredRiders.SetLabel(str(len(ignoredRacers)) + ' racers in the spreadsheet who are not entered in the current race will be ignored.\n' + str(len(missingRacers)) + ' racers in the current race but not in the spreadsheet will not be seeded.')
 		
 		
 class GetAllocation:
@@ -388,7 +433,7 @@ class GetAllocation:
 			if self.database is None:
 				return
 			nrRaces = self.summaryPage.getNumberOfRaces()
-			ranking = self.useResultsPage.getRanking()
+			ranking = self.summaryPage.getRanking()
 			ranking.reverse() #start with the slower riders
 			allocations = numpy.array_split(ranking, nrRaces) if nrRaces > 0 else [] #handle 0 races case gracefully by clearing the allocations
 			if self.database.curSeason is not None and self.database.curEvt is not None and self.database.curRnd is not None:
