@@ -168,6 +168,18 @@ function RaceClock( aCanvas ) {
 				drawText(dc, "Waiting...", '#FFFFFF', 0, height/2, width, height/2, "sans-serif");
 			}
 		}
+		var networkStatus = "Disconnected! ";
+		var statusColour = '#FF0000';
+		if (websocket && websocket.readyState === websocket.OPEN) {
+			networkStatus = "            🖧 ";
+			statusColour = '#00FF00';
+		} else if (websocket && websocket.readyState === websocket.CONNECTING) {
+			networkStatus = "Connecting...";
+			statusColour = '#FF8800';
+		} else if (websocket && websocket.readyState === websocket.CLOSING) {
+			networkStatus = "Disconnecting...";
+		}
+		drawText(dc, networkStatus, statusColour, width-width/6, height-height/6, width/6, height/6, "sans-serif");
 	}
 }
 
