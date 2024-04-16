@@ -275,7 +275,7 @@ class Riders( wx.Panel ):
 		elif self.sortBy == 8: # Team
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Team']) if 'Team' in item[1] else '', reverse=self.reverseSort))
 		elif self.sortBy == 9: # Last entered
-			sortedRiders = dict(sorted(riders.items(), key=lambda item: item[1]['LastEntered'], reverse=self.reverseSort))
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['LastEntered']) if 'LastEntered' in item[1] else 0, reverse=self.reverseSort))
 		else: #default (bib)
 			sortedRiders = dict(sorted(riders.items(), reverse=self.reverseSort))
 		
@@ -309,7 +309,7 @@ class Riders( wx.Panel ):
 			self.ridersGrid.SetCellValue(row, col, rider['Team'] if 'Team' in rider else '')
 			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTRE)
 			col+=1
-			if rider['LastEntered']:
+			if 'LastEntered' in rider and rider['LastEntered']:
 				dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered']))
 				self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
 			else:

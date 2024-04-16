@@ -881,7 +881,7 @@ class Events( wx.Panel ):
 		if self.season is not None:
 			seasonName = database.getSeasonsList()[self.season]
 			season = database.seasons[seasonName]
-			if self.evt is not None:
+			if self.evt is not None and 'events' in season:
 				evtName = list(season['events'])[self.evt]
 				self.roundsGrid.SetColLabelValue(0, evtName + '\'s rounds')
 				evt = season['events'][evtName]
@@ -918,7 +918,7 @@ class Events( wx.Panel ):
 				seasonName = database.getSeasonsList()[self.season]
 				selection.append( seasonName )
 				season = database.seasons[seasonName]
-				if self.evt is not None:
+				if self.evt is not None and 'events' in season:
 					evtName = list(season['events'])[self.evt]
 					selection.append( evtName )
 					evt = season['events'][evtName]

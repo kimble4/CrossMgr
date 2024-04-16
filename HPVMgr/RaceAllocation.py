@@ -824,22 +824,23 @@ class RaceAllocation( wx.Panel ):
 					self.writeSignonButton.Disable()
 					self.writeSignonButton.SetToolTip( wx.ToolTip('Sign-on sheet filename is not set!'))
 				#update round choice
-				rounds = list(evt['rounds'])
-				self.chooseRound.AppendItems( rounds  )
-				self.chooseRound.SetSelection(self.rnd if self.rnd is not None else wx.NOT_FOUND)
-				if self.rnd is not None:
-					#update tables
-					rndName = list(evt['rounds'])[self.rnd]
-					rnd = evt['rounds'][rndName]
-					self.useStartTimes.SetValue( rnd['useStartTimes'] if 'useStartTimes' in rnd else False )
-					self.nrRaces = len(rnd['races']) if 'races' in rnd else 0
-					self.numberOfRaces.SetSelection(self.nrRaces)
-					self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
-					self.refreshNumberOfRaces()
-					#process unallocated/missing Riders
-					self.addUnallocatedRiders()
-					#check for TT start times
-					self.checkRacersNoTTStart()
+				if 'rounds' in evt:
+					rounds = list(evt['rounds'])
+					self.chooseRound.AppendItems( rounds  )
+					self.chooseRound.SetSelection(self.rnd if self.rnd is not None else wx.NOT_FOUND)
+					if self.rnd is not None:
+						#update tables
+						rndName = list(evt['rounds'])[self.rnd]
+						rnd = evt['rounds'][rndName]
+						self.useStartTimes.SetValue( rnd['useStartTimes'] if 'useStartTimes' in rnd else False )
+						self.nrRaces = len(rnd['races']) if 'races' in rnd else 0
+						self.numberOfRaces.SetSelection(self.nrRaces)
+						self.showDetails.SetValue( config.ReadBool('raceAllocationShowDetails') )
+						self.refreshNumberOfRaces()
+						#process unallocated/missing Riders
+						self.addUnallocatedRiders()
+						#check for TT start times
+						self.checkRacersNoTTStart()
 			self.refreshRaceTables()
 			self.refreshNumberOfRaces()
 		except Exception as e:
