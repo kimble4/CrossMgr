@@ -126,6 +126,16 @@ class Database:
 			return True
 		else:
 			return False
+			
+	@memoize
+	def duplicateRiderNames( self, firstName, lastName ):
+		dups = []
+		for bib in self.riders:
+			rider = self.riders[bib]
+			if 'FirstName' in rider and rider['FirstName'] == firstName:
+				if 'LastName' in rider and rider['LastName'] == lastName:
+					dups.append(bib)
+		return dups
 	
 	@memoize
 	def getBibs( self ):

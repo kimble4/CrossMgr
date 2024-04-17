@@ -476,9 +476,17 @@ class RiderDetail( wx.Panel ):
 					self.onEdited( warn=False )
 			else:
 				if Utils.MessageOKCancel( self, 'Rider #' + self.bib + ' does not exist, do you want to add them?', title = 'Add new rider?', iconMask = wx.ICON_QUESTION):
+					firstName = self.riderFirstName.GetValue()
+					lastName = self.riderLastName.GetValue()
+					dupBibs = database.duplicateRiderNames(firstName, lastName)
+					if len(dupBibs) > 0: #Check for potential duplicates
+						Utils.writeLog('Rider name "' + firstName + ' ' + lastName + '" is duplicate!')
+						if not Utils.MessageOKCancel( self, 'Rider "' + firstName + ' ' + lastName + '" already exists with bib ' + ','.join('#' + str(b) for b in dupBibs) + ',  do you want to continue adding them as #' + self.bib + '?', title = 'Add new rider?', iconMask = wx.ICON_QUESTION):
+							self.bib=''
+							return
 					with Model.LockDatabase() as db:
 						db.addRider(bib, firstName=self.riderFirstName.GetValue() if self.riderFirstName.GetValue() else None, lastName=self.riderLastName.GetValue() if self.riderLastName.GetValue() else None, gender=self.riderGender.GetSelection())
-					wx.CallAfter( self.refresh )
+						wx.CallAfter( self.refresh )
 				else:
 					self.bib=''
 		except ValueError:  # invalid int
