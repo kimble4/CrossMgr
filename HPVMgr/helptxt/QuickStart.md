@@ -19,6 +19,7 @@ We do not fully automate the sign-on process, as it is felt that BHPC members ma
 
 1. Switch to the [Events][] screen, and select the relevant **Season**.
 1. Right-click on the Events list and select "**Add new event**" from the context menu.  Enter a name for the event (eg. "`Hillingdon1`").
+1. Right-click on the event and select "**Change [event]'s date**" to set the date of the event.  This will be used for *last entered* dates and calcuating racers' ages.
 1. With the new **Event** selected, right-click on the **Rounds** list and select "**Add new round**" from the context menu.  Enter a name for the new round (eg. "`30min+1lap ACW`").
 1. Repeat the above step until you have entered all the Rounds for the Event.
 1. Enter a file name for the Sign-on sheet.  This is usually in the directory where the CrossMgr data files for the event will be kept.

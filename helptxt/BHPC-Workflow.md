@@ -8,11 +8,12 @@ This is intended to be a step-by-step guide to timing a BHPC event.  If you are 
 
 ## File structure conventions
 
-At the time of writing, race data on the timing laptop is kept in "`C:\Users\BHPC\Documents\BHPC Racing\`".  Each racing season (year) will have its own directory, with sub-directories named `CrossMgr`, `Photos` and `SeriesMgr`.  Each of these will have sub-directories for each event (day of racing).
+At the time of writing, race data on the timing laptop is kept in "`C:\Users\BHPC\Documents\BHPC Racing\`".  Each racing season (year) will have its own directory, with sub-directories named `CrossMgr`, `HPVMgr`, `Photos` and `SeriesMgr`.  Most of these will have sub-directories for each event (day of racing).
 
 Directory|Used for...
 :---|:------
 `CrossMgr`|Files pertaining to organising and timing races.  This includes sign-on spreadsheets, race files, and generated results.  This is also a reasonable place to keep things like running order posters and any supplementary data such as GPX files, raw impinj logs and any media files that pertain to timing the race (eg. if you've videoed a finish, or scanned a handwritten results sheet).
+`HPVMgr`|The HPVMgr database and backup files.
 `Photos`|Published finish-line photos from CrossMgrVideo.
 `SeriesMgr`|This for SeriesMgr data and generated points tables.
 
@@ -37,6 +38,7 @@ Assuming that the **Season** and **Categories** have already been created (see t
 1. **Open HPVMgr** and ensure the correct rider database is loaded.
 1. Switch to the **Events** screen, and select the relevant **Season**.
 1. Right-click on the Events list and select "**Add new event**" from the context menu.  Enter a name for the event (eg. "`Hillingdon1`").
+1. Right-click on the event and select "**Change [event]'s date**" to set the date of the event.
 1. With the new **Event** selected, right-click on the **Rounds** list and select "**Add new round**" from the context menu.  Enter a name for the new round (eg. "`30min+1lap ACW`").
 1. Repeat the above step until you have entered all the Rounds for the Event.
 1. Enter a file name for the Sign-on sheet.  For example, "`C:\Users\BHPC\Documents\BHPC Racing\$year\CrossMgr\07 Darley Moor\racers_darley_moor.xlsx`"
@@ -222,6 +224,8 @@ A mass-start race where all racers ride the same number of laps.  Riders will ha
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
+* Ensure that the **Lapped riders continue** setting on the [Categories][] screen is set correctly.  (See below)
+
 #### D) *n*-lap Time Trial
 
 A time trial is where riders start individually one after another, and compete against the clock.
@@ -303,6 +307,7 @@ These are timed using the dedicated SprintTimer application, rather than CrossMg
 1. Check that the category **genders** are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.
 1. **Start Offset** should be zero for all categories.
 1. If this is a *time trial*, *fixed laps* or *best of n laps* race, ensure the correct values are entered in the **Race Laps** and **Best Laps** columns for each category.  (For example, for a "best of three" round, set **Race Laps** to `3` and **Best Laps** to `1`.)  Otherwise, ensure these columns are empty.
+1. **Lapped riders continue** should be set for criterium and fixed-duration races.  For a fixed number of laps, it should be unset.
 1. Ensure the **Race Minutes** column is empty for all categories; the global setting in [General Info][] will be used instead.
 1. **Publish** should be enabled for all categories.  **Series** should be enabled for all except the Start Wave.  (**Upload** is for results formats we do not use, so it does not matter whether it is enabled.)
 1. When you are satisfied, Click **Commit** to save changes.
