@@ -477,6 +477,7 @@ class MainWin( wx.Frame ):
 							with gzip.open(backupFileName, "wt", encoding='UTF-8') as outfile:
 								outfile.write(db.getDatabaseAsJSON())
 								db.setChanged( False )
+				
 			except Exception as e:
 				Utils.logException( e, sys.exc_info() )
 				self.refreshAll()

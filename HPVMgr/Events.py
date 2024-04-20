@@ -186,6 +186,7 @@ class Events( wx.Panel ):
 		
 		#signon filename
 		self.signonFileName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_RIGHT, size=(600,-1))
+		self.signonFileName.SetToolTip( wx.ToolTip('Path to write the sign-on sheet (relative to the database file)') )
 		self.signonFileName.SetValue( '' )
 		self.signonFileName.Disable()
 		self.signonFileName.Bind( wx.EVT_TEXT_ENTER, self.onEditSignon )
@@ -246,6 +247,17 @@ class Events( wx.Panel ):
 				evt = season['events'][evtName]
 				if 'signonFileName' in evt:
 					xlFName = evt['signonFileName']
+					if not os.path.isabs(xlFName): 
+						xlFName = os.path.normpath( os.path.join( os.path.dirname(database.fileName), xlFName) )  #signon sheet path is relative to database file
+					if not os.path.isdir(os.path.dirname(xlFName)):
+						Utils.MessageOK(self,
+										'{}\n"{}"\n\n{}\n{}'.format(
+											_('Cannot write'), xlFName,
+											_('Destination directory does not exist!'),
+											_('Check the sign-on sheet path.')
+										),
+										_('Cannot write sign-on sheet'), iconMask=wx.ICON_ERROR )
+						return
 					if xlFName and 'rounds' in evt:
 						wb = xlsxwriter.Workbook( xlFName )
 						formats = Events.getExcelFormatsXLSX( wb )
@@ -783,7 +795,7 @@ class Events( wx.Panel ):
 							wildcard=_("CrossMgr sign-on sheet (*.xlsx)|*.xlsx"),
 							style=wx.FD_SAVE ) as dlg:
 			if dlg.ShowModal() == wx.ID_OK:
-				fn = dlg.GetPath()
+				fn = os.path.relpath(os.path.abspath(dlg.GetPath()), start=os.path.dirname(os.path.abspath(database.fileName)) ) #sign-on sheet path is relative to database file
 				self.signonFileName.SetValue( fn )
 				if self.season is not None and self.evt is not None:
 					with Model.LockDatabase() as db:
@@ -802,8 +814,14 @@ class Events( wx.Panel ):
 			return
 		fn = self.signonFileName.GetValue()
 		if fn.endswith('.xlsx'):
-			dirName = os.path.dirname( fn )
-			fileName = os.path.basename( fn )
+			if not os.path.isdir(os.path.dirname(fn)):
+				Utils.MessageOK(self, 'Sign-on sheet destination directory\n"' + os.path.abspath(os.path.dirname(fn)) + '"\ndoes not exist!\nCheck the path has been entered correctly.', 'Invalid path', iconMask=wx.ICON_ERROR )
+				wx.CallAfter( self.updateSignonSheetName )
+				return
+			if os.path.isabs(fn):
+				fn = os.path.relpath(fn, start=os.path.dirname(os.path.abspath(database.fileName)) ) #sign-on sheet path is relative to database file
+				Utils.writeLog('Absolute sign-on sheet filename converted to: "' + fn + '" (relative to database file "' + database.fileName + '")')
+				self.signonFileName.ChangeValue(fn)
 		else:
 			Utils.MessageOK( self, 'Sign-on sheet should be an .xlsx file!', title = 'Incorrect filetype', iconMask = wx.ICON_ERROR )
 			return
@@ -812,7 +830,7 @@ class Events( wx.Panel ):
 				seasonName = db.getSeasonsList()[self.season]
 				season = db.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
-				evt = season['event'][evtName]
+				evt = season['events'][evtName]
 				evt['signonFileName'] = fn
 				database.setChanged()
 		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())

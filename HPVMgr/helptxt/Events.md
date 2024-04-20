@@ -28,7 +28,7 @@ The "**Edit entries**" and "**Edit races**" buttons take you to the [EventEntry]
 ### Sign-on sheet
 This sets the filename that the **CrossMgr sign-on sheet** of the currently selected **Event** will be written to.  (Each **Event** has a separate filename.)  Click "**Browse**" to select a directory and filename.
 
+* To simplify moving databases between machines, the sign-on sheet filenames are stored relative to the path of the current database `.hdb` file.
 * The "**Write sign-on sheet**" button will write the currently selected sign-on sheet to disk.
-
 
 All operations on the **Events** screen manipulate the in-memory database directly.  There is no '**Commit**' button.
