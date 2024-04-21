@@ -706,6 +706,7 @@ def GetLapCounterRefresh():
 	except Exception:
 		return {
 			'cmd': 'refresh',
+			'raceName': None,
 			'labels': [],
 			'foregrounds': [],
 			'backgrounds': [],
@@ -782,6 +783,7 @@ def WsLapCounterSendTagTest( num = None ):
 		return
 	# Use sprint timer extension to tell clock to display bib number for 5 seconds before timing out
 	message = { 'cmd': 'refresh',
+				'raceName': 'RFID test',
 				'labels': [],
 				'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
 				'backgrounds': ['rgb(16, 16, 16)'],

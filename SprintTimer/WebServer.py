@@ -673,6 +673,7 @@ def GetLapCounterRefresh():
 	if not race:
 		return {
 			'cmd': 'refresh',
+			'raceName': None,
 			'labels': [],
 			'foregrounds': [],
 			'backgrounds': [],
@@ -684,6 +685,7 @@ def GetLapCounterRefresh():
 	if len(sprints) < 1:
 		return {
 			'cmd': 'refresh',
+			'raceName': None,
 			'labels': [],
 			'foregrounds': [],
 			'backgrounds': [],
@@ -694,6 +696,7 @@ def GetLapCounterRefresh():
 	else:
 		sprintDict = sprints[-1][1]
 		message = { 'cmd': 'refresh',
+				'raceName': race.longName if race.longName else race.name,
 				#'labels': [],
 				#'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
 				#'backgrounds': ['rgb(16, 16, 16)'],
@@ -801,6 +804,7 @@ def WsLapCounterSendTagTest( bib = None ):
 		return
 	# Tell clock to display bib number for 5 seconds before timing out
 	message = { 'cmd': 'refresh',
+				'raceName': 'RFID test',
 				'labels': [],
 				'foregrounds': ['rgb(255, 255, 255)'],  #default colours, ignored by clock
 				'backgrounds': ['rgb(16, 16, 16)'],

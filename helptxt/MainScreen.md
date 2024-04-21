@@ -28,7 +28,7 @@ Lap|Shows the lap the rider is currently on.
 ETA|Shows the Estimated Time of Arrival of the rider
 Name|Shows the rider's name.  Requires configuring the [External Excel][] sheet.
 
-__Early Pull__
+# Early Pull
 
 __Early Pull__ is a method of managing the 80% zone at the finish line when then 80% rule is in effect (MTB and Cyclocross),.
 The rider is pulled after crossing the finish line and recording a final time, rather than pulling from an 80% zone.

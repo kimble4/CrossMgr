@@ -166,6 +166,7 @@ class LapCounter( wx.Panel ):
 		race = Model.race
 		return {
 			'cmd': 'refresh',
+			'raceName': race.longName if race.longName else race.name,
 			'labels': self.labels,
 			'foregrounds': [c.GetAsString(wx.C2S_CSS_SYNTAX) for c in fg[:lenLabels]],
 			'backgrounds': [c.GetAsString(wx.C2S_CSS_SYNTAX) for c in bg[:lenLabels]],

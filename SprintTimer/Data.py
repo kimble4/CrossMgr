@@ -266,7 +266,6 @@ class ManualEntryDialog( wx.Dialog ):
 			
 			with Model.LockRace() as race:
 				race.addSprint( t, sprintDict )
-			
 			wx.CallAfter( Data.onRecalculateSpeed, None, None )
 		else:
 			Utils.MessageOK( self, '{}'.format( _("Sprint duration cannot be zero!")), _("Error") )
@@ -518,6 +517,7 @@ class Data( wx.Panel ):
 				sprintDict['sprintSpeed'] = None
 				sprintDict['speedUnit'] = None
 			race.setChanged()
+			Utils.getMainWin().updateLapCounter() # race clock may be displaying the calculated speed
 			wx.CallAfter(Utils.refresh)
 			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
 		except:

@@ -59,17 +59,8 @@ function RaceClock( aCanvas ) {
 
 	this.onRefresh = function( msg ) {
 		this.tRaceStart = (new Date).getTime() - msg.curRaceTime * 1000.0;
-		// Only update if we have a non-zero curRaceTime - this stops the clock at the end of the race
-		if (msg.curRaceTime > 0) {
-			this.raceTime = msg.curRaceTime;
-			this.finished = false;
-		} else if (msg.curRaceTime == null) {
-			// Set to null to indicate the race hasn't started
-			this.raceTime = null;
-			this.finished = false;
-		} else if (msg.curRaceTime == 0) {
-			this.finished = true;
-		}
+		this.raceTime = msg.curRaceTime;
+		this.raceName = msg.raceName;
 		this.sprintBib = msg.sprintBib;
 		this.sprintName = msg.sprintName;
 		this.sprintStart = msg.sprintStart;
@@ -114,20 +105,18 @@ function RaceClock( aCanvas ) {
 		dc.lineWidth = 4;
 		dc.strokeStyle = '#000000';
 		dc.strokeRect( 0, 0, width, height );
-		
-		if ( this.finished) {
-			drawText( dc, formatTimeNoLeadingZero(this.raceTime), '#FFFFE0', 0, 0, width, height, "sans-serif");
-		} else if ( this.raceTime > 0) {
+		if ( this.raceTime > 0) {
 			// Calculate locally so the clock keeps ticking if the network is lost
 			var secs = ((new Date).getTime() - this.tRaceStart) / 1000.0;
-			drawText( dc, formatTimeNoLeadingZero(secs, 0), '#FFFFE0', 0, 0, width, height, "monospace" );
-		} else {
+			drawText( dc, formatTimeNoLeadingZero(secs, 0), '#FFFFE0', 0, 0, width, (height/6)*5, "monospace" );
+		} else if (this.sprintStart || this.sprintTime) {
 			var displaySecs = this.sprintStart;
 			if (this.sprintTime) {
 				displaySecs += this.sprintTime;
 			}
 			if ((new Date).getTime() - displaySecs * 1000 < this.sprintTimeout * 1000) {
 				var text = "";
+				var colours = "";
 				if (this.sprintBib) {
 					text += "#";
 					text += this.sprintBib;
@@ -136,6 +125,7 @@ function RaceClock( aCanvas ) {
 						text+= this.sprintName;
 					}
 					text += ";"
+					colours += "#FF69B4;"
 				}
 				if (this.sprintTime) {
 					text +=  formatTimeNoLeadingZero(this.sprintTime, 3);
@@ -143,6 +133,7 @@ function RaceClock( aCanvas ) {
 						text += "s";
 					}
 					text += ";"
+					colours += "#FFFF00;"
 				}
 				if (this.sprintSpeed) {
 					if (this.speedUnit) {
@@ -153,20 +144,36 @@ function RaceClock( aCanvas ) {
 						text += this.sprintSpeed.toFixed(3);
 					}
 					text += ";";
+					colours += "#ADD8E6;"
 				}
-				var lines = text.split(";")
-				var h = height/lines.length;
+				var lines = text.split(";");
+				var cols = colours.split(";");
+				var h = (height/6)*5/lines.length;
 				for (var i = 0; i < lines.length; i++) {
-					drawText(dc, lines[i], '#FFFFFF', 0, h*i+0.5*h, width, h, "sans-serif");
+					drawText(dc, lines[i], cols[i], 0, h*i+0.5*h, width, h, "sans-serif");
 				}
 				if (lines.length < 1) {
 					drawText(dc, "No data", '#FFFFFF', 0, h*i+0.5*h, width, h, "sans-serif");
 				}
 			} else {
 				var time = (new Date).toLocaleTimeString("en-GB")
-				drawText(dc, time, '#00BFFF', 0, 0, width, height/2, "monospace");
-				drawText(dc, "Waiting...", '#FFFFFF', 0, height/2, width, height/2, "sans-serif");
+				drawText(dc, time, '#00BFFF', 0, 0, width, (height/6)*5/2, "monospace");
+				drawText(dc, "Waiting for sprint...", '#FFFFFF', 0, (height/6)*5/2, width, (height/6)*5/2, "sans-serif");
 			}
+		} else if ( this.raceTime == null || this.raceTime == 0) {
+			var time = (new Date).toLocaleTimeString("en-GB")
+			drawText(dc, time, '#00BFFF', 0, 0, width, (height/6)*5/2, "monospace");
+			if (this.raceName === null) {
+				drawText(dc, "No race", '#FFFFFF', 0, (height/6)*5/2, width, (height/6)*5/2, "sans-serif");
+			} else {
+				drawText(dc, "Waiting for start...", '#FFFFFF', 0, (height/6)*5/2, width, (height/6)*5/2, "sans-serif");
+			}
+		} else {
+			var time = (new Date).toLocaleTimeString("en-GB")
+			drawText(dc, time, '#00BFFF', 0, 0, width, (height/6)*5, "monospace");
+		}
+		if (this.raceName != null) {
+			drawText(dc, this.raceName, '#888888', 0, height-height/8, width*2/3, height/8, "sans-serif");
 		}
 		var networkStatus = "Disconnected! ";
 		var statusColour = '#FF0000';
