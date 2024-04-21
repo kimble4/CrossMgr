@@ -23,7 +23,7 @@ Shows the numbers of riders expected to arrive.  The columns in the table are as
 Column|Description
 :-----|:----------
 Bib|The rider's number
-Note|Shows the riders position by category.  Leaders are highlighted in green.  The Race Leader is highlighted with a full green bar.  Riders outside of the 80% time rule are shown in red.  Riders eligible for "Early Pull" are shown in yellow with a pull symbol (⌦).  Riders starting their laps lap have a bell (🔔).  Riders finishing has a finish flag (🏁).
+Note|Shows the riders position by category.  Leaders are highlighted in green.  The Race Leader is highlighted with a full green bar.  Riders outside of the 80% time rule are shown in red.  Riders eligible for "Early Pull" are shown in yellow with a pull symbol (⌦).  Riders starting their last lap have a bell (🔔).  Riders finishing has a finish flag (🏁).
 Lap|Shows the lap the rider is currently on.
 ETA|Shows the Estimated Time of Arrival of the rider
 Name|Shows the rider's name.  Requires configuring the [External Excel][] sheet.
