@@ -54,22 +54,22 @@ def CompileHelp( dir = '.' ):
 				output_format='html5'
 		)
 
-		with open('markdown.css', 'r') as f:
+		with open('markdown.css', 'r', encoding='utf8') as f:
 			style = f.read()
-		with open('prolog.html', 'r') as f:
+		with open('prolog.html', 'r', encoding='utf8') as f:
 			prolog = f.read()
 			prolog = prolog.replace( '<<<style>>>', style, 1 )
 			del style
-		with open('epilog.html', 'r') as f:
+		with open('epilog.html', 'r', encoding='utf8') as f:
 			epilog = f.read().replace('BUILDDATE', '{}'.format(str(datetime.datetime.now())[:-7]) )
 		contentDiv = '<div class="content">'
 		
-		with open('Links.md', 'r') as f:
+		with open('Links.md', 'r', encoding='utf8') as f:
 			links = f.read()
 			
 		for fname in getHelpFiles():
 			print( fname, '...' )
-			with open(fname, 'r') as f:
+			with open(fname, 'r', encoding='utf8') as f:
 				input = io.StringIO()
 				input.write( links )
 				input.write( f.read() )
@@ -82,7 +82,7 @@ def CompileHelp( dir = '.' ):
 					html = contentDiv + '\n' + html
 				html += '\n</div>\n'
 				html = InlineImages( html )
-			with open( os.path.splitext(fname)[0] + '.html', 'w' ) as f:
+			with open( os.path.splitext(fname)[0] + '.html', 'w', encoding='utf8' ) as f:
 				f.write( prolog )
 				f.write( html )
 				f.write( epilog )
