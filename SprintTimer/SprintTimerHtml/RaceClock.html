@@ -178,7 +178,7 @@ function RaceClock( aCanvas ) {
 		var networkStatus = "Disconnected! ";
 		var statusColour = '#FF0000';
 		if (websocket && websocket.readyState === websocket.OPEN) {
-			networkStatus = "            🖧 ";
+			networkStatus = "            \uD83D\uDDA7 ";
 			statusColour = '#00FF00';
 		} else if (websocket && websocket.readyState === websocket.CONNECTING) {
 			networkStatus = "Connecting...";
