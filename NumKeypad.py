@@ -476,7 +476,7 @@ class NumKeypad( wx.Panel ):
 			except (KeyError, IndexError):
 				pass
 		
-		leader, raceTimes = [], []
+		leader, raceTimes, earlyBellTime = [], [], []
 		for category in categories:
 			results = GetResultsWithData( category )
 			if not results or not results[0].status == Finisher or not results[0].raceTimes:
@@ -485,6 +485,7 @@ class NumKeypad( wx.Panel ):
 				continue
 				
 			leaderNums.add( results[0].num )
+			earlyBellTime.append( category.earlyBellTime )
 			leader.append( '{} [{}]'.format(category.fullname, results[0].num) )
 			for rank, rr in enumerate(results, 1):
 				if rr.status != Finisher or not rr.raceTimes or len(rr.raceTimes) < 2:
@@ -554,7 +555,7 @@ class NumKeypad( wx.Panel ):
 			self.leaderNums = leaderNums
 		
 		# Ensure that the raceTime and leader are sorted the same as the Categories are defined.
-		self.raceHUD.SetData( raceTimes, leader, tCur if race.isRunning() else None )
+		self.raceHUD.SetData( raceTimes, leader, tCur if race.isRunning() else None, earlyBellTime )
 		if Utils.mainWin:
 			Utils.mainWin.updateLapCounter( lapCounter )
 		self.updateLayout()
