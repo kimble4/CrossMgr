@@ -773,13 +773,13 @@ def WsLapCounterRefresh():
 		wsLapCounterQ.put( message )
 		lastMessage, lastRaceName = message, raceName
 		
-def WsLapCounterSendTagTest( num = None ):
+def WsLapCounterSendTagTest( bib = None ):
 	race = Model.race
 	if not race:
 		return
 	if not (wsLapCounterServer and wsLapCounterServer.hasClients()):
 		return
-	if num is None:
+	if bib is None:
 		return
 	# Use sprint timer extension to tell clock to display bib number for 5 seconds before timing out
 	message = { 'cmd': 'refresh',
