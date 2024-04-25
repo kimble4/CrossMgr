@@ -697,7 +697,10 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				if isinstance(timePos[0], float):
 					scores.append((timePos[0], rider))
 				else:
-					scores.append((float(timePos[0].strip('[*]')), rider))
+					try:
+						scores.append((float(timePos[0].strip('[*]')), rider))
+					except:
+						pass
 			scores.sort(key=lambda x: -x[0])
 			lastScore = 999999
 			rank = 0
@@ -829,7 +832,10 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				if isinstance(percentPos[0], float):
 					scores.append((percentPos[0], rider))
 				else:
-					scores.append((float(percentPos[0].strip('[*]')), rider))
+					try:
+						scores.append((float(percentPos[0].strip('[*]')), rider))
+					except:
+						pass
 			scores.sort(key=lambda x: -x[0])
 			lastScore = 999999
 			rank = 0
@@ -1048,7 +1054,10 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				if isinstance(pointsPos[0], int):
 					scores.append((pointsPos[0], rider))
 				else:
-					scores.append((int(pointsPos[0].strip('[*]')), rider))
+					try:
+						scores.append((int(pointsPos[0].strip('[*]')), rider))
+					except:
+						pass
 			scores.sort(key=lambda x: -x[0])
 			lastScore = 999999
 			rank = 0
