@@ -158,7 +158,7 @@ function RaceClock( aCanvas ) {
 			} else {
 				var time = (new Date).toLocaleTimeString("en-GB")
 				drawText(dc, time, '#00BFFF', 0, 0, width, (height/6)*5/2, "monospace");
-				drawText(dc, "Waiting for sprint...", '#FFFFFF', 0, (height/6)*5/2, width, (height/6)*5/2, "sans-serif");
+				drawText(dc, "Waiting for rider...", '#FFFFFF', 0, (height/6)*5/2, width, (height/6)*5/2, "sans-serif");
 			}
 		} else if ( this.raceTime == null || this.raceTime == 0) {
 			var time = (new Date).toLocaleTimeString("en-GB")
