@@ -307,7 +307,7 @@ These are timed using the dedicated SprintTimer application, rather than CrossMg
 1. Check that the category **genders** are correct - CrossMgr sometimes makes incorrect assumptions where open categories only have riders of one gender.
 1. **Start Offset** should be zero for all categories.
 1. If this is a *time trial*, *fixed laps* or *best of n laps* race, ensure the correct values are entered in the **Race Laps** and **Best Laps** columns for each category.  (For example, for a "best of three" round, set **Race Laps** to `3` and **Best Laps** to `1`.)  Otherwise, ensure these columns are empty.
-1. **Lapped riders continue** should be set for criterium and fixed-duration races.  For a fixed number of laps, it should be unset.
+1. **Lapped riders continue** should be unset for criterium and fixed-duration races.  For a fixed number of laps, it should be set.
 1. Ensure the **Race Minutes** column is empty for all categories; the global setting in [General Info][] will be used instead.
 1. **Publish** should be enabled for all categories.  **Series** should be enabled for all except the Start Wave.  (**Upload** is for results formats we do not use, so it does not matter whether it is enabled.)
 1. When you are satisfied, Click **Commit** to save changes.
