@@ -569,7 +569,7 @@ class MainWin( wx.Frame ):
 		num = 0  # default to 0 because CrossMgrVideo will choke on None
 		if "sprintBib" in event.sprintDict:
 			num = event.sprintDict["sprintBib"]
-			race.setInProgressSprintBib( num )
+			#race.setInProgressSprintBib( num )  # why are we doing this here?  It literally makes no sense?
 		elif getattr(race, 'useSequentialBibs', False):
 			num = race.nextSequentialBib
 		requests = [(num, (dt - race.startTime).total_seconds())]
@@ -1857,7 +1857,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 		race = Model.race
 		
 		for num, t in self.numTimes:
-			print('RFID got bib:' + str(num))
+			Utils.writeLog('RFID got bib:' + str(num))
 			# add them to the sprintbibs list, don't process as lap times
 			race.addSprintBib( num, t, doSetChanged = False )
 			#race.addTime( num, t, doSetChanged=False )
@@ -1995,7 +1995,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 				if sprintDict["ppsGood"] == True:
 					ppsGood = True
 			
-			if ppsGood and "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds()) < 1.0:
+			if ppsGood and "sprintStart" in sprintDict and (readerComputerTimeDiff.total_seconds() < race.getSyncTolerance() if race.getSyncTolerance() is not None else True) :
 				#if the clocks are less than a second out, use the timer's time for the sprint
 				sortTime = datetime.datetime.fromtimestamp(sprintDict["sprintStart"])
 				if "sprintStartMillis" in sprintDict:

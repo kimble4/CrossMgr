@@ -33,7 +33,7 @@ Allocate Sequential Bib Numbers|If racers do not have allocated race numbers, th
 Starting from #|The next bib number to allocate in sequence.
 
 ### Sprint Timer
-Configuing the connection to the sprint timer unit.
+Configuring the connection to the sprint timer unit.
 
 Property|Description
 :-------|:----------
@@ -41,6 +41,7 @@ Use sprint timer to obtain precise times|Select this to enable TCP/IP communicat
 Remote IP Address|IP address of the sprint timer.  This would normally be displayed on the front panel.
 Remote Port|Default is 10123
 Sprint trap distance|Distance between the T1 and T2 timing gates.  This is in metres, regardless of what unit is being used to display results.
+Trust timer's clock within...|If the apparent difference between the timer's realtime clock and the computer's realtime clock is less than this value, the value from timer's clock will be used for the sprint's time of day.  Set to 0 to always use the timer's value.  A second or two is reasonable.
 Timer input test|Put the sprint timer unit into test mode.  The T1 and T2 LEDs will reflect the state of their inputs in approximately real-time, for testing the senors and wiring.  The optional "play sounds" setting may be helpful when aligning optical beam-breaks.
 Save extended debugging info to log|For debugging communication issues with the sprint timer unit.  This will make the log file very large.
 

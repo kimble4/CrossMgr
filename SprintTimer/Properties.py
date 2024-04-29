@@ -454,6 +454,14 @@ class SprintTimerProperties( wx.Panel ):
 		self.distance = wx.TextCtrl( self, value ='0', size=(240,-1) )
 		gridBagSizer.Add( self.distance, pos=(2, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
 		
+		gridBagSizer.Add( wx.StaticText( self, label=_('Trust timer\'s clock within:') ),
+						pos=(3,0), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		gridBagSizer.Add( wx.StaticText( self, label=_(' seconds of system time') ),
+						pos=(3,2), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL )
+		self.syncTolerance = wx.TextCtrl( self, value ='0', size=(240,-1) )
+		self.syncTolerance.SetToolTip(wx.ToolTip('0 to always trust the timer\'s clock')) 
+		gridBagSizer.Add( self.syncTolerance, pos=(3, 1), border=4, flag=wx.EXPAND|wx.RIGHT|wx.ALIGN_LEFT )
+		
 		
 		self.testButton = wx.Button( self, label=_('Timer input test...') )
 		self.testButton.Bind( wx.EVT_BUTTON, self.onTest )
@@ -484,6 +492,7 @@ class SprintTimerProperties( wx.Panel ):
 		self.ipaddr.SetValue( getattr(race, 'sprintTimerAddress', Utils.GetDefaultHost()) )
 		self.port.SetValue( getattr(race, 'sprintTimerPort', 10123) )
 		self.distance.SetValue( getattr(race, 'sprintDistance', '50') )
+		self.syncTolerance.SetValue( str(getattr(race, 'syncTolerance', 0)) )
 		
 	def commit( self ):
 		race = Model.race
@@ -500,8 +509,12 @@ class SprintTimerProperties( wx.Panel ):
 		race.enableSprintTimer = self.sprintTimer.IsChecked()
 		race.sprintTimerDebugging = self.sprintTimerDebugging.IsChecked()
 		race.sprintDistance = self.distance.GetValue()
-		
+		try:
+			race.syncTolerance = float(self.syncTolerance.GetValue())
+		except:
+			pass
 		mainWin.updateSprintTimerSettings()
+		wx.CallAfter(self.refresh)
 	
 #------------------------------------------------------------------------------------------------
 

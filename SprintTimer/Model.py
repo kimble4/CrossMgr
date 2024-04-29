@@ -1151,7 +1151,6 @@ class Race:
 	postPublishCmd = ''
 	longName = ''
 		
-#class Race:
 	#rankBy algorithms
 	rankByLapsTime = 0
 	rankByAverageSpeed = 1
@@ -1167,7 +1166,7 @@ class Race:
 	#nonFinisherStatusList = [Rider.DNF, Rider.DNS, Rider.DQ, Rider.NP, Rider.OTL]
 	#nonFinisherStatusSet = set( nonFinisherStatusList )
 	
-
+	syncTolerance = None
 	
 	#distanceUnit = UnitKm
 	
@@ -1483,6 +1482,12 @@ class Race:
 
 	#def __getitem__( self, num ):
 		#return self.riders[num]
+		
+	def getSyncTolerance( self ):
+		if self.syncTolerance <= 0:
+			return None
+		else:
+			return self.syncTolerance
 		
 	def setRiderStatus( self, bib, status ):
 		self.riders[bib] = status
@@ -2055,6 +2060,12 @@ class Race:
 		
 	def setInProgressSprintBib( self, bib ):
 		self.inProgressSprintBib = bib
+		
+	def getInProgressSprintBib( self ):
+		if self.inProgressSprintStart:
+			return self.inProgressSprintBib
+		else:
+			return None
 		
 	def addSprintBib( self, num, t = None, doSetChanged = True, sequential = False ):
 		# This is a seperate list of tag reads to identify sprint riders, we don't use the normal lap times stuff

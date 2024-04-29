@@ -126,6 +126,7 @@ class BibEntry( wx.Panel ):
 			except Exception:
 				continue
 			#race.addTime( num, t, False )
+			Utils.writeLog('Got manual bib entry: ' + str(num))
 			race.addSprintBib( num )
 			numTimes.append( (num, t) )
 		
@@ -279,7 +280,7 @@ class Data( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Count', 'Time of day', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
+		self.colnames = ['Count', 'Time of Day', 'Δt', 'T1 Time', 'T2 Time', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
 		
 		self.whiteColour = wx.Colour( 255, 255, 255 )
 		self.blackColour = wx.Colour( 0, 0, 0 )
@@ -358,8 +359,8 @@ class Data( wx.Panel ):
 					tStr = Utils.formatTime( tRace )
 					if tStr.startswith('0'):
 						tStr = tStr[1:]
-					if getattr(race, 'inProgressSprintBib', None) is not None:
-						tStr = '#' + str(race.inProgressSprintBib) + ' Timing: ~' + tStr
+					if race.getInProgressSprintBib() is not None:
+						tStr = '#' + str(race.getInProgressSprintBib()) + ' Timing: ~' + tStr
 					else:
 						tStr = 'Timing: ~' + tStr
 					self.raceTime.SetBackgroundColour(self.redColour)
@@ -544,7 +545,7 @@ class Data( wx.Panel ):
 		sprintDict = race.sprints[iSprint][1]
 		mainWin = Utils.getMainWin()
 		
-		if col == 2: # bib
+		if col == self.colnames.index('Bib'):
 			if value != '':
 				try:
 					newBib = int(value)
@@ -563,33 +564,33 @@ class Data( wx.Panel ):
 			self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 			wx.CallAfter(self.refresh)
 			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
-		elif col > 2 and col < 8: #name, machine, team
+		elif col >= self.colnames.index('Name') and col <= self.colnames.index('Nat'): #name, machine, team, gender, nat
 			excelLink = getattr(race, 'excelLink', None)
 			if "sprintBib" in sprintDict and excelLink:
 				Utils.MessageOK( self, _('Cannot edit') + ' \'' + self.colnames[col] + '\' ' +  _('field for sprints with a bib number') + '.\n' + _('Make the change in the sign-on spreadsheet instead.') , _('External spreadsheet linked') )
 				# restore the old value
 				self.dataGrid.SetCellValue(row, col, old)
 			else:
-				if col == 3:
+				if col == self.colnames.index('Name'):
 					sprintDict["sprintNameEdited"] = value
-				elif col == 4:
+				elif col == self.colnames.index('Machine'):
 					sprintDict["sprintMachineEdited"] = value
-				elif col == 5:
+				elif col == self.colnames.index('Team'):
 					sprintDict["sprintTeamEdited"] = value
-				elif col == 6:
+				elif col == self.colnames.index('Gender'):
 					sprintDict["sprintGenderEdited"] = value
-				elif col == 7:
+				elif col == self.colnames.index('Nat'):
 					sprintDict["sprintNatcodeEdited"] = value
 				race.setChanged()
 				self.dataGrid.SetCellBackgroundColour(row, col, self.orangeColour)
 				wx.CallAfter(self.refresh)
 				wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
-		elif col == 9: #note
+		elif col == self.colnames.index('Note'):
 			sprintDict["sprintNote"] = value
 			race.setChanged()
 			wx.CallAfter(self.refresh)
 			wx.CallLater( race.rfidTagAssociateSeconds*1000, mainWin.refreshResults )
-		elif col == 10: #distance
+		elif col == self.colnames.index('Distance'):
 			try:
 				distance = float(value)
 				sprintDict['sprintDistance'] = distance
@@ -703,21 +704,50 @@ class Data( wx.Panel ):
 				for c in range(len(self.colnames)):
 					self.dataGrid.SetCellBackgroundColour(row, c, self.whiteColour)
 			
-			col = 0
+			col = 0 #count
 			self.dataGrid.SetCellValue(row, col, str(index))
 			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_CENTER, wx.ALIGN_CENTER)
-			col += 1
-			self.dataGrid.SetCellValue(row, col, sortTime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
-			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
-			# Shade locally generated timestamps in yellow
+			
+			col += 1 #ToD
 			sprintStart = None
 			if 'sprintStart' in sprintDict:
 				sprintStart = datetime.datetime.fromtimestamp(sprintDict['sprintStart'])
 				if 'sprintStartMillis' in sprintDict:
 					sprintStart += datetime.timedelta(milliseconds = sprintDict['sprintStartMillis'])
+			self.dataGrid.SetCellValue(row, col, sortTime.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3] if sortTime else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
 			if index and (sprintStart is None or sortTime != sprintStart):
 				self.dataGrid.SetCellBackgroundColour(row, col, self.yellowColour)
-			col += 1
+				
+			col += 1 #Δt
+			if 'clockDelta' in sprintDict:
+				self.dataGrid.SetCellValue(row, col, "{:.3f}".format(sprintDict['clockDelta'].total_seconds())) 
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			col += 1 #T1
+			if "isRFID" in sprintDict and sprintDict["isRFID"] and not race.rfidAtT2:
+				self.dataGrid.SetCellValue(row, col, sortTime.strftime('%H:%M:%S.%f')[:-3] if sortTime else '')
+			else:
+				if 'sprintStartMillis' in sprintDict:
+					self.dataGrid.SetCellValue(row, col, sprintStart.strftime('%H:%M:%S.%f')[:-3] if sprintStart else '')
+				else:
+					self.dataGrid.SetCellValue(row, col, sprintStart.strftime('%H:%M:%S') if sprintStart else '')
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			
+			col += 1 #T2
+			sprintFinish = None
+			if "isRFID" in sprintDict and sprintDict["isRFID"] and race.rfidAtT2:
+				self.dataGrid.SetCellValue(row, col, sortTime.strftime('%H:%M:%S.%f')[:-3] if sortTime else '')
+			else:
+				if 'sprintFinish' in sprintDict:
+					sprintFinish = datetime.datetime.fromtimestamp(sprintDict['sprintFinish'])
+					if 'sprintFinishMillis' in sprintDict:
+						sprintFinish += datetime.timedelta(milliseconds = sprintDict['sprintFinishMillis'])
+						self.dataGrid.SetCellValue(row, col, sprintFinish.strftime('%H:%M:%S.%f')[:-3])
+					else:
+						self.dataGrid.SetCellValue(row, col, sprintFinish.strftime('%H:%M:%S'))
+			self.dataGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+			
+			col += 1 # Bib
 			bibstring = str(sprintDict["sprintBib"]) if "sprintBib" in sprintDict else ''
 			bib = None
 			self.dataGrid.SetCellValue(row, col, bibstring)
