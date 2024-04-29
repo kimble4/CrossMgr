@@ -40,6 +40,10 @@ To find the top riders of a lap:
 1. The Lap Winners will be shown in sequence.
 1. Click on the lap column header to return to normal ranking.
 
+## Clock Times
+
+The time of day that each lap time was recorded.  Note that if you are viewing a CustomCategory, any start wave offsets will be neutralised, giving misleading clock times for riders in later waves.
+
 ## Lap Speeds
 Shows the speed by lap.  For this feature to work, the Lap Distance must be configured in Categories.
 
