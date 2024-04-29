@@ -540,7 +540,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 	# Get all results for this category.
 	raceResults = [rr for rr in raceResults if rr.categoryName == categoryName]
 	if not raceResults:
-		return [], [], [], set()
+		return [], [], None, set()
 		
 	# Create a map for race filenames to grade.
 	raceGrade = { race.getFileName():race.grade for race in model.races }

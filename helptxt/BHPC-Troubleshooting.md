@@ -177,6 +177,10 @@ This is usually caused by the **minimum possible lap time** (see [Properties/Rac
 
 If [ranking by average speed][Race Options], ensure that all [Categories][Category Screen] have a lap distance set.  (CrossMgr's [Results][] page does not use average speed ranking while the race is in progress, so only the HTML output will be affected.)
 
+#### Rider's times/speeds appear as **"** when times are not the same as the above rider
+
+This is caused by "**Road Race Finish Times**" being enabled in [Properties/Race Options][Race Options].  Disable this setting.
+
 #### Two leaders / Rider in their own start wave
 
 Likely someone has edited the sign-on sheet to move a rider from one race to another and not updated their EventCategory accordingly.  Fix the sign-on sheet.
@@ -191,6 +195,10 @@ Check the "**Lapped Riders Continue**" settings in the [Category Screen][].  In 
 - Alternatively, a safer approach (for example, if a rider is having a second attempt after a crash) is to time them with a stopwatch, pen and paper then fudge the results afterwards.
 - If multiple riders want a second attempt, it may be worth using [New Next][File] to create a separate race file for second attempts, and manually combining the data later.  (Alternatively, consider running a [Best n Laps][Category Screen] event.)
 
+#### Missing sprint results
+
+If RFID reads are missed, or fall outside the window for automatic association with a result from the timer, the rider will not be identified.  Examine the sprint data and see if there are unassociated times that can be manually given a bib number.
+
 #### Spurious RFID reads during sprints
 
 If someone brings their timing tags near the RFID aerials during a sprint event, they can accidentally claim another rider's times.  This is worse than loitering near the finish in mass-start races, as it isn't just their own results that are affected.
@@ -198,6 +206,10 @@ If someone brings their timing tags near the RFID aerials during a sprint event,
 The best approach is vigilance, and to correct (or clear) the 'bib' field of the affected sprints as soon as possible.  Use the 'note' field to explain what happened.
 
 If necessary you can identify the true rider using CrossMgrVideo after the event.
+
+#### Sprint riders have times but appear as DNFs
+
+They were likely set to DNS as they had no data when recording was finished, and remained DNS when recording was re-started.  Set their status to 'Finisher' using the context menu on the **Results** page.
 
 ### There's an error message...
 
