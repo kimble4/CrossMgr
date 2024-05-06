@@ -1470,7 +1470,7 @@ class MainWin( wx.Frame ):
 	
 	def menuCopyLogFileToClipboard( self, event ):
 		try:
-			with open(redirectFileName) as f:
+			with open(redirectFileName, encoding='utf8') as f:
 				logData = f.read()
 		except IOError:
 			Utils.MessageOK(self, _("Unable to open log file."), _("Error"), wx.ICON_ERROR )
@@ -2055,7 +2055,7 @@ class MainWin( wx.Frame ):
 				# Add the course viewer template.
 				templateFile = os.path.join(Utils.getHtmlFolder(), 'CourseViewerTemplate.html')
 				try:
-					with open(templateFile) as fp:
+					with open(templateFile, encoding='utf8') as fp:
 						template = fp.read()
 					payload['courseViewerTemplate'] = sanitize( template )
 				except Exception:
@@ -2064,7 +2064,7 @@ class MainWin( wx.Frame ):
 		# Add the rider dashboard.
 		templateFile = os.path.join(Utils.getHtmlFolder(), 'RiderDashboard.html')
 		try:
-			with open(templateFile) as fp:
+			with open(templateFile, encoding='utf8') as fp:
 				template = fp.read()
 			payload['riderDashboard'] = sanitize( template )
 		except Exception:
@@ -2077,7 +2077,7 @@ class MainWin( wx.Frame ):
 				if excelLink.hasField('City') and any(excelLink.hasField(f) for f in ('Prov','State','StateProv')):
 					templateFile = os.path.join(Utils.getHtmlFolder(), 'TravelMap.html')
 					try:
-						with open(templateFile) as fp:
+						with open(templateFile, encoding='utf8') as fp:
 							template = fp.read()
 						payload['travelMap'] = sanitize( template )
 					except Exception:
@@ -2180,7 +2180,7 @@ class MainWin( wx.Frame ):
 			# Fix the google maps template.
 			templateFile = os.path.join(Utils.getHtmlFolder(), 'VirtualTourTemplate.html')
 			try:
-				with open(templateFile) as fp:
+				with open(templateFile, encoding='utf8') as fp:
 					template = fp.read()
 				# Sanitize the template into a safe json string.
 				template = self.reLeadingWhitespace.sub( '', template )
@@ -2243,7 +2243,7 @@ class MainWin( wx.Frame ):
 		# Read the html template.
 		htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
 		try:
-			with open(htmlFile) as fp:
+			with open(htmlFile, encoding='utf8') as fp:
 				html = fp.read()
 		except Exception as e:
 			logException( e, sys.exc_info() )
@@ -2415,7 +2415,7 @@ class MainWin( wx.Frame ):
 		for fTemplate in ('TTCountdown.html', 'TTStartList.html'):
 			htmlFile = os.path.join(Utils.getHtmlFolder(), fTemplate)
 			try:
-				with open(htmlFile) as fp:
+				with open(htmlFile, encoding='utf8') as fp:
 					html = fp.read()
 			except Exception:
 				Utils.MessageOK(self, _('Cannot read HTML template file.  Check program installation.'),
@@ -2427,7 +2427,7 @@ class MainWin( wx.Frame ):
 			# Write out the results.
 			fname = os.path.splitext(self.fileName)[0] + ('_TTCountdown.html' if fTemplate == 'TTCountdown.html' else '_TTStartList.html')
 			try:
-				with open(fname, 'w') as fp:
+				with open(fname, 'w', encoding='utf8') as fp:
 					fp.write( html )
 			except Exception:
 				Utils.MessageOK(self, '{} ({}).'.format(_('Cannot write HTML file'), fname),
@@ -2532,7 +2532,7 @@ class MainWin( wx.Frame ):
 		xml = doc.toprettyxml( indent = '', encoding = 'utf-8' )
 		doc.unlink()
 		try:
-			with open(fname, 'w') as f:
+			with open(fname, 'w', encoding='utf8') as f:
 				f.write( xml )
 			Utils.MessageOK(self, '{}\n\n    {}.'.format(_('Course written to GPX file'), fname), _('GPX Export'))
 		except Exception as e:
@@ -2575,7 +2575,7 @@ class MainWin( wx.Frame ):
 			# Read the html template.
 			htmlFile = os.path.join(Utils.getHtmlFolder(), 'CourseViewer.html')
 			try:
-				with open(htmlFile) as fp:
+				with open(htmlFile, encoding='utf8') as fp:
 					html = fp.read()
 			except Exception:
 				Utils.MessageOK(_('Cannot read HTML template file.  Check program installation.'),
@@ -2587,7 +2587,7 @@ class MainWin( wx.Frame ):
 		html = self.addCourseToHtmlStr( html )
 		fname = os.path.splitext(self.fileName)[0] + 'CoursePreview.html'
 		try:
-			with open(fname, 'w') as fp:
+			with open(fname, 'w', encoding='utf8') as fp:
 				fp.write( html )
 			Utils.LaunchApplication( fname )
 			Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Course Preview written to'), fname), _('Html Write'))
@@ -2613,7 +2613,7 @@ class MainWin( wx.Frame ):
 		# Read the html template.
 		htmlFile = os.path.join(Utils.getHtmlFolder(), 'RawData.html')
 		try:
-			with open(htmlFile) as fp:
+			with open(htmlFile, encoding='utf8') as fp:
 				html = fp.read()
 		except Exception:
 			Utils.MessageOK(_('Cannot read HTML template file.  Check program installation.'),
@@ -2702,7 +2702,7 @@ class MainWin( wx.Frame ):
 		# Write out the results.
 		fname = os.path.splitext(self.fileName)[0] + 'RawData.html'
 		try:
-			with open(fname, 'w') as fp:
+			with open(fname, 'w', encoding='utf8') as fp:
 				fp.write( html )
 			Utils.LaunchApplication( fname )
 			Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Html Raw Data written to'), fname), _('Html Write'))
@@ -2721,7 +2721,7 @@ class MainWin( wx.Frame ):
 		fname = os.path.splitext(self.fileName)[0] + '.json'
 		
 		try:
-			with open(fname, 'w') as fp:
+			with open(fname, 'w', encoding='utf8') as fp:
 				json.dump( payload, fp, separators=(',',':') )
 		except Exception as e:
 			Utils.writeLog( 'menuExportResultsJSON: error "{}"'.format(e) )
@@ -2863,7 +2863,7 @@ class MainWin( wx.Frame ):
 		importedCategories = False
 		if categoriesFile:
 			try:
-				with open(categoriesFile) as fp:
+				with open(categoriesFile, encoding='utf8') as fp:
 					race.importCategories( fp )
 				importedCategories = True
 			except IOError:
@@ -2923,7 +2923,7 @@ class MainWin( wx.Frame ):
 
 			# Try to open the file.
 			try:
-				with open(fileName, 'w') as fp:
+				with open(fileName, 'w', encoding='utf8') as fp:
 					pass
 			except IOError:
 				Utils.MessageOK(self, '{}\n\n    "{}".'.format(_('Cannot open file.'), fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
@@ -2954,7 +2954,7 @@ class MainWin( wx.Frame ):
 		importedCategories = False
 		if categoriesFile:
 			try:
-				with open(categoriesFile) as fp:
+				with open(categoriesFile, encoding='utf8') as fp:
 					race.importCategories( fp )
 				importedCategories = True
 			except IOError:
@@ -3620,7 +3620,7 @@ class MainWin( wx.Frame ):
 			
 		self.showResultsPage()
 		try:
-			with open(categoriesFile) as fp, Model.LockRace() as race:
+			with open(categoriesFile, encoding='utf8') as fp, Model.LockRace() as race:
 				race.importCategories( fp )
 		except IOError:
 			Utils.MessageOK( self, '{}:\n\n{}'.format(_('Cannot open file'), categoriesFile), _("File Open Error"), iconMask=wx.ICON_ERROR)
@@ -3652,7 +3652,7 @@ class MainWin( wx.Frame ):
 			fname += '.brc'
 		
 		try:
-			with open(fname, 'w') as fp, Model.LockRace() as race:
+			with open(fname, 'w', encoding='utf8') as fp, Model.LockRace() as race:
 				race.exportCategories( fp )
 		except IOError:
 			Utils.MessageOK( self, '{}:\n{}'.format(_('Cannot open file'), fname), _("File Open Error"), iconMask=wx.ICON_ERROR)
