@@ -1,7 +1,15 @@
 
 [TOC]
 
+This fork created for use by the British Human Power club
+
 # What's New in CrossMgr
+
+## May 4, 2024
+
+Re-factored the Riders on Course table on the Record page.
+This display was simplified to show the riders on course for all categories, and for each category
+It also breaks down of the status of the riders (Starters, Finished, DNF, Pulled, etc.).
 
 ## Apr, 2024
 
@@ -14,13 +22,19 @@ On the Chart page, you can plan the best time to set an Early Bell based on the 
 
 When Early Bell is set, riders will correctly show the Bell symbol in the Expected list.
 
-## 2022
-
-This fork created for use by the British Human Power club
-
-BHPC-specific [troubleshooting guide][BHPC Troubleshooting]
+## Mar, 2024
 
 Added Bell and Finish Flag symbols to Expected and Recorded riders on the MainWin page.
 
 ## July 21, 2021
 A new [SetLaps][] dialog was added.
+
+__Set Laps__ allows you to easily change the number of laps while the race is running.
+If provides all information about the current number of laps and the new proposed number including the winner's time and the time of the last rider on course (taking potential lapping into account, of course).
+
+See [SetLaps][] for details.
+
+
+## July 15, 2021
+
+SprintMgr was updated.  In addition to many bug fixes and upgrades, a new Competition format was added.
