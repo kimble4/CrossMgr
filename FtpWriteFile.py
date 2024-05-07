@@ -1,8 +1,7 @@
-import wx
-import wx.lib.intctrl
 import io
 import os
-import sys
+import wx
+import wx.lib.intctrl
 import webbrowser
 import ftplib
 import ftputil
@@ -11,6 +10,7 @@ import paramiko
 from urllib.parse import quote
 import datetime
 import threading
+
 import Utils
 import Model
 import HelpSearch
@@ -535,9 +535,8 @@ def GetFtpPublish( isDialog=True ):
 		def onFtpTest( self, event ):
 			self.commit()
 			if Utils.MessageYesNo(self, "Are you sure you want to Test Now? This can take several minutes and you will not be able to do anything until complete?", "Test Upload"):
-				busy = wx.BusyInfo('Uploading...', self)
-				result = FtpTest()
-				del busy
+				with wx.BusyInfo('Uploading...', self):
+					result = FtpTest()
 				if result:
 					Utils.MessageOK(self, '{}\n\n{}\n'.format(_("Ftp Test Failed"), result), _("Ftp Test Failed"), iconMask=wx.ICON_ERROR)
 				else:
@@ -547,9 +546,8 @@ def GetFtpPublish( isDialog=True ):
 		def onFtpUploadNow( self, event ):
 			self.commit()
 			if Utils.MessageYesNo(self, "Are you sure you want to Upload Now? This can take several minutes and you will not be able to do anything until complete?", "Upload Now"):
-				busy = wx.BusyInfo('Uploading...', self)
-				FtpUploadNow( self )
-				del busy
+				with wx.BusyInfo('Uploading...', self):
+					FtpUploadNow( self )
 		
 		def onPrint( self, event ):
 			race = Model.race

@@ -1,6 +1,5 @@
 import os
 import re
-import io
 import sys
 import time
 import copy
@@ -18,7 +17,6 @@ import hashlib
 import wx
 import wx.adv as adv
 from wx.lib.wordwrap import wordwrap
-import wx.lib.imagebrowser as imagebrowser
 import wx.lib.agw.flatnotebook as flatnotebook
 from html import escape
 from urllib.parse import quote
@@ -1013,7 +1011,7 @@ class MainWin( wx.Frame ):
 				continue
 			
 			if mustBeInRace:
-				if not num in race.riders:
+				if num not in race.riders:
 					Utils.MessageOK( self, '{} {}:\n\n{}'.format(_('Bib'), num, _("This Bib Number is Not in the Race")), _("Not in Race") )
 				else:
 					break
@@ -1552,7 +1550,7 @@ class MainWin( wx.Frame ):
 		graphicFName = self.config.Read( 'graphic', defaultFName )
 		if graphicFName != defaultFName:
 			try:
-				with open(graphicFName) as f:
+				with open(graphicFName, 'rb'):
 					return graphicFName
 			except IOError:
 				pass
@@ -1595,6 +1593,7 @@ class MainWin( wx.Frame ):
 			self.printData = wx.PrintData( dlg.GetPageSetupData().GetPrintData() )
 
 	PrintCategoriesDialogSize = (450, 400)
+	
 	def menuPrintPreview( self, event ):
 		if not Model.race:
 			return
@@ -1926,6 +1925,7 @@ class MainWin( wx.Frame ):
 	reRemoveTags = re.compile( r'\<html\>|\</html\>|\<body\>|\</body\>|\<head\>|\</head\>', re.I )
 	reFloatList = re.compile( r'([+-]?[0-9]+\.[0-9]+,\s*)+([+-]?[0-9]+\.[0-9]+)', re.MULTILINE )
 	reBoolList = re.compile( r'((true|false),\s*)+(true|false)', re.MULTILINE )
+	
 	def cleanHtml( self, html ):
 		# Remove leading whitespace, comments, consecutive blank lines and test code to save space.
 		html = self.reLeadingWhitespace.sub( '', html )
@@ -1993,6 +1993,7 @@ class MainWin( wx.Frame ):
 		return payload
 	
 	reTagTrainingSpaces = re.compile( '>\s+', re.MULTILINE|re.UNICODE )
+	
 	def addResultsToHtmlStr( self, html ):
 		html = self.cleanHtml( html )
 		
@@ -3060,7 +3061,7 @@ class MainWin( wx.Frame ):
 
 		# Try to open the file.
 		try:
-			with open(fileName, 'w') as fp:
+			with open(fileName, 'w'):
 				pass
 		except IOError:
 			Utils.MessageOK(self, '{}\n\n    "{}".'.format(_('Cannot Open File'), fileName), _('Cannot Open File'), iconMask=wx.ICON_ERROR )
@@ -3433,8 +3434,8 @@ class MainWin( wx.Frame ):
 			categories[1]['numLaps'] = 2
 			race.setCategories( categories )
 			for c in race.getCategories():
-				c.distance = 0.5;
-				c.firstLapDistance = 0.0;
+				c.distance = 0.5
+				c.firstLapDistance = 0.0
 			
 			scheduledStart = datetime.datetime.now() + datetime.timedelta(seconds=120)
 			scheduledStart -= datetime.timedelta( seconds=scheduledStart.second ) + datetime.timedelta( seconds=scheduledStart.microsecond/1000000.0 ) 
@@ -3468,8 +3469,9 @@ class MainWin( wx.Frame ):
 			
 			race.setCategories( categories )
 			for c in race.getCategories():
-				c.distance = 0.5;
-				c.firstLapDistance = 0.0;
+				c.distance = 0.5
+				c.firstLapDistance = 0.0
+			
 			self.lapTimes = [(t + race.getStartOffset(num), num) for t, num in self.lapTimes]
 			if race.enableJChipIntegration and race.resetStartClockOnFirstTag:
 				self.lapTimes.extend( (race.getStartOffset(num) + 2.0*random.random(), num) for num in set(tn[1] for tn in self.lapTimes) )
@@ -3924,8 +3926,6 @@ class MainWin( wx.Frame ):
 		if self.fileName is None or len(self.fileName) < 4 or not Model.race:
 			return
 			
-		race = Model.race
-
 		if not silent and not self.resultsCheck():
 			return
 			
@@ -4041,6 +4041,16 @@ _("""Score Cycling races quickly and easily with little preparation.
 
 Modified for use by the British Human Power Club.
 
+A brief list of features:
+   * Input riders on the first lap
+   * Predicts riders for all other laps based on lap times
+   * Indicates race leader by category and tracks missing riders
+   * Interpolates missing numbers.  Ignores duplicate rider entries.
+   * Shows results instantly by category during and after race
+   * Shows rider history
+   * Allows rider lap adjustments
+   * UCI 80% Rule Countdown
+   * Support for Early Bell
 """),
 			500, wx.ClientDC(self))
 		info.WebSite = ("https://github.com/kimble4/CrossMgr", "CrossMgr GitHub")
