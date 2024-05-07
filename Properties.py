@@ -2,7 +2,6 @@ import wx
 import re
 import os
 import wx.lib.intctrl as intctrl
-import wx.lib.masked.numctrl as numctrl
 import wx.lib.agw.flatnotebook as flatnotebook
 import glob
 import webbrowser
@@ -1071,7 +1070,7 @@ def doBatchPublish( iAttr=None, silent=True, cmdline=False ):
 					('Ftp is Not Configured')
 				)):
 			with FtpPublishDialog( mainWin ) as dlg:
-				ret = dlg.ShowModal()
+				dlg.ShowModal()
 		
 		if not silent:
 			class FtpThread( threading.Thread ):
@@ -1413,7 +1412,6 @@ class Properties( wx.Panel ):
 		event.Skip()	# Required to properly repaint the screen.
 	
 	def commitButtonCallback( self, event ):
-		mainWin = Utils.getMainWin()
 		if Model.race:
 			wx.CallAfter( self.commit )
 		else:
@@ -1768,7 +1766,6 @@ def ChangeProperties( parent ):
 				raise NameError('User Cancel')
 				
 			mainWin = Utils.getMainWin()
-			dir = os.path.dirname( mainWin.fileName )
 			
 			propertiesDialog.properties.refresh()
 			Model.resetCache()

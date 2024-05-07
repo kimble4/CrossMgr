@@ -486,7 +486,6 @@ class JChipSetupDialog( wx.Dialog ):
 		self.EndModal( wx.ID_CANCEL )
 		
 if __name__ == '__main__':
-	import WebServer
 	print( GetAllIps() )
 	#sys.exit()
 	app = wx.App(False)
