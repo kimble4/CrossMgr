@@ -8,7 +8,6 @@ from html import escape
 import copy
 from io import StringIO
 import Utils
-from Utils import tag
 import Model
 from Excel import GetExcelReader
 from ReadCategoriesFromExcel import ReadCategoriesFromExcel
@@ -207,8 +206,6 @@ class HeaderNamesPage(adv.WizardPageSimple):
 		# and the headers we found in the Excel sheet.
 		#sp = scrolled.ScrolledPanel( self, size=(750, 64), style = wx.TAB_TRAVERSAL )
 		sp = scrolled.ScrolledPanel( self, size=(750, 128), style = wx.TAB_TRAVERSAL )
-		
-		boldFont = None
 		
 		GetTranslation = _
 		gs = wx.GridSizer( 2, len(Fields), 2, 4 )
@@ -730,6 +727,7 @@ class ExcelLink:
 			return False
 	
 	reVersionField = re.compile( r'^(.+) \(([0-9]+)\)\.(?:xls|xlsx|xlsm)$', re.IGNORECASE )
+	
 	def getMostRecentFilename( self ):
 		dirname, basename = os.path.split(self.fileName)
 		
@@ -797,7 +795,7 @@ class ExcelLink:
 					except AttributeError:
 						data[field] = row[col]
 					
-					if data[field] == None:
+					if data[field] is None:
 						data[field] = ''
 						
 					if field == 'LastName':
@@ -988,6 +986,7 @@ class BibInfo:
 		'Team',
 		'Wave',
 	)
+	
 	def __init__( self ):
 		self.race = Model.race
 		excelLink = getattr(self.race, 'excelLink', None)
@@ -1025,6 +1024,7 @@ class BibInfo:
 	def bibList( self, bibs ):
 		bibs = [b for b in bibs if b]
 		html = StringIO()
+		tag = Utils.tag
 		with tag( html, 'ul', 'bibList' ):
 			for bib in bibs:
 				with tag( html, 'li' ):
@@ -1037,6 +1037,7 @@ class BibInfo:
 			return '<br/>'
 		GetTranslation = _
 		html = StringIO()
+		tag = Utils.tag
 		with tag( html, 'table', 'bibTable' ):
 			with tag( html, 'thead' ):
 				with tag( html, 'tr' ):

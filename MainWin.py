@@ -64,7 +64,6 @@ from FtpWriteFile		import realTimeFtpPublish
 from SetAutoCorrect		import SetAutoCorrectDialog
 from DNSManager			import DNSManagerDialog
 from USACExport			import USACExport
-from UCIExport			import UCIExport
 from UCIExcel			import UCIExcel
 from VTTAExport			import VTTAExport
 from JPResultsExport	import JPResultsExport
@@ -108,9 +107,8 @@ import Version
 from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
 from SetGraphic			import SetGraphicDialog
 from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM
-from PhotoFinish		import DeletePhotos, okTakePhoto
+from PhotoFinish		import okTakePhoto
 from SendPhotoRequests	import SendPhotoRequests
-from PhotoViewer		import PhotoViewerDialog
 from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
 from TemplateSubstitute import TemplateSubstitute
 from GetMatchingExcelFile import GetMatchingExcelFile
@@ -1976,7 +1974,7 @@ class MainWin( wx.Frame ):
 			payload['raceNotes']	= notes
 		else:
 			notes = TemplateSubstitute( escape(notes), race.getTemplateValues() )
-			notes = self.reTagTrainingSpaces.sub( '>', notes ).replace( '</table>', '</table><br/>' )
+			notes = self.reTagTrailingSpaces.sub( '>', notes ).replace( '</table>', '</table><br/>' )
 			notes = notes.replace('<', '{-{').replace( '>', '}-}' ).replace('\n','{-{br/}-}')
 			payload['raceNotes']	= notes
 		if race.startTime:
@@ -1992,7 +1990,7 @@ class MainWin( wx.Frame ):
 		
 		return payload
 	
-	reTagTrainingSpaces = re.compile( '>\s+', re.MULTILINE|re.UNICODE )
+	reTagTrailingSpaces = re.compile( r'>\s+', re.MULTILINE|re.UNICODE )
 	
 	def addResultsToHtmlStr( self, html ):
 		html = self.cleanHtml( html )
@@ -2207,7 +2205,7 @@ class MainWin( wx.Frame ):
 			try:
 				iStart = html.index( 'src="data:image/png' )
 				iEnd = html.index( '"/>', iStart )
-				html = ''.join( [html[:iStart], 'src="%s"' % graphicBase64, html[iEnd+1:]] )
+				html = ''.join( [html[:iStart], 'src="{}"'.format(graphicBase64), html[iEnd+1:]] )
 			except ValueError:
 				pass
 		return html
@@ -2530,7 +2528,7 @@ class MainWin( wx.Frame ):
 		fname = os.path.splitext(self.fileName)[0] + 'Course.gpx'
 		
 		doc = geoTrack.getGPX( os.path.splitext(os.path.basename(fname))[0] )
-		xml = doc.toprettyxml( indent = '', encoding = 'utf-8' )
+		xml = doc.toprettyxml( indent = '', encoding = 'utf8' )
 		doc.unlink()
 		try:
 			with open(fname, 'w', encoding='utf8') as f:

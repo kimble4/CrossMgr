@@ -1,5 +1,4 @@
 import os
-import io
 import re
 import sys
 import math
@@ -2785,7 +2784,7 @@ def getCurrentHtml():
 		return None
 	htmlFile = os.path.join(Utils.getHtmlFolder(), 'RaceAnimation.html')
 	try:
-		with io.open(htmlFile, 'r', encoding='utf-8') as fp:
+		with open(htmlFile, 'r', encoding='utf8') as fp:
 			html = fp.read()
 		return Utils.mainWin.addResultsToHtmlStr( html )
 	except Exception as e:
@@ -2797,7 +2796,7 @@ def getCurrentTTCountdownHtml():
 		return None
 	htmlFile = os.path.join(Utils.getHtmlFolder(), 'TTCountdown.html')
 	try:
-		with io.open(htmlFile, 'r', encoding='utf-8') as fp:
+		with open(htmlFile, 'r', encoding='utf8') as fp:
 			html = fp.read()
 		return Utils.mainWin.addTTStartToHtmlStr( html )
 	except Exception as e:
@@ -2809,7 +2808,7 @@ def getCurrentTTStartListHtml():
 		return None
 	htmlFile = os.path.join(Utils.getHtmlFolder(), 'TTStartList.html')
 	try:
-		with io.open(htmlFile, 'r', encoding='utf-8') as fp:
+		with open(htmlFile, 'r', encoding='utf8') as fp:
 			html = fp.read()
 		return Utils.mainWin.addTTStartToHtmlStr( html )
 	except Exception as e:
@@ -2828,7 +2827,7 @@ def writeModelUpdate( includeExcel=True, includePDF=True ):
 	else:
 		fname = os.path.splitext(Utils.getFileName())[0] + '.html'
 		try:
-			with io.open(fname, 'w', encoding='utf-8') as fp:
+			with open(fname, 'w', encoding='utf8') as fp:
 				fp.write( html )
 		except Exception as e:
 			success = False
@@ -2837,7 +2836,7 @@ def writeModelUpdate( includeExcel=True, includePDF=True ):
 	if html:
 		fname = os.path.splitext(Utils.getFileName())[0] + '_TTCountdown.html'
 		try:
-			with io.open(fname, 'w', encoding='utf-8') as fp:
+			with open(fname, 'w', encoding='utf8') as fp:
 				fp.write( html )
 		except Exception as e:
 			success = False
