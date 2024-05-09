@@ -93,7 +93,7 @@ class Results( wx.Panel ):
 		self.rcWorstLaps = set()
 		self.numSelect = None
 		self.isEmpty = True
-		self.reSplit = re.compile( '[\[\]\+= ]+' )	# separators for the fields.
+		self.reSplit = re.compile( r'[\[\]\+= ]+' )	# separators for the fields.
 		self.iLap = None
 		self.entry = None
 		self.iRow, self.iCol = None, None
