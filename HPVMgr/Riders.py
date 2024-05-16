@@ -138,6 +138,9 @@ class Riders( wx.Panel ):
 		col = event.GetCol()
 		self.ridersGrid.ClearSelection()
 		menu = wx.Menu()
+		database = Model.database
+		if database is None:
+			return
 		if row == -1: # header row
 			menu.SetTitle('Riders')
 			add = menu.Append( wx.ID_ANY, 'Add new rider', 'Add a new rider...' )
@@ -145,7 +148,7 @@ class Riders( wx.Panel ):
 		else:
 			try:
 				bib = int(self.ridersGrid.GetCellValue(row, 0))
-				name = self.ridersGrid.GetCellValue(row, 1)
+				name = database.getRiderName(bib)
 			except:
 				return
 			menu.SetTitle('#' + str(bib) + ' ' + name)
