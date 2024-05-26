@@ -227,7 +227,7 @@ class AdvancedSetup( wx.Dialog ):
 		bs.Add( wx.StaticText(self, label='Interval in which multiple tag reads are considered "repeats" and not reported.  Leave blank to report every read.'), pos=(row, 2), span=(1,1), border = border, flag=wx.TOP|wx.RIGHT|wx.ALIGN_CENTER_VERTICAL )
 		
 		row += 1
-		self.RecalculateOffset = wx.CheckBox( self, label='Recalculate clock offset as tag reads are reported')
+		self.RecalculateOffset = wx.CheckBox( self, label='Recalculate clock offset as tag reads are reported (less precise, but copes with clock drift).')
 		self.RecalculateOffset.SetValue(Impinj.RecalculateOffset)
 		bs.Add( self.RecalculateOffset, pos=(row, 1), span=(1,3), border = border, flag=wx.TOP )
 		
@@ -472,13 +472,16 @@ class MainWin( wx.Frame ):
 		hb.Add( gs )
 		self.methodName = wx.StaticText( self )
 		self.methodName.SetToolTip( wx.ToolTip('Report method') )
-		self.clockOffset = wx.StaticText( self )
-		self.clockOffset.SetToolTip( wx.ToolTip('Tag reader\'s UTC clock is this many seconds behind computer\'s clock.') )
+		self.usingOffset = wx.StaticText( self )
+		self.usingOffset.SetToolTip( wx.ToolTip('Using this offset to calculate tag read timestamps (calculated to high precision on reset).') )
+		self.measuredOffset= wx.StaticText( self )
+		self.measuredOffset.SetToolTip( wx.ToolTip('Tag reader\'s clock is roughly this many seconds behind computer\'s clock.') )
 		self.refreshMethodName()
 		
 		vs = wx.BoxSizer(wx.VERTICAL)
 		vs.Add( self.methodName, flag=wx.ALIGN_LEFT, border=20 )
-		vs.Add( self.clockOffset, flag=wx.ALIGN_LEFT, border=20 )
+		vs.Add( self.usingOffset, flag=wx.ALIGN_LEFT, border=20 )
+		vs.Add( self.measuredOffset, flag=wx.ALIGN_LEFT, border=20 )
 
 		hb.Add(vs)
 				
@@ -682,10 +685,17 @@ class MainWin( wx.Frame ):
 			s = MethodNames[Impinj.ProcessingMethod]
 		self.methodName.SetLabel( s )
 		
-	def updateClockOffset( self, offset ):
+	def updateClockOffset( self, offset, measured=None ):
 		if offset is not None:
 			s = offset.total_seconds()
-			self.clockOffset.SetLabel( 'Reader offset: {:.3f}'.format(s) + 's' )
+			self.usingOffset.SetLabel( 'Using ' + ('fixed ' if not Impinj.RecalculateOffset else '' ) + 'offset: {:.3f}'.format(s) + 's')
+		if measured is not None:
+			s = measured.total_seconds()
+			self.measuredOffset.SetLabel( 'Measured offset: {:.3f}'.format(s) + 's' )
+		if Impinj.RecalculateOffset:
+			self.usingOffset.SetToolTip( wx.ToolTip('Using this offset to calculate tag read timestamps (continuously recalculated).') )
+		else:
+			self.usingOffset.SetToolTip( wx.ToolTip('Using this offset to calculate tag read timestamps (calculated to high precision on reset).') )
 
 	def refreshStrays( self, strays ):
 		if self.strays.GetItemCount() != len(strays):
@@ -1018,6 +1028,8 @@ class MainWin( wx.Frame ):
 					elif not d[2] and not self.readerDisconnectedWarning:
 						wx.CallAfter( self.readerDisconnectionWarning )
 						self.readerDisconnectedWarning = True
+				elif 'measuredOffset' in d:
+					self.updateClockOffset( None, d[2] )
 				elif 'offset' in d:
 					self.updateClockOffset( d[2] )
 				else:

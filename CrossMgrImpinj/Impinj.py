@@ -25,6 +25,7 @@ HOME_DIR = os.path.expanduser("~")
 ConnectionTimeoutSecondsDefault	= 3		# Interval for connection timeout
 KeepaliveSecondsDefault			= 2		# Interval to request a Keepalive message
 RepeatSecondsDefault			= 3		# Interval in which a tag is considered a repeat read.
+MeasureOffsetDefault			= True  # Estimate reader offset on the fly; needed for RecalculateOffset
 RecalculateOffsetDefault		= True	# Do we recalculate the time offset on each reported read
 ProcessingMethodDefault 		= QuadraticRegressionMethod
 AntennaChoiceDefault			= MostReadsChoice
@@ -33,7 +34,8 @@ RemoveOutliersDefault           = True
 ConnectionTimeoutSeconds	= ConnectionTimeoutSecondsDefault
 KeepaliveSeconds			= KeepaliveSecondsDefault
 RepeatSeconds				= RepeatSecondsDefault
-RecalculteOffset			= RecalculateOffsetDefault
+MeasureOffset				= MeasureOffsetDefault
+RecalculateOffset			= RecalculateOffsetDefault
 OffsetsToAverageFirstRead	= 64
 OffsetsToAverageQuadReg		= 512	# Quadreg is more jittery, but also returns data more freqently
 TagReadInFutureSeconds		= 3		# If a tag read is this many seconds in the future (after applying offset), distrust reader's reported time
@@ -172,7 +174,10 @@ class Impinj:
 		self.logQ = Queue()
 		self.rospecID = 123
 		self.readerSocket = None
+		self.measuredOffset = None
 		self.timeCorrection = None	# Correction between the reader's time and the computer's time.
+		tsNow = datetime.datetime.now().timestamp()
+		self.tzOffset = (datetime.datetime.fromtimestamp(tsNow) - datetime.datetime.utcfromtimestamp(tsNow)) # timezone offset from UTC (to fix display)
 		self.connectedAntennas = []
 		self.antennaReadCount = defaultdict(int)
 		self.lastReadTime = {}
@@ -248,7 +253,7 @@ class Impinj:
 		readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
 		readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
 		self.timeCorrection = getTimeNow() - readerTime
-		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
+		self.messageQ.put( ('Impinj', 'offset', self.timeCorrection - self.tzOffset) )
 		self.messageQ.put( ('Impinj', '\nReader UTC time is {} seconds behind computer time\n'.format(self.timeCorrection.total_seconds())) )
 		
 		# Reset to factory defaults.
@@ -476,7 +481,7 @@ class Impinj:
 			time.sleep( 0.1 )
 	
 	def runServer( self ):
-		global tAntennaConnectedLast, tAntennaConnectedLastLock
+		global tAntennaConnectedLast, tAntennaConnectedLastLock, RecalculateOffset
 		
 		self.messageQ.put( ('BackupFile', self.fname) )
 		
@@ -580,8 +585,8 @@ class Impinj:
 						break
 					
 					# Report the current time correction here, so we don't do it too frequently
-					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					
+					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection - self.tzOffset) )
+					self.messageQ.put( ('Impinj', 'measuredOffset', self.measuredOffset - self.tzOffset) )
 					
 				#------------------------------------------------------------
 				# Messages from the reader.
@@ -619,13 +624,17 @@ class Impinj:
 				#------------------------------------------------------------
 				# Reader event
 				#
-				#if isinstance(response, READER_EVENT_NOTIFICATION_Message):
-					#recalculate correction between the reader's time and the computer's time.
-					#readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
-					#readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
-					#self.timeCorrection = getTimeNow() - readerTime
-					#self.messageQ.put( ('Impinj', 'offset', self.timeCorrection) )
-					#self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+				if isinstance(response, READER_EVENT_NOTIFICATION_Message):
+					if RecalculateOffset is False:
+						# Recalculate correction between the reader's time and the computer's time.
+						# This is *much* more precise than using the time of the tag reads, but will give a different value
+						# so we only want to do this if we're not continuously recalculating offsets.
+						# Sadly there's no sensible way to generate Reader Events at regular intervals?
+						readerTime = response.getFirstParameterByClass(UTCTimestamp_Parameter).Microseconds
+						readerTime = datetime.datetime.utcfromtimestamp( readerTime / 1000000.0 )
+						self.timeCorrection = getTimeNow() - readerTime
+						self.messageQ.put( ('Impinj', 'offset', self.timeCorrection - self.tzOffset) )
+						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(self.timeCorrection.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 				
 				#------------------------------------------------------------
 				# Keepalive.
@@ -742,7 +751,8 @@ class Impinj:
 				# Recalculate the reader time difference:
 				# Assume that the last reported tag read occured at the time the message finished arriving
 				# With rate-limited moving averaging this seems consistent to a few hundredths of a second
-				if RecalculateOffset and lastTagTime > 0 and lastSocketData - lastRecalculatedOffset > datetime.timedelta(seconds = 0.1):
+						
+				if MeasureOffset and lastTagTime > 0 and lastSocketData - lastRecalculatedOffset > datetime.timedelta(seconds = 0.1):
 					lastRecalculatedOffset = lastSocketData
 					
 					oldRawTimeCorrection = self.timeCorrection
@@ -753,16 +763,25 @@ class Impinj:
 					
 					offsetsBuffer.append( tc.total_seconds() )
 					
-					if abs( (oldRawTimeCorrection - tc).total_seconds() ) > 1:  # Jumped by more than 1 second
-						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer time at {}'.format(tc.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
+					if abs( (oldRawTimeCorrection - tc).total_seconds() ) > 1:  # Offset of more than 1 second
+						self.messageQ.put( ('Impinj', 'Reader UTC time is {} seconds behind computer local time at {}'.format(tc.total_seconds(), datetime.datetime.now().strftime('%H:%M:%S.%f'))) )
 						# Clear last read times
 						self.lastReadTime.clear()
-						# Update GUI
-						self.messageQ.put( ('Impinj', 'offset', tc) )
 						# Fill buffer with new offset
 						offsetsBuffer.extend([tc.total_seconds()] * (offsetsToAverage-1))
+						# Enable recalculation if not enabled
+						if RecalculateOffset is not True:
+							self.messageQ.put( ('Impinj', 'The clocks have drifted!  Continuous offset recalculation now enabled.  Accuracy may be reduced...') )
+							RecalculateOffset = True
+						# Update GUI
+						self.messageQ.put( ('Impinj', 'offset', tc - self.tzOffset) )
+						self.messageQ.put( ('Impinj', 'measuredOffset', tc - self.tzOffset) )
 						
-					self.timeCorrection = datetime.timedelta(seconds = (sum(offsetsBuffer)/offsetsToAverage))
+					self.measuredOffset = datetime.timedelta(seconds = (sum(offsetsBuffer)/offsetsToAverage))
+					
+					if RecalculateOffset is True:
+						self.timeCorrection = self.measuredOffset
+						
 		
 		# Cleanup.
 		if self.readerSocket:
