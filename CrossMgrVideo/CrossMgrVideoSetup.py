@@ -113,7 +113,7 @@ def make_inno_version():
 		'AppUpdatesURL':		"https://github.com/kimble4/CrossMgr",
 		'VersionInfoVersion':	AppVerName.split()[1],
 	}
-	with open('inno_setup.txt', 'w') as f:
+	with open('inno_setup.txt', 'w', encoding='utf8') as f:
 		for k, v in setup.items():
 			f.write( '{}={}\n'.format(k,v) )
 make_inno_version()
