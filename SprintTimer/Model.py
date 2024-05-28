@@ -1304,6 +1304,7 @@ class Race:
 		
 		self.rankBy = Race.rankByAverageSpeed
 		self.inProgressSprintStart = None
+		self.lastSprintBib = None
 		self.sprints = []
 		self.sprintBibs = []
 		self.categories = {}
@@ -1613,12 +1614,13 @@ class Race:
 				# update the bib in place
 				sprint[1]["sprintBib"] = bibstring
 			# set the in progress bib
-			if self.inProgressSprintBib is None:
-				self.inProgressSprintBib = possibleDiffBibs[0][1]
-			# feed the best bib back to the sprint timer
+			# if self.inProgressSprintBib is None:
+			# 	self.inProgressSprintBib = possibleDiffBibs[0][1]
+			self.inProgressSprintBib = None
+			# clear the bib at the sprint timer
 			mainWin = Utils.getMainWin()
 			if mainWin:
-				mainWin.sendBibToSprintTimer( possibleDiffBibs[0][1] )
+				mainWin.sendBibToSprintTimer( -1 )
 			self.setChanged()
 			return True
 		else:

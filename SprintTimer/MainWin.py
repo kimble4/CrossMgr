@@ -543,6 +543,7 @@ class MainWin( wx.Frame ):
 			else:
 				# no current sprint
 				race.setInProgressSprintStart( None )
+				return
 		else:
 			race.setInProgressSprintStart( None )
 			Utils.PlaySound('peeeep.wav')
@@ -569,9 +570,16 @@ class MainWin( wx.Frame ):
 		num = 0  # default to 0 because CrossMgrVideo will choke on None
 		if "sprintBib" in event.sprintDict:
 			num = event.sprintDict["sprintBib"]
-			#race.setInProgressSprintBib( num )  # why are we doing this here?  It literally makes no sense?
+			Utils.writeLog('Using bib #' + str(num) + ' from sprintDict for photo trigger')
 		elif getattr(race, 'useSequentialBibs', False):
 			num = race.nextSequentialBib
+			Utils.writeLog('Using sequential bib #' + str(num) + ' for photo trigger')
+		elif race.getInProgressSprintBib() is not None:
+			num = race.getInProgressSprintBib()
+			Utils.writeLog('Using in-progress bib #' + str(num) + ' for photo trigger')
+		else:
+			Utils.writeLog('Do not have a bib # for photo trigger')
+			
 		requests = [(num, (dt - race.startTime).total_seconds())]
 		success, error = SendPhotoRequests( requests )
 		if success:
