@@ -280,7 +280,7 @@ class Data( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Count', 'Time of Day', 'Δt', 'T1 Time', 'T2 Time', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
+		self.colnames = ['Count', 'Time of Day', 'RTC Δt', 'T1 Time', 'T2 Time', 'Bib', 'Name', 'Machine', 'Team', 'Gender', 'Nat', 'Seconds', 'Speed', 'Unit', 'Note', 'Distance', 'System µs', 'Satellites', 'Lat', 'Long', 'Ele']
 		
 		self.whiteColour = wx.Colour( 255, 255, 255 )
 		self.blackColour = wx.Colour( 0, 0, 0 )
