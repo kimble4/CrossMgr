@@ -460,6 +460,26 @@ Additional steps are needed if you will be using the Sprint Timer Unit.  See the
 1. Connect the **Timing gates** to the **T1** and **T2 inputs** on the sprint timer using **XLR cables**, as described in the **SprintTimer** documentation.
 1. Further steps are required to verify the operation of the sprint timing system.  See the Quick Start guide in the **SprintTimer** documentation.
 
+### Resetting the energy meters
+
+The AC and DC power meters keep track of the energy used.  This may be useful when running on battery power.  While both meters are operated using a single tactile button to the right of the display, the procedure for resetting the totals is confusingly different for the two meters.
+
+![Power supply panel](./images/power_supply.jpg "Dual power supply")
+
+#### AC power meter (top)
+1. Hold down the button.  `255 Hi` will be displayed.  Release the button.
+1. Click the button to cycle through `100 Lo` and `1.0 OL` until `CLr` is displayed.
+1. Hold down the button until `CLr` starts flashing.  Release the button.
+1. The energy total should now read `0.00 kWh`
+
+#### DC power meter (bottom)
+1. Hold down the button until `SET` (the 'T' doesn't look very much like a 'T') is displayed.  **Keep holding** until `CLr` is displayed.  Release the button.
+1. The energy total should now flash.  Click the button to zero it.
+1. The energy total should now read `0 Wh`
+
+* We recommend that this is done before travelling to the race venue.  You will forget to do it on the day.
+* Note that the two meters use different units!
+
 
 ## Software startup and testing
 
