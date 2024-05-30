@@ -585,8 +585,10 @@ class Impinj:
 						break
 					
 					# Report the current time correction here, so we don't do it too frequently
-					self.messageQ.put( ('Impinj', 'offset', self.timeCorrection - self.tzOffset) )
-					self.messageQ.put( ('Impinj', 'measuredOffset', self.measuredOffset - self.tzOffset) )
+					if self.timeCorrection is not None:
+						self.messageQ.put( ('Impinj', 'offset', self.timeCorrection - self.tzOffset) )
+					if self.measuredOffset is not None:
+						self.messageQ.put( ('Impinj', 'measuredOffset', self.measuredOffset - self.tzOffset) )
 					
 				#------------------------------------------------------------
 				# Messages from the reader.
