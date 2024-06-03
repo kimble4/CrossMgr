@@ -417,7 +417,7 @@ class JChipSetupDialog( wx.Dialog ):
 				self.bibList.SetDefaultStyle(wx.TextAttr(wx.LIGHT_GREY))
 				self.bibList.AppendText('\n'.join('{} (0)'.format(b) for b in sorted(bibsNotSeen)))
 			self.bibList.ShowPosition(0)
-			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(race.tagNums)))
+			self.bibListHeading.SetLabel('{}/{} bibs seen:'.format(len(race.rfidTestBibsSeen), len(bibsNotSeen) + len(race.rfidTestBibsSeen)) )
 	
 	def onTimerCallback( self, stat ):
 		data = ChipReader.chipReaderCur.GetData()
