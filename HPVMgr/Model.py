@@ -206,14 +206,14 @@ class Database:
 		
 	@memoize
 	def lookupTag( self, tag ):
+		bibTagNrs = []
 		for bib in self.getBibs():
 			rider = self.riders[bib]
 			for i in range(10):
 				if 'Tag' + (str(i) if i > 0 else '') in rider:
 					if rider['Tag' + (str(i) if i > 0 else '')] == tag:
-						print(rider)
-						return bib, i
-		return None, None
+						bibTagNrs.append((bib, i))
+		return bibTagNrs
 	
 	def addRider( self, bib, firstName=None, lastName=None, gender=Open ):
 		if bib in self.riders:

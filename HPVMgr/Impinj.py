@@ -303,6 +303,8 @@ class Impinj( wx.Panel ):
 		self.Bind( wx.EVT_MENU, lambda event, r=row: self.copyTag(r, asAscii=False), copy )
 		asc = menu.Append( wx.ID_ANY, 'Copy EPC as ASCII', 'Copy the EPC as ASCII...' )
 		self.Bind( wx.EVT_MENU, lambda event, r=row: self.copyTag(r, asAscii=True), asc )
+		name = menu.Append( wx.ID_ANY, 'Copy Rider', 'Copy the rider details...' )
+		self.Bind( wx.EVT_MENU, lambda event, r=row: self.copyName(r), name )
 		try:
 			self.PopupMenu( menu )
 		except Exception as e:
@@ -587,10 +589,13 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
 					col += 1
 					if database:
-						bib, tagNr = database.lookupTag(tag[0])
-						if bib is not None:
-							self.tagsGrid.SetCellValue(row, col, '#' + str(bib) + ' ' + database.getRiderName(bib) + (' (Tag ' + str(tagNr) + ')' if tagNr is not None else '') )
-							self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT,  wx.ALIGN_CENTRE)
+							bibTagNrs = database.lookupTag(tag[0])
+							if len(bibTagNrs) > 0:
+								tagList = []
+								for bibTagNr in bibTagNrs:
+									tagList.append('#' + str(bibTagNr[0]) + ' ' + database.getRiderName(bibTagNr[0]) + ' (Tag' + str(bibTagNr[1]) + ')')
+								self.tagsGrid.SetCellValue(row, col, ',\n'.join(tagList) )
+								self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT,  wx.ALIGN_CENTRE)
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
@@ -634,6 +639,15 @@ class Impinj( wx.Panel ):
 						self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(tag[0]) + '"')
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 						self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
+						col += 1
+						if database:
+							bibTagNrs = database.lookupTag(tag[0])
+							if len(bibTagNrs) > 0:
+								tagList = []
+								for bibTagNr in bibTagNrs:
+									tagList.append('#' + str(bibTagNr[0]) + ' ' + database.getRiderName(bibTagNr[0]) + ' (Tag' + str(bibTagNr[1]) + ')')
+								self.tagsGrid.SetCellValue(row, col, ',\n'.join(tagList) )
+								self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT,  wx.ALIGN_CENTRE)
 						col += 1
 						self.tagsGrid.SetCellValue(row, col, str(tag[1]))
 						self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)
@@ -697,7 +711,7 @@ class Impinj( wx.Panel ):
 		database = Model.database
 		if database is None:
 			return
-		data = self.tagsGrid.GetCellValue( row, 0 )
+		data = self.tagsGrid.GetCellValue( row, self.colnames.index('Tag EPC (Hexadecimal)') )
 		if data:
 			if asAscii:
 				data = self.epcToASCII(data, printable=False)
@@ -714,7 +728,19 @@ class Impinj( wx.Panel ):
 				wx.TheClipboard.Close()
 		else:
 			Utils.writeLog('Impinj: No tag to copy!')
-				
+			
+	def copyName( self, row ):
+		database = Model.database
+		if database is None:
+			return
+		data = self.tagsGrid.GetCellValue( row, self.colnames.index('Rider') )
+		if data:
+			if wx.TheClipboard.Open():
+				wx.TheClipboard.SetData(wx.TextDataObject(data))
+				wx.TheClipboard.Close()
+		else:
+			Utils.writeLog('Impinj: No rider name to copy!')
+			
 	def setTagToWrite( self, tag, info=None ):
 		Utils.writeLog('Impinj set tag to: ' + str(tag))
 		self.tagToWrite.ChangeValue(str(tag))
