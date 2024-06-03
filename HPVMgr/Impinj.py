@@ -225,7 +225,7 @@ class Impinj( wx.Panel ):
 		
 		vs.Add( gbs, flag=wx.EXPAND)
 		
-		self.colnames = ['Count','Tag EPC (Hexadecimal)', 'Tag EPC (ASCII)', 'Peak RSSI (dB)', 'Antenna', 'Write status' ]
+		self.colnames = ['Count','Tag EPC (Hexadecimal)', 'Tag EPC (ASCII)', 'Rider', 'Peak RSSI (dB)', 'Antenna', 'Write status' ]
 		
 		self.tagsGrid = wx.grid.Grid( self )
 		self.tagsGrid.CreateGrid(0, len(self.colnames))
@@ -531,6 +531,7 @@ class Impinj( wx.Panel ):
 		
 		tagInventory = None
 		
+		database = Model.database
 		
 		antennas = [self.useAntenna] if self.useAntenna > 0 else [int(a) for a in self.antennasAvailable]
 		
@@ -584,6 +585,12 @@ class Impinj( wx.Panel ):
 					self.tagsGrid.SetCellValue(row, col, '"' + self.epcToASCII(tag[0]) + '"' )
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT,  wx.ALIGN_CENTRE)
 					self.tagsGrid.SetCellFont( row, col, self.teletypeFont )
+					col += 1
+					if database:
+						bib, tagNr = database.lookupTag(tag[0])
+						if bib is not None:
+							self.tagsGrid.SetCellValue(row, col, '#' + str(bib) + ' ' + database.getRiderName(bib) + (' (Tag ' + str(tagNr) + ')' if tagNr is not None else '') )
+							self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_LEFT,  wx.ALIGN_CENTRE)
 					col += 1
 					self.tagsGrid.SetCellValue(row, col, str(tag[1]))
 					self.tagsGrid.SetCellAlignment(row, col, wx.ALIGN_CENTRE,  wx.ALIGN_CENTRE)

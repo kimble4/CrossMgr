@@ -170,7 +170,7 @@ class Database:
 				if firstNameFirst:
 					name = ' '.join( n for n in [rider['FirstName'], rider['LastName']] if n )
 				else:
-					name = ', '.join( n for n in [rider['LastName'], rider['FirstName']] if n )
+					name = ', '.join( n for n in [rider['LastName'].upper(), rider['FirstName']] if n )
 		return name
 		
 	@memoize
@@ -195,13 +195,25 @@ class Database:
 				dob = datetime.datetime.fromtimestamp(rider['DOB'])
 				return int((atDate - dob).days/365.2425)
 		return None
-		
+	
+	@memoize
 	def getRiderFactor( self, bib):
 		if bib in self.riders:
 			rider = self.riders[bib]
 			if 'Factor' in rider:
 				return rider['Factor']
 		return None
+		
+	@memoize
+	def lookupTag( self, tag ):
+		for bib in self.getBibs():
+			rider = self.riders[bib]
+			for i in range(10):
+				if 'Tag' + (str(i) if i > 0 else '') in rider:
+					if rider['Tag' + (str(i) if i > 0 else '')] == tag:
+						print(rider)
+						return bib, i
+		return None, None
 	
 	def addRider( self, bib, firstName=None, lastName=None, gender=Open ):
 		if bib in self.riders:
