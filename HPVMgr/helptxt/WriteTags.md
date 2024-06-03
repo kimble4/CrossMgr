@@ -18,9 +18,19 @@ Select the antenna you want to use for reading and writing tags with the "**Use 
 
 ### Reading tags
 
-To perform a tag inventory, click the "**Read Tags**" button (Ctrl-R).  The table at the bottom of the screen will be populated with the details of any tags found.  This can be refreshed at any time by clicking "**Read Tags**" again.
+To perform a tag inventory, click the "**Read Tags**" button (Ctrl-R).  The table at the bottom of the screen will be populated with the details of any tags found, in order of RSSI (strongest signal first).  This can be refreshed at any time by clicking "**Read Tags**" again.
 
-Tag EPC numbers can be copied to the clipboard (either as hexadecimal or ASCII) by right-clicking on the tag table.
+Field|Description
+:----|:----------
+Count|A row number, for ease of counting
+Tag EPC (Hexadecimal)|The tag's *Electronic Product Code* as a 24-character hexadecimal number
+Tag EPC (ASCII)|An attempt to render the EPC value as ASCII printable characters.  Not all digits may be printable.
+Rider|If the EPC exists in the rider database, the bib number, rider name and tag number associated with it.  If there is more than one match, multiple lines are shown.
+RSSI (dB)|The Received Signal Strength Indicator for that tag read, in decibels.  A higher (less negative) number means a stronger signal.
+Antenna|The antenna used to read the tag.
+Write status|If a tag write was just attempted, whether or not it was successful.
+
+* Tag EPC numbers (either as hexadecimal or ASCII) and rider names can be copied to the clipboard by right-clicking on the tag table.
 
 ### Writing tags
 
