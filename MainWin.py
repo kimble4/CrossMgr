@@ -214,8 +214,10 @@ class MyTipProvider( adv.TipProvider ):
 
 def ShowTipAtStartup():
 	mainWin = Utils.getMainWin()
-	#if mainWin and not mainWin.config.ReadBool('showTipAtStartup', True):
-	#	return
+	print(mainWin.config.ReadBool('showTipAtStartup'))
+	
+	if mainWin and not mainWin.config.ReadBool('showTipAtStartup', True):
+		return
 	
 	tipFile = os.path.join(Utils.getImageFolder(), "tips.txt")
 	try:
@@ -223,6 +225,7 @@ def ShowTipAtStartup():
 		showTipAtStartup = wx.adv.ShowTip( None, provider, True )
 		if mainWin:
 			mainWin.config.WriteBool('showTipAtStartup', showTipAtStartup)
+			print(mainWin.config.ReadBool('showTipAtStartup'))
 	except Exception as e:
 		pass
 
