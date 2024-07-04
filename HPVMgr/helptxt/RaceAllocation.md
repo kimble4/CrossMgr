@@ -20,5 +20,6 @@ To allocate racers to races:
 * A racer's **Machine**, **Categories** and **Tags** may be changed using the options in the context menu.  **This will only affect their entry for the current Race/Round**; other Rounds in the Event will use the machine and categories entered on the [EventEntry][] screen, and the tags from the [RiderDetail][] screen.  **This is intended to allow specific changes to be made during an Event**, eg. when a racer swaps machines or removes a fairing due to mechanical problems, or if you have to exclude a stray tag from the race.  The edited machine and categories fields will be coloured **orange**; if tags have been edited, this will be indicated by the rider's bib number being coloured **orange**.
 * If a racer does not exist in the [Riders][] database, their race allocation will be preserved but they will not be included in the sign-on sheet.  Such entries will be highlighted in **blue**.
 * Use the "**Write sign-on sheet**" button after making changes to write the updated CrossMgr sign-on sheet to disk.
+* Use the "**Write allocation page**" button after making changes to write the updated race allocation HTML page to disk.
 
 All changes made on the **RaceAllocation** screen manipulate the in-memory database directly.  There is no '**Commit**' button.

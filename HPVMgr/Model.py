@@ -442,7 +442,7 @@ class Database:
 				headerStyle = headerStyleAlignLeft if c in leftJustifyCols else headerStyleAlignRight
 				sheetFit.write( row, col, c, headerStyle, bold=True )
 				
-			#second pass to write the data  #fixme changed race allocation data structure
+			#second pass to write the data
 			iRace = 0
 			for race in rnd['races']:
 				if raceNr is None or raceNr == iRace + 1: # only the selected race
@@ -457,7 +457,6 @@ class Database:
 							col = 0
 							#StartTime
 							if haveStartTime:
-								# just create an empty column so TT start times can be added in the spreadsheet
 								sheetFit.write( row, col, Utils.formatTime(raceEntryDict['startTime']),styleAlignRight )
 								col += 1
 							#bib
@@ -551,6 +550,96 @@ class Database:
 			#sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
 		except Exception as e:
 				Utils.logException( e, sys.exc_info() )
+				
+	def getRoundAllocationHTML( self, rndName, raceNr=None ):
+		try:
+			row = 0
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			evtName = list(season['events'])[self.curEvt]
+			evt = season['events'][evtName]
+			rnd = evt['rounds'][rndName]
+			evtRacersDict = {}
+			if 'racers' in evt:
+				for bibMachineCategoriesTeam in evt['racers']:
+					evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2] if len(bibMachineCategoriesTeam) >=3 else None, bibMachineCategoriesTeam[3] if len(bibMachineCategoriesTeam) >=4 else None)
+			else:
+				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' has no racers!')
+				return
+				
+			if 'races' not in rnd:
+				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' round ' + rndName + ' has no races!')
+				return
+			html = ''
+			iRace = 0
+			for race in rnd['races']:
+				if raceNr is None or raceNr == iRace + 1: # only the selected race
+					html += '<table class="allocation">\n<th>Bib</th><th>Name</th><th class="noprint">Categories</th><th>Machine</th>\n'
+					for raceEntryDict in sorted(race, key=lambda raceEntryDict: raceEntryDict['bib']):
+						if raceEntryDict['bib'] in evtRacersDict:
+							if raceEntryDict['bib'] is None:  #skip deleted riders, even if they're in the race
+								continue
+							eventsMachineCategoriesTeam = evtRacersDict[raceEntryDict['bib']]
+							html += '<tr>'
+							#bib
+							html += '<td class="numeric">' + str(raceEntryDict['bib']) + '</td>'
+							#Name
+							html += '<td>' + self.getRiderName(raceEntryDict['bib']) + '</td>'
+							#Categories
+							html += '<td class="noprint">'
+							if True or 'categories' not in raceEntryDict or raceEntryDict['categories'] is None:  # "if true" => always use event default
+								# categories have not been changed from event default
+								html += ','.join(database.getAbbreviatedCategory(c) for c in eventsMachineCategoriesTeam[1])
+							else:
+								#categories have been edited for this race
+								html += ','.join(database.getAbbreviatedCategory(c) for c in raceEntryDict['categories'])
+							#machine
+							html += '</td><td>'
+							if True or 'machine' not in raceEntryDict or raceEntryDict['machine'] is None:  # "if true" => always use event default
+								# machine has not been changed from event default
+								if eventsMachineCategoriesTeam[0]:
+									html += eventsMachineCategoriesTeam[0]
+							elif raceEntryDict['machine']:
+								# machine has been edited for this race
+								html += raceEntryDict['machine']
+							html += '</td></tr>\n'
+					html += '</table>\n'
+				iRace += 1
+			return html
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
+	def getRoundAllocation( self, rndName ):
+		try:
+			row = 0
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			evtName = list(season['events'])[self.curEvt]
+			evt = season['events'][evtName]
+			rnd = evt['rounds'][rndName]
+			evtRacersDict = {}
+			if 'racers' in evt:
+				for bibMachineCategoriesTeam in evt['racers']:
+					evtRacersDict[bibMachineCategoriesTeam[0]] = (bibMachineCategoriesTeam[1], bibMachineCategoriesTeam[2] if len(bibMachineCategoriesTeam) >=3 else None, bibMachineCategoriesTeam[3] if len(bibMachineCategoriesTeam) >=4 else None)
+			else:
+				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' has no racers!')
+				return
+				
+			if 'races' not in rnd:
+				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' round ' + rndName + ' has no races!')
+				return
+			allocation = []
+			for race in rnd['races']:
+				raceBibs = []
+				for raceEntryDict in sorted(race, key=lambda raceEntryDict: raceEntryDict['bib']):
+					if raceEntryDict['bib'] in evtRacersDict:
+						if raceEntryDict['bib'] is None:  #skip deleted riders, even if they're in the race
+							continue
+						raceBibs.append(raceEntryDict['bib'])
+				allocation.append(raceBibs)
+			return allocation
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
 	
 	def setChanged( self, changed=True ):
 		self.changed = changed

@@ -74,9 +74,15 @@ class RaceAllocation( wx.Panel ):
 		self.copyAllocationButton.Bind( wx.EVT_BUTTON, self.copyAllocation )
 		hs.Add( self.copyAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
+		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
 		self.writeSignonButton.Bind( wx.EVT_BUTTON, self.writeSignonSheet )
 		hs.AddStretchSpacer()
 		hs.Add( self.writeSignonButton,  flag=wx.ALIGN_CENTER_VERTICAL )
+		self.writeAllocationButton = wx.Button( self, label='Write allocation page')
+		self.writeAllocationButton.SetToolTip( wx.ToolTip('Click to write the race allocation for the selected event to HTML'))
+		self.writeAllocationButton.Bind( wx.EVT_BUTTON, self.writeAllocationHTML )
+		hs.AddStretchSpacer()
+		hs.Add( self.writeAllocationButton, flag=wx.ALIGN_CENTER_VERTICAL )
 		hs.AddStretchSpacer()
 		self.showDetails = wx.CheckBox( self, label='Show extended rider details' )
 		self.showDetails.Bind( wx.EVT_CHECKBOX, self.onShowDetails )
@@ -310,6 +316,9 @@ class RaceAllocation( wx.Panel ):
 			if not Utils.MessageOKCancel(self, 'Riders have clashing time trial start times.\nAre you sure you want to continue writing the sign-on sheet?', 'Start time clash', iconMask=wx.ICON_WARNING):
 				return
 		Utils.getMainWin().events.writeSignonSheet()
+		
+	def writeAllocationHTML( self, event ):
+		Utils.getMainWin().events.writeAllocationHTML()
 	
 	def editRacerMachine( self, event, bib, iRace ):
 		database = Model.database
@@ -641,6 +650,8 @@ class RaceAllocation( wx.Panel ):
 				season = database.seasons[seasonName]
 				evtName = list(season['events'])[self.evt]
 				evt = season['events'][evtName]
+				if not 'rounds' in evt:
+					return
 				rndName = list(evt['rounds'])[self.rnd]
 				rnd = evt['rounds'][rndName]
 				evtRacersDict = {}

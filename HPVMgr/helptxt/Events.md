@@ -25,10 +25,17 @@ Use the right-click context menu to add, remove, duplicate or rename items in th
 
 The "**Edit entries**" and "**Edit races**" buttons take you to the [EventEntry][] and [RaceAllocation][] screens respectively.
 
-### Sign-on sheet
+### Sign-on spreadsheet
 This sets the filename that the **CrossMgr sign-on sheet** of the currently selected **Event** will be written to.  (Each **Event** has a separate filename.)  Click "**Browse**" to select a directory and filename.
 
 * To simplify moving databases between machines, the sign-on sheet filenames are stored relative to the path of the current database `.hdb` file.
 * The "**Write sign-on sheet**" button will write the currently selected sign-on sheet to disk.
+
+### Race Allocation HTML page
+This sets the filename to write a web page of the race allocations for the currently selected **Event** to.  This can be printed out or published on the web so that racers know which group they have been allocated to.   (Each **Event** has a separate filename.)  Click "**Browse**" to select a directory and filename.
+
+* To simplify moving databases between machines, the allocation web page filenames are stored relative to the path of the current database `.hdb` file.
+* The "**Write race allocation**" button will write the currently selected race allocation to disk.
+
 
 All operations on the **Events** screen manipulate the in-memory database directly.  There is no '**Commit**' button.

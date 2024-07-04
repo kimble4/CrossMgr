@@ -130,7 +130,10 @@ class Events( wx.Panel ):
 		gbs.Add( wx.StaticText( self, label='Current selection:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
 		
 		row += 1
-		gbs.Add( wx.StaticText( self, label='Sign-on sheet:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		gbs.Add( wx.StaticText( self, label='Sign-on spreadsheet:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
+		
+		row += 2
+		gbs.Add( wx.StaticText( self, label='Race allocation HTML page:' ), pos=(row,0), span=(1,1), flag=wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT )
 		
 		row = 0
 		
@@ -194,12 +197,32 @@ class Events( wx.Panel ):
 		
 		row += 1
 		
-		#write button
+		#write sign-on sheet button
 		self.writeSignonButton = wx.Button( self, label='Write sign-on sheet')
 		self.writeSignonButton.SetToolTip( wx.ToolTip('Click to write the sign-on sheet for the selected event to disk'))
 		self.writeSignonButton.Disable()
 		self.writeSignonButton.Bind( wx.EVT_BUTTON, self.writeSignonSheet )
 		gbs.Add( self.writeSignonButton, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		
+		row += 1
+		
+		#allocation filename
+		self.allocationFileName = wx.TextCtrl( self, style=wx.TE_PROCESS_ENTER|wx.TE_RIGHT, size=(600,-1))
+		self.allocationFileName.SetToolTip( wx.ToolTip('Path to write the race allocation (relative to the database file)') )
+		self.allocationFileName.SetValue( '' )
+		self.allocationFileName.Disable()
+		self.allocationFileName.Bind( wx.EVT_TEXT_ENTER, self.onEditAllocation )
+		gbs.Add( self.allocationFileName, pos=(row,1), span=(1,3), flag=wx.ALIGN_LEFT )
+		
+		row += 1
+		
+		#write allocation list button
+		self.writeAllocationButton = wx.Button( self, label='Write allocation page')
+		self.writeAllocationButton.SetToolTip( wx.ToolTip('Click to write the race allocation for the selected event to HTML'))
+		self.writeAllocationButton.Disable()
+		self.writeAllocationButton.Bind( wx.EVT_BUTTON, self.writeAllocationHTML )
+		gbs.Add( self.writeAllocationButton, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		
 		
 		row = 0
 		#rounds list
@@ -228,6 +251,12 @@ class Events( wx.Panel ):
 		self.signonBrowseButton.Bind( wx.EVT_BUTTON, self.onBrowseSignon )
 		gbs.Add( self.signonBrowseButton, pos=(row,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 	
+		row += 2
+		
+		self.allocationBrowseButton = wx.Button( self, label='{}...'.format(_('Browse')) )
+		self.allocationBrowseButton.Disable()
+		self.allocationBrowseButton.Bind( wx.EVT_BUTTON, self.onBrowseAllocation )
+		gbs.Add( self.allocationBrowseButton, pos=(row,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL )
 		
 		vs.Add( gbs )
 		
@@ -299,7 +328,93 @@ class Events( wx.Panel ):
 							Utils.logException( e, sys.exc_info() )
 							return
 				Utils.MessageOK(self, 'Sign-on sheet filename is not set!\nConfigure the sign-on sheet location for "' + evtName + '" on the \'Events\' screen, and try again.', _('Write sign-on sheet'), iconMask = wx.ICON_ERROR)
-
+				
+	def writeAllocationHTML( self, event=None ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			if self.evt is not None:
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				if 'allocationFileName' in evt:
+					htmlFName = evt['allocationFileName']
+					if not os.path.isabs(htmlFName): 
+						htmlFName = os.path.normpath( os.path.join( os.path.dirname(database.fileName), htmlFName) )  #allocation page path is relative to database file
+					if not os.path.isdir(os.path.dirname(htmlFName)):
+						Utils.MessageOK(self,
+										'{}\n"{}"\n\n{}\n{}'.format(
+											_('Cannot write'), xlFName,
+											_('Destination directory does not exist!'),
+											_('Check the allocation page path.')
+										),
+										_('Cannot write allocation page'), iconMask=wx.ICON_ERROR )
+						return
+					if htmlFName and 'rounds' in evt:
+						# Read the html header.
+						htmlHeaderFile = os.path.join(Utils.getHtmlFolder(), 'AllocationHeader.html')
+						try:
+							with open(htmlHeaderFile, encoding='utf8') as fp:
+								header = fp.read()
+						except Exception as e:
+							Utils.logException( e, sys.exc_info() )
+							Utils.MessageOK(self, _('Cannot read HTML header file.  Check program installation.'),
+											_('Html Header Read Error'), iconMask=wx.ICON_ERROR )
+							return
+						# Read the html footer.
+						htmlFooterFile = os.path.join(Utils.getHtmlFolder(), 'AllocationFooter.html')
+						try:
+							with open(htmlFooterFile, encoding='utf8') as fp:
+								footer = fp.read()
+						except Exception as e:
+							Utils.logException( e, sys.exc_info() )
+							Utils.MessageOK(self, _('Cannot read HTML footer file.  Check program installation.'),
+											_('Html Footer Read Error'), iconMask=wx.ICON_ERROR )
+							return
+						
+						#do the magic here
+						html = header + '<h1>' + evtName + ' ' + re.split(' |{', database.eventCategoryTemplate)[0] + ' Allocation<h1>\n'
+						processed = []
+						for rndNr, rndName in enumerate(evt['rounds']):
+							if rndNr in processed:
+								continue
+							processed.append(rndNr)
+							allocation = set(map(tuple, database.getRoundAllocation(rndName)))  #get allocation as a set of tuples for comparison
+							namesList = ['Round ' + str(rndNr+1) + ' (' + rndName + ')']
+							for nr, name in enumerate(evt['rounds']):  #inner loop comparing alocation to other rounds
+								if nr not in processed:
+									al = set(map(tuple, database.getRoundAllocation(name)))
+									if al == allocation:
+										namesList.append('Round ' + str(nr+1) + ' (' + name + ')')
+										processed.append(nr)
+							rnd = evt['rounds'][rndName]
+							nrRaces = len(rnd['races']) if 'races' in rnd else 0
+							if nrRaces > 1:
+								html += '<h2>' + ',<br>'.join(namesList) + ':</h2>\n'
+								for i in range(nrRaces):
+									html += '<h3>' + database.eventCategoryTemplate.format(i+1) + ':</h3>\n'
+									html += database.getRoundAllocationHTML( rndName, raceNr=i+1 )
+							else:
+								#everyone in one race
+								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
+								html += '<p class="allocation">All racers together.</p>\n'
+						html += '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'
+						html += footer
+							
+						# Write out the results.
+						try:
+							with open(htmlFName, 'w', encoding='utf8') as fp:
+								fp.write( html )
+								Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Html Race Allocation written to'), htmlFName), _('Html Write'))
+							Utils.LaunchApplication( htmlFName )
+						except Exception as e:
+							Utils.logException( e, sys.exc_info() )
+							Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write HTML file'), e, htmlFName),
+											_('Html Write Error'), iconMask=wx.ICON_ERROR )
+						return
+				Utils.MessageOK(self, 'Allocation page filename is not set!\nConfigure the allocation page location for "' + evtName + '" on the \'Events\' screen, and try again.', _('Write allocation page'), iconMask = wx.ICON_ERROR)
 		
 	def selectSeason( self, event ):
 		database = Model.database
@@ -312,6 +427,7 @@ class Events( wx.Panel ):
 			self.rnd = None
 			self.commit()
 			self.updateSignonSheetName()
+			self.updateAllocationPageName()
 			self.refreshSeasonsGrid()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -436,6 +552,7 @@ class Events( wx.Panel ):
 			self.evt = row
 			self.rnd = None
 			self.updateSignonSheetName()
+			self.updateAllocationPageName()
 			self.commit()
 			self.refreshEventsGrid()
 			self.refreshRoundsGrid()
@@ -467,6 +584,32 @@ class Events( wx.Panel ):
 		self.writeSignonButton.Disable()
 		self.signonFileName.Disable()
 		self.signonBrowseButton.Disable()
+		
+	def updateAllocationPageName( self ):
+		database = Model.database
+		if database is None:
+			return
+		if self.season is not None:
+			seasonName = database.getSeasonsList()[self.season]
+			season = database.seasons[seasonName]
+			if self.evt is not None:
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				if 'allocationFileName' in evt:
+					self.allocationFileName.SetValue(evt['allocationFileName'])
+					if evt['allocationFileName']:
+						self.writeAllocationButton.Enable()
+				else:
+					self.allocationFileName.SetValue('')
+					self.writeAllocationButton.Disable()
+				self.allocationFileName.Enable()
+				self.allocationBrowseButton.Enable()
+				self.allocationFileName.ShowPosition(self.allocationFileName.GetLastPosition())
+				return
+		self.allocationFileName.SetValue('')
+		self.writeAllocationButton.Disable()
+		self.allocationFileName.Disable()
+		self.allocationBrowseButton.Disable()
 			
 	def onEventsRightClick( self, event ):
 		database = Model.database
@@ -835,6 +978,76 @@ class Events( wx.Panel ):
 				database.setChanged()
 		self.signonFileName.ShowPosition(self.signonFileName.GetLastPosition())
 		
+	def onBrowseAllocation( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		defaultFileName = self.allocationFileName.GetValue()
+		if defaultFileName.endswith('.html'):
+			dirName = os.path.dirname( defaultFileName )
+			fileName = os.path.basename( defaultFileName )
+		else:
+			dirName = defaultFileName
+			if self.season is not None and self.evt is not None:
+				seasonName = database.getSeasonsList()[self.season]
+				season = database.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				try:
+					dt = '{:%Y-%m-%d_}'.format(datetime.datetime.fromtimestamp(evt['date']))
+				except:
+					dt = ''
+				fileName = 'race_allocations_' + dt + list(season['events'])[self.evt].lower().replace(' ', '_') + '.html'
+			else:
+				fileName = ''
+			if not dirName:
+				dirName = Utils.getDocumentsDir()
+		with wx.FileDialog( self, message=_("Choose Allocation Page File"),
+							defaultDir=dirName, 
+							defaultFile=fileName,
+							wildcard=_("HTML page (*.html)|*.html"),
+							style=wx.FD_SAVE ) as dlg:
+			if dlg.ShowModal() == wx.ID_OK:
+				fn = os.path.relpath(os.path.abspath(dlg.GetPath()), start=os.path.dirname(os.path.abspath(database.fileName)) ) #allocation page path is relative to database file
+				self.allocationFileName.SetValue( fn )
+				if self.season is not None and self.evt is not None:
+					with Model.LockDatabase() as db:
+						seasonName = db.getSeasonsList()[self.season]
+						season = db.seasons[seasonName]
+						evtName = list(season['events'])[self.evt]
+						evt = season['events'][evtName]
+						evt['allocationFileName'] = fn
+						database.setChanged()
+						wx.CallAfter( self.refresh )
+		self.allocationFileName.ShowPosition(self.allocationFileName.GetLastPosition())
+		
+	def onEditAllocation( self, event ):
+		database = Model.database
+		if database is None:
+			return
+		fn = self.allocationFileName.GetValue()
+		if fn.endswith('.xlsx'):
+			if not os.path.isdir(os.path.dirname(fn)):
+				Utils.MessageOK(self, 'Allocation page destination directory\n"' + os.path.abspath(os.path.dirname(fn)) + '"\ndoes not exist!\nCheck the path has been entered correctly.', 'Invalid path', iconMask=wx.ICON_ERROR )
+				wx.CallAfter( self.updateAllocationPageName )
+				return
+			if os.path.isabs(fn):
+				fn = os.path.relpath(fn, start=os.path.dirname(os.path.abspath(database.fileName)) ) #sign-on sheet path is relative to database file
+				Utils.writeLog('Absolute allocation page filename converted to: "' + fn + '" (relative to database file "' + database.fileName + '")')
+				self.allocationFileName.ChangeValue(fn)
+		else:
+			Utils.MessageOK( self, 'Allocation page should be an .html file!', title = 'Incorrect filetype', iconMask = wx.ICON_ERROR )
+			return
+		if self.season is not None and self.evt is not None:
+			with Model.LockDatabase() as db:
+				seasonName = db.getSeasonsList()[self.season]
+				season = db.seasons[seasonName]
+				evtName = list(season['events'])[self.evt]
+				evt = season['events'][evtName]
+				evt['allocationFileName'] = fn
+				database.setChanged()
+		self.allocationFileName.ShowPosition(self.allocationFileName.GetLastPosition())
+		
 	def onEditEntryButton( self, event ):
 		Utils.getMainWin().showEventEntryPage()
 		
@@ -976,4 +1189,5 @@ class Events( wx.Panel ):
 		self.refreshRoundsGrid()
 		self.refreshCurrentSelection()
 		self.updateSignonSheetName()
+		self.updateAllocationPageName()
 		self.Layout()
