@@ -91,7 +91,7 @@ class riderNameCompleter(wx.TextCompleter):
 
 class EventEntry( wx.Panel ):
 	
-	numCategories = 18
+	numCategories = 24  #must match value in Categories.py
 	yellowColour = wx.Colour( 255, 255, 0 )
 	orangeColour = wx.Colour( 255, 165, 0 )
 	lightBlueColour = wx.Colour( 153, 205, 255 )
@@ -152,6 +152,8 @@ class EventEntry( wx.Panel ):
 			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+6), None), pos=(1,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		for i in range(6):
 			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+12), None), pos=(2,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
+		for i in range(6):
+			categoriesSizer.Add( getattr(self, 'riderCategory' + str(i+18), None), pos=(3,i), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		gbs.Add( categoriesSizer,  pos=(2,1), span=(1,3), flag=wx.EXPAND )
 		
 		#self.deleteAllButton = wx.Button( self, label='Delete all')

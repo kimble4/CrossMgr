@@ -9,11 +9,12 @@ from collections import defaultdict
 import datetime
 import Model
 import wx.lib.intctrl as intctrl
+from EventEntry import EventEntry
 
 
 class Categories( wx.Panel ):
 	
-	maxCategories = 18
+	maxCategories = EventEntry.numCategories #must match value in EventEntry.py
 	
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
