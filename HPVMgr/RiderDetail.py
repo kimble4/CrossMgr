@@ -437,9 +437,9 @@ class RiderDetail( wx.Panel ):
 		if database is None:
 			return
 		try:
+			self.onNatCodeChanged()
 			bib = int(self.bib)
 			if database.isRider(bib):
-				self.onNatCodeChanged()
 				with Model.LockDatabase() as db:
 					db.riders[bib]['FirstName'] = self.riderFirstName.GetValue()
 					db.riders[bib]['LastName'] = self.riderLastName.GetValue()
@@ -486,9 +486,27 @@ class RiderDetail( wx.Panel ):
 							return
 					with Model.LockDatabase() as db:
 						db.addRider(bib, firstName=self.riderFirstName.GetValue() if self.riderFirstName.GetValue() else None, lastName=self.riderLastName.GetValue() if self.riderLastName.GetValue() else None, gender=self.riderGender.GetSelection())
+						#populate the non-essential fields, if we have them
+						dob = self.riderDOB.GetValue()
+						if dob.IsValid():
+							if wx.DateTime.Now() - dob > wx.TimeSpan.Days(365):
+								db.riders[bib]['DOB'] = int(dob.GetValue()/1000)
+						db.riders[bib]['NatCode'] = self.riderNat.GetValue().upper()
+						if len(self.riderLicense.GetValue()) > 0:
+							db.riders[bib]['License'] = self.riderLicense.GetValue()
+						if len(self.riderFactor.GetValue()) > 0:
+							try:
+								factor = float(self.riderFactor.GetValue())
+								db.riders[bib]['Factor'] = factor
+							except ValueError:
+								pass
+						db.setChanged()
+						self.onEdited( warn=False )
 						wx.CallAfter( self.refresh )
 				else:
 					self.bib=''
+					wx.CallAfter( self.refresh )
+					return
 		except ValueError:  # invalid int
 			pass
 		except Exception as e:
