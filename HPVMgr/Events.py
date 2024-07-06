@@ -400,7 +400,8 @@ class Events( wx.Panel ):
 								#everyone in one race
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
 								html += '<p class="allocation">All racers together.</p>\n'
-						html += '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'
+							html += '<hr>'
+						html = html[:-4] + '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'
 						html += footer
 							
 						# Write out the results.
