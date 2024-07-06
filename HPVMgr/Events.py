@@ -374,8 +374,9 @@ class Events( wx.Panel ):
 											_('Html Footer Read Error'), iconMask=wx.ICON_ERROR )
 							return
 						
-						#do the magic here
+						#main heading
 						html = header + '<h1>' + evtName + ' ' + re.split(' |{', database.eventCategoryTemplate)[0] + ' Allocation<h1>\n'
+						#generate the allocation tables
 						processed = []
 						for rndNr, rndName in enumerate(evt['rounds']):
 							if rndNr in processed:
@@ -392,6 +393,7 @@ class Events( wx.Panel ):
 							rnd = evt['rounds'][rndName]
 							nrRaces = len(rnd['races']) if 'races' in rnd else 0
 							if nrRaces > 1:
+								#multiple races
 								html += '<h2>' + ',<br>'.join(namesList) + ':</h2>\n'
 								for i in range(nrRaces):
 									html += '<h3>' + database.eventCategoryTemplate.format(i+1) + ':</h3>\n'
@@ -399,8 +401,17 @@ class Events( wx.Panel ):
 							else:
 								#everyone in one race
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
-								html += '<p class="allocation">All racers together.</p>\n'
+								#check if it's a time trial
+								TT = False
+								if 'useStartTimes' in rnd:
+									if rnd['useStartTimes']:
+										TT = True
+								if TT:
+									html += '<p class="allocation">Individual start times.</p>\n'
+								else:
+									html += '<p class="allocation">All racers together.</p>\n'
 							html += '<hr>'
+						#datestamp and footer
 						html = html[:-4] + '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'
 						html += footer
 							
