@@ -386,9 +386,11 @@ class Database:
 							if rider is None:  #skip deleted riders, even if they're in the race
 								continue
 							eventsMachineCategoriesTeam = evtRacersDict[raceEntryDict['bib']]
-							if 'startTime' in raceEntryDict:
-								if raceEntryDict['startTime']:
-									haveStartTime = True
+							if 'useStartTimes' in rnd:
+								if rnd['useStartTimes']:
+									if 'startTime' in raceEntryDict:
+										if raceEntryDict['startTime']:
+											haveStartTime = True
 							if 'Gender' in rider:
 								haveGender = True
 							if self.getRiderAge(raceEntryDict['bib']) is not None:
