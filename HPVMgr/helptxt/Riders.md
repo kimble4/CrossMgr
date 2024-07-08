@@ -24,3 +24,4 @@ License|The rider's license
 Factor|The rider's Factor
 Team|The team the rider last raced for.
 Last Entered|The date that the rider was last entered in an [Event][Events] in HPVMgr, even if they were subsequently removed.
+Last Tag Written|The date that the rider's last timing tag was written using HPVMgr.

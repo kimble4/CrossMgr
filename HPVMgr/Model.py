@@ -214,6 +214,14 @@ class Database:
 					if rider['Tag' + (str(i) if i > 0 else '')] == tag:
 						bibTagNrs.append((bib, i))
 		return bibTagNrs
+		
+	def getLastTagWritten( self, rider ):
+		lastWritten = None
+		for i in range(10):
+			if 'Tag' + (str(i) if i > 0 else '') + 'LastWritten' in rider:
+				if lastWritten is None or rider['Tag' + (str(i) if i > 0 else '') + 'LastWritten'] > lastWritten:
+					lastWritten = rider['Tag' + (str(i) if i > 0 else '') + 'LastWritten']
+		return lastWritten
 	
 	def addRider( self, bib, firstName=None, lastName=None, gender=Open ):
 		if bib in self.riders:
