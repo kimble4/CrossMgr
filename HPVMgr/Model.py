@@ -4,9 +4,11 @@ import json
 from json.decoder import JSONDecodeError
 import Utils
 import wx
+import re
 import sys
 import functools
 from FitSheetWrapper import FitSheetWrapper, FitSheetWrapperXLSX
+from Impinj import Impinj
 
 lock = threading.RLock()
 #----------------------------------------------------------------------
@@ -205,13 +207,16 @@ class Database:
 		return None
 		
 	@memoize
-	def lookupTag( self, tag ):
+	def lookupTag( self, t ):
+		tag = re.sub('[^0-9A-F]','', t.upper()).zfill(Impinj.EPCHexCharsMax)  #convert to canonical form
+		print('searching for ' + str(tag))
 		bibTagNrs = []
 		for bib in self.getBibs():
 			rider = self.riders[bib]
 			for i in range(10):
 				if 'Tag' + (str(i) if i > 0 else '') in rider:
-					if rider['Tag' + (str(i) if i > 0 else '')] == tag:
+					data = rider['Tag' + (str(i) if i > 0 else '')].upper().zfill(Impinj.EPCHexCharsMax)
+					if data == tag:
 						bibTagNrs.append((bib, i))
 		return bibTagNrs
 		

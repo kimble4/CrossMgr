@@ -21,6 +21,7 @@
 [EventEntry]:		EventEntry.html
 [RaceAllocation]:	RaceAllocation.html
 [WriteTags]:		WriteTags.html
+[LookUp]:			LookUp.html
 [Settings]:			Settings.html
 
 [FAQ]:				FAQ.html

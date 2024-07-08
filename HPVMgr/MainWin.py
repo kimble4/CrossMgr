@@ -37,6 +37,7 @@ from Categories			import Categories
 from EventEntry			import EventEntry
 from RaceAllocation		import RaceAllocation
 from Impinj				import Impinj
+from LookUp				import LookUp
 from Settings			import Settings
 import Model
 import SeedAllocationFromResults
@@ -211,6 +212,7 @@ class MainWin( wx.Frame ):
 			[ 'eventEntry',		EventEntry,			_('EventEntry') ],
 			[ 'raceAllocation',	RaceAllocation,		_('RaceAllocation') ],
 			[ 'impinj',			Impinj,				_('WriteTags') ],
+			[ 'LookUp',			LookUp,				_('LookUp') ],
 			[ 'settings',		Settings,			_('Settings') ],
 		]
 		

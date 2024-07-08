@@ -11,6 +11,7 @@ The Main Screen is divided into tabbed screens.  Each screen can be selected by 
 * [EventEntry][]
 * [RaceAllocation][]
 * [WriteTags][]
+* [LookUp][]
 * [Settings][]
 
 # Keyboard Accelerators
