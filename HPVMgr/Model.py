@@ -101,7 +101,6 @@ class Database:
 		if jsonDataFile:
 			try:
 				data = json.load(jsonDataFile)
-				#print(data)
 				self.copyTagsWithDelim = data['copyTagsWithDelim'] if 'copyTagsWithDelim' in data else False
 				self.writeAbbreviatedTeams = data['writeAbbreviatedTeams'] if 'writeAbbreviatedTeams' in data else False
 				self.useAge = data['useAge'] if 'useAge' in data else True
@@ -209,7 +208,6 @@ class Database:
 	@memoize
 	def lookupTag( self, t ):
 		tag = re.sub('[^0-9A-F]','', t.upper()).zfill(Impinj.EPCHexCharsMax)  #convert to canonical form
-		print('searching for ' + str(tag))
 		bibTagNrs = []
 		for bib in self.getBibs():
 			rider = self.riders[bib]

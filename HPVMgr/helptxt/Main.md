@@ -21,6 +21,7 @@ Get started with HPVMgr now!
 * [EventEntry][]
 * [RaceAllocation][]
 * [WriteTags][]
+* [LookUp][]
 * [Settings][]
 
 
