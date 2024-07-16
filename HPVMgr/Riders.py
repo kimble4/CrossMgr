@@ -185,6 +185,10 @@ class Riders( wx.Panel ):
 		if not database.isRider( bib ):
 			with Model.LockDatabase() as db:
 				db.addRider(int(bib))
+			mainWin = Utils.getMainWin()
+			if mainWin.isShowingPage(mainWin.riderDetail):
+				mainWin.riderDetail.setBib(bib)
+				wx.CallAfter( mainWin.riderDetail.refresh )
 			wx.CallAfter( self.refresh )
 		else:
 			Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' already exists!', title='Failed to add rider')
@@ -209,6 +213,9 @@ class Riders( wx.Panel ):
 							db.renumberRider(bib, newbib, initTags=True)
 						else:
 							db.renumberRider(bib, newbib)
+						if mainWin.isShowingPage(mainWin.riderDetail):
+							mainWin.riderDetail.setBib(bib)
+							wx.CallAfter( mainWin.riderDetail.refresh )
 						wx.CallAfter( self.refresh )
 				elif newbib == bib:
 					Utils.MessageOK( self, 'Rider #' + str(bib) + ' ' + database.getRiderName(bib, True) + ' bib unchanged.', title='Did not change bib')
@@ -230,6 +237,9 @@ class Riders( wx.Panel ):
 				Utils.writeLog('Delete rider: ' + str(bib))
 				with Model.LockDatabase() as db:
 					db.deleteRider(int(bib))
+				if mainWin.isShowingPage(mainWin.riderDetail):
+					mainWin.riderDetail.setBib(bib)
+					wx.CallAfter( mainWin.riderDetail.refresh )
 				wx.CallAfter( self.refresh )
 		else:
 			Utils.MessageOK( self, 'Rider #' + str(bib) + ' does not exist!', title='Failed to delete rider')
