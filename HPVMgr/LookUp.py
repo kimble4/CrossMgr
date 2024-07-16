@@ -107,7 +107,7 @@ class LookUp( wx.Panel ):
 		
 		row += 1
 		
-		self.resultsArea = wx.StaticText( self, label='test' )
+		self.resultsArea = wx.StaticText( self, label='' )
 		self.resultsArea.SetFont(bigFont)
 		gbs.Add(self.resultsArea, pos=(row,2), span=(1,1), flag=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL )
 
