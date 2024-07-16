@@ -85,17 +85,15 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 	considerPrimePointsOrTimeBonus = model.considerPrimePointsOrTimeBonus
 	raceResults = model.extractAllRaceResults()
 	
-	categoryNames = model.getCategoryNamesSortedPublish()
-	if not categoryNames:
-		return '<html><body>SeriesMgr: No Categories.</body></html>'
-	
-	HeaderNames = getHeaderNames()
-	
-	pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
+	html = io.open( htmlfileName, 'w', encoding='utf-8', newline='' )
 
 	if not seriesFileName:
 		seriesFileName = (os.path.splitext(Utils.mainWin.fileName)[0] if Utils.mainWin and Utils.mainWin.fileName else 'Series Results')
 	title = os.path.basename( seriesFileName )
+	
+	HeaderNames = getHeaderNames()
+	
+	pointsForRank = { r.getFileName(): r.pointStructure for r in model.races }
 	
 	licenseLinkTemplate = model.licenseLinkTemplate
 	
@@ -108,11 +106,59 @@ def getHtml( htmlfileName=None, hideCols=[], seriesFileName=None):
 		pointsStructures[race.pointStructure].append( race )
 		
 	events = { r.getFileName(): r.eventName for r in model.races }
-	
-	html = io.open( htmlfileName, 'w', encoding='utf-8', newline='' )
-	
+
 	def write( s ):
 		html.write( '{}'.format(s) )
+	
+	categoryNames = model.getCategoryNamesSortedPublish()
+	if not categoryNames:
+		with tag(html, 'html'):
+			with tag(html, 'head'):
+				with tag(html, 'title'):
+					write( title.replace('\n', ' ') )
+				with tag(html, 'meta', {'charset':'UTF-8'}):
+					pass
+				for k, v in model.getMetaTags():
+					with tag(html, 'meta', {'name':k, 'content':v}):
+						pass
+				with tag(html, 'style', dict( type="text/css")):
+					write( '''
+body{ font-family: sans-serif; background-color: #FFFFFF;}
+
+h1{ font-size: 250%; }
+h2{ font-size: 200%; }
+
+''')
+
+			with tag(html, 'body'):
+				with tag(html, 'table'):
+					with tag(html, 'tr'):
+						with tag(html, 'td', dict(valign='top')):
+							write( '<img id="idImgHeader" src="{}" />'.format(getHeaderGraphicBase64()) )
+						with tag(html, 'td'):
+							with tag(html, 'h1', {'style': 'margin-left: 1cm;'}):
+								write( escape(model.name) )
+							with tag(html, 'h2', {'style': 'margin-left: 1cm;'}):
+								if model.organizer:
+									write( 'by {}'.format(escape(model.organizer)) )
+								with tag(html, 'span', {'style': 'font-size: 60%'}):
+									write( '&nbsp;' * 5 )
+									write( ' Updated:&nbsp;{}'.format(datetime.datetime.now().strftime('%Y-%m-%d&nbsp;%H:%M:%S')) )
+
+				with tag(html, 'h3' ):
+					write( 'Series has no race data.' )
+				with tag(html, 'p' ):
+					write( 'Results will appear here when races have been added.' )
+				
+				
+				#-----------------------------------------------------------------------------
+				with tag(html, 'p'):
+					with tag(html, 'a', dict(href='https://github.com/kimble4/CrossMgr')):
+						write( 'Powered by BHPC CrossMgr' )
+		
+		html.close()
+		return
+		#end of no data html output
 	
 	with tag(html, 'html'):
 		with tag(html, 'head'):
