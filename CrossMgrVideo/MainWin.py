@@ -2112,6 +2112,11 @@ class MainWin( wx.Frame ):
 			handler( msg )
 		
 	def processRequests( self ):
+		bibMissing = 99999
+		secsFilter = 0.1		# Minimum separation required between triggers to register.
+		tSearchLast = {}		# Last trigger time of each bib.
+		tPast = now() - timedelta(days=7)	# Time in the past outside the cache filter.
+		tSearchPrev = tPast		# Previous trigger time.
 		while True:
 			msg = self.requestQ.get()	# Blocking get.
 			self.camInQ.put( {'cmd':'resume'} )  # Send this immediately so the capture thread can resume as quickly as possible
@@ -2120,6 +2125,19 @@ class MainWin( wx.Frame ):
 			tSearch = msg['time']
 			advanceSeconds = msg.get('advanceSeconds', 0.0)
 			tSearch += timedelta(seconds=advanceSeconds)
+			
+			# Filter triggers that are too close together for the same bib number.
+			bib = msg.get('bib', bibMissing)
+			if (tSearch - tSearchLast.get(bib, tPast)).total_seconds() < secsFilter:
+				tSearchLast[bib] = tSearch
+				continue
+			
+			# If there have been no triggers within the filter time, it is safe to delete the entire cache.
+			# Better for memory efficiency.
+			if (tSearch - tSearchPrev).total_seconds() > secsFilter:
+				tSearchLast.clear()
+			tSearchPrev = tSearch
+			tSearchLast[bib] = tSearch	# Record the last trigger time for this rider.
 			
 			closest_frames = msg.get('closest_frames', self.autoCaptureClosestFrames)
 			s_before = 0.0	if closest_frames else msg.get('s_before', self.tdCaptureBefore.total_seconds())	# Use the configured capture interval, not the default.
@@ -2134,7 +2152,7 @@ class MainWin( wx.Frame ):
 						's_after':			s_after,
 						'ts_start':			msg.get('ts_start', None) or now(),
 						'closest_frames':	closest_frames,
-						'bib':				msg.get('bib', 99999),
+						'bib':				bib,
 						'first_name':		msg.get('first_name','') or msg.get('firstName',''),
 						'last_name':		msg.get('last_name','') or msg.get('lastName',''),
 						'machine':			msg.get('machine',''),
