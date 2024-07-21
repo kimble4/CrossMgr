@@ -50,11 +50,6 @@ class ChangeTagsDialog( wx.Dialog ):
 			getattr(self, 'btnTagRevert' + str(i), None).SetToolTip( wx.ToolTip('Reverts the tag to the global value'))
 			self.Bind( wx.EVT_BUTTON, lambda event, tag=i: self.revertTag(event, tag), getattr(self, 'btnTagRevert' + str(i), None) )
 			gbs.Add( getattr(self, 'btnTagRevert' + str(i), None), pos=(row+i,2), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
-			# setattr(self, 'btnTagWrite' + str(i), wx.Button( self, label='Write') )
-			# getattr(self, 'btnTagWrite' + str(i), None).SetToolTip( wx.ToolTip('Writes the tag'))
-			# getattr(self, 'btnTagWrite' + str(i), None).Disable()
-			# self.Bind( wx.EVT_BUTTON, lambda event, tag=i: self.writeTag(event, tag), getattr(self, 'btnTagWrite' + str(i), None) )
-			# gbs.Add( getattr(self, 'btnTagWrite' + str(i), None), pos=(row+i,6), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			row += 1
 		
 		self.mainSizer.Add(gbs)

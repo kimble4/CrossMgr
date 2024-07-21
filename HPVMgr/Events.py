@@ -382,34 +382,46 @@ class Events( wx.Panel ):
 							if rndNr in processed:
 								continue
 							processed.append(rndNr)
+							rnd = evt['rounds'][rndName]
+							#check if it's a time trial
+							isTT = False
+							if 'useStartTimes' in rnd:
+								if rnd['useStartTimes']:
+									isTT = True
 							allocation = set(map(tuple, database.getRoundAllocation(rndName)))  #get allocation as a set of tuples for comparison
 							namesList = ['Round ' + str(rndNr+1) + ' (' + rndName + ')']
 							for nr, name in enumerate(evt['rounds']):  #inner loop comparing alocation to other rounds
 								if nr not in processed:
+									r = evt['rounds'][name]
 									al = set(map(tuple, database.getRoundAllocation(name)))
-									if al == allocation:
+									tt = False
+									if 'useStartTimes' in r:
+										if r['useStartTimes']:
+											tt = True
+									if al == allocation and tt == isTT:
 										namesList.append('Round ' + str(nr+1) + ' (' + name + ')')
 										processed.append(nr)
-							rnd = evt['rounds'][rndName]
+							
 							nrRaces = len(rnd['races']) if 'races' in rnd else 0
 							if nrRaces > 1:
 								#multiple races
 								html += '<h2>' + ',<br>'.join(namesList) + ':</h2>\n'
+								if isTT:
+									html += '<p class="allocation">Individual start times:</p>\n'
 								for i in range(nrRaces):
 									html += '<h3>' + database.eventCategoryTemplate.format(i+1) + ':</h3>\n'
-									html += database.getRoundAllocationHTML( rndName, raceNr=i+1 )
+									if isTT:
+										html += database.getStartTimesHTML( rndName, raceNr=i+1 )
+									else:
+										html += database.getRoundAllocationHTML( rndName, raceNr=i+1 )
 							else:
 								#everyone in one race
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
-								#check if it's a time trial
-								TT = False
-								if 'useStartTimes' in rnd:
-									if rnd['useStartTimes']:
-										TT = True
-								if TT:
-									html += '<p class="allocation">Individual start times.</p>\n'
+								if isTT:
+									html += '<p class="allocation">Individual start times:</p>\n'
+									html += database.getStartTimesHTML( rndName )
 								else:
-									html += '<p class="allocation">All racers together.</p>\n'
+									html += '<p class="allocation">All racers in one group.</p>\n'
 							html += '<hr>'
 						#datestamp and footer
 						html = html[:-4] + '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'
