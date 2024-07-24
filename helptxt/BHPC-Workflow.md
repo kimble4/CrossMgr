@@ -65,6 +65,7 @@ Assuming that the **Season** and **Categories** have already been created (see t
 
 * The "**TT start times**" option is only needed if you intend to run a time trial where riders start at published times.  It is not needed for the usual BHPC style informal time trial.
 * You can come back and make changes to the allocation, or alter a rider's machine or categories, and re-write the sign-on sheet at any point.  CrossMgr will pick up the changes next time it loads the file and update the race resuts accordingly.
+* The "**Write allocation page**" button will write the allocations list to a HTML file for letting the riders know which group they are in.  If TT start times are used, these will also be listed.
 
 ### Creating the sign-on sheet manaually
 
@@ -143,7 +144,7 @@ These options are specific to the race.
 1. Enter a full description in **Long Name**.  Spaces are fine.  For example "Darley Moor R1 40min +1lap CW faster group"
 1. Fill in the location and **Date** fields.
 1. For **Discipline**, enter "HPV"
-1. **Race #** should be set to the number of the race in that event (day of racing).  For example, if you're splitting the field into fast and slow groups, the first race of the second round would be race #3.
+1. **Race #** should be set to the number of the race in that event (day of racing).  For example, if you're splitting the field into fast and slow groups, the first race of the second round would be race #3.  '0' is permitted, and may be useful if you want to run an unofficial race to test the timing tags.
 1. **Scheduled start** is the published start time, don't worry if the race starts a bit late (this will be noted in the results automatically).
 1. Race minutes should be set to the nominal length of the race.  (NB. for a criterium, this should be set considerably longer.)
 1. Set **Organiser** to your name.
@@ -274,9 +275,9 @@ A variation on a time trial, where riders complete several laps, but are only sc
 1. Disable **Win and Out**.
 1. Click 'Commit' to save changes.
 
-#### F) Flying Sprints
+#### F) Flying / Standing Sprints
 
-These are timed using the dedicated SprintTimer application, rather than CrossMgr.  See SprintTimer's Quick-Start guide for how to set up and time a flying sprint event.
+These are timed using the dedicated SprintTimer application, rather than CrossMgr.  See SprintTimer's Quick-Start guide for how to set up and time a sprint event.
 
 ### Set the course GPX
 
@@ -478,7 +479,7 @@ The AC and DC power meters keep track of the energy used.  This may be useful wh
 1. The energy total should now read `0 Wh`
 
 * We recommend that this is done before travelling to the race venue.  You will forget to do it on the day.
-* Note that the two meters use different units!
+* Note that the two meters measure energy in different units!
 
 
 ## Software startup and testing
@@ -506,7 +507,7 @@ Adjust the **aperture ring** on the camera lens until the image is correctly exp
 1. Set **Tag Population** to 16.
 1. Leave **Transmit Power** and **Receiver Sensitivity** blank.
 1. Set **Connection Timeout** to `3` seconds, **Keepalive** to `2` seconds, and **Repeat** to `3` seconds.
-1. Enable **Recalculate clock offset...** and **Beep on Read**
+1. Disable **Recalculate clock offset...** and enable **Beep on Read**
 1. Click OK, and OK to "*Reset reader now?*".
 1. If riders are milling around, you should start to see tag reads in the left hand pane, confirming that the RFID system is operating.  Otherwise, grab a tag and bring it in and out of range.  Ensure that you see reads from both antennas, confirming that they're properly connected.
 1. Minimise CrossMgrImpinj and leave it running in the background.
@@ -639,8 +640,9 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 * Does the **GPS time source** have a satellite signal (orange LED lit or flashing)?  Does it have a time signal (blue LED lit or preferably flashing once per second)?
 * Check **CrossMgrVideo**:  Is the camera aligned, with correct **focus and exposure**?  Look at the small preview image (bottom left) or focus window, *not* the still frame from the last trigger in the main window!
 * Is the **IR beam break** aligned and operating the Trigger-O-Matic correctly?
-* Check **CrossMgrImpinj**.  Is it connected and reading tags?  Are tags being read on both antennas?  Press the reset button and confirm the **clock offset** is still reasonable (typically 3600 seconds to within one second during *British Summer Time*).
+* Check **CrossMgrImpinj**.  Is it connected and reading tags?  Are tags being read on both antennas?  Is it still using a static offset?  (If the clocks have stepped since you started CrossMgrImpinj it may have dropped into recalculate mode, in which case you'll have to disable this again in the 'Advanced' configuration.)  Press the reset button and confirm the **clock offset** is still reasonable (should be less than a tenth of a second).
 * Is **CrossMgr** open with the **correct race** file?
+* Check the race properties and categories are set correctly for the type of race (see above for correct settings).
 * Is the **RFID test** successful?
 * Is the **Race Clock** working and visible?  If it's likely to blow over, place it at ground level.
 * Does someone have a **backup stopwatch** ready?
@@ -657,14 +659,29 @@ Ensure that you place the tags in the correct compartment of the bag - the front
 1. Tell the person starting the race that you're ready.  Pay attention so you don't miss the start.
 1. Click '**OK**' when they say "Go!"
 1. Switch to the [Results][] screen.  Riders whose tags were read immediately after the start will be listed.  Others will not.
-1. Open the [Missing Riders][Windows] window.  This will show who hasn't yet been accounted for, so you don't have to work it out by hand.
 1. If using the IR beam-break, enable the **Auto-Capture** toggle switch on the Trigger-O-Matic.
 1. As the riders come round for their first lap, keep an eye out for anyone whose tags aren't reading.  Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if necessary.
 1. Check that CrossMgrVideo is being triggered by CrossMgr, and capturing video successfully.
 
-Once all riders are accounted for, you can close the [Missing Riders][Windows] window.  In theory you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure if the ambient light level changes drastically.
+Once all riders are accounted for, in theory you shouldn't have to do anything other than keep abreast of DNFs and similar incidents.  Keep an eye out for missed reads and other problems, and check the camera exposure (the small real-time preview window in the bottom left of the CrossMgrVideo screen, not the main image from the last capture, which may not update very often if the database is busy) if the ambient light level changes drastically.
 
-Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if something goes wrong during the race, eg. tags not reading.
+### Manual-start time trial
+
+(At this point, CrossMgr is assumed to be open on the correct race file, likely with an RFID test in progress.  CrossMgrVideo and CrossMgrImpinj are running in the background.)
+
+1. Finish the RFID test.  Switch to the [Actions][] screen and click the **Start Race** button.  The race will not start until you click '**OK**' on the dialog that pops up.  For a time trial it does not matter precisely when you do this, it simply starts the stopwatch counting.
+1. Switch to the [Results][] screen.
+1. Open the **Bib Enter** window and position it somewhere sensible.
+1. If using the IR beam-break, enable the **Auto-Capture** toggle switch on the Trigger-O-Matic.
+1. Enter the bib number of the first rider.  Give them a verbal countdown, hitting <enter> when they get the 'Go!'.
+1. They should appear as NP at the bottom of the [Results][] screen.
+1. As the riders come round again, they should get a time in the Results.  Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if necessary.
+1. Check that CrossMgrVideo is being triggered by CrossMgr, and capturing video successfully.
+1. If everything worked for the first rider, you can dispatch subsequent riders at whatever interval is safe.  Multiple riders can be out on the course at once.
+
+* Refer to the [BHPC troubleshooting guide][BHPC Troubleshooting] if something goes wrong during the race, eg. tags not reading.
+* In the event of a false start, you can use "**Delete Rider From Race**" from the [RiderDetail][] window to reset that rider.  They can then be started again.
+* Do not finish the race until you're sure that everyone has had a successful attempt.
 
 ### Race finish
 
@@ -779,7 +796,7 @@ Mallet|Timing crate
 Aluminium tent pegs for timing tent|**Must** go in tent bag
 Right-angle N-connector adaptors|Leave attached to back of trackside aerials so they don't get lost
 Stopwatches|First-aid kit (So they travel separately from the rest of the timing equipment.)
-Trackside antennas|Travel separately in reinforced Jiffy bags
+Trackside antennas|Travel separately in custom-made antenna bag.
 Desktop antenna|**Must** go with flight-case and laptop bag for writing tags for next race
 
 # Post-processing results
@@ -923,7 +940,7 @@ To avoid confusion, we have tried to be consistent with the CrossMgr suite's use
 Term|Meaning
 :---|:------
 Alias|In SeriesMgr, aliases are used to unify different spellings of a **rider**, **machine** or **team** name across a **series**.  For example, when a rider appears as "Joe Bloggs", "Joe Blogs" and "Joseph B" in the results of different races, *Name Aliases* can be used to consolidate their results.
-Antenna|American for 'aerial', in the radio sense.  (In the interests of consistency with the CrossMgr documentation, we've tried to use this term throughout.)  The RFID system uses a pair of **track-side antennas** on stands either side of the finish line to communicate with riders' **RFID tags**.  A smaller 'desktop' antenna is also available: This is useful for writing tags, and for its reduced range when it is important to avoid reading tags from riders on the far side of the track.  A small **PCB patch antenna** is built into the flightcase in front of the **tag reader**, covered with foam to keep tags at a suitable distance.  This is useful for writing tags.
+Antenna|American for 'aerial', in the radio sense.  (In the interests of consistency with the CrossMgr documentation, we've tried to use this term throughout.)  The RFID system uses a pair of horizontally **polarised** **track-side antennas** on stands either side of the finish line to communicate with riders' **RFID tags**.  A smaller circular **polarised** 'desktop' antenna is also available: This is useful for writing tags, and for its reduced range when it is important to avoid reading tags from riders on the far side of the track.  A small **PCB patch antenna** is built into the flightcase in front of the **tag reader**, covered with foam to keep tags at a suitable distance.  This is useful for writing tags.
 Bell|In cycle racing, a bell is rung to indicate that a **rider** has one **lap** remaining.
 Bell Lap|The race leader's last **lap**.
 BHPC|The [British Human Power Club](https://www.bhpc.org.uk/)
@@ -984,6 +1001,7 @@ NP|*Not Placed* - Non-judgemental status given to **riders** who should not be *
 (S)NTP|*(Simple) Network Time Protocol*.  A protocol used by computing devices to synchronise their **real time clocks** over a **TCP/IP** network.
 Points|Points are calculated by SeriesMgr.  Points mean prizes.
 Points Structure|In SeriesMgr, a Points Structure is a mapping of rankings to numbers of **points**.  You can have a different points structure for each round.
+Polarisation|In the sense of an electromagnetic wave, the direction, perpendicular to the direction of travel, that the wave oscillates in.  The trackside antennas are optimised for linearly polarised signals in a horizontal direction, so the signal will be stronger if the tags are aligned horizontally with respect to the antennas (see sticker on back).  In contrast, the 'desktop' antenna is circularly polarised so does not care which direction the tag is oriented.
 Port (networking)|In **TCP/IP**, a numerical identifier that a particular piece of software listens for connections on.  For example, web servers usually listen on ports `80` and `443`, **FTP** servers on port `21` and **CrossMgr** runs a web server on port `8765`.  Different services on the same machine may listen on different ports at the same time.
 PowerCon|A rugged electrical connector often used for providing AC power to professional audio equipment.  Notable for being weatherproof and having a twist-lock latching action.
 Publish|In **CrossMgr** terms, the act of producing (and optionally uploading) race results in an easily-read format.
@@ -1024,7 +1042,7 @@ Time Trial|A type of **race** where **riders** start at different times, and com
 TNC|*Threaded Neill–Concelman*.  A small threaded coaxial connector used on the **desktop RFID aerial**.  Fiddly relative of the *Bayonet Neill–Concelman* connector usually found on laboratory test equipment and some professional video equipment.  Contrast with **RP-TNC** ![Spotters' guide to TNC connectors](./images/TNC_RP_TNC.jpg "Spotters' guide to TNC connectors - TNC on the bottom")
 Trigger|Something that causes CrossMgrVideo to record a snippet of video in its database.  Triggers may come from **CrossMgr** over **TCP/IP**, manually from the mouse or keyboard, or via a **USB** device.
 Trigger-O-Matic|A hardware device that generates **HID** joystick button events that trigger CrossMgrVideo.  This provides a nice big physical button that can be pressed quickly regardless of what the computer is displaying at the time, and an interface for a tape-switch or optical beam-break device.  ![Trigger-O-Matic and IR beam-break](./images/trigger_o_matic.jpg "Trigger-O-Matic and IR beam-break")
-UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things, and have a strange obsession with socks.
+UCI|*Union Cycliste Internationale*.  Boring governing body who delight in banning things from professional cycling, and have a strange obsession with socks.
 USB|*Universal Serial Bus*.  A standard system for connecting computing equipment that is frequently used to provide power to small electronic devices.  ![USB connectors](./images/usb_connectors.webp "Spotters' guide to USB connectors")
 USB-A|The large, flat USB connector typically used on desktop computers and 'wall-wart' power supplies.
 USB-B|The large square USB connector usually found on printers and scanners.  The Trigger-O-Matic, Race Clock and Sprint Timer Unit have USB-B connectors in the interests of durability.

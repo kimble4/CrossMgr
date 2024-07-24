@@ -6,6 +6,15 @@ body{
     max-width: 960px;
     padding: 12px;
 }
+
+@media print {
+    h1 { break-before: page }
+	h1:first-child { break-before: avoid; }
+    h2 { break-before: page }
+	h2:first-child { break-before: avoid; }
+	table {  break-inside: avoid; }
+}
+
 h1, h2, h3, h4 {
     color: #111111;
     font-weight: 400;

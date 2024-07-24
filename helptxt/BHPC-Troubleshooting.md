@@ -83,7 +83,7 @@ If this is correct, then you have some sort of networking problem between the la
 - That the status LED on the tag reader is GREEN (when ready and idle), or flashing ORANGE (when the reader is operating)
 - That the power LED on the router is solid GREEN (flashes during bootup)
 ![Router LEDs](./images/router_blinkenlights.jpg "Router LEDs")
-- That the Ethernet LED on the router labelled "RFID Reader" is lit up (flashing to show activity is good)
+- That the Ethernet LED on the router labelled "RFID Reader" is lit up (flashing to show activity is good, the colour denotes 100M/1000M link speed, and is unimportant)
 - That the LEDs on the tag reader's Ethernet port are also lit
 - That the Ethernet LED on the router corresponding to the RJ45 port the laptop is connected to is lit (flashing to show activity is good)
 - Can you ping the tag reader?  Type `ping 192.168.1.250` in a command prompt window on the laptop and see if it gets a response
@@ -154,7 +154,7 @@ The RFID tag reader, wireless router and GPS time source are powered by a redund
 
 - To avoid risk of damage from voltage fluctuations, **disconnect all the timing equipment before attempting to restart a generator**.  Reconnect only after the generator output has stabilised.
 - If power to the tag reader and router was completely lost, keep an eye on CrossMgrImpinj and make sure the connection to the tag reader is restored on boot-up (the old laptop had a quirk in its Ethernet driver whereby the USB dongle needed to be hot-plugged before it would bring up the connection).
-- When AC power is successfully restored, remember to re-enable the power failure alarm for next time.
+- When AC power is successfully restored, remember to **re-enable the power failure alarm for next time**.
 - If the redundant power supply fails, the router (15V, centre positive) and tag reader (24V, centre positive) may be powered by their own wall-wart adaptors.  The tag reader may also be powered using 802.3af Power-over-Ethernet from a suitable 48V injector or POE switch.
 
 ### Results look wrong
