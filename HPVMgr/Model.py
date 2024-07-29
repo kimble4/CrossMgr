@@ -9,6 +9,7 @@ import sys
 import functools
 from FitSheetWrapper import FitSheetWrapper, FitSheetWrapperXLSX
 from Impinj import Impinj
+from collections.abc import Iterable
 
 lock = threading.RLock()
 #----------------------------------------------------------------------
@@ -70,6 +71,13 @@ def keys2int(x):
     if isinstance(x, dict):
         return {int(k):v for k,v in x.items()}
     return x
+
+def flatten(xs):
+    for x in xs:
+        if isinstance(x, Iterable) and not isinstance(x, (str, bytes)):
+            yield from flatten(x)
+        else:
+            yield x
 
 class LockDatabase:
 	def __enter__(self):
@@ -563,7 +571,22 @@ class Database:
 			#sheet.set_column(colnames.index('Tag'), colnames.index('Tag9'), None, None, {'hidden': 1})  #always hide the tag columns
 		except Exception as e:
 				Utils.logException( e, sys.exc_info() )
-		
+				
+	def getCurEvtRacers( self ):
+		try:
+			row = 0
+			seasonName = self.getSeasonsList()[self.curSeason]
+			season = self.seasons[seasonName]
+			evtName = list(season['events'])[self.curEvt]
+			evt = season['events'][evtName]
+			evtRacers = []
+			if 'racers' in evt:
+				for bibMachineCategoriesTeam in evt['racers']:
+					evtRacers.append(bibMachineCategoriesTeam[0])
+			return evtRacers
+		except Exception as e:
+			Utils.logException( e, sys.exc_info() )
+			
 	def getRoundAllocation( self, rndName ):
 		try:
 			row = 0
@@ -579,7 +602,6 @@ class Database:
 			else:
 				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' has no racers!')
 				return
-				
 			if 'races' not in rnd:
 				Utils.writeLog('WriteSignonSheet: Event ' + evtName + ' round ' + rndName + ' has no races!')
 				return
@@ -595,6 +617,20 @@ class Database:
 			return allocation
 		except Exception as e:
 			Utils.logException( e, sys.exc_info() )
+		
+	def getUnallocatedRacers( self ):
+		seasonName = self.getSeasonsList()[self.curSeason]
+		season = self.seasons[seasonName]
+		evtName = list(season['events'])[self.curEvt]
+		evt = season['events'][evtName]
+		evtRacers = self.getCurEvtRacers()
+		unallocatedRacers = set()
+		for rndName in evt['rounds']:
+			allocation = list(flatten(self.getRoundAllocation(rndName)))
+			for bib in evtRacers:
+				if bib not in allocation:
+					unallocatedRacers.add(bib)
+		return list(unallocatedRacers)
 		
 	def getRoundAllocationHTML( self, rndName, raceNr=None ):
 		try:

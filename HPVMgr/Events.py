@@ -288,6 +288,18 @@ class Events( wx.Panel ):
 										_('Cannot write sign-on sheet'), iconMask=wx.ICON_ERROR )
 						return
 					if xlFName and 'rounds' in evt:
+						#check for unallocated racers before continuing
+						unallocatedRacers = database.getUnallocatedRacers()
+						if len(unallocatedRacers) > 0:
+							Utils.writeLog('Not writing sign-on sheet, ' + evtName + ' has unallocated racers: ' + str(unallocatedRacers))
+							Utils.MessageOK(self,
+										'{}\n{}\n\n{}'.format(
+											_('Racers are entered in the event but have not been allocated to races:'),
+											', '.join('#' + str(bib) for bib in unallocatedRacers),
+											_('Check the Race Allocation for each round.')
+										),
+										_('Cannot write sign-on sheet'), iconMask=wx.ICON_ERROR )
+							return
 						wb = xlsxwriter.Workbook( xlFName )
 						formats = Events.getExcelFormatsXLSX( wb )
 						ues = Utils.UniqueExcelSheetName()
