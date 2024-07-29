@@ -291,7 +291,7 @@ class Events( wx.Panel ):
 						#check for unallocated racers before continuing
 						unallocatedRacers = database.getUnallocatedRacers()
 						if len(unallocatedRacers) > 0:
-							Utils.writeLog('Not writing sign-on sheet, ' + evtName + ' has unallocated racers: ' + str(unallocatedRacers))
+							Utils.writeLog('Not writing sign-on sheet, "' + evtName + '" has unallocated racers: ' + str(unallocatedRacers))
 							Utils.MessageOK(self,
 										'{}\n{}\n\n{}'.format(
 											_('Racers are entered in the event but have not been allocated to races:'),
@@ -358,13 +358,25 @@ class Events( wx.Panel ):
 					if not os.path.isdir(os.path.dirname(htmlFName)):
 						Utils.MessageOK(self,
 										'{}\n"{}"\n\n{}\n{}'.format(
-											_('Cannot write'), xlFName,
+											_('Cannot write'), htmlFName,
 											_('Destination directory does not exist!'),
 											_('Check the allocation page path.')
 										),
 										_('Cannot write allocation page'), iconMask=wx.ICON_ERROR )
 						return
 					if htmlFName and 'rounds' in evt:
+						#check for unallocated racers before continuing
+						unallocatedRacers = database.getUnallocatedRacers()
+						if len(unallocatedRacers) > 0:
+							Utils.writeLog('Not writing allocation web page, "' + evtName + '" has unallocated racers: ' + str(unallocatedRacers))
+							Utils.MessageOK(self,
+										'{}\n{}\n\n{}'.format(
+											_('Racers are entered in the event but have not been allocated to races:'),
+											', '.join('#' + str(bib) for bib in unallocatedRacers),
+											_('Check the Race Allocation for each round.')
+										),
+										_('Cannot write allocation page'), iconMask=wx.ICON_ERROR )
+							return
 						# Read the html header.
 						htmlHeaderFile = os.path.join(Utils.getHtmlFolder(), 'AllocationHeader.html')
 						try:
