@@ -314,10 +314,14 @@ class Events( wx.Panel ):
 								#now, a combined sheet for the round (for use after merging races)
 								sheetCur = wb.add_worksheet( ues.getSheetName(rndName + ' Combined') )
 								database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
-							else:
+							elif nrRaces == 1:
 								#everyone in one race, only need a single sheet
 								sheetCur = wb.add_worksheet( ues.getSheetName(rndName) )
 								database.getRoundAsExcelSheetXLSX( rndName, formats, sheetCur )
+							else:
+								#round has no races!
+								Utils.writeLog('Skipping sign-on sheet for round "' + rndName + '"; it has no races.')
+								pass
 						AddExcelInfo( wb )
 						try:
 							wb.close()
@@ -438,7 +442,7 @@ class Events( wx.Panel ):
 										html += database.getStartTimesHTML( rndName, raceNr=i+1 )
 									else:
 										html += database.getRoundAllocationHTML( rndName, raceNr=i+1 )
-							else:
+							elif nrRaces == 1:
 								#everyone in one race
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
 								if isTT:
@@ -446,6 +450,10 @@ class Events( wx.Panel ):
 									html += database.getStartTimesHTML( rndName )
 								else:
 									html += '<p class="allocation">All racers in one group.</p>\n'
+							else:
+								#round has no races!
+								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
+								html += '<p class="allocation">No races allocated.</p>\n'
 							html += '<hr>'
 						#datestamp and footer
 						html = html[:-4] + '<p class="datestamp">Generated at: ' + datetime.datetime.now().strftime("%Y-%b-%d %H:%M:%S") + '</p>\n'

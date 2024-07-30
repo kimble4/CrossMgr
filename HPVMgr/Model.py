@@ -626,6 +626,10 @@ class Database:
 		evtRacers = self.getCurEvtRacers()
 		unallocatedRacers = set()
 		for rndName in evt['rounds']:
+			rnd = evt['rounds'][rndName]
+			nrRaces = len(rnd['races']) if 'races' in rnd else 0
+			if nrRaces < 1: # if there are no races in the round, treat as fully allocated
+				continue
 			allocation = list(flatten(self.getRoundAllocation(rndName)))
 			for bib in evtRacers:
 				if bib not in allocation:
