@@ -1,4 +1,5 @@
 import wx
+import wx.adv
 import Utils
 import Model
 from EditEntry import DoDNF, DoDNS, DoPull, DoDQ
@@ -40,6 +41,13 @@ class BibEnter( wx.Dialog ):
 		self.bibs.Bind( wx.EVT_BUTTON, self.onBibsButton )
 		self.hbs.Add( self.bibs, (0, 4), flag=wx.EXPAND)
 		
+		#joystick capture enable checkbox
+		self.joystickEntry = wx.CheckBox(self, label='Auto')
+		self.joystickEntry.SetValue(False)
+		self.joystickEntry.SetToolTip( wx.ToolTip('Enter bib automatically when triggered by Joystick device') )
+		
+		self.hbs.Add( self.joystickEntry, (0, 5), flag=wx.EXPAND)
+		
 		for index, bib in enumerate( self.quickBibs ):
 			btn = wx.Button( self, label=str(bib), style=wx.BU_EXACTFIT )
 			btn.SetFont( font )
@@ -75,6 +83,12 @@ class BibEnter( wx.Dialog ):
 		aTable = wx.AcceleratorTable( accTable )
 		self.SetAcceleratorTable(aTable)
 		
+		# Add joystick capture
+		self.joystick = wx.adv.Joystick()
+		self.joystick.SetCapture( self )
+		self.Bind(wx.EVT_JOY_BUTTON_DOWN, self.onJoystickButton)
+		self.Bind(wx.EVT_SHOW, self.onShow)
+		self.Bind(wx.EVT_CLOSE, self.onClose)
 		
 	def handleNumKeypress(self, event):
 		keycode = event.GetKeyCode()
@@ -85,6 +99,12 @@ class BibEnter( wx.Dialog ):
 				event.Skip()
 		else:
 			event.Skip()
+			
+	def onJoystickButton( self, event ):
+		if not self.joystickEntry.IsChecked():
+			return
+		if event.ButtonIsDown( wx.JOY_BUTTON2 ):
+			self.onEnterPress()
 	
 	def onEnterPress( self, event = None ):
 		nums = getRiderNumsFromText( self.numEdit.GetValue() )
@@ -175,6 +195,7 @@ class BibEnter( wx.Dialog ):
 		if bib:
 			# Try to get the rider's name for tooltip
 			race = Model.race
+			riderName = None
 			if race:
 				try:
 					externalInfo = race.excelLink.read()
@@ -188,7 +209,19 @@ class BibEnter( wx.Dialog ):
 				btn.SetToolTip( '#' + str(bib) )
 		else:
 			btn.SetToolTip( 'Right-click to set bib' )
-				
+			
+	def onShow(self, event):
+		race = Model.race
+		if race and race.isTimeTrial:
+			self.hbs.Show(self.joystickEntry)
+		else:
+			self.joystickEntry.SetValue(False)
+			self.hbs.Hide(self.joystickEntry)
+		self.Fit()
+			
+	def onClose(self, event):
+		self.joystickEntry.SetValue(False)
+		event.Skip()
 		
 if __name__ == '__main__':
 	app = wx.App(False)

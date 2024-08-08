@@ -15,6 +15,9 @@ Clicking the button will enter the respective bib immediately.  Alternatively, y
 To set the bib for a button, enter the number, then right-click on the button, or press its respective function key while holding Ctrl.
 Ctrl-P will populate the buttons with the bibs of the first 5 finishers in the current race.
 
+If the race is a [TimeTrial][], an additional checkbox labelled __'Auto'__ will be displayed.  When this is enabled, a __Joystick Button 2__ event will cause the currently entered number(s) to be submitted, equivalent of pressing the Enter key.  (Note that *the dialogue does not need to have input focus* for this to happen, and that since the textbox is cleared after submission, repeated button events have no effect.)  You can use this to start riders automatically as they trigger a tape-switch or optical beam-break.  This feature can be used at the same time as the joystick trigger functionality in CrossMgrVideo.
+
+
 ## Missing Riders...
 Shows the __Missing Riders__ window.  Functionally similar to __Add DNS from external Excel data__ in the [DataMgmt][] menu, this lists riders who are in the race, but do not (yet) have recorded times.
 
