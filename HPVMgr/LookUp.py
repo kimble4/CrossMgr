@@ -124,7 +124,7 @@ class LookUp( wx.Panel ):
 		try:
 			bib = int(self.lookupBib.GetValue().strip())
 			output = ('#' + str(bib) + ': ' + database.getRiderName(bib))
-			self.resultsArea.SetLabel(output)
+			self.resultsArea.SetLabel(output.replace('&','&&'))
 			self.updateFlag(bib)
 			self.lookupBib.SetValue('')
 		except ValueError:
@@ -143,7 +143,7 @@ class LookUp( wx.Panel ):
 				output = ['Tag: ' + tag + ' Not Found']
 			for bibTagNr in bibTagNrs:
 				output.append('#' + str(bibTagNr[0]) + ': ' + database.getRiderName(bibTagNr[0]) + '\n(Tag ' + str(bibTagNr[1]) + ', ' + tag + ')')
-			self.resultsArea.SetLabel(',\n'.join(output))
+			self.resultsArea.SetLabel(',\n'.join(output).replace('&','&&'))
 			self.updateFlag(bibTagNrs[0][0] if len(bibTagNrs) == 1 else None)
 			self.lookupTag.SetValue('')
 			self.lookupBib.SetValue('')

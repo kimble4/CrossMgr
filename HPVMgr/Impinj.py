@@ -745,7 +745,7 @@ class Impinj( wx.Panel ):
 		Utils.writeLog('Impinj set tag to: ' + str(tag))
 		self.tagToWrite.ChangeValue(str(tag))
 		self.onTagToWriteChanged()
-		self.epcInfo.SetLabel( info if info else '')
+		self.epcInfo.SetLabel( info.replace('&','&&') if info else '')
 		if self.status == self.StatusSuccess:
 			self.writeButton.Enable()
 			
