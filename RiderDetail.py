@@ -151,7 +151,7 @@ class ChangeOffsetDialog( wx.Dialog ):
 		self.adjustTime = HighPrecisionTimeEdit( self, allow_none=False, seconds=0.0, size=(128,-1) )
 		
 		fgs.Add( wx.StaticText( self ) )
-		fgs.Add( wx.StaticText( self, label=((riderName + ': ') if riderName else '') + '{}'.format(rider.num) ), flag=wx.ALIGN_LEFT )
+		fgs.Add( wx.StaticText( self, label=((riderName.replace('&','&&') + ': ') if riderName else '') + '{}'.format(rider.num) ), flag=wx.ALIGN_LEFT )
 			
 		fgs.Add( wx.StaticText( self, label='{}:'.format(_("Adjust for"))), flag=wx.ALIGN_RIGHT|wx.ALIGN_CENTRE_VERTICAL )
 		fgs.Add( self.earlyLate, flag=wx.ALIGN_LEFT  )
@@ -1269,9 +1269,9 @@ class RiderDetail( wx.Panel ):
 			except KeyError:
 				pass
 				
-			self.riderName.SetLabel( riderName )
-			self.riderTeam.SetLabel( '{}'.format(info.get('Team', '')) )
-			self.riderMachine.SetLabel( '{}'.format(info.get('Machine', '')) )
+			self.riderName.SetLabel( riderName.replace('&','&&') )
+			self.riderTeam.SetLabel( '{}'.format(info.get('Team', '')).replace('&','&&') )
+			self.riderMachine.SetLabel( '{}'.format(info.get('Machine', '')).replace('&','&&') )
 
 			tags = []
 			for tagName in TagFields:

@@ -124,7 +124,7 @@ class LookUp( wx.Panel ):
 		try:
 			bib = int(self.lookupBib.GetValue().strip())
 			output = ('#' + str(bib) + ': ' + database.getRiderName(bib))
-			self.resultsArea.SetLabel(output)
+			self.resultsArea.SetLabel(output.replace('&','&&'))
 			self.updateFlag(bib)
 			self.lookupBib.SetValue('')
 		except ValueError:
