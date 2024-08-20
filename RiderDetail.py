@@ -1280,7 +1280,7 @@ class RiderDetail( wx.Panel ):
 				except (KeyError, ValueError):
 					pass
 			if tags:
-				self.tags.SetLabel( ', '.join(tags) )
+				self.tags.SetLabel( ',\n'.join(tags) )
 			
 			waveCategory = race.getCategory( num )
 			category = None
