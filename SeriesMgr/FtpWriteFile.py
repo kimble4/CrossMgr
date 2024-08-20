@@ -103,7 +103,7 @@ def FtpWriteHtml( html_in, team = False ):
 	modelFileName = Utils.getFileName() if Utils.getFileName() else 'Test.smn'
 	fileName		= os.path.basename( os.path.splitext(modelFileName)[0] + ('-Team.html' if team else '.html') )
 	defaultPath = os.path.dirname( modelFileName )
-	with open(os.path.join(defaultPath, fileName), 'w') as fp:
+	with open(os.path.join(defaultPath, fileName), 'w', encoding='utf-8', newline='') as fp:
 		fp.write( html_in )
 		
 	model = SeriesModel.model
