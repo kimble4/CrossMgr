@@ -88,9 +88,12 @@ class RiderDetail( wx.Panel ):
 		self.category = wx.StaticText( self, label='' )
 		gbs.Add( self.category, pos=(row,1), span=(1,1), flag=wx.EXPAND )
 		
+		tagsfont = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
 		self.tagsName = wx.StaticText( self, label = '{}: '.format(_('Tag(s)')) )
 		gbs.Add( self.tagsName, pos=(row,2), span=(1,1), flag=wx.ALIGN_RIGHT|wx.ALIGN_TOP )
-		self.tags = wx.StaticText( self )
+		self.tags = wx.StaticText( self, style=wx.ALIGN_RIGHT )
+		self.tags.SetFont(tagsfont)
+		
 		gbs.Add( self.tags, pos=(row,3), span=(1,3), flag=wx.EXPAND )
 		hs.Add( gbs, proportion = 0 )
 		
@@ -178,7 +181,10 @@ class RiderDetail( wx.Panel ):
 				except (KeyError, ValueError):
 					pass
 			if tags:
-				self.tags.SetLabel( ',\n'.join(tags) )
+				output = ''
+				for i, m in enumerate(tags, 1):  
+					output += (m.rjust(24) + [',', ',\n'][i % 2 == 0])
+				self.tags.SetLabel( output )
 			
 			if bib not in race.riders:
 				return

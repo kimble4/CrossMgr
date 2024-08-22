@@ -282,10 +282,14 @@ class RiderDetail( wx.Panel ):
 		
 		row += 1
 		
+		tagsfont = wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+		
 		self.tagsName = wx.StaticText( self, label = '{} '.format(_('Tag(s)')) )
 		gbs.Add( self.tagsName, pos=(row,0), span=(1,1), flag=labelAlign )
-		self.tags = wx.StaticText( self )
-		gbs.Add( self.tags, pos=(row,1), span=(1,4), flag=wx.EXPAND )
+		self.tags = wx.StaticText( self, style=wx.ALIGN_RIGHT )
+		self.tags.SetFont(tagsfont)
+		
+		gbs.Add( self.tags, pos=(row,1), span=(1,4), flag=wx.EXPAND, border=4 )
 
 		self.rideTimeName = wx.StaticText( self, label = '{} '.format(_('Ride Time')) )
 		gbs.Add( self.rideTimeName, pos=(row,5), span=(1,1), flag=labelAlign )
@@ -1280,7 +1284,10 @@ class RiderDetail( wx.Panel ):
 				except (KeyError, ValueError):
 					pass
 			if tags:
-				self.tags.SetLabel( ',\n'.join(tags) )
+				output = ''
+				for i, m in enumerate(tags, 1):  
+					output += (m.rjust(24) + [',', ',\n'][i % 2 == 0])
+				self.tags.SetLabel( output )
 			
 			waveCategory = race.getCategory( num )
 			category = None
