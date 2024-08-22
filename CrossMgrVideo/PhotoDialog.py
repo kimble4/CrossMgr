@@ -122,6 +122,8 @@ class PhotoPanel( wx.Panel ):
 		self.playerForwardToEnd = wx.BitmapButton( self, bitmap=Utils.getBitmap('fast-forward.png') )
 		self.playerForwardToEnd.SetToolTip( wx.ToolTip('To End') )
 		self.playerForwardToEnd.Bind( wx.EVT_BUTTON, lambda e: self.playForwardToEnd() )
+		self.autoplay = wx.CheckBox( self, label='Autoplay')
+		self.autoplay.SetValue(False)
 		
 		btnsizer.Add( self.recenter, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=2)
 		btnsizer.Add( self.frameBackward, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=4)
@@ -132,6 +134,7 @@ class PhotoPanel( wx.Panel ):
 		btnsizer.Add( self.playerForward, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=0)
 		btnsizer.Add( self.playerForwardToEnd, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=0)
 		btnsizer.Add( wx.StaticText(self, label='or Mousewheel'), flag=wx.ALIGN_CENTRE_VERTICAL|wx.LEFT, border=2 )
+		btnsizer.Add( self.autoplay, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=0)
         
 		self.contrast = wx.ToggleButton( self, label='Contras&t')
 		self.contrast.Bind( wx.EVT_TOGGLEBUTTON, self.onFilter )
@@ -315,8 +318,20 @@ class PhotoPanel( wx.Panel ):
 			if self.iJpg < len(self.tsJpg)-1:
 				wx.CallLater( int((self.tsJpg[self.iJpg+1][0] - self.tsJpg[self.iJpg][0]).total_seconds()*1000.0), lambda: (self.changeFrame(1) or self.playNextFrame()) )
 			else:
-				self.setFrameIndex( 0 )
-				wx.CallLater( 700, self.playNextFrame )
+				if self.autoplay.IsChecked():
+					mainWin = Utils.getMainWin()
+					wx.CallAfter( mainWin.playNextTrigger )
+				else:
+					self.setFrameIndex( 0 )
+					wx.CallLater( 700, self.playNextFrame )
+	
+	def playFromStart( self ):
+		self.setFrameIndex( 0 )
+		self.keepPlayingForward = True
+		wx.CallAfter( self.playNextFrame )
+		
+	def cancelAutoplay( self ):
+		self.autoplay.SetValue(False)
 	
 	def play( self ):
 		self.playStop()

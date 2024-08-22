@@ -263,6 +263,14 @@ def PlaySound( soundFile ):
 
 #------------------------------------------------------------------------
 
+mainWin = None
+def setMainWin( mw ):
+	global mainWin
+	mainWin = mw
+	
+def getMainWin():
+	return mainWin
+
 def logException( e, exc_info ):
 	eType, eValue, eTraceback = exc_info
 	ex = traceback.format_exception( eType, eValue, eTraceback )

@@ -419,6 +419,8 @@ class MainWin( wx.Frame ):
 	def __init__( self, parent, id = wx.ID_ANY, title='', size=(1000,800) ):
 		super().__init__( parent, id, title, size=size )
 		
+		Utils.setMainWin( self )
+		
 		self.db = GlobalDatabase()
 		
 		self.bufferSecs = 10
@@ -1691,7 +1693,17 @@ class MainWin( wx.Frame ):
 		for r in range(self.triggerList.GetItemCount()-1):
 			self.triggerList.Select(r, 0)
 		self.onTriggerSelected( iTriggerSelect=iTriggerRow )
-		self.triggerList.Select( iTriggerRow )		
+		self.triggerList.Select( iTriggerRow )
+		
+	def playNextTrigger( self ):
+		lastTriggerRow = self.triggerList.GetItemCount() - 1
+		if self.iTriggerSelect >= lastTriggerRow:
+			wx.CallAfter( self.photoPanel.cancelAutoplay )
+		else:
+			self.iTriggerSelect += 1
+			self.triggerList.Select( self.iTriggerSelect )
+			self.triggerList.EnsureVisible( self.iTriggerSelect )
+			wx.CallLater( 1000, self.photoPanel.playFromStart )
 	
 	def autoCaptureConfig( self, event ):
 		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames, self.autoCaptureSequentialBibs, self.shutterSound )
