@@ -39,7 +39,7 @@ now = datetime.now
 import Utils
 import CVUtil
 import CamServer
-from Clock import Clock
+#from Clock import Clock
 from SocketListener import SocketListener
 from MultiCast import multicast_group, multicast_port
 from Database import GlobalDatabase, DBWriter, Database, BulkInsertDBRows
@@ -546,11 +546,11 @@ class MainWin( wx.Frame ):
 		self.title.SetFont( wx.Font( (0,28), wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL ) )
 		headerSizer.Add( self.title, flag=wx.ALL, border=10 )
 		
-		clock = Clock( self, size=(90,90) )
-		clock.SetBackgroundColour( self.GetBackgroundColour() )
-		clock.Start()
+		# clock = Clock( self, size=(90,90) )
+		# clock.SetBackgroundColour( self.GetBackgroundColour() )
+		# clock.Start()
 
-		headerSizer.Add( clock, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, border=4 )
+		# headerSizer.Add( clock, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT|wx.RIGHT, border=4 )
 		
 		#------------------------------------------------------------------------------
 		self.usb = wx.StaticText( self, label='[0, 2, 4, 6, 8]' )
