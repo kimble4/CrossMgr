@@ -1894,7 +1894,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race
 		if not race:
-			return
+			return False
 			
 		if not race or not race.enableJChipIntegration:
 			if ChipReader.chipReaderCur.IsListening():
@@ -1978,8 +1978,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def processSprintTimer( self, refreshNow=False ):
 		race = Model.race
 		if not race:
-			return
-			
+			return False
 		if not race or not race.enableSprintTimer:
 			if self.SprintTimer.IsListening():
 				self.SprintTimer.StopListener()
@@ -1990,6 +1989,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			self.sprintTimer.StartListener( HOST=race.sprintTimerAddress, PORT=race.sprintTimerPort)
 	
 		data = self.sprintTimer.GetData()
+		
+		update = False
 		
 		for d in data:
 			if d[0] != 'data':
@@ -2019,13 +2020,12 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 				try:
 					race.addSprint(sortTime, sprintDict)
 					wx.CallLater( race.rfidTagAssociateSeconds*1000, self.refreshResults )
-					return True  #signal for an update.
-					continue
+					update = True  #signal for an update.
 				except (TypeError, ValueError) as e:
-					#print(e)
+					#Utils.writeLog('Exception adding sprint: ' + str(e))
 					continue
 				
-		return False	# don't signal for an update.
+		return update or refreshNow	# signal for an update if needed.
 	
 	def sprintTimerTestMode( self, timerTestDialog=None, test=False):
 		race = Model.race
@@ -2154,6 +2154,8 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			self.updateLapCounter()
 			if race.ftpUploadDuringRace:
 				realTimeFtpPublish.publishEntry()
+		elif self.secondCount % 5 == 0:  #Update the lap counter every 5 seconds in case it got out of sync
+			self.updateLapCounter()
 				
 		if not self.timer.IsRunning():
 			# Recalculate time to next call, in order to stay in sync with current sprint
