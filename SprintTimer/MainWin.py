@@ -1888,6 +1888,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 	def processRfidRefresh( self ):
 		if self.processNumTimes():
 			self.refresh()
+			self.updateLapCounter()
 			#if Model.race and Model.race.ftpUploadDuringRace:
 				#realTimeFtpPublish.publishEntry()
 	

@@ -1166,7 +1166,9 @@ class Race:
 	#nonFinisherStatusList = [Rider.DNF, Rider.DNS, Rider.DQ, Rider.NP, Rider.OTL]
 	#nonFinisherStatusSet = set( nonFinisherStatusList )
 	
-	syncTolerance = None
+	syncTolerance = 0
+	
+	rfidTagAssociateSeconds = 5
 	
 	#distanceUnit = UnitKm
 	
@@ -1313,6 +1315,9 @@ class Race:
 		self.finishTime = None
 		self.numLaps = None
 		self.firstRecordedTime = None	# Used to trigger the race on the first recorded time.
+		
+		self.rfidTagAssociateSeconds = 5
+		self.syncTolerance = 0
 		
 		self.distanceUnit = Race.UnitKm
 		self.missingTags = set()
