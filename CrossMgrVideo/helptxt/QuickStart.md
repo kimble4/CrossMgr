@@ -185,6 +185,7 @@ The frame time, and the +/- offset from the Trigger time is shown on the left.
 * Stop.  Stop play.
 * Play forward.  Play the sequence forward.
 * Jump to end.  Jump to the last frame in the sequence.
+* Autoplay.  Automatically loads and plays the next trigger from the beginning when reaching the end of the sequence.
 
 * Contrast - increase contrast of the photos.
 * Sharpen - increase sharpness of the photos.

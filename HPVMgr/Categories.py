@@ -193,6 +193,9 @@ class Categories( wx.Panel ):
 			database = Model.database
 			if database is None:
 				return
+			#limit category name lengths to fit into 31 char Excel sheet name limit == 31 - len(' (Women)')
+			for row in range(self.categoriesGrid.GetNumberRows()):
+				self.categoriesGrid.SetCellValue(row, 1, self.categoriesGrid.GetCellValue(row, 1)[:23])
 			try:
 				with Model.LockDatabase() as db:
 					seasonName = db.getSeasonsList()[self.season]
