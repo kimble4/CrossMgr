@@ -1695,7 +1695,7 @@ class MainWin( wx.Frame ):
 		self.onTriggerSelected( iTriggerSelect=iTriggerRow )
 		self.triggerList.Select( iTriggerRow )
 		
-	def playNextTrigger( self ):
+	def playNextTrigger( self, tsStart ):
 		lastTriggerRow = self.triggerList.GetItemCount() - 1
 		if self.iTriggerSelect >= lastTriggerRow:
 			wx.CallAfter( self.photoPanel.cancelAutoplay )
@@ -1703,7 +1703,7 @@ class MainWin( wx.Frame ):
 			self.iTriggerSelect += 1
 			self.triggerList.Select( self.iTriggerSelect )
 			self.triggerList.EnsureVisible( self.iTriggerSelect )
-			wx.CallLater( 1000, self.photoPanel.playFromStart )
+			wx.CallLater( 1000, self.photoPanel.playFromTs, tsStart )
 	
 	def autoCaptureConfig( self, event ):
 		self.autoCaptureDialog.set( self.tdCaptureBefore.total_seconds(), self.tdCaptureAfter.total_seconds(), self.autoCaptureClosestFrames, self.autoCaptureSequentialBibs, self.shutterSound )

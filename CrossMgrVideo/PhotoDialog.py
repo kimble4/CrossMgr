@@ -280,8 +280,11 @@ class PhotoPanel( wx.Panel ):
 		self.SetBitmap()
 		
 	def findFrameClosestToTrigger( self ):
-		# Clever way to bisect list of sorted tuples.
 		ts = self.triggerInfo['ts']
+		return self.findFrameClosestToTs( ts )
+		
+	def findFrameClosestToTs( self, ts ):
+		# Clever way to bisect list of sorted tuples.
 		iJpgClosest = bisect.bisect_left( self.tsJpg, (ts, ), hi=len(self.tsJpg)-1 )
 		
 		# Find the closest photo to the trigger time.
@@ -320,18 +323,21 @@ class PhotoPanel( wx.Panel ):
 			else:
 				if self.autoplay.IsChecked():
 					mainWin = Utils.getMainWin()
-					wx.CallAfter( mainWin.playNextTrigger )
+					tsCur = self.tsJpg[self.iJpg][0]
+					self.skipRedraw = True
+					wx.CallAfter( mainWin.playNextTrigger, tsCur)
 				else:
 					self.setFrameIndex( 0 )
 					wx.CallLater( 700, self.playNextFrame )
 	
-	def playFromStart( self ):
-		self.setFrameIndex( 0 )
+	def playFromTs( self, tsStart ):
+		self.setFrameIndex( self.findFrameClosestToTs(tsStart) )
 		self.keepPlayingForward = True
 		wx.CallAfter( self.playNextFrame )
-		
+	
 	def cancelAutoplay( self ):
 		self.autoplay.SetValue(False)
+		self.autoplaying = False
 	
 	def play( self ):
 		self.playStop()
