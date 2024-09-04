@@ -89,7 +89,7 @@ def fix_uci_id( uci_id ):
 	'''
 
 class RaceResult:
-	def __init__( self, firstName, lastName, license, machine, team, categoryName, raceName, raceDate, raceFileName, bib, rank, raceOrganizer,
+	def __init__( self, firstName, lastName, license, machine, team, natcode, categoryName, raceName, raceDate, raceFileName, bib, rank, raceOrganizer,
 					raceURL=None, raceInSeries=None, tFinish=None, tProjected=None, primePoints=0, timeBonus=0, laps=1, pointsInput=None, uci_id=None ):
 		self.firstName = str(firstName or '')
 		self.lastName = str(lastName or '')
@@ -103,6 +103,8 @@ class RaceResult:
 		self.machine = str(machine or '')
 		
 		self.team = str(team or '')
+		
+		self.natcode = str(natcode or '')
 		
 		self.categoryName = str(categoryName or '')
 		
@@ -246,6 +248,7 @@ def ExtractRaceResultsExcel( raceInSeries, seriesModel ):
 					'machine':		str(f('machine','')).strip(),
 					'uci_id':		f('uci_id',''),
 					'team':			str(f('team','')).strip(),
+					'natcode':		str(f('natcode','')).strip(),
 					'categoryName': categoryNameSheet if isUCIDataride else f('category_code',None),
 					'laps':			f('laps',1),
 					'pointsInput':	f('points',defaultPointsInput),
@@ -418,7 +421,7 @@ def ExtractRaceResultsCrossMgr( raceInSeries, seriesModel ):
 				'raceInSeries':	raceInSeries,
 			}
 			
-			for fTo, fFrom in [('firstName', 'FirstName'), ('lastName', 'LastName'), ('license', 'License'), ('machine', 'Machine'), ('uci_id', 'UCIID'), ('team', 'Team')]:
+			for fTo, fFrom in [('firstName', 'FirstName'), ('lastName', 'LastName'), ('license', 'License'), ('machine', 'Machine'), ('uci_id', 'UCIID'), ('team', 'Team'), ('natcode', 'NatCode')]:
 				info[fTo] = getattr(rr, fFrom, '')
 				
 			if not info['firstName'] and not info['lastName']:
@@ -562,6 +565,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 	riderRacesCompleted = defaultdict( int )
 	riderPlaceCount = defaultdict( lambda : defaultdict(int) )		# Indexed by (grade, rank).
 	riderTeam = defaultdict( lambda : '' )
+	riderNatCode = defaultdict( lambda : '' )
 	riderUpgrades = defaultdict( lambda : [False] * len(races) )
 	riderNameLicense = {}
 	riderMachines = defaultdict( lambda : [''] * len(races) )
@@ -626,6 +630,8 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				riderMachines[rider][raceSequence[rr.raceInSeries]] = rr.machine
 			if rr.team and rr.team != '0':
 				riderTeam[rider] = rr.team
+			if rr.natcode and rr.natcode != '0':
+				riderNatCode[rider] = rr.natcode
 			riderResults[rider][raceSequence[rr.raceInSeries]] = (
 				formatTime(tFinish, True), rr.rank, 0, rr.timeBonus if considerPrimePointsOrTimeBonus else 0.0
 			)
@@ -732,7 +738,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		
 		# List of:
 		# lastName, firstName, license, [list of machines], team, tTotalFinish, [list of (points, position) for each race in series]
-		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], formatTime(riderTFinish[rider],True), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
+		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderNatCode[rider], formatTime(riderTFinish[rider],True), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
 		return categoryResult, races, eventResultsTable, GetPotentialDuplicateFullNames(riderNameLicense)
 	
 	elif scoreByPercent:
@@ -763,6 +769,8 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				riderMachines[rider][raceSequence[rr.raceInSeries]] = rr.machine
 			if rr.team and rr.team != '0':
 				riderTeam[rider] = rr.team
+			if rr.natcode and rr.natcode != '0':
+				riderNatCode[rider] = rr.natcode
 			percent = min( 100.0, (tFastest / tFinish) * 100.0 if tFinish > 0.0 else 0.0 ) * (rr.upgradeFactor if rr.upgradeResult else 1)
 			riderResults[rider][raceSequence[rr.raceInSeries]] = (
 				'{}, {}'.format(percentFormat.format(percent), formatTime(tFinish, False)), rr.rank, 0, 0
@@ -867,7 +875,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		
 		# List of:
 		# lastName, firstName, license, [list of machines], team, totalPercent, [list of (percent, position) for each race in series]
-		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], percentFormat.format(riderPercentTotal[rider]), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
+		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderNatCode[rider], percentFormat.format(riderPercentTotal[rider]), riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
 		return categoryResult, races, eventResultsTable, GetPotentialDuplicateFullNames(riderNameLicense)
 	
 	elif scoreByTrueSkill:
@@ -893,6 +901,8 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				riderMachines[rider][raceSequence[rr.raceInSeries]] = rr.machine
 			if rr.team and rr.team != '0':
 				riderTeam[rider] = rr.team
+			if rr.natcode and rr.natcode != '0':
+				riderNatCode[rider] = rr.natcode
 			if rr.rank != SeriesModel.rankDNF:
 				riderResults[rider][raceSequence[rr.raceInSeries]] = (0, rr.rank, 0, 0)
 				riderFinishes[rider][raceSequence[rr.raceInSeries]] = rr.rank
@@ -946,7 +956,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		
 		# List of:
 		# lastName, firstName, license, [list of machines], team, points, [list of (points, position) for each race in series]
-		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
+		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderNatCode[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
 		return categoryResult, races, None, GetPotentialDuplicateFullNames(riderNameLicense)
 		
 	else: # Score by points.
@@ -960,6 +970,8 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 				riderMachines[rider][raceSequence[rr.raceInSeries]] = rr.machine
 			if rr.team and rr.team != '0':
 				riderTeam[rider] = rr.team
+			if rr.natcode and rr.natcode != '0':
+				riderNatCode[rider] = rr.natcode
 			primePoints = rr.primePoints if considerPrimePointsOrTimeBonus else 0
 			earnedPoints = pointsForRank[rr.raceFileName][rr.rank] + primePoints
 			points = asInt( earnedPoints * rr.upgradeFactor )
@@ -1092,7 +1104,7 @@ def GetCategoryResults( categoryName, raceResults, pointsForRank, events, useMos
 		
 		# List of:
 		# lastName, firstName, license, [list of machines], team, points, gap, [list of (points, position) for each race in series]
-		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
+		categoryResult = [list(riderNameLicense[rider]) + [riderMachines[rider], riderTeam[rider], riderNatCode[rider], riderPoints[rider], riderGap[rider]] + [riderResults[rider]] for rider in riderOrder]
 		return categoryResult, races, eventResultsTable,  GetPotentialDuplicateFullNames(riderNameLicense)
 
 #------------------------------------------------------------------------------------------------

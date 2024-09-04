@@ -26,7 +26,7 @@ import platform
 
 reNoDigits = re.compile( '[^0-9]' )
 
-HeaderNamesTemplate = ['Pos', 'Name', 'License', 'Machine', 'Team']
+HeaderNamesTemplate = ['Pos', 'Name', 'License', 'Machine', 'Team', 'NatCode']
 def getHeaderNames():
 	return HeaderNamesTemplate + ['Total Time' if SeriesModel.model.scoreByTime else 'Points', 'Gap']
 
@@ -437,13 +437,13 @@ function sortTable( table, col, reverse ) {
 	};
 	
 	var cmpFunc;
-	if( col == 0 || col == 4 || col == 5 ) {		// Pos, Points or Gap
+	if( col == 0 || col == 6 || col == 7 ) {		// Pos, Points or Gap
 		cmpFunc = cmpPos;
 	}
-	else if( col >= 7 ) {				// Race Points/Time and Rank
+	else if( col >= 8 ) {				// Race Points/Time and Rank
 		cmpFunc = function( a, b ) {
-			var x = parseRank( a.cells[7+(col-7)*2+1].textContent.trim() );
-			var y = parseRank( b.cells[7+(col-7)*2+1].textContent.trim() );
+			var x = parseRank( a.cells[8+(col-8)*2+1].textContent.trim() );
+			var y = parseRank( b.cells[8+(col-8)*2+1].textContent.trim() );
 			return MakeCmpStable( a, b, x - y );
 		};
 	}
@@ -585,7 +585,7 @@ function selectColumns() {
 					useMostRacesCompleted=model.useMostRacesCompleted,
 					numPlacesTieBreaker=model.numPlacesTieBreaker )
 
-				results = [rr for rr in results if toFloat(rr[4]) > 0.0]				
+				results = [rr for rr in results if toFloat(rr[5]) > 0.0]				
 				hideRaces = []
         
 				headerNames = HeaderNames + ['{}'.format(r[3].raceName) for r in races]
@@ -672,7 +672,7 @@ function selectColumns() {
 											write('<br/>&nbsp;')  #Points structure would go here
 									aggregateCols.append(iCol)
 						with tag(html, 'tbody'):
-							for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
+							for pos, (name, license, machines, team, natcode, points, gap, racePoints) in enumerate(results):
 								with tag(html, 'tr',  {'class':'odd'} if pos % 2 == 1 else {} ):
 									with tag(html, 'td', {'class':'rightAlign'  + (' hidden' if 'Pos' in hideCols else '')}):
 										write( '{}'.format(pos+1) )
@@ -688,6 +688,8 @@ function selectColumns() {
 										write( '{}'.format(',<br>'.join(list(filter(None, machines))) or '') )
 									with tag(html, 'td', {'class':('hidden' if 'Team' in hideCols else '')}):
 										write( '{}'.format(team or '') )
+									with tag(html, 'td', {'class':('hidden' if 'NatCode' in hideCols else '')}):
+										write( '{}'.format(natcode or '') )
 									with tag(html, 'td', {'class':'rightAlign' + (' hidden' if 'Points' in hideCols else '')}):
 										write( '{}'.format(points or '') )
 									with tag(html, 'td', {'class':'rightAlign noprint' + (' hidden' if 'Gap' in hideCols else '')}):
@@ -1140,7 +1142,7 @@ class Results(wx.Panel):
 			numPlacesTieBreaker=model.numPlacesTieBreaker,
 		)
 		
-		results = [rr for rr in results if toFloat(rr[4]) > 0.0]
+		results = [rr for rr in results if toFloat(rr[5]) > 0.0]
 		
 		headerNames = HeaderNames + ['{}\n{}\n{}'.format(r[3].eventName,r[3].raceName,r[0].strftime('%Y-%m-%d') if r[0] else '') for r in races]
 		
@@ -1151,18 +1153,20 @@ class Results(wx.Panel):
 		hideLicense = True
 		hideMachine = True
 		hideTeam = True
+		hideNatCode = True
 		
-		for row, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
+		for row, (name, license, machines, team, natcode, points, gap, racePoints) in enumerate(results):
 			self.grid.SetCellValue( row, 0, '{}'.format(row+1) )
 			self.grid.SetCellValue( row, 1, '{}'.format(name or '') )
 			self.grid.SetCellBackgroundColour( row, 1, wx.Colour(255,255,0) if name in potentialDuplicates else wx.Colour(255,255,255) )
 			self.grid.SetCellValue( row, 2, '{}'.format(license or '') )
 			self.grid.SetCellValue( row, 3, '{}'.format(',\n'.join(list(filter(None, machines))) or '') )
 			self.grid.SetCellValue( row, 4, '{}'.format(team or '') )
-			self.grid.SetCellValue( row, 5, '{}'.format(points) )
-			self.grid.SetCellValue( row, 6, '{}'.format(gap) )
+			self.grid.SetCellValue( row, 5, '{}'.format(natcode or '') )
+			self.grid.SetCellValue( row, 6, '{}'.format(points) )
+			self.grid.SetCellValue( row, 7, '{}'.format(gap) )
 			for q, (rPoints, rRank, rPrimePoints, rTimeBonus) in enumerate(racePoints):
-				self.grid.SetCellValue( row, 7 + q,
+				self.grid.SetCellValue( row, 8 + q,
 					'{} ({}) +{}'.format(rPoints, Utils.ordinal(rRank), rPrimePoints) if rPoints and rPrimePoints
 					else '{} ({}) -{}'.format(rPoints, Utils.ordinal(rRank), Utils.formatTime(rTimeBonus, twoDigitMinutes=False)) if rPoints and rRank and rTimeBonus
 					else '{} ({})'.format(rPoints, Utils.ordinal(rRank)) if rPoints
@@ -1179,6 +1183,8 @@ class Results(wx.Panel):
 				hideMachine = False
 			if team is not (None or ''):
 				hideTeam = False
+			if natcode is not (None or ''):
+				hideNatCode = False
 		
 		if self.sortCol is not None:
 			def getBracketedNumber( v ):
@@ -1195,8 +1201,9 @@ class Results(wx.Panel):
 				rowOrig = [self.grid.GetCellValue(r, c) for c in range(0, self.grid.GetNumberCols())]
 				rowCmp = rowOrig[:]
 				rowCmp[0] = int(rowCmp[0])
-				rowCmp[4] = Utils.StrToSeconds(rowCmp[4])
-				rowCmp[5:] = [getBracketedNumber(v) for v in rowCmp[5:]]
+				rowCmp[6] = Utils.StrToSeconds(rowCmp[6])
+				rowCmp[7] = Utils.StrToSeconds(rowCmp[7])
+				rowCmp[8:] = [getBracketedNumber(v) for v in rowCmp[8:]]
 				rowCmp.extend( rowOrig )
 				data.append( rowCmp )
 			
@@ -1215,9 +1222,9 @@ class Results(wx.Panel):
 					if c == iCol:
 						self.grid.SetCellTextColour( r, c, fg )
 						self.grid.SetCellBackgroundColour( r, c, bg )
-						if c < 4:
+						if c < 5:
 							halign = wx.ALIGN_LEFT
-						elif c == 4 or c == 5:
+						elif c == 6 or c == 7:
 							halign = wx.ALIGN_RIGHT
 						else:
 							halign = wx.ALIGN_CENTRE
@@ -1234,6 +1241,8 @@ class Results(wx.Panel):
 			self.grid.HideCol( 3 )
 		if hideTeam:
 			self.grid.HideCol( 4 )
+		if hideNatCode:
+			self.grid.HideCol( 5 )
 		
 		self.grid.AutoSizeColumns( False )
 		self.grid.AutoSizeRows( False )
@@ -1300,7 +1309,7 @@ class Results(wx.Panel):
 				useMostRacesCompleted=model.useMostRacesCompleted,
 				numPlacesTieBreaker=model.numPlacesTieBreaker,
 			)
-			results = [rr for rr in results if toFloat(rr[4]) > 0.0]
+			results = [rr for rr in results if toFloat(rr[5]) > 0.0]
 			
 			headerNames = HeaderNames + [(r[3].eventName + '\n' if r[3].eventName else '') + r[3].raceName for r in races]
 			
@@ -1340,7 +1349,7 @@ class Results(wx.Panel):
 					c += 1
 			rowCur += 1
 			
-			for pos, (name, license, machines, team, points, gap, racePoints) in enumerate(results):
+			for pos, (name, license, machines, team, natcode, points, gap, racePoints) in enumerate(results):
 				c = 0
 				if 'Pos' not in hideCols:
 					wsFit.write( rowCur, c, pos+1, numberStyle )
@@ -1356,6 +1365,9 @@ class Results(wx.Panel):
 					c += 1
 				if 'Team' not in hideCols:
 					wsFit.write( rowCur, c, team, textStyle )
+					c += 1
+				if 'NatCode' not in hideCols:
+					wsFit.write( rowCur, c, natcode, textStyle )
 					c += 1
 				if 'Points' not in hideCols:
 					wsFit.write( rowCur, c, points, numberStyle )
