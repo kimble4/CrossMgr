@@ -437,7 +437,7 @@ class Events( wx.Panel ):
 								if isTT:
 									html += '<p class="allocation">Individual start times:</p>\n'
 								for i in range(nrRaces):
-									html += '<h3>' + database.eventCategoryTemplate.format(i+1) + ':</h3>\n'
+									html += '<h3>' + database.eventCategoryTemplate.format(i+1) + ':</h3>\n<p>' + str(len(database.getRoundAllocation(rndName)[i])) + ' racers</p>\n'
 									if isTT:
 										html += database.getStartTimesHTML( rndName, raceNr=i+1 )
 									else:
@@ -446,10 +446,10 @@ class Events( wx.Panel ):
 								#everyone in one race
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
 								if isTT:
-									html += '<p class="allocation">Individual start times:</p>\n'
+									html += '<p class="allocation">Individual start times (' + str(len(database.getRoundAllocation(rndName)[0])) + ' racers)</p>\n'
 									html += database.getStartTimesHTML( rndName )
 								else:
-									html += '<p class="allocation">All racers in one group.</p>\n'
+									html += '<p class="allocation">All ' + str(len(database.getRoundAllocation(rndName)[0])) + ' racers in one group.</p>\n'
 							else:
 								#round has no races!
 								html += '<h2 class="alltogether">' + ',<br>'.join(namesList) + ':</h2>\n'
