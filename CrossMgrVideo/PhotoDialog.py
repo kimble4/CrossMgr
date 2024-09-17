@@ -279,6 +279,11 @@ class PhotoPanel( wx.Panel ):
 		self.iJpg = max( 0, min(i, len(self.tsJpg)-1) )
 		self.SetBitmap()
 		
+	def SetTestBitmap( self ):
+		self.clear()
+		self.tsPreview = None
+		self.scaledBitmap.SetTestBitmap()
+		
 	def findFrameClosestToTrigger( self ):
 		ts = self.triggerInfo['ts']
 		return self.findFrameClosestToTs( ts )

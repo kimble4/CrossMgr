@@ -64,7 +64,7 @@ tdCaptureBeforeDefault = timedelta(seconds=0.5)
 tdCaptureAfterDefault = timedelta(seconds=2.0)
 
 closeFinishThreshold = 3.0/30.0	# Time gap when two finishes are considered close.
-closeColors = ('E50000','D1D200','00BF00')
+closeColors = ('E50000','D1D200','00BF00', 'FFFFFF')
 capturePreviewThreshold = 1.0/6  # Preview capture if within this many seconds of realtime (1/6 second to match framerate of preview window)
 
 
@@ -681,7 +681,7 @@ class MainWin( wx.Frame ):
 		self.publishWebPage.Bind( wx.EVT_BUTTON, self.onPublishWebPage )
 		hsDate.Add( self.publishWebPage, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
 		
-		self.autoSelect = wx.Choice( self, choices=['Autoselect latest', 'Fast preview', 'Scroll triggers', 'Autoselect off'] )
+		self.autoSelect = wx.Choice( self, choices=['Autoselect latest', 'Fast preview', 'Scroll triggers', 'Autoselect off', 'Minimise DB'] )
 		self.autoSelect.Bind (wx.EVT_CHOICE, self.onAutoSelect )
 		hsDate.Add( self.autoSelect, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
 		
@@ -1320,6 +1320,8 @@ class MainWin( wx.Frame ):
 			self.tsQueryLower = date(tNow.year, tNow.month, tNow.day)
 			self.tsQueryUpper = self.tsQueryLower + timedelta( days=1 )
 			wx.CallAfter( self.date.SetValue, wx.DateTime(tNow.day, tNow.month-1, tNow.year) )
+		if self.autoSelect.GetCurrentSelection() == 4:
+			wx.CallAfter( self.photoPanel.SetTestBitmap )
 		self.iTriggerAdded = None
 		self.refreshTriggers(replace=True, selectLatest=False)
 		self.writeOptions()
@@ -1395,8 +1397,12 @@ class MainWin( wx.Frame ):
 			Refreshes the trigger list from the database.
 			If any rows have zero frames, it fixes the number of frames by reading the database.
 		'''
+		
+		if self.autoSelect.GetSelection() == 4:  #minimise DB access; do not refresh triggers from database
+			return
+			
 		tNow = now()
-
+		
 		if selectLatest == None and self.autoSelect.GetSelection() < 2:
 			selectLatest = True
 
@@ -1726,6 +1732,13 @@ class MainWin( wx.Frame ):
 		self.focusDialog.Show()
 	
 	def onTriggerSelected( self, event=None, iTriggerSelect=None, fastPreview=False):
+		# Do nothing if we are in minimise DB access mode
+		if self.autoSelect.GetSelection() == 4:
+			self.iTriggerSelect = None
+			if event is not None:
+				self.triggerList.Select(event.Index, on=0) # immediately deselect trigger
+			return
+		
 		# Determine which trigger we are updating (either specified or from the event).
 		if iTriggerSelect is None:
 			if event is not None:
@@ -1965,6 +1978,8 @@ class MainWin( wx.Frame ):
 			for m in iter( self.captureProgressQ.get_nowait, None ):
 				if m.get('ts', datetime.min) >= ts:
 					message = m
+					if self.autoSelect.GetSelection() == 4 and m.get('cmd') == 'capture':  #add the trigger directly to the list, bypassing the database
+						self.addTriggerDirectlyToList( m )
 					ts = m.get('ts')
 		except Empty:
 			pass
@@ -1984,16 +1999,17 @@ class MainWin( wx.Frame ):
 					self.capturingText.SetLabel( 'Capturing:' )
 				self.capturingTime.SetLabel( ts.strftime('%H:%M:%S.%f')[:-3] )
 				# Do preview of capture in progress only if the trigger timestamp is within capturePreviewThreshold of realtime, otherwise there'll be nothing to see
-				if self.autoSelect.GetSelection() <= 1 and abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
-					if now() - self.lastCapturePreview >= timedelta(seconds=capturePreviewThreshold):  # Rate limit to capturePreviewThreshold
-						# Play the camera sound
+				if abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
+					if now() - self.lastCapturePreview >= timedelta(seconds=1):  # Rate limit 
+					# Play the camera sound
 						if self.shutterSound:
 							Utils.PlaySound('shutter.wav')
-						# Switch to Images tab
-						if self.notebook.GetSelection() != 0:
-							self.notebook.ChangeSelection(0)  # This does not generate a page change event
-						# Copy the current primaryBitmap directly into the photoPanel - avoids database access and decoding jpegs
-						self.photoPanel.setPreview( self.primaryBitmap.GetBitmap(), ts )
+						if self.autoSelect.GetSelection() <= 1:
+							# Switch to Images tab
+							if self.notebook.GetSelection() != 0:
+								self.notebook.ChangeSelection(0)  # This does not generate a page change event
+							# Copy the current primaryBitmap directly into the photoPanel - avoids database access and decoding jpegs
+							self.photoPanel.setPreview( self.primaryBitmap.GetBitmap(), ts )
 						self.lastCapturePreview = now()
 			elif cmd == 'busy':
 				ts = message.get('ts', now())
@@ -2006,7 +2022,13 @@ class MainWin( wx.Frame ):
 				# Update the status text
 				self.capturingText.SetLabel( 'Waiting for trigger...' )
 				self.capturingTime.SetLabel( '' )
-	
+				
+	def addTriggerDirectlyToList( self, trigger ):
+		row = self.triggerList.InsertItem( self.triggerList.GetItemCount(), trigger['ts'].strftime('%H:%M:%S.%f')[:-3], 3 )  #getCloseFinishIndex of 3 draws white box
+		self.updateTriggerRow( row, trigger )
+		self.updateTriggerColumnWidths()
+		self.triggerList.EnsureVisible( row )
+		
 	def startThreads( self ):
 		self.grabFrameOK = False
 		
@@ -2156,9 +2178,8 @@ class MainWin( wx.Frame ):
 			s_after  = 0.0	if closest_frames else msg.get('s_after', self.tdCaptureAfter.total_seconds())
 			
 			# Write this trigger to the database.
-			self.dbWriterQ.put( (
-					'trigger',
-					{
+			
+			trigger = {
 						'ts':				tSearch - timedelta(seconds=advanceSeconds),
 						's_before':			s_before,
 						's_after':			s_after,
@@ -2173,17 +2194,18 @@ class MainWin( wx.Frame ):
 						'race_name':		msg.get('race_name','') or msg.get('raceName',''),
 						'ts_view':			tSearch - timedelta(seconds=advanceSeconds),
 					}
-				)
-			)
+			
+			self.dbWriterQ.put( ('trigger', trigger.copy()) )
 			# Request the video frames required for the trigger.
 			tStart, tEnd = tSearch-self.tdCaptureBefore, tSearch+self.tdCaptureAfter
 			if closest_frames:
 				self.camInQ.put( {'cmd':'query_closest', 't':tSearch, 'closest_frames':closest_frames} )
 			else:
 				self.camInQ.put( {'cmd':'query', 'tStart':tStart, 'tEnd':tEnd} )
-				
+			
 			# Notify of capture in progress
-			self.captureProgressQ.put( {'cmd':'capture', 'ts':tSearch, 'bib':msg.get('bib')} )
+			trigger['cmd'] = 'capture'
+			self.captureProgressQ.put( trigger )
 			wx.CallAfter( self.refreshCaptureProgress )
 	
 	def shutdown( self ):
