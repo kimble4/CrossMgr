@@ -250,6 +250,12 @@ table.results td, table.results th {
 	text-align: left;
 }
 
+table.results thead {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
 table.results th {
 	font-size:1.1em;
 	text-align:left;
@@ -261,6 +267,12 @@ table.results th {
 table.results tr.odd {
 	color:#000000;
 	background-color:#EAF2D3;
+}
+
+table.results th.title {
+	font-size: 200%;
+	background-color:#FFFFFF;
+	color:#000000;
 }
 
 table.results th.riders {
@@ -595,11 +607,12 @@ function selectColumns() {
 				with tag(html, 'div', {'id':'catContent{}'.format(iTable)} ):
 					write( '<p/>')
 					write( '<hr/>')
-					
-					with tag(html, 'h2', {'class':'title'}):
-						write( escape(categoryName) )
 					with tag(html, 'table', {'class': 'results', 'id': 'idTable{}'.format(iTable)} ):
+						write('<colgroup span="' + str(len(HeaderNames) - len(hideCols) + len(races)*2) + '"></colgroup>')
 						with tag(html, 'thead'):
+							with tag(html, 'tr'):
+								with tag(html, 'th', {'colspan': len(HeaderNames) - len(hideCols) + len(races)*2, 'class':'title'}):
+									write( escape(categoryName))
 							with tag(html, 'tr'):
 								for iHeader, col in enumerate(HeaderNames):
 									colAttr = { 'onclick': 'sortTableId({}, {})'.format(iTable, iHeader), 'class':'riders' }
