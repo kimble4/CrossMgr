@@ -681,7 +681,7 @@ class MainWin( wx.Frame ):
 		self.publishWebPage.Bind( wx.EVT_BUTTON, self.onPublishWebPage )
 		hsDate.Add( self.publishWebPage, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
 		
-		self.autoSelect = wx.Choice( self, choices=['Autoselect latest', 'Fast preview', 'Scroll triggers', 'Autoselect off', 'Minimise DB'] )
+		self.autoSelect = wx.Choice( self, choices=['Autoselect latest', 'Fast preview', 'Scroll triggers', 'Autoselect off', 'Minimise DB', 'Min DB (no preview)'] )
 		self.autoSelect.Bind (wx.EVT_CHOICE, self.onAutoSelect )
 		hsDate.Add( self.autoSelect, flag=wx.ALIGN_CENTER_VERTICAL|wx.LEFT, border=32 )
 		
@@ -1320,7 +1320,7 @@ class MainWin( wx.Frame ):
 			self.tsQueryLower = date(tNow.year, tNow.month, tNow.day)
 			self.tsQueryUpper = self.tsQueryLower + timedelta( days=1 )
 			wx.CallAfter( self.date.SetValue, wx.DateTime(tNow.day, tNow.month-1, tNow.year) )
-		if self.autoSelect.GetCurrentSelection() == 4:
+		if self.autoSelect.GetCurrentSelection() >= 4:
 			wx.CallAfter( self.photoPanel.SetTestBitmap )
 		self.iTriggerAdded = None
 		self.refreshTriggers(replace=True, selectLatest=False)
@@ -1398,7 +1398,7 @@ class MainWin( wx.Frame ):
 			If any rows have zero frames, it fixes the number of frames by reading the database.
 		'''
 		
-		if self.autoSelect.GetSelection() == 4:  #minimise DB access; do not refresh triggers from database
+		if self.autoSelect.GetSelection() >= 4:  #minimise DB access; do not refresh triggers from database
 			return
 			
 		tNow = now()
@@ -1733,7 +1733,7 @@ class MainWin( wx.Frame ):
 	
 	def onTriggerSelected( self, event=None, iTriggerSelect=None, fastPreview=False):
 		# Do nothing if we are in minimise DB access mode
-		if self.autoSelect.GetSelection() == 4:
+		if self.autoSelect.GetSelection() >= 4:
 			self.iTriggerSelect = None
 			if event is not None:
 				self.triggerList.Select(event.Index, on=0) # immediately deselect trigger
@@ -1978,7 +1978,7 @@ class MainWin( wx.Frame ):
 			for m in iter( self.captureProgressQ.get_nowait, None ):
 				if m.get('ts', datetime.min) >= ts:
 					message = m
-					if self.autoSelect.GetSelection() == 4 and m.get('cmd') == 'capture':  #add the trigger directly to the list, bypassing the database
+					if self.autoSelect.GetSelection() >= 4 and m.get('cmd') == 'capture':  #add the trigger directly to the list, bypassing the database
 						self.addTriggerDirectlyToList( m )
 					ts = m.get('ts')
 		except Empty:
@@ -1999,17 +1999,23 @@ class MainWin( wx.Frame ):
 					self.capturingText.SetLabel( 'Capturing:' )
 				self.capturingTime.SetLabel( ts.strftime('%H:%M:%S.%f')[:-3] )
 				# Do preview of capture in progress only if the trigger timestamp is within capturePreviewThreshold of realtime, otherwise there'll be nothing to see
-				if abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
+				if self.autoSelect.GetSelection() < 5 and abs( now() - ts ) <= timedelta(seconds=capturePreviewThreshold):
 					if now() - self.lastCapturePreview >= timedelta(seconds=1):  # Rate limit 
 					# Play the camera sound
 						if self.shutterSound:
 							Utils.PlaySound('shutter.wav')
-						if self.autoSelect.GetSelection() <= 1:
+						if self.autoSelect.GetSelection() <= 1:  #Autoselect latest / Fast preview
 							# Switch to Images tab
 							if self.notebook.GetSelection() != 0:
 								self.notebook.ChangeSelection(0)  # This does not generate a page change event
 							# Copy the current primaryBitmap directly into the photoPanel - avoids database access and decoding jpegs
 							self.photoPanel.setPreview( self.primaryBitmap.GetBitmap(), ts )
+						elif self.autoSelect.GetSelection() == 4:  # Minimise DB access
+							# Switch to Images tab
+							if self.notebook.GetSelection() != 0:
+								self.notebook.ChangeSelection(0)
+							# Copy the current primaryBitmap directly into the photoPanel without a timestamp
+							self.photoPanel.setPreview( self.primaryBitmap.GetBitmap() )
 						self.lastCapturePreview = now()
 			elif cmd == 'busy':
 				ts = message.get('ts', now())

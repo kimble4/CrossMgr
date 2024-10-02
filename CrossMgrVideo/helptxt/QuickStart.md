@@ -259,7 +259,8 @@ Determines the behaviour when a new trigger is captured:
 * __Fast preview__: Displays a single frame from the trigger as quickly as possible, for monitoring captures during a race.  (This is considerably faster than loading all the frames.)
 * __Scroll triggers__: Scrolls the trigger list to make the new trigger visible, but does not affect the current selection.
 * __Autoselect off__: New triggers will be added to the list without scrolling.  The current selection is unaffected.  (Useful for examining existing triggers while a race is in progress.)
-* __Minimise DB__: Minimal trigger details will be added to the list directly without reading the database.  Preview is also disabled to reduce overheads.  Triggers cannot be selected in this mode.
+* __Minimise DB__: Minimal trigger details will be added to the list directly without reading the database.  Triggers cannot be selected in this mode.
+* __Min DB (no preview)__: As above, but preview snapshots and camera shutter sounds are also disabled to reduce overheads.  Triggers cannot be selected in this mode.
 
 In __Autoselect latest__ and __Fast preview__ modes, the current frame will be displayed in the image pane during capture if the trigger arrives close enough to real time for the rider to be in frame.  (RFID reads are likely to be processed too slowly for this.)
 
