@@ -213,6 +213,11 @@ class PhotoPanel( wx.Panel ):
 		btn.Bind( wx.EVT_BUTTON, self.onSaveView )
 		btnsizer.Add(btn, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=4)
 		
+		btn = wx.BitmapButton( self, bitmap=Utils.getBitmap('copy-to-clipboard.png') )
+		btn.SetToolTip( wx.ToolTip('Copy timestamp of current frame to the clipboard') )
+		btn.Bind( wx.EVT_BUTTON, self.onCopyTimestamp )
+		btnsizer.Add(btn, flag=wx.LEFT|wx.ALIGN_CENTER_VERTICAL, border=4)
+		
 		self.publishBtn = btn = wx.Button( self, label='Toggle &Publish' )
 		btn.SetToolTip( wx.ToolTip('Toggle publish status') )
 		btn.Bind( wx.EVT_BUTTON, self.onPublish )
@@ -499,6 +504,13 @@ class PhotoPanel( wx.Panel ):
 		self.PopupMenu(self.savePhotoMenu)
 	
 	#-------------------------------------------------------------------
+	def onCopyTimestamp( self, event=None ):
+		if self.triggerInfo:
+			tsCur = self.tsJpg[self.iJpg][0]
+			if wx.TheClipboard.Open():
+				wx.TheClipboard.SetData(wx.TextDataObject(tsCur.strftime('%H:%M:%S.%f')[:-3]))
+				wx.TheClipboard.Close()
+	
 	def doRestoreView( self, event=None ):
 		if self.triggerInfo:
 			# Refresh the record from the database.
