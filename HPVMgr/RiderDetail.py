@@ -101,7 +101,7 @@ class RiderDetail( wx.Panel ):
 			getattr(self, 'riderTag' + str(i), None).SetToolTip( wx.ToolTip('Tag number (Hexadecimal)'))
 			self.Bind( wx.EVT_TEXT, self.onEdited, getattr(self, 'riderTag' + str(i), None) )
 			self.Bind( wx.EVT_TEXT_ENTER, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
-			getattr(self, 'riderTag' + str(i), None).Bind( wx.EVT_KILL_FOCUS, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) )
+			# getattr(self, 'riderTag' + str(i), None).Bind( wx.EVT_KILL_FOCUS, lambda event, tag=i: self.onTagChanged(event, tag), getattr(self, 'riderTag' + str(i), None) ) # causes weird focus glitches under Windows?
 			gbs.Add( getattr(self, 'riderTag' + str(i), None), pos=(row+i,4), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 			setattr(self, 'btnTagCopy' + str(i), wx.Button( self, label='Copy') )
 			getattr(self, 'btnTagCopy' + str(i), None).SetToolTip( wx.ToolTip('Copies the tag number to the clipboard'))
@@ -263,7 +263,7 @@ class RiderDetail( wx.Panel ):
 			
 	def onTagChanged( self, event, tag ):
 		data = getattr(self, 'riderTag' + str(tag), None).GetValue().upper()
-		getattr(self, 'riderTag' + str(tag), None).ChangeValue(re.sub('[^0-9A-F]','', data))
+		getattr(self, 'riderTag' + str(tag), None).ChangeValue(re.sub('[^0-9A-F]','', data)[:24])
 		self.onEdited()
 		
 	def onEdited( self, event=None, warn=True ):
@@ -464,7 +464,11 @@ class RiderDetail( wx.Panel ):
 						except ValueError:
 							pass
 					for i in range(10):
-						data = getattr(self, 'riderTag' + str(i), None).GetValue()
+						# sanitise the tag number
+						data = getattr(self, 'riderTag' + str(i), None).GetValue().upper()
+						data = re.sub('[^0-9A-F]','', data)[:24]
+						getattr(self, 'riderTag' + str(i), None).ChangeValue(data)
+						# write it out
 						if data:
 							db.riders[bib]['Tag' + (str(i) if i > 0 else '')] = data
 						else:
