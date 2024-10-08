@@ -26,6 +26,7 @@ batchPublishAttr = (
 	
 	BatchAttr('WebScorer', _('WebScorer'),	'webscorertxt',	'menuExportWebScorer', True, _('as .txt upload file'), fNew('-WebScorer.txt') ),
 	BatchAttr('Facebook', _('Facebook'),	None,			'menuPrintPNG', False, _('as .png upload files in Facebook folder'), None ),
+	BatchAttr('TagStats', _('Tag Statistics'),	'tagstats',	'menuTagStats', False, _('as .html file'), fNew('-tagstats.html') ),
 )
 
 batchPublishRaceAttr = ['publishFormat' + attr.name for attr in batchPublishAttr] + ['publishFormatBikeReg']

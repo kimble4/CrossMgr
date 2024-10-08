@@ -769,6 +769,11 @@ class MainWin( wx.Frame ):
 		item = self.chipMenu.Append( wx.ID_ANY, _("Import RaceResult File..."), _("RaceResult File") )
 		self.Bind(wx.EVT_MENU, self.menuRaceResultImport, item )
 		
+		self.chipMenu.AppendSeparator()
+		
+		item = self.chipMenu.Append( wx.ID_ANY, _("Generate tag read statistics..."), _("Tag read statistics for this race") )
+		self.Bind(wx.EVT_MENU, self.menuTagStats, item )
+		
 		self.menuBar.Append( self.chipMenu, _("Chip&Reader") )
 
 		#----------------------------------------------------------------------------------------------
@@ -1395,6 +1400,61 @@ class MainWin( wx.Frame ):
 		with RaceResultImport.RaceResultImportDialog(self) as dlg:
 			dlg.ShowModal()
 		wx.CallAfter( self.refresh )
+		
+	@logCall	
+	def menuTagStats( self, event=None, silent=False):
+		if not Model.race:
+			return
+		race = Model.race
+		
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+			
+		# Read the html template.
+		htmlFile = os.path.join(Utils.getHtmlFolder(), 'TagStats.html')
+		try:
+			with open(htmlFile, encoding='utf8') as fp:
+				html = fp.read()
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, _('Cannot read HTML template file.  Check program installation.'),
+								_('Html Template Read Error'), iconMask=wx.ICON_ERROR )
+			return
+			
+		try:
+			externalInfo = race.excelLink.read()
+		except Exception:
+			externalInfo = {}
+			
+		#html = self.addResultsToHtmlStr( html )
+		tagreads = race.tagReads
+		html += '<table><tr><th>Bib</th><th>Name</th><th>Tag</th><th>Count</th><th>Laps</th><th>Counts/Lap</th></tr>'
+		for tag in tagreads:
+			bib = race.tagNums[tag]
+			rider = race.getRider(bib)
+			info = externalInfo.get(bib, {})
+			name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
+			print(rider.interpolate())
+			html+= '<tr><td class="numeric">' + str(bib) + '</td><td>' + name + '</td><td class="numeric">' + str(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + str(len(rider.interpolate())) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr>'
+		html+= '</table>'
+		html+= '</body>\n</html>'
+		
+			
+		# Write out the results.
+		fname = self.getFormatFilename('tagstats')
+		try:
+			with open(fname, 'w', encoding='utf8') as fp:
+				fp.write( html )
+			if not silent:
+				Utils.LaunchApplication( fname )
+				Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Html Tag Statistics written to'), fname), _('Tag Stats'))
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write statistics file'), e, fname),
+								_('Statistics Write Error'), iconMask=wx.ICON_ERROR )
 		
 	def menuShowPage( self, event ):
 		self.showPage( self.idPage[event.GetId()] )
