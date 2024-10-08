@@ -331,6 +331,7 @@ class MainWin( wx.Frame ):
 		
 		self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
 		self.numTimes = []
+		self.tagTimes = []
 		
 		self.nonBusyRefresh = NonBusyCall( self.refresh, min_millis=1500, max_millis=7500 )
 
@@ -4233,12 +4234,26 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 		
 		del self.numTimes[:]
 		return True
+		
+	def processTagTimes( self ):
+		if not self.tagTimes:
+			return
+		
+		race = Model.race
+		
+		for tag, t in self.tagTimes:
+			race.addTagRead(tag, t, doSetChanged=False )
+		race.setChanged()
+		
+		del self.tagTimes[:]
+		
 	
 	def processRfidRefresh( self ):
 		if self.processNumTimes():
 			self.refresh()
 			if Model.race and Model.race.ftpUploadDuringRace:
-				realTimeFtpPublish.publishEntry()		
+				realTimeFtpPublish.publishEntry()
+		self.processTagTimes()
 	
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race
@@ -4286,11 +4301,13 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 				#Always process times for mass start races and when timeTrialNoRFIDStart unset.
 				if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
 					self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+					self.tagTimes.append( (tag, (dt - race.startTime).total_seconds()) )
 				else:
 					#Only process the time if the rider has already started
 					rider = race.getRider( num )
 					if rider.firstTime is not None:
 						self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
+						self.tagTimes.append( (tag, (dt - race.startTime).total_seconds()) )
 		
 		# Ensure that we don't update too often if riders arrive in a bunch.
 		if not self.callLaterProcessRfidRefresh:

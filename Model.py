@@ -1302,6 +1302,7 @@ class Race:
 		self.numTimeInfoField = NumTimeInfo()
 		
 		self.tagNums = None
+		self.tagReads = defaultdict(int)
 		self.lastOpened = datetime.datetime.now()
 		memoize.clear()
 	
@@ -1409,6 +1410,7 @@ class Race:
 	def startRaceNow( self ):
 		self.startTime = datetime.datetime.now()
 		self.tagNums = None
+		self.tagReads = defaultdict(int)
 		self.missingTags = set()
 		self.setChanged()
 
@@ -1464,6 +1466,12 @@ class Race:
 		if self.finishTime is not None:
 			return (self.finishTime - self.startTime).total_seconds()
 		return self.curRaceTime()
+
+	def addTagRead( self, tag, t=None, doSetChanged = True):
+		self.tagReads[tag] += 1
+		print(self.tagReads)
+		if doSetChanged:
+			self.setChanged()
 
 	def addTime( self, num, t = None, doSetChanged = True ):
 		if t is None:
