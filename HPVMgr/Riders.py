@@ -73,7 +73,7 @@ class Riders( wx.Panel ):
 	def __init__( self, parent, id = wx.ID_ANY ):
 		super().__init__(parent, id)
 		
-		self.colnames = ['Bib', 'First Name', 'Last Name', 'Gender', 'Age', 'Nat', 'License', 'Factor', 'Team', 'Last Entered', 'Last Tag Written']
+		self.colnames = ['Bib', 'First Name', 'Last Name', 'Gender', 'Age', 'Nat', 'License', 'Factor', 'Team', 'Last Entered', 'Last Tag Written', 'Notes']
 		self.sortBy = 0
 		self.reverseSort = False
 		
@@ -291,6 +291,8 @@ class Riders( wx.Panel ):
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['LastEntered']) if 'LastEntered' in item[1] else 0, reverse=self.reverseSort))
 		elif self.sortBy == 10: # Last tag
 			sortedRiders = dict(sorted(riders.items(), key=lambda item: (database.getLastTagWritten(item[1])) if database.getLastTagWritten(item[1]) is not None else 0, reverse=self.reverseSort))
+		elif self.sortBy == 11: # Notes
+			sortedRiders = dict(sorted(riders.items(), key=lambda item: (item[1]['Notes']) if 'Notes' in item[1] else '', reverse=self.reverseSort))
 		else: #default (bib)
 			sortedRiders = dict(sorted(riders.items(), reverse=self.reverseSort))
 		
@@ -334,5 +336,7 @@ class Riders( wx.Panel ):
 			dt = '{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(database.getLastTagWritten(rider))) if database.getLastTagWritten(rider) is not None else ''
 			self.ridersGrid.SetCellValue(row, col, dt)
 			self.ridersGrid.SetCellAlignment(row, col, wx.ALIGN_RIGHT, wx.ALIGN_CENTRE)
+			col+=1
+			self.ridersGrid.SetCellValue(row, col, rider['Notes'] if 'Notes' in rider else '')
 			
 		self.ridersGrid.AutoSizeColumns()

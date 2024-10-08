@@ -85,10 +85,15 @@ class RiderDetail( wx.Panel ):
 		self.riderLastEntered.SetToolTip( wx.ToolTip('Date the rider was last entered in a race'))
 		gbs.Add( self.riderLastEntered, pos=(row,1), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
 		row += 1
+		gbs.Add( wx.StaticText( self, label='Notes:'), pos=(row,0), span=(1,1), flag=labelAlign )
+		self.riderNotes = wx.TextCtrl( self, size=(1050,-1))
+		gbs.Add( self.riderNotes, pos=(row,1), span=(1,6), flag=wx.ALIGN_CENTRE_VERTICAL)
+		self.Bind( wx.EVT_TEXT, self.onEdited, self.riderNotes )
+		row += 1
 		self.deleteButton = wx.Button( self, label='Delete Rider')
 		self.deleteButton.SetToolTip( wx.ToolTip('Saves changes'))
 		self.Bind( wx.EVT_BUTTON, self.deleteRider, self.deleteButton )
-		gbs.Add( self.deleteButton, pos=(row,0), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
+		gbs.Add( self.deleteButton, pos=(row,1), span=(1,1), flag=wx.ALIGN_BOTTOM|wx.ALIGN_LEFT )
 		
 		# tag fields
 		row = 0
@@ -113,7 +118,7 @@ class RiderDetail( wx.Panel ):
 			getattr(self, 'btnTagWrite' + str(i), None).Disable()
 			self.Bind( wx.EVT_BUTTON, lambda event, tag=i: self.writeTag(event, tag), getattr(self, 'btnTagWrite' + str(i), None) )
 			gbs.Add( getattr(self, 'btnTagWrite' + str(i), None), pos=(row+i,6), span=(1,1), flag=wx.ALIGN_CENTRE_VERTICAL)
-		row = 10
+		row = 11
 		
 		#machines list
 		self.machinesGrid = wx.grid.Grid( self )
@@ -214,6 +219,10 @@ class RiderDetail( wx.Panel ):
 					self.riderLastEntered.SetLabel('{:%Y-%m-%d}'.format(datetime.datetime.fromtimestamp(rider['LastEntered'])) if rider['LastEntered'] > 0 else '' )
 				else:
 					self.riderLastEntered.SetLabel('')
+				if 'Notes' in rider:
+					self.riderNotes.ChangeValue(rider['Notes'])
+				else:
+					self.riderNotes.ChangeValue('')
 				for i in range(10):
 					if 'Tag' + (str(i) if i > 0 else '') in rider:
 						getattr(self, 'riderTag' + str(i), None).ChangeValue(rider['Tag' + (str(i) if i > 0 else '')])
@@ -463,6 +472,10 @@ class RiderDetail( wx.Panel ):
 							db.riders[bib]['Factor'] = factor
 						except ValueError:
 							pass
+					if 'Notes' in db.riders[bib]:
+						del db.riders[bib]['Notes']
+					if len(self.riderNotes.GetValue()) > 0:
+						db.riders[bib]['Notes'] = self.riderNotes.GetValue()
 					for i in range(10):
 						# sanitise the tag number
 						data = getattr(self, 'riderTag' + str(i), None).GetValue().upper()

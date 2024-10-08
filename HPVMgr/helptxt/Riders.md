@@ -25,3 +25,4 @@ Factor|The rider's Factor
 Team|The team the rider last raced for.
 Last Entered|The date that the rider was last entered in an [Event][Events] in HPVMgr, even if they were subsequently removed.
 Last Tag Written|The date that the rider's last timing tag was written using HPVMgr.
+Notes|Free-form notes field for recording pertinent information about a rider.  Eg. membership status, or some identifying feature if their racing name is ambiguous.

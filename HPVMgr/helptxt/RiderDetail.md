@@ -21,6 +21,7 @@ Factor|The rider's factor (for para-cycling).  If the use of factors is enabled 
 Team|The last team the rider was entered in an event for.
 Last entered|The date that the rider was last added to an [Event][Events] in HPVMgr, even if they were subsequently removed.  (The Event's date will be used if available, otherwise the system time is used.)
 Tag0-9|The 96-bit EPC code written to the rider's RFID timing tags, represented as a 24-digit hexadecimal number.  CrossMgr supports up to 10 tags per rider.  If a date is shown alongside a tag field, this is the last time the tag was written.
+Notes|Free-form notes field for recording pertinent information about a rider.  Eg. membership status, or some identifying feature if their racing name is ambiguous.
 Rider's Machines|A list of machines (with associated [Categories][]) the rider has previously been entered on, used to pre-fill data on the [EventEntry] screen.  Right-click to delete a machine from the list (this will not affect existing event entries).
 
 * Each tag number may be copied to the clipboard using the associated "**Copy**" button.  See [Settings][] for whether delimiters are included.
