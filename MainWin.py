@@ -1421,6 +1421,12 @@ class MainWin( wx.Frame ):
 		if self.fileName is None or len(self.fileName) < 4:
 			return
 			
+		if not hasattr(race, 'tagReads'):
+			Utils.MessageOK( self, _('This race has no tag read statistics data.  It was probably recoreded with an older version of CrossMgr.'), _('No tag statistics data'), iconMask=wx.ICON_ERROR )
+			return
+		
+		tagreads = race.tagReads
+		
 		# Read the html template.
 		htmlFile = os.path.join(Utils.getHtmlFolder(), 'TagStats.html')
 		try:
@@ -1441,24 +1447,22 @@ class MainWin( wx.Frame ):
 		html += '<h2>' + race.longName + '</h2>'
 		html += '<h3>Race duration: ' + str(datetime.timedelta(seconds=race.lastRaceTime()))[:-3] + '</h3>'
 		
-		tagreads = race.tagReads
-		html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
-		
-		#sort by rider then tag
-		bibs = defaultdict(list)
-		print(tagreads)
-		for tag in tagreads:
-			bib = race.tagNums[tag]
-			bibs[bib].append(tag)
-			
-		for bib in dict(sorted(bibs.items())):
-			rider = race.getRider(bib)
-			info = externalInfo.get(bib, {})
-			name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
-			html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(rider.interpolate())) + '</td>'
-			for tag in sorted(bibs[bib]):
-				html+= '<td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr><tr>'
-		html = html[:-4] #remove last <tr>
+		if len(tagreads) > 0:
+			html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
+			#sort by rider then tag
+			bibs = defaultdict(list)
+			for tag in tagreads:
+				bib = race.tagNums[tag]
+				bibs[bib].append(tag)
+				
+			for bib in dict(sorted(bibs.items())):
+				rider = race.getRider(bib)
+				info = externalInfo.get(bib, {})
+				name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
+				html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(rider.interpolate())) + '</td>'
+				for tag in sorted(bibs[bib]):
+					html+= '<td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr><tr>'
+			html = html[:-4] #remove last <tr>
 		
 		if len(race.unmatchedTags) > 0:
 			html += '</table><h4>Unmatched tags:</h4><table><tr><th>Tag EPC</th><th>ASCII</th><th>Reads</th></tr>'
