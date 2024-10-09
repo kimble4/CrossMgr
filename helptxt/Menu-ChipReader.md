@@ -175,3 +175,7 @@ See above for options.
 ## Import RaceResult Formatted File...
 Imports an RaceResult-formatted input file.
 See above for options.
+
+## Generate Tag Read Statistics...
+Writes an HTML page containing tag read statistics for the current race.
+This can be useful for seeing how multiple tags per rider are performing.

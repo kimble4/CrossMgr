@@ -1467,9 +1467,8 @@ class Race:
 			return (self.finishTime - self.startTime).total_seconds()
 		return self.curRaceTime()
 
-	def addTagRead( self, tag, t=None, doSetChanged = True):
+	def addTagRead( self, tag, doSetChanged = True):
 		self.tagReads[tag] += 1
-		print(self.tagReads)
 		if doSetChanged:
 			self.setChanged()
 

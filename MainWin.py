@@ -331,7 +331,7 @@ class MainWin( wx.Frame ):
 		
 		self.callLaterProcessRfidRefresh = None	# Used for delayed updates after chip reads.
 		self.numTimes = []
-		self.tagTimes = []
+		self.tagReads = []
 		
 		self.nonBusyRefresh = NonBusyCall( self.refresh, min_millis=1500, max_millis=7500 )
 
@@ -1403,6 +1403,16 @@ class MainWin( wx.Frame ):
 		
 	@logCall	
 	def menuTagStats( self, event=None, silent=False):
+		def epcToASCII( epc, printable=True ):
+			try:
+				# fromhex() requires an even number of characters, add a leading zero if needed
+				asciiValue=bytes.fromhex(epc if len(epc)%2 == 0 else '0' + epc).decode(encoding="Latin1")
+				if printable:
+					asciiValue= ''.join([c if c.isprintable() else '□' for c in asciiValue])
+			except:
+				asciiValue='DECODE ERROR'
+			return asciiValue
+		
 		if not Model.race:
 			return
 		race = Model.race
@@ -1427,19 +1437,42 @@ class MainWin( wx.Frame ):
 			externalInfo = race.excelLink.read()
 		except Exception:
 			externalInfo = {}
-			
-		#html = self.addResultsToHtmlStr( html )
+		
+		html += '<h2>' + race.longName + '</h2>'
+		html += '<h3>Race duration: ' + str(datetime.timedelta(seconds=race.lastRaceTime()))[:-3] + '</h3>'
+		
 		tagreads = race.tagReads
-		html += '<table><tr><th>Bib</th><th>Name</th><th>Tag</th><th>Count</th><th>Laps</th><th>Counts/Lap</th></tr>'
+		html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
+		
+		#sort by rider then tag
+		bibs = defaultdict(list)
+		print(tagreads)
 		for tag in tagreads:
 			bib = race.tagNums[tag]
+			bibs[bib].append(tag)
+			
+		for bib in dict(sorted(bibs.items())):
 			rider = race.getRider(bib)
 			info = externalInfo.get(bib, {})
 			name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
-			print(rider.interpolate())
-			html+= '<tr><td class="numeric">' + str(bib) + '</td><td>' + name + '</td><td class="numeric">' + str(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + str(len(rider.interpolate())) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr>'
-		html+= '</table>'
-		html+= '</body>\n</html>'
+			html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(rider.interpolate())) + '</td>'
+			for tag in sorted(bibs[bib]):
+				html+= '<td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr><tr>'
+		html = html[:-4] #remove last <tr>
+		
+		if len(race.unmatchedTags) > 0:
+			html += '</table><h4>Unmatched tags:</h4><table><tr><th>Tag EPC</th><th>ASCII</th><th>Reads</th></tr>'
+			for tag in sorted(race.unmatchedTags):
+				html += '<tr><td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td><td class="numeric">' + str(len(race.unmatchedTags[tag])) + '</td></tr>'
+			html += '</table>'
+			
+		if len(race.missingTags) > 0:
+			html += '</table><h4>Missing tags:</h4><table><tr><th>Tag EPC</th><th>ASCII</th></tr>'
+			for tag in sorted(race.missingTags):
+				html += '<tr><td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td></tr>'
+			html += '</table>'
+		
+		html += '</body>\n</html>'
 		
 			
 		# Write out the results.
@@ -4295,17 +4328,17 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 		del self.numTimes[:]
 		return True
 		
-	def processTagTimes( self ):
-		if not self.tagTimes:
+	def processTagReads( self ):
+		if not self.tagReads:
 			return
 		
 		race = Model.race
 		
-		for tag, t in self.tagTimes:
-			race.addTagRead(tag, t, doSetChanged=False )
+		for tag in self.tagReads:
+			race.addTagRead(tag, doSetChanged=False )
 		race.setChanged()
 		
-		del self.tagTimes[:]
+		del self.tagReads[:]
 		
 	
 	def processRfidRefresh( self ):
@@ -4313,7 +4346,7 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 			self.refresh()
 			if Model.race and Model.race.ftpUploadDuringRace:
 				realTimeFtpPublish.publishEntry()
-		self.processTagTimes()
+		self.processTagReads()
 	
 	def processJChipListener( self, refreshNow=False ):
 		race = Model.race
@@ -4361,13 +4394,13 @@ Computers fail, screw-ups happen.  Always use a manual backup.
 				#Always process times for mass start races and when timeTrialNoRFIDStart unset.
 				if not race.isTimeTrial or not race.timeTrialNoRFIDStart:
 					self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
-					self.tagTimes.append( (tag, (dt - race.startTime).total_seconds()) )
+					self.tagReads.append( tag )
 				else:
 					#Only process the time if the rider has already started
 					rider = race.getRider( num )
 					if rider.firstTime is not None:
 						self.numTimes.append( (num, (dt - race.startTime).total_seconds()) )
-						self.tagTimes.append( (tag, (dt - race.startTime).total_seconds()) )
+						self.tagReads.append( tag )
 		
 		# Ensure that we don't update too often if riders arrive in a bunch.
 		if not self.callLaterProcessRfidRefresh:
