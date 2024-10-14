@@ -106,7 +106,7 @@ import SimulationLapTimes
 import Version
 from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
 from SetGraphic			import SetGraphicDialog
-from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM
+from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM, GetEntriesForNum
 from PhotoFinish		import okTakePhoto
 from SendPhotoRequests	import SendPhotoRequests
 from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
@@ -1448,7 +1448,7 @@ class MainWin( wx.Frame ):
 		html += '<h3>Race duration: ' + str(datetime.timedelta(seconds=race.lastRaceTime()))[:-3] + '</h3>'
 		
 		if len(tagreads) > 0:
-			html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
+			html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Unfiltered<br>times</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
 			#sort by rider then tag
 			bibs = defaultdict(list)
 			for tag in tagreads:
@@ -1458,10 +1458,23 @@ class MainWin( wx.Frame ):
 			for bib in dict(sorted(bibs.items())):
 				rider = race.getRider(bib)
 				info = externalInfo.get(bib, {})
+				with Model.LockRace() as race: #work out lap count
+					waveCategory = race.getCategory( bib )
+					startOffset = race.getStartOffset( bib )				# 0.0 if isTimeTrial.
+					entries = GetEntriesForNum(waveCategory, bib) if rider.autocorrectLaps else rider.interpolate()
+					entries = [e for e in entries if e.t > startOffset]		# For time trials, e.t is relative to the the rider's firstTime.  Eg. e.t + rider.firstTime == raceTime
+					unfilteredTimes = [t for t in race.getRider(bib).times if t > startOffset]
 				name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
-				html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(rider.interpolate())) + '</td>'
+				html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(entries)) + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(unfilteredTimes)) + '</td>'
 				for tag in sorted(bibs[bib]):
-					html+= '<td class="numeric">' + str(tag) + '</td><td class="numeric">' + epcToASCII(tag) + '</td><td class="numeric">' + str(tagreads[tag]) + '</td><td class="numeric">' + "{:.2f}".format(tagreads[tag]/len(rider.interpolate())) + '</td></tr><tr>'
+					readsPerLap = tagreads[tag]/len(entries)
+					if readsPerLap < 1.0 - 1/len(entries):
+						tagClass = 'numeric lowreads'
+					elif readsPerLap > 1.0 + 1/len(entries):
+						tagClass = 'numeric highreads'
+					else:
+						tagClass = 'numeric'
+					html+= '<td class="' + tagClass + '">' + str(tag) + '</td><td class="' + tagClass + '">' + epcToASCII(tag) + '</td><td class="' + tagClass + '">' + str(tagreads[tag]) + '</td><td class="' + tagClass + '">' + '{:.2f}'.format(readsPerLap) + '</td></tr><tr>'
 			html = html[:-4] #remove last <tr>
 		
 		if len(race.unmatchedTags) > 0:
