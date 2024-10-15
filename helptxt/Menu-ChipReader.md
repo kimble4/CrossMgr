@@ -179,3 +179,5 @@ See above for options.
 ## Generate Tag Read Statistics...
 Writes an HTML page containing tag read statistics for the current race.
 This can be useful for seeing how multiple tags per rider are performing.
+Tags highlighted in **orange** are under-reading, and may need replacing.
+Tags highlighted in **yellow** are over-reading, and may be candidates for exclusion from the race.

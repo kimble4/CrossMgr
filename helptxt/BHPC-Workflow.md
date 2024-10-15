@@ -383,8 +383,9 @@ In the interests of **backward compatibility**, we continue to support the **old
 1. Click the "**Write**" button.  You will be taken back to the **WriteTags** screen, and the "**EPC to write**" field will be populated with the rider's tag number.
 ![HPVMgr WriteTags screen](./images/hpvmgr_writetags.png "HPVMgr WriteTags screen")
 1. Ensure the tag you wish to write to is in place near the selected antenna, click "**Read Tags**" to refresh the inventory list.
-1. Select the relevant tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
-1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.
+1. The discovered tags will be listed in order of signal strength.  A larger (ie. less negative) number represents a stronger signal.  For the patch antenna, a tag in contact with the antenna should have a RSSI in the -15dB to -20dB range.  Anything significantly lower (-40db or less) is likely to be tens of centimetres away, and not the tag you want.
+1. Select the desired tag by clicking on it in the list.  It will be added to the "**Destination tag**" field.
+1. Click "**Write**" to write the new EPC to the tag.  If the write is successful, it will be highlighted green in the list.  If not, try moving the tag with respect to the antenna and trying again.  (It's possible for a failed write to corrupt the EPC of the destination tag, so if it seems to vanish from the list, see if a new tag has appeared with a similar RSSI.)
 1. Give the tags to the rider.
 1. Save changes before exiting the HPVMgr application, so the tag write dates are stored in the database.
 1. If necessary, **restart CrossMgrImpinj** and ensure it connects to the tag reader.
@@ -698,7 +699,7 @@ As CrossMgr cannot determine when the leader is going to get the bell, you will 
 1. Hopefully this shows the leader with a single predicted (yellow) lap still to go.  When they finish the race, this should turn white.  Other riders' predicted final laps will turn white as their tags are read.  If things look wrong, *don't panic* - changes to the race duration are reversible.  As long as you don't Finish the race, CrossMgr will keep recording tag reads, even if they are not currently shown in the Results.
 1. As riders cross the finish for the final time, it's worth using the **manual buttons on the Trigger-O-Matic** to ensure that they are definitely captured on video.  (There is no harm in manually triggering the capture in addition to the automatic captures triggered by CrossMgr or the beam-break - CrossMgrVideo only stores a single copy of each video frame in the database.)  A short press of the **Auto-Capture** button will grab a few seconds of video, starting *before* you pressed the button.  Meanwhile, the **Capture** button will cause video to be recorded continuously for as long as it is held down, starting from when you press it.  Note that holding it down for more than 30 seconds or so at a time will put a very heavy load on the database - best to release it at intervals than to try to hold it down continuously for the entire finish.
 1. BHPC races normally have lapped riders.  If all riders are predicted to ride the same number of laps as the leader, check the "**Lapped Riders Continue**" settings in the [Category Screen][].
-1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished, leave the race running, as CrossMgr will stop recording tag reads when you finish the race.*
+1. When all riders have finished (or are confirmed to have DNFed), switch to the [Actions][] screen and click **Finish Race**.  *If there is any doubt that all riders have actually finished (final lap times in yellow), leave the race running until you have eyes on the rider, as CrossMgr will stop recording tag reads when you finish the race.*
 
 
 #### B) Fixed-duration race
