@@ -173,6 +173,17 @@ The RFID tag reader, wireless router and GPS time source are powered by a redund
 
 This is usually caused by the **minimum possible lap time** (see [Properties/Race Options][Race Options]) being set too high.  Typically a value that worked for the slow race is then too high for the faster riders in the fast race.
 
+#### Missing last laps
+
+If a rider's final lap time is yellow at the end of the race, it's possible that they are still out on the course (perhaps having an unusually slow last lap).  Don't 'finish' the race until you have accounted for the rider:  The race organiser may incorrectly believe everyone has finished, and if in doubt it's better to leave CrossMgr and CrossMgrVideo recording while you investigate.
+
+Likely causes (other than slow last laps) include:
+
+- The rider thinking they got the chequered flag before the leader, possibly due to a close finish or ambiguous flag-waving.
+- The rider thinking the last-lap bell meant they had finished.
+- DNFing due to a mechanical or similar on the final lap.
+- A missed tag read at the finish (hopefully you have video).
+
 #### Incorrect ranking in live results
 
 If [ranking by average speed][Race Options], ensure that all [Categories][Category Screen] have a lap distance set.  (CrossMgr's [Results][] page does not use average speed ranking while the race is in progress, so only the HTML output will be affected.)
