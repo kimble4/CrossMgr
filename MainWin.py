@@ -106,7 +106,7 @@ import SimulationLapTimes
 import Version
 from ReadSignOnSheet	import GetExcelLink, ResetExcelLinkCache, ExcelLink, ReportFields, SyncExcelLink, IsValidRaceDBExcel, GetTagNums
 from SetGraphic			import SetGraphicDialog
-from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, ResetVersionRAM, GetEntriesForNum
+from GetResults			import GetCategoryDetails, UnstartedRaceWrapper, GetLapDetails, GetAnimationData, GetSituationData, ResetVersionRAM, GetEntriesForNum
 from PhotoFinish		import okTakePhoto
 from SendPhotoRequests	import SendPhotoRequests
 from ReadTTStartTimesSheet import ImportTTStartTimes, AutoImportTTStartTimes
@@ -1444,38 +1444,41 @@ class MainWin( wx.Frame ):
 		except Exception:
 			externalInfo = {}
 		
-		html += '<h2>' + race.longName + '</h2>'
+		html += '<h2><a href="' + race.urlFull + '">' + race.longName + '</a></h2>'
 		html += '<h3>Race duration: ' + str(datetime.timedelta(seconds=race.lastRaceTime()))[:-3] + '</h3>'
 		
 		if len(tagreads) > 0:
-			html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Unfiltered<br>times</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
-			#sort by rider then tag
-			bibs = defaultdict(list)
-			for tag in tagreads:
-				bib = race.tagNums[tag]
-				bibs[bib].append(tag)
-				
-			for bib in dict(sorted(bibs.items())):
-				rider = race.getRider(bib)
-				info = externalInfo.get(bib, {})
-				with Model.LockRace() as race: #work out lap count
-					waveCategory = race.getCategory( bib )
-					startOffset = race.getStartOffset( bib )				# 0.0 if isTimeTrial.
-					entries = GetEntriesForNum(waveCategory, bib) if rider.autocorrectLaps else rider.interpolate()
-					entries = [e for e in entries if e.t > startOffset]		# For time trials, e.t is relative to the the rider's firstTime.  Eg. e.t + rider.firstTime == raceTime
-					unfilteredTimes = [t for t in race.getRider(bib).times if t > startOffset]
-				name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
-				html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(entries)) + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(unfilteredTimes)) + '</td>'
-				for tag in sorted(bibs[bib]):
-					readsPerLap = tagreads[tag]/len(entries)
-					if readsPerLap < 1.0 - 1/len(entries):
-						tagClass = 'numeric lowreads'
-					elif readsPerLap > 1.0 + 1/len(entries):
-						tagClass = 'numeric highreads'
-					else:
-						tagClass = 'numeric'
-					html+= '<td class="' + tagClass + '">' + str(tag) + '</td><td class="' + tagClass + '">' + epcToASCII(tag) + '</td><td class="' + tagClass + '">' + str(tagreads[tag]) + '</td><td class="' + tagClass + '">' + '{:.2f}'.format(readsPerLap) + '</td></tr><tr>'
-			html = html[:-4] #remove last <tr>
+			if race.tagNums is not None:
+				html += '<table><tr><th>Bib</th><th>Name</th><th>Laps</th><th>Unfiltered<br>times</th><th>Tag EPC</th><th>ASCII</th><th>Reads</th><th>Reads/Lap</th></tr>'
+				#sort by rider then tag
+				bibs = defaultdict(list)
+				for tag in tagreads:
+					bib = race.tagNums[tag]
+					bibs[bib].append(tag)
+					
+				for bib in dict(sorted(bibs.items())):
+					rider = race.getRider(bib)
+					info = externalInfo.get(bib, {})
+					with Model.LockRace() as race: #work out lap count
+						waveCategory = race.getCategory( bib )
+						startOffset = race.getStartOffset( bib )				# 0.0 if isTimeTrial.
+						entries = GetEntriesForNum(waveCategory, bib) if rider.autocorrectLaps else rider.interpolate()
+						entries = [e for e in entries if e.t > startOffset]		# For time trials, e.t is relative to the the rider's firstTime.  Eg. e.t + rider.firstTime == raceTime
+						unfilteredTimes = [t for t in race.getRider(bib).times if t > startOffset]
+					name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
+					html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(entries)) + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(unfilteredTimes)) + '</td>'
+					for tag in sorted(bibs[bib]):
+						readsPerLap = tagreads[tag]/len(entries)
+						if readsPerLap < 1.0 - 1/len(entries):
+							tagClass = 'numeric lowreads'
+						elif readsPerLap > 1.0 + 1/len(entries):
+							tagClass = 'numeric highreads'
+						else:
+							tagClass = 'numeric'
+						html+= '<td class="' + tagClass + '">' + str(tag) + '</td><td class="' + tagClass + '">' + epcToASCII(tag) + '</td><td class="' + tagClass + '">' + str(tagreads[tag]) + '</td><td class="' + tagClass + '">' + '{:.2f}'.format(readsPerLap) + '</td></tr><tr>'
+				html = html[:-4] #remove last <tr>
+			else:
+				html += '<p><strong>No tags -> bibs mapping data!</strong></p>'
 		
 		if len(race.unmatchedTags) > 0:
 			html += '</table><h4>Unmatched tags:</h4><table><tr><th>Tag EPC</th><th>ASCII</th><th>Reads</th></tr>'
@@ -1819,7 +1822,15 @@ class MainWin( wx.Frame ):
 		printout.Destroy()
 
 	def getFormatFilename( self, filecode ):
-		if filecode == 'uciexcel' and not BatchPublishAttrs.formatFilename[filecode]:
+		if filecode == 'situation':
+			def getSituationFilename( fnamebase ):
+				return os.path.join(os.path.dirname(self.fileName or ''), 'Situation.html')
+			BatchPublishAttrs.formatFilename[filecode] = getSituationFilename
+		elif filecode == 'situationJson':
+			def getSituationFilename( fnamebase ):
+				return os.path.join(os.path.dirname(self.fileName or ''), 'Situation.json')
+			BatchPublishAttrs.formatFilename[filecode] = getSituationFilename
+		elif filecode == 'uciexcel' and not BatchPublishAttrs.formatFilename[filecode]:
 			def getUCIFileNames( fnameBase ):
 				xlFNames = []
 				path, fname = os.path.split( fnameBase )
@@ -2103,6 +2114,21 @@ class MainWin( wx.Frame ):
 		payload['catDetails']			= GetCategoryDetails( True, publishOnly )
 		
 		return payload
+		
+	def getSituationPayload( self ):
+		race = Model.race
+		payload = {}
+		payload['timeStamp'] 		= int(time.time())
+		payload['raceStartTime'] 	= race.startTime.timestamp()
+		payload['raceNameText'] 	= race.name
+		payload['url']				= getattr( race, 'urlFull', '' )
+		payload['raceIsRunning']	= race.isRunning()
+		payload['raceIsUnstarted']	= race.isUnstarted()
+		payload['raceIsFinished']	= race.isFinished()
+		payload['version']			= Version.AppVerName
+		payload['data']				= GetSituationData( None, True )
+		
+		return payload
 	
 	def addResultsToHtmlStr( self, html ):
 		html = self.cleanHtml( html )
@@ -2339,6 +2365,57 @@ class MainWin( wx.Frame ):
 		with BatchPublishPropertiesDialog( self ) as dialog:
 			ret = dialog.ShowModal()
 		
+	@logCall
+	def menuPublishHtmlSituation( self, event=None, silent=False ):
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+			
+		# Read the html template.
+		htmlFile = os.path.join(Utils.getHtmlFolder(), 'Situation.html')
+		try:
+			with open(htmlFile, encoding='utf8') as fp:
+				html = fp.read()
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, _('Cannot read Situation template file.  Check program installation.'),
+								_('Html Template Read Error'), iconMask=wx.ICON_ERROR )
+			return
+		
+		# Write out the html page
+		fname = self.getFormatFilename('situation')
+		try:
+			with open(fname, 'w', encoding='utf8') as fp:
+				fp.write( html )
+			if not silent:
+				Utils.LaunchApplication( fname )
+				Utils.MessageOK(self, '{}:\n\n   {}'.format(_('Situation page written to'), fname), _('Html Write'))
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write situation HTML file'), e, fname),
+								_('Situation Write Error'), iconMask=wx.ICON_ERROR )
+				
+				
+	@logCall
+	def menuPublishJsonSituation( self, event=None, silent=False ):
+		self.commit()
+		if self.fileName is None or len(self.fileName) < 4:
+			return
+			
+		#write current state to json file
+		fname = self.getFormatFilename('situationJson')
+		try:
+			json = Model.getSituationJson()
+			with open(fname, 'w', encoding='utf8') as fp:
+				fp.write( json )
+		except Exception as e:
+			logException( e, sys.exc_info() )
+			if not silent:
+				Utils.MessageOK(self, '{}\n\t\t{}\n({}).'.format(_('Cannot write situation JSON file'), e, fname),
+								_('Situation Write Error'), iconMask=wx.ICON_ERROR )
+	
 	@logCall
 	def menuPublishHtmlRaceResults( self, event=None, silent=False ):
 		self.commit()

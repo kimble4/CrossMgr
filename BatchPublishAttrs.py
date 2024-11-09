@@ -9,6 +9,12 @@ def fNew( suffix ):
 batchPublishAttr = (
 	BatchAttr('Html',	_('Html'),			'html', 		'menuPublishHtmlRaceResults', True, _('as .html file'), fNew('.html') ),
 	
+	BatchAttr('Situation',	_('Situation Page'),	'situation', 	'menuPublishHtmlSituation', True, _('Situation.html file'), None ),
+	
+	BatchAttr('Situation data',	_('Situation data'),	'situationJson', 	'menuPublishJsonSituation', True, _('.json file for Situation.html'), None ),
+	
+	BatchAttr('TagStats', _('Tag Statistics'),	'tagstats',	'menuTagStats', True, _('as .html file'), fNew('-tagstats.html') ),
+	
 	BatchAttr('IndexHtml',	_('Index Html'),'indexhtml', 	'menuPublishHtmlIndex', True, _('index.html for all CrossMgr races in folder'),
 		lambda fNewBase: os.path.join(os.path.dirname(fNewBase), 'index.html')),
 		
@@ -26,7 +32,6 @@ batchPublishAttr = (
 	
 	BatchAttr('WebScorer', _('WebScorer'),	'webscorertxt',	'menuExportWebScorer', True, _('as .txt upload file'), fNew('-WebScorer.txt') ),
 	BatchAttr('Facebook', _('Facebook'),	None,			'menuPrintPNG', False, _('as .png upload files in Facebook folder'), None ),
-	BatchAttr('TagStats', _('Tag Statistics'),	'tagstats',	'menuTagStats', False, _('as .html file'), fNew('-tagstats.html') ),
 )
 
 batchPublishRaceAttr = ['publishFormat' + attr.name for attr in batchPublishAttr] + ['publishFormatBikeReg']

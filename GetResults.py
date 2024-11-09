@@ -564,19 +564,25 @@ def _GetResultsCore( category ):
 		
 		# if gapValue is negative, it is laps down.  Otherwise, it is seconds.
 		rr.gapValue = 0
+		rr.gapSeconds = 0
 		if (isTimeTrial and isBestNLaps):
 			startTime = rr.startTime if rr.startTime else 0
 			leaderStartTime = leader.startTime if leader.startTime else 0
 			rr.gap = ( Utils.formatTimeGap( TimeDifference(rr.lastTime - startTime, leader.lastTime - leaderStartTime, highPrecision), highPrecision ) )
 			rr.gapValue = max(0.0, (rr.lastTime - startTime) - (leader.lastTime - leaderStartTime))
+			rr.gapSeconds = max(0.0, (rr.lastTime - startTime) - (leader.lastTime - leaderStartTime))
 		elif rr.laps < leader.laps:
 			rr._setLapsDown( leader.laps - rr.laps )
+			rr.gapSeconds = max(0.0, rr.lastTime - leader.lastTime)
+			for i in range(rr.laps, leader.laps):
+				rr.gapSeconds += leader.lapTimes[i]
 		elif (winAndOut or rr != leader) and not (isTimeTrial and rr.lastTime == leader.lastTime):
 			rr.gap = (
 				Utils.formatTimeGap( TimeDifference(rr.lastTime, leader.lastTime, highPrecision), highPrecision )
 					if leader.lastTime < rr.lastTime else ''
 			)
 			rr.gapValue = max(0.0, rr.lastTime - leader.lastTime)
+			rr.gapSeconds = max(0.0, rr.lastTime - leader.lastTime)
 	FixPulled( riderResults, race, category )
 	
 	# Compute road race times and gaps.
@@ -1089,7 +1095,7 @@ def GetCategoryDetails( ignoreEmptyCategories=True, publishOnly=False ):
 
 def GetAnimationData( category=None, getExternalData=False ):
 	animationData = {}
-	ignoreFields = {'pos', 'num', 'gap', 'gapValue', 'laps', 'lapTimes', 'full_name', 'short_name'}
+	ignoreFields = {'pos', 'num', 'gap', 'gapValue', 'gapSeconds', 'laps', 'lapTimes', 'full_name', 'short_name'}
 	statusNames = Model.Rider.statusNames
 	
 	
@@ -1132,6 +1138,50 @@ def GetAnimationData( category=None, getExternalData=False ):
 					animationData[rr.num] = info
 		
 	return animationData
+	
+def GetSituationData( category=None, getExternalData=False ):
+	situationData = {}
+	ignoreFields = {'Team', 'bests', 'num', 'gap', 'Gender', 'Machine', 'CustomCategory1', 'CustomCategory2', 'CustomCategory3', 'CustomCategory4', 'CustomCategory5', 'CustomCategory6', 'CustomCategory7', 'CustomCategory8', 'CustomCategory9',  'interp', 'lapTimes', 'lapSpeeds', 'full_name', 'short_name', 'raceTimes', 'raceSpeeds', 'speed'}
+	statusNames = Model.Rider.statusNames
+	
+	with UnstartedRaceWrapper( getExternalData ):
+		with Model.LockRace() as race:
+			riders = race.riders
+			isTimeTrial = race.isTimeTrial
+			isBestNLaps = race.isBestNLaps
+			for cat in ([category] if category else race.getCategories()):
+				results = GetResults( cat )
+				
+				for rr in results:
+					info = {}
+					#bestLaps = race.getNumBestLaps( rr.num )
+					for a in dir(rr):
+						if a.startswith('_') or a in ignoreFields:
+							continue
+						# if a == 'raceTimes':
+						# 	info['raceTimes'] = getattr(rr, a)
+						# 	if bestLaps is not None and len(info['raceTimes']) > bestLaps:
+						# 		info['raceTimes'] = info['raceTimes'][:bestLaps+1]
+						elif a == 'status':
+							if getattr(rr, a) == Model.Rider.NP or getattr(rr, a) == Model.Rider.DNS:
+								break
+							info['status'] = statusNames[getattr(rr, a)]
+						elif a == 'lastTime':
+							if isTimeTrial and isBestNLaps:
+								info[a] = rr.lastTime
+							else:	
+								try:
+									info[a] = rr.raceTimes[-1]
+								except IndexError:
+									info[a] = rr.lastTime
+						else:
+							info[a] = getattr( rr, a )
+					else:  # if loop exits without a break
+						if race.isTimeTrial:
+							info['startTime'] = race.riders[rr.num].firstTime
+						situationData[rr.num] = info
+	
+	return situationData
 
 def GetRaceName():
 	return Model.race.getFileName()[:-4] if Model.race else None

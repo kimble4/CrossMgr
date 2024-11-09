@@ -747,6 +747,7 @@ This is much like a time trial.  See the **SprintTimer** documentation for detai
 1. If a rider's results are a mess and you'll have to come back to it later, set their status to **NP**.
 1. **Batch publish** the race to the web so the live results are up to date.
 1. Ensure that your **paper notes** are in a safe place.
+1. If there will be another race, it may be useful to inspect the [Tag Read Statistics][ChipReader] and investigate any riders' dodgy tags.
 1. Move on to **setting up the next race**.  Unless you urgently need to know the ranking to award trophies, correcting results is best done somewhere warm, dry and quiet without any time pressure or interruptions.
 
 ## Packing up

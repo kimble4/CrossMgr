@@ -75,6 +75,15 @@ You can also change the default language of the page:
 	
 Where __xx__ is either __en__, __fr__ or __es__ for English, French or Spanish respectively.  When a language is specified with the __lang=xx__ option, it is shown first in the language list.
 
+### Situation Page
+Creates a minimal HTML page for displaying the live race situation
+
+### Situation Data
+Writes the JSON data of the current race state for the Situation page to use.  (This is performed automatically when live results are uploaded during the race.)
+
+### Tag statistics
+Creates an HTML page containing tag read statistics for the current race.
+
 ### Index HTML
 Creates the Index (navigation) page for the race.
 

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="icon" type="image/png" href="data:image/png;base64,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" />
+		<meta name="author" content="BHPC">
+		<meta name="copyright" content="BHPC">
+		<meta name="generator" content="CrossMgr">  
+		<meta name="keywords" content="HPV, CrossMgr, Cycling, Race, Results, Clock">
+		<title>Situation</title>
+		<style>
+			span.clock {
+				font-family: teletype,monospace;
+			}
+			table, th, td {
+				border-collapse: collapse;
+				border: solid 1px;
+				padding: 2px;
+			}
+			thead {
+				position: sticky;
+				top: 0;
+				z-index: 1;
+			}
+			@media (max-width: 1024px) {
+				table, th, td {
+					font-size: 2.5vw;
+					width: 98vw;
+				}
+			}
+			td.numeric {
+				text-align: right;
+				font-family: monospace;
+			}
+			td.centre {
+				text-align: center;
+				font-family: monospace;
+			}
+			tr:nth-of-type(odd) {
+				background-color:#f0f0f0;
+			}
+			tr:nth-of-type(even) {
+				background-color:#ffffff;
+			}
+			
+			tr.interp:nth-of-type(odd) {
+				background-color: #F0F000;
+			}
+			tr.interp:nth-of-type(even) {
+				background-color: #FFFF00;
+			}
+			tr:hover, tr.interp:hover {
+				background-color:#8ed1fc;
+			}
+			
+		</style>
+
+		<script>
+		var xmlhttp = new XMLHttpRequest();
+		var url = "Situation.json";
+		var finished = false;
+		var unstarted = false;
+		var tRaceStart = null;
+		var raceName = "No race";
+		var timeStamp = new Date(0);
+		var fetchedTime = new Date(0);
+		
+		function formatTime( time, places ) {
+			secs = Math.floor( time );
+			var s = secs % 60;
+			var m = Math.floor(secs / 60) % 60;
+			var h = Math.floor(secs / (60*60));
+			if (places > 0) {
+				var d = time - secs;
+				return (h ? (h + ':') : '') +  (m ? (('0' + m + ':').slice(-3)) : '') + ('0' + s).slice(-2) + ('.' + d.toFixed(places)).slice(2);
+			} else {
+				return (h ? (h + ':') : '') +  ('0' + m + ':').slice(-3) + ('0' + s).slice(-2);
+			}
+		}
+
+		function formatTimeNoLeadingZero( secs, places ) {
+			var t = formatTime( secs, places );
+			if( t && t.charAt(0) == '0' )
+				t = t.substring( 1 )
+			return t;
+		}
+
+		function strToMillis( s ) {
+			if( s == null )
+				return null;
+			s = s.replace(/[^0-9]/g,' ');
+			var v = s.split(' ');
+			return (new Date(
+				parseInt(v[0],10), parseInt(v[1],10)-1, parseInt(v[2],10),
+				parseInt(v[3],10), parseInt(v[4],10), parseInt(v[5],10), parseInt(v[6],10)
+			)).getTime();
+		}
+
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var situationdata = JSON.parse(this.responseText);
+				processData(situationdata);
+			}
+		};
+
+		function main() {
+			xmlhttp.open("GET", url + (/\?/.test(url) ? "&" : "?") + new Date().getTime(), true);
+			xmlhttp.send();
+			if (finished) {
+				setTimeout(main, 300000);
+			} else {
+				setTimeout(main, 15000 + Math.random() * 30000);
+			}
+		}
+		
+		function updateClock() {
+			var out = '<h1><a href="' + resultsUrl + '" target="_blank">' + raceName + '</a>';
+			if (raceName.length >= 20) {
+				out += '<br>';
+			} else {
+				out += ': ';
+			}
+			if (finished) {
+				out += 'Race finished';
+			} else if (unstarted) {
+				out += 'Waiting to start...';
+			} else {
+				var secs = ((new Date).getTime() - tRaceStart) / 1000.0;
+				out += '<span class="clock">' + formatTimeNoLeadingZero(secs, 0) + '</span>';
+			}
+			out += '</h1><h4>Updated: <span class="clock">' + formatTimeNoLeadingZero(((new Date).getTime() - timeStamp)/1000.0, 0) + '</span> ago, Fetched: <span class="clock">' + formatTimeNoLeadingZero(((new Date).getTime() - fetchedTime)/1000.0, 0) + '</span> ago</h4>';
+			document.getElementById("idClock").innerHTML = out;
+			ms = ((new Date).getTime() - tRaceStart) % 1000;
+			setTimeout(updateClock, 1050 - ms);
+		}
+
+		function processData(arr) {
+			var out = "";
+			var i;
+			raceName = arr.raceNameText;
+			resultsUrl = arr.url;
+			fetchedTime = new Date()
+			timeStamp = new Date(arr.timeStamp * 1000);
+			if (arr.raceIsFinished) {
+				finished = true;
+				unstarted = false;
+			} else if (arr.raceIsUnstarted) {
+				unstarted = true;
+				finished = false;
+			} else {
+				unstarted = false;
+				finished = false;
+			}
+			tRaceStart = arr.raceStartTime * 1000;
+			data = Object.entries(arr.data);
+			if (data.length > 0) {
+				data = data.sort((r1,r2) => {
+					if (r1[1].raceCat > r2[1].raceCat) {
+						return 1;
+					} else if (r1[1].raceCat < r2[1].raceCat) { 
+						return -1;
+					}
+					return r1[1].pos - r2[1].pos;
+				});
+				
+				out += '<table><thead>'
+				prevTime = 0;
+				prevCat = "";
+				for (i = 0; i < data.length; i++) {
+					raceCat = data[i][1].raceCat;
+					if (raceCat != prevCat) {
+						out += '<tr><th colspan=7 style="text-align: center"><strong>' + raceCat + '</strong></th></tr><tr><th>Pos</th><th>Bib</th><th>Name</th><th>Laps</th><th>Time</th><th>Gap</th><th>Diff</th></tr></thead><tbody>';
+						prevCat = raceCat;
+					}
+					laps = data[i][1].laps;
+					if (data[i][1].lastInterp) {
+						out += '<tr class="interp">';
+						//laps -= 1;
+					} else {
+						out += '<tr>';
+					}
+					out += '<td class="centre">' + data[i][1].pos + '</td>';
+					out += '<td class="centre">' + data[i][0] + '</td>';
+					name = data[i][1].FirstName + ' ' + data[i][1].LastName;
+					out += '<td>' + name + '</td>';
+					out += '<td class="centre">' + laps + '</td>';
+					out += '<td class="numeric">' + formatTimeNoLeadingZero(data[i][1].lastTimeOrig, 2) + '</td>';
+					
+					if (laps > 0) {
+						gap = data[i][1].gapValue;
+						gapSeconds = data[i][1].gapSeconds;
+						if (gap < 0) {
+							gap = gap + ' laps (' + formatTimeNoLeadingZero(gapSeconds, 2) + ')';
+						} else {
+							gap = formatTimeNoLeadingZero(gapSeconds, 2);
+						}
+						out += '<td class="numeric">' + gap + '</td>';
+						if (gap == 0) {  //new category leader
+							prevTime = 0;
+						}
+						diff = data[i][1].gapSeconds - prevTime;
+						if (isNaN(diff)) {
+							diff = '';
+						} else if (diff < 0) {
+							diff = '-' + formatTimeNoLeadingZero(-diff, 2);
+						} else {
+							diff = formatTimeNoLeadingZero(diff, 2);
+						}
+						prevTime = data[i][1].gapSeconds;
+						out += '<td class="numeric">' + diff + '</td>';
+						//out += '<td class="numeric">' + data[i][1].speed; + '</td>';  //speed is misleading for criteriums
+					} else {
+						out += '<td></td><td></td>';
+					}
+					out += '</tr>'
+				}
+				out += '</tbody></table>'
+			} else {
+				out += '<p><strong>Waiting for rider data...</strong></p>'
+			}
+			document.getElementById("idTable").innerHTML = out;
+			updateClock();
+		}
+		
+		main();
+	</script>
+	</head>
+	
+	<body>
+		<div id="idClock"></div>
+		<div id="idTable"></div>
+		<p>NB: The race clock and updated time are calculated relative to your device's real-time clock (which may be innacurate).</p>
+		<p>Yellow times are interpolated (ie. the rider's tag has not yet been seen on the current lap).</p>
+		<p><a href="./">Go back.</a>  Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.</p>
+	</body>
+</html>
+
+

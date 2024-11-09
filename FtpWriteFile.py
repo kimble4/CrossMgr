@@ -210,8 +210,18 @@ def FtpWriteRaceHTML():
 	except Exception as e:
 		Utils.writeLog( 'FtpWriteRaceHTML: (2) "{}"'.format(e) )
 		return None
+		
+	#now write current state to json file
+	try:
+		json = Model.getSituationJson()
+		jname = 'Situation.json'
+		with open(jname, 'w', encoding='utf8') as fp:
+			fp.write( json )
+	except Exception as e:
+		Utils.writeLog( 'FtpWriteSituatonJson: (2) "{}"'.format(e) )
+		return None
 	
-	files = [fname]
+	files = [fname, jname]
 	try:
 		if (getattr(Model.race, 'publishFormatIndexHtml', 3) & 3) == 3:
 			files.append( WriteHtmlIndexPage() )

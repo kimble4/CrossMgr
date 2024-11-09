@@ -2786,6 +2786,12 @@ def setCategoryChoice( iSelection, categoryAttribute = None ):
 		return
 	setCategoryChoice( iSelection, categoryAttribute )
 
+def getSituationJson():
+	if not race:
+		return None
+	payload = Utils.mainWin.getSituationPayload()
+	return Utils.ToJson(payload, separators=(',',':'))
+
 def getCurrentHtml():
 	if not race:
 		return None

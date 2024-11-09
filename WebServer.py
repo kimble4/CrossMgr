@@ -66,6 +66,7 @@ icons = {
 	'StartListIconSrc': readBase64('tt_start_list.png'),
 	'LapCounterIconSrc':  readBase64('lapcounter.png'), 
 	'RaceClockIconSrc':  readBase64('raceclock.png'), 
+	'SituationIconSrc':  readBase64('smartPhoneIcon.png'), 
 	'ResultsCurrentIconSrc': readBase64('results_current.png'),
 	'ResultsPreviousIconSrc': readBase64('results_previous.png'),
 	'AnnouncerIconSrc': readBase64('announcer.png'),
@@ -106,6 +107,15 @@ with open(os.path.join(Utils.getHtmlFolder(), 'RaceClock.html')) as f:
 	raceClockTemplate = f.read().encode()
 def getRaceClockHtml():
 	return raceClockTemplate
+	
+with open(os.path.join(Utils.getHtmlFolder(), 'Situation.html')) as f:
+	situationTemplate = f.read().encode()
+def getSituationHtml():
+	return situationTemplate
+	
+@syncfunc
+def getSituationJson():
+	return Model.getSituationJson().encode()
 	
 with open(os.path.join(Utils.getHtmlFolder(), 'Announcer.html'), encoding='utf8') as f:
 	announcerHTML = f.read().encode()
@@ -252,7 +262,7 @@ class ContentBuffer:
 		}
 		
 		with self.lock:
-			files = self._getFiles()			
+			files = self._getFiles()
 			info = []
 			for fname in files:
 				cache = self._getCache( fname, False )
@@ -284,8 +294,8 @@ class ContentBuffer:
 				else:
 					g.urlLapCounter = urllib.request.pathname2url('LapCounter.html')
 				g.urlRaceClock = urllib.request.pathname2url('RaceClock.html')
+				g.urlSituation = urllib.request.pathname2url('Situation.html')
 				info.append( g )
-		
 		result['info'] = info
 		return result
 
@@ -493,6 +503,14 @@ class CrossMgrHandler( BaseHTTPRequestHandler ):
 			elif up.path=='/RaceClock.html':
 				content = getRaceClockHtml()
 				content_type = self.html_content
+				assert isinstance( content, bytes )
+			elif up.path=='/Situation.html':
+				content = getSituationHtml()
+				content_type = self.html_content
+				assert isinstance( content, bytes )
+			elif up.path.startswith('/Situation.json'):
+				content = getSituationJson()
+				content_type = self.json_content
 				assert isinstance( content, bytes )
 			elif up.path=='/Announcer.html':
 				content = getAnnouncerHtml()
