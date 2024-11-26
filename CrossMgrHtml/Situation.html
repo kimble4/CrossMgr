@@ -22,7 +22,7 @@
 				top: 0;
 				z-index: 1;
 			}
-			@media (max-width: 1024px) {
+			@media (max-width: 1280px) {
 				table, th, td {
 					font-size: 2.5vw;
 					width: 98vw;
@@ -227,11 +227,12 @@
 	</head>
 	
 	<body>
-		<div id="idClock"></div>
-		<div id="idTable"></div>
-		<p>NB: The race clock and updated time are calculated relative to your device's real-time clock (which may be innacurate).</p>
+		<div id="idClock"><h1>Race Situation</h1></div>
+		<div id="idTable"><p><strong>Waiting for rider data...</strong></p></div>
 		<p>Yellow times are interpolated (ie. the rider's tag has not yet been seen on the current lap).</p>
-		<p><a href="./">Go back.</a>  Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.</p>
+		<p>Note that the 'gap' value will be inconsistent with the rider's race position if they are expected to pass another rider.</p>
+		<p>The race clock and 'updated' time are calculated relative to your device's real-time clock, which may be innacurate.  (The timing computer should be synced to GPS time, but mobile devices usually get their time from the GSM network at surprisingly low precision.)</small></p>
+		<p><a href="./">Go back.</a><br>Powered by <a href="https://github.com/kimble4/CrossMgr">BHPC CrossMgr</a>.</p>
 	</body>
 </html>
 
