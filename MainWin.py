@@ -1468,14 +1468,17 @@ class MainWin( wx.Frame ):
 					name = ' '.join(v for v in [info.get('FirstName',''), info.get('LastName')] if v)
 					html += '<tr><td rowspan="' + str(len(bibs[bib])) +  '" class="bib">' + str(bib) + '</td><td rowspan="' + str(len(bibs[bib])) +  '">' + name + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(entries)) + '</td><td rowspan="' + str(len(bibs[bib])) +  '" class="numeric">' + str(len(unfilteredTimes)) + '</td>'
 					for tag in sorted(bibs[bib]):
-						readsPerLap = tagreads[tag]/len(entries)
-						if readsPerLap < 1.0 - 1/len(entries):
-							tagClass = 'numeric lowreads'
-						elif readsPerLap > 1.0 + 1/len(entries):
-							tagClass = 'numeric highreads'
-						else:
-							tagClass = 'numeric'
-						html+= '<td class="' + tagClass + '">' + str(tag) + '</td><td class="' + tagClass + '">' + epcToASCII(tag) + '</td><td class="' + tagClass + '">' + str(tagreads[tag]) + '</td><td class="' + tagClass + '">' + '{:.2f}'.format(readsPerLap) + '</td></tr><tr>'
+						readsPerLapFormatted = ''
+						if len(entries) > 0:
+							readsPerLap = tagreads[tag]/len(entries)
+							if readsPerLap < 1.0 - 1/len(entries):
+								tagClass = 'numeric lowreads'
+							elif readsPerLap > 1.0 + 1/len(entries):
+								tagClass = 'numeric highreads'
+							else:
+								tagClass = 'numeric'
+							readsPerLapFormatted = '{:.2f}'.format(readsPerLap)
+						html+= '<td class="' + tagClass + '">' + str(tag) + '</td><td class="' + tagClass + '">' + epcToASCII(tag) + '</td><td class="' + tagClass + '">' + str(tagreads[tag]) + '</td><td class="' + tagClass + '">' + readsPerLapFormatted + '</td></tr><tr>'
 				html = html[:-4] #remove last <tr>
 			else:
 				html += '<p><strong>No tags -> bibs mapping data!</strong></p>'
